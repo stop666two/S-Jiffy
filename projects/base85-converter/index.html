@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Base85 编解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.code-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:250px}@media(max-width:700px){.code-pair{grid-template-columns:1fr}}.code-pair textarea{height:250px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.code-pair textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Base85 编解码</h1><p class="tool-desc">Base85/Ascii85 编码/解码（Adobe 风格）。适用于二进制数据文本表示。</p>
+<div class="card">
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+<button id="encodeBtn" class="btn btn-primary">编码</button>
+<button id="decodeBtn" class="btn btn-secondary">解码</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="code-pair">
+<textarea id="inputText" class="js-focus-input" placeholder="输入文本...">Hello, S-Jiffy!</textarea>
+<textarea id="outputText" readonly placeholder="结果..." style="background:var(--color-bg-soft);"></textarea>
+</div>
+</div>
+<div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>(function(){
+function encodeAscii85(bytes){
+var result='<~';
+var i=0;
+while(i<bytes.length){
+if(bytes.length-i>=4){
+var val=(bytes[i]<<24)|(bytes[i+1]<<16)|(bytes[i+2]<<8)|bytes[i+3];
+if(val===0){result+='z';i+=4;continue;}
+var buf='';
+for(var j=4;j>=0;j--){
+buf=String.fromCharCode((val%85)+33)+buf;
+val=Math.floor(val/85);
+}
+result+=buf;
+i+=4;
+}else{
+var chunk=[bytes[i],bytes[i+1]||0,bytes[i+2]||0,bytes[i+3]||0];
+var val=(chunk[0]<<24)|(chunk[1]<<16)|(chunk[2]<<8)|chunk[3];
+var buf='';
+for(var j=4;j>=0;j--){
+buf=String.fromCharCode((val%85)+33)+buf;
+val=Math.floor(val/85);
+}
+result+=buf.slice(0,bytes.length-i+1);
+i=bytes.length;
+}
+}
+result+='~>';
+return result;
+}
+
+function decodeAscii85(str){
+str=str.replace(/\s+/g,'');
+str=str.replace(/<~|~>/g,'');
+var bytes=[];
+var i=0;
+while(i<str.length){
+if(str[i]==='z'){bytes.push(0,0,0,0);i++;continue;}
+if(str[i]==='~')break;
+var chunk=str.slice(i,i+5);
+if(chunk.length<5)chunk=chunk+'u'.repeat(5-chunk.length);
+var val=0;
+for(var j=0;j<chunk.length;j++){
+val=val*85+(chunk.charCodeAt(j)-33);
+}
+var out=[(val>>24)&255,(val>>16)&255,(val>>8)&255,val&255];
+if(str.slice(i,i+5).length<5){
+bytes=bytes.concat(out.slice(0,str.slice(i,i+5).length-1));
+}else{
+bytes=bytes.concat(out);
+}
+i+=chunk.length;
+}
+return new Uint8Array(bytes);
+}
+
+function encode(){
+var text=inputEl.value;
+if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入内容','error');return;}
+try{
+var encoder=new TextEncoder();
+var bytes=encoder.encode(text);
+var encoded=encodeAscii85(bytes);
+outputEl.value=encoded;
+statusText.textContent='编码完成，'+encoded.length+' 字符';
+setStatus('');
+}catch(e){setStatus('编码错误','error');}
+}
+
+function decode(){
+var text=inputEl.value.trim();
+if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入 Base85','error');return;}
+try{
+var bytes=decodeAscii85(text);
+var decoder=new TextDecoder();
+var decoded=decoder.decode(bytes);
+outputEl.value=decoded;
+statusText.textContent='解码完成，'+decoded.length+' 字符';
+setStatus('');
+}catch(e){setStatus('解码错误：Base85 格式无效','error');}
+}
+
+var inputEl=document.getElementById('inputText');
+var outputEl=document.getElementById('outputText');
+var encodeBtn=document.getElementById('encodeBtn');
+var decodeBtn=document.getElementById('decodeBtn');
+var clearBtn=document.getElementById('clearBtn');
+var statusText=document.getElementById('statusText');
+var copyBtn=document.getElementById('copyBtn');
+
+encodeBtn.addEventListener('click',encode);
+decodeBtn.addEventListener('click',decode);
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.value='';statusText.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.value){copyToClipboard(outputEl.value,copyBtn);setStatus('已复制');}});
+})();</script></body></html>

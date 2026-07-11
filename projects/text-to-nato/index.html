@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to NATO - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .nato-table { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:4px; margin-top:12px; }
+    .nato-item { font-size:var(--font-size-sm); padding:2px 6px; background:var(--color-bg-soft); border-radius:var(--radius-sm); }
+    .nato-item .char { font-weight:600; }
+    .nato-item .word { color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Text to NATO</h1>
+    <p class="tool-desc">将文本转换为 NATO 北约 phonetic alphabet（音标字母代码），支持大小写和数字。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      var natoMap = {
+        'A':'Alfa','B':'Bravo','C':'Charlie','D':'Delta','E':'Echo','F':'Foxtrot','G':'Golf',
+        'H':'Hotel','I':'India','J':'Juliett','K':'Kilo','L':'Lima','M':'Mike',
+        'N':'November','O':'Oscar','P':'Papa','Q':'Quebec','R':'Romeo','S':'Sierra',
+        'T':'Tango','U':'Uniform','V':'Victor','W':'Whiskey','X':'X-ray','Y':'Yankee','Z':'Zulu',
+        '0':'Zero','1':'One','2':'Two','3':'Three','4':'Four','5':'Five','6':'Six','7':'Seven',
+        '8':'Eight','9':'Nine'
+      };
+
+      document.getElementById('convertBtn').addEventListener('click', function() {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        var lines = [];
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          var upper = ch.toUpperCase();
+          if (ch === ' ' || ch === '\n' || ch === '\t') {
+            lines.push('');
+            continue;
+          }
+          if (natoMap[upper]) {
+            lines.push(upper + '  ' + natoMap[upper]);
+          } else {
+            lines.push(ch + '  (' + ch + ')');
+          }
+        }
+        outputEl.textContent = lines.join('\n');
+        setStatus('已转换 ' + text.length + ' 个字符');
+      });
+
+      clearBtn.addEventListener('click', function() {
+        inputEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        inputEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

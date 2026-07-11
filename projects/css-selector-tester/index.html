@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 选择器测试 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .html-preview { font-size:13px; line-height:1.6; padding:var(--space-2); background:#fff; border:1px solid var(--color-border); border-radius:var(--radius-md); max-height:400px; overflow:auto; white-space:pre-wrap; word-break:break-all; font-family:var(--font-mono); }
+    .html-preview .hl-match { background:#fff3cd; outline:1px solid #f0c000; }
+    .html-preview .hl-match::before { content:'‹'; color:#f0c000; }
+    .html-preview .hl-match::after { content:'›'; color:#f0c000; }
+    .match-tag { display:inline-block; padding:2px 8px; border-radius:var(--radius-sm); font-size:12px; margin-right:4px; }
+    .match-tag.tag-match { background:#e6f4ea; color:var(--color-success); }
+    .match-tag.tag-nomatch { background:#fce8e6; color:var(--color-error); }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>CSS 选择器测试</h1>
+    <p class="tool-desc">测试 CSS 选择器在 HTML 中的匹配结果</p>
+
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">CSS 选择器</label>
+      <div style="display:flex; gap:12px;">
+        <input id="selectorInput" class="input js-focus-input" placeholder=".class, #id, div > p" style="font-family:var(--font-mono);flex:1;">
+        <button id="testBtn" class="btn btn-primary">测试</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">HTML</label>
+      <textarea id="htmlInput" class="input textarea" placeholder="<div><p class='foo'>Hello</p><p class='bar'>World</p></div>" style="min-height:200px;font-family:var(--font-mono);font-size:13px;"></textarea>
+    </div>
+
+    <div class="output-box" style="min-height:100px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+
+    <div id="previewBox" class="card" style="margin-top:var(--space-3);display:none;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">HTML 预览（高亮为匹配项）</label>
+      <div id="htmlPreview" class="html-preview"></div>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var selectorInput = document.getElementById('selectorInput');
+      var htmlInput = document.getElementById('htmlInput');
+      var outputText = document.getElementById('outputText');
+      var htmlPreview = document.getElementById('htmlPreview');
+      var previewBox = document.getElementById('previewBox');
+      var testBtn = document.getElementById('testBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      testBtn.addEventListener('click', function () {
+        var selector = selectorInput.value.trim();
+        var html = htmlInput.value.trim();
+        outputText.textContent = '';
+        htmlPreview.innerHTML = '';
+        previewBox.style.display = 'none';
+
+        if (!selector) { setStatus('请输入 CSS 选择器', 'error'); return; }
+        if (!html) { setStatus('请输入 HTML', 'error'); return; }
+
+        var parser = new DOMParser();
+        var doc = parser.parseFromString('<!DOCTYPE html><html><body>' + html + '</body></html>', 'text/html');
+        var body = doc.body;
+
+        try {
+          var matched = body.querySelectorAll(selector);
+          var totalEls = body.querySelectorAll('*').length;
+          var matchCount = matched.length;
+
+          outputText.textContent = '匹配结果: ' + matchCount + ' / ' + totalEls + ' 个元素';
+
+          if (matchCount > 0) {
+            outputText.textContent += '\n\n匹配的元素:';
+            for (var i = 0; i < matched.length; i++) {
+              var el = matched[i];
+              var tag = el.tagName.toLowerCase();
+              var id = el.id ? '#' + el.id : '';
+              var cls = el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+              outputText.textContent += '\n  ' + (i + 1) + '. <' + tag + id + cls + '> 「' + (el.textContent || '').substring(0, 50) + '」';
+            }
+          }
+
+          var previewHtml = html;
+          var matchTags = {};
+          for (var j = 0; j < matched.length; j++) {
+            var key = matched[j].outerHTML;
+            if (!matchTags[key]) matchTags[key] = true;
+          }
+          previewBox.style.display = 'block';
+          htmlPreview.textContent = html;
+          var text = htmlPreview.textContent;
+          var frag = document.createDocumentFragment();
+          var div = document.createElement('div');
+          div.textContent = text;
+          frag.appendChild(div);
+          htmlPreview.innerHTML = '';
+
+          var tempDoc = parser.parseFromString('<!DOCTYPE html><html><body>' + html + '</body></html>', 'text/html');
+          var tempBody = tempDoc.body;
+          var matchedInTemp = tempBody.querySelectorAll(selector);
+
+          function buildHighlightedHTML(el) {
+            var tag = el.tagName ? el.tagName.toLowerCase() : '';
+            if (!tag || tag === 'html' || tag === 'head' || tag === 'body') {
+              var result = '';
+              for (var ci = 0; ci < el.childNodes.length; ci++) {
+                result += buildHighlightedHTML(el.childNodes[ci]);
+              }
+              return result;
+            }
+            var isMatch = false;
+            for (var mi = 0; mi < matchedInTemp.length; mi++) {
+              if (matchedInTemp[mi] === el) { isMatch = true; break; }
+            }
+            var outer = el.outerHTML || el.textContent || '';
+            if (isMatch) {
+              return '<span class="hl-match">' + outer + '</span>';
+            }
+            return outer;
+          }
+
+          var previewContent = '';
+          for (var ci2 = 0; ci2 < tempBody.childNodes.length; ci2++) {
+            previewContent += buildHighlightedHTML(tempBody.childNodes[ci2]);
+          }
+          htmlPreview.innerHTML = previewContent;
+          setStatus('测试完成');
+
+        } catch (e) {
+          outputText.textContent = '';
+          setStatus('选择器语法错误: ' + e.message, 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function () {
+        selectorInput.value = '';
+        htmlInput.value = '';
+        outputText.textContent = '';
+        htmlPreview.innerHTML = '';
+        previewBox.style.display = 'none';
+        setStatus('');
+        selectorInput.focus();
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

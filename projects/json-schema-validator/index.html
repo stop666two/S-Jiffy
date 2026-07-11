@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Schema 验证器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .schema-layout { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3); }
+    @media(max-width:700px){ .schema-layout{grid-template-columns:1fr;} }
+    .schema-layout .card { margin-bottom:0; }
+    .valid-badge { color:var(--color-success); font-weight:600; }
+    .invalid-badge { color:var(--color-error); font-weight:600; }
+    .error-list { margin-top:8px; font-size:13px; line-height:1.6; }
+    .error-list li { color:var(--color-error); margin-left:16px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>JSON Schema 验证器</h1>
+    <p class="tool-desc">验证 JSON 数据是否符合 JSON Schema 规范</p>
+
+    <div class="schema-layout">
+      <div class="card">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">JSON 数据</label>
+        <textarea id="dataInput" class="input textarea js-focus-input" placeholder='{"name": "Alice", "age": 30}' style="min-height:280px;"></textarea>
+      </div>
+      <div class="card">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">JSON Schema</label>
+        <textarea id="schemaInput" class="input textarea" placeholder='{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "number"}}, "required": ["name"]}' style="min-height:280px;"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:var(--space-3);">
+      <button id="validateBtn" class="btn btn-primary">验证</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div class="output-box" style="margin-top:var(--space-3);min-height:80px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <ul id="errorList" class="error-list"></ul>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv.min.js"></script>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var dataInput = document.getElementById('dataInput');
+      var schemaInput = document.getElementById('schemaInput');
+      var outputText = document.getElementById('outputText');
+      var errorList = document.getElementById('errorList');
+      var validateBtn = document.getElementById('validateBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      validateBtn.addEventListener('click', function () {
+        var dataStr = dataInput.value.trim();
+        var schemaStr = schemaInput.value.trim();
+        outputText.textContent = '';
+        errorList.innerHTML = '';
+
+        if (!dataStr) { setStatus('请输入 JSON 数据', 'error'); return; }
+        if (!schemaStr) { setStatus('请输入 JSON Schema', 'error'); return; }
+
+        var data, schema;
+        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + e.message; setStatus('数据格式错误', 'error'); return; }
+        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + e.message; setStatus('Schema 格式错误', 'error'); return; }
+
+        try {
+          var ajv = new Ajv();
+          var valid = ajv.validate(schema, data);
+          if (valid) {
+            outputText.innerHTML = '<span class="valid-badge">✓ 有效</span> 数据符合 Schema 规范';
+            setStatus('验证通过');
+          } else {
+            outputText.innerHTML = '<span class="invalid-badge">✗ 无效</span> 数据不符合 Schema 规范';
+            var ul = errorList;
+            for (var i = 0; i < ajv.errors.length; i++) {
+              var err = ajv.errors[i];
+              var li = document.createElement('li');
+              li.textContent = err.instancePath + ' ' + err.message;
+              ul.appendChild(li);
+            }
+            setStatus('验证失败', 'error');
+          }
+        } catch (e) {
+          outputText.innerHTML = '<span class="invalid-badge">错误</span> ' + e.message;
+          setStatus('验证出错', 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function () {
+        dataInput.value = '';
+        schemaInput.value = '';
+        outputText.textContent = '';
+        errorList.innerHTML = '';
+        setStatus('');
+        dataInput.focus();
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var t = outputText.textContent;
+        var errs = errorList.textContent;
+        if (errs) t += '\n' + errs;
+        if (t.trim()) { copyToClipboard(t, this); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

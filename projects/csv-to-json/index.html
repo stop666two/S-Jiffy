@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV JSON 互转 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>CSV ↔ JSON 互转</h1>
+    <p class="tool-desc">CSV（逗号分隔）与 JSON 格式互相转换。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 CSV 或 JSON..." style="min-height:180px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+      <button id="toJsonBtn" class="btn btn-primary">CSV → JSON</button>
+      <button id="toCsvBtn" class="btn btn-secondary">JSON → CSV</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var toJsonBtn = document.getElementById('toJsonBtn');
+      var toCsvBtn = document.getElementById('toCsvBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function parseCSV(text) {
+        var lines = [];
+        var current = '';
+        var inQuote = false;
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (inQuote) {
+            if (ch === '"') {
+              if (i + 1 < text.length && text[i + 1] === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuote = false;
+              }
+            } else {
+              current += ch;
+            }
+          } else {
+            if (ch === '"') {
+              inQuote = true;
+            } else if (ch === ',') {
+              lines.push(current);
+              current = '';
+            } else if (ch === '\n') {
+              lines.push(current);
+              current = '';
+              lines.push('\n');
+            } else if (ch === '\r') {
+            } else {
+              current += ch;
+            }
+          }
+        }
+        if (current) lines.push(current);
+        return lines;
+      }
+
+      function csvToJson(csv) {
+        var lines = csv.trim().split('\n');
+        if (lines.length < 2) throw new Error('CSV 至少需要标题行和一行数据');
+        var headers = lines[0].split(',').map(function (h) {
+          return h.trim().replace(/^"|"$/g, '');
+        });
+        var result = [];
+        for (var i = 1; i < lines.length; i++) {
+          var vals = lines[i].split(',').map(function (v) { return v.trim().replace(/^"|"$/g, ''); });
+          var row = {};
+          for (var j = 0; j < headers.length; j++) {
+            row[headers[j]] = vals[j] || '';
+          }
+          result.push(row);
+        }
+        return result;
+      }
+
+      function jsonToCsv(json) {
+        var arr = json;
+        if (!Array.isArray(arr)) throw new Error('JSON 必须是数组');
+        if (!arr.length) return '';
+        var headers = Object.keys(arr[0]);
+        var lines = [headers.join(',')];
+        for (var i = 0; i < arr.length; i++) {
+          var vals = headers.map(function (h) {
+            var v = String(arr[i][h] !== undefined ? arr[i][h] : '');
+            if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) v = '"' + v.replace(/"/g, '""') + '"';
+            return v;
+          });
+          lines.push(vals.join(','));
+        }
+        return lines.join('\n');
+      }
+
+      toJsonBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 CSV 内容', 'error'); return; }
+        try {
+          var parsed = csvToJson(text);
+          outputEl.textContent = JSON.stringify(parsed, null, 2);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('CSV 解析失败: ' + e.message, 'error');
+        }
+      });
+
+      toCsvBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JSON 内容', 'error'); return; }
+        try {
+          var parsed = JSON.parse(text);
+          outputEl.textContent = jsonToCsv(parsed);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('JSON 解析失败: ' + e.message, 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

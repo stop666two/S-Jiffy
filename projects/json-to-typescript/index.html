@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON 转 TypeScript - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .io-pair { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
+    @media(max-width:640px){ .io-pair { grid-template-columns:1fr; } }
+    .output-box textarea { width:100%; min-height:300px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JSON 转 TypeScript</h1>
+    <p class="tool-desc">从 JSON 生成 TypeScript 接口定义。</p>
+
+    <div class="card">
+      <div class="io-pair">
+        <div>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">JSON 输入</label>
+          <textarea id="jsonInput" class="input textarea" placeholder='{"name":"Alice","age":30,"items":[1,2,3]}' style="min-height:300px;"></textarea>
+        </div>
+        <div>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">TypeScript 接口</label>
+          <div class="output-box" style="min-height:340px;">
+            <textarea id="tsOutput" readonly placeholder="生成的 TypeScript 接口..."></textarea>
+            <button class="copy-btn" id="copyBtn">复制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px;">
+      <button id="convertBtn" class="btn btn-primary">转换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var jsonInput = document.getElementById('jsonInput');
+      var tsOutput = document.getElementById('tsOutput');
+      var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+
+      var interfaces = [];
+
+      function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
+
+      function toTypeName(key) {
+        var name = key.replace(/[^a-zA-Z0-9]/g, ' ');
+        name = name.split(/\s+/).map(function (w) { return w ? capitalize(w) : ''; }).join('');
+        if (!name) return 'Anonymous';
+        if (/^\d/.test(name)) name = '_' + name;
+        return name;
+      }
+
+      function getType(val, key, seen) {
+        if (val === null || val === undefined) return 'any';
+        if (typeof val === 'string') return 'string';
+        if (typeof val === 'number') return 'number';
+        if (typeof val === 'boolean') return 'boolean';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'any[]';
+          var types = {};
+          for (var i = 0; i < Math.min(val.length, 5); i++) {
+            var t = getType(val[i], key, seen);
+            types[t] = true;
+          }
+          var typeKeys = Object.keys(types);
+          if (typeKeys.length === 1) return typeKeys[0] + '[]';
+          return '(' + typeKeys.join(' | ') + ')[]';
+        }
+        if (typeof val === 'object') {
+          var name = toTypeName(key);
+          if (seen[name]) return name;
+          seen[name] = true;
+          return buildInterface(val, name, seen);
+        }
+        return 'any';
+      }
+
+      function buildInterface(obj, name, seen) {
+        var lines = ['export interface ' + name + ' {'];
+        var keys = Object.keys(obj);
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var val = obj[k];
+          var tsType = getType(val, k, seen);
+          var opt = val === null ? '?' : '';
+          lines.push('  ' + k + opt + ': ' + tsType + ';');
+        }
+        lines.push('}');
+        var str = lines.join('\n');
+        interfaces.push(str);
+        return name;
+      }
+
+      function convert() {
+        var raw = jsonInput.value.trim();
+        if (!raw) { setStatus('请输入 JSON', 'error'); return; }
+        try {
+          var obj = JSON.parse(raw);
+          interfaces = [];
+          var seen = {};
+          var rootName = obj.constructor === Array ? 'RootArray' : 'RootType';
+          var rootType = getType(obj, 'root', seen);
+          var finalStr = interfaces.reverse().join('\n\n');
+          if (rootName === 'RootArray') {
+            var arrayItemType = rootType.replace('[]', '');
+            finalStr += '\n\nexport type ' + rootName + ' = ' + arrayItemType + '[];';
+          }
+          tsOutput.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
+          setStatus('转换成功');
+        } catch (e) {
+          tsOutput.value = '';
+          setStatus('JSON 解析失败: ' + e.message, 'error');
+        }
+      }
+
+      convertBtn.addEventListener('click', convert);
+      clearBtn.addEventListener('click', function () { jsonInput.value = ''; tsOutput.value = ''; setStatus(''); jsonInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (tsOutput.value) { copyToClipboard(tsOutput.value, copyBtn); setStatus('已复制'); } });
+      jsonInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') convert(); });
+    })();
+  </script>
+</body>
+</html>

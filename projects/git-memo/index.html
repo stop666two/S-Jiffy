@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git 备忘录 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .git-search { margin-bottom:var(--space-3); }
+    .git-search input { width:100%; height:44px; padding:0 16px; font-size:14px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); outline:none; }
+    .git-search input:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+    .git-section { margin-bottom:var(--space-3); }
+    .git-section h2 { font-size:var(--font-size-base); font-weight:600; margin-bottom:var(--space-2); padding-bottom:4px; border-bottom:1px solid var(--color-border); }
+    .git-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); margin-bottom:var(--space-2); }
+    .git-card.hidden { display:none; }
+    .git-card code { display:block; font-size:13px; color:var(--color-text-primary); margin-bottom:4px; }
+    .git-card .desc { font-size:12px; color:var(--color-text-secondary); }
+    .git-card .tags { margin-top:4px; }
+    .git-card .tags span { font-size:10px; color:var(--color-text-disabled); margin-right:8px; }
+    .git-highlight { background:#FFF3CD; padding:0 2px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Git 备忘录</h1>
+    <p class="tool-desc">常用 Git 命令速查，支持搜索。</p>
+    <div class="git-search">
+      <input id="searchInput" class="js-focus-input" placeholder="搜索 Git 命令...">
+    </div>
+    <div id="gitContent"></div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var searchEl = document.getElementById('searchInput');
+      var contentEl = document.getElementById('gitContent');
+
+      var sections = [
+        {
+          title: '配置',
+          items: [
+            { cmd: 'git config --global user.name "Name"', desc: '设置全局用户名' },
+            { cmd: 'git config --global user.email "email@example.com"', desc: '设置全局邮箱' },
+            { cmd: 'git config --global alias.co checkout', desc: '创建别名' },
+            { cmd: 'git config --list', desc: '查看所有配置' }
+          ]
+        },
+        {
+          title: '仓库操作',
+          items: [
+            { cmd: 'git init', desc: '初始化新仓库' },
+            { cmd: 'git clone <url>', desc: '克隆远程仓库' },
+            { cmd: 'git remote add origin <url>', desc: '添加远程仓库' },
+            { cmd: 'git remote -v', desc: '查看远程仓库' }
+          ]
+        },
+        {
+          title: '基本操作',
+          items: [
+            { cmd: 'git status', desc: '查看工作区状态' },
+            { cmd: 'git add <file>', desc: '添加文件到暂存区' },
+            { cmd: 'git add .', desc: '添加所有更改' },
+            { cmd: 'git commit -m "message"', desc: '提交暂存区' },
+            { cmd: 'git commit -am "message"', desc: '添加并提交' },
+            { cmd: 'git rm <file>', desc: '删除文件' },
+            { cmd: 'git mv <old> <new>', desc: '重命名文件' }
+          ]
+        },
+        {
+          title: '分支操作',
+          items: [
+            { cmd: 'git branch', desc: '查看本地分支' },
+            { cmd: 'git branch <name>', desc: '创建新分支' },
+            { cmd: 'git checkout <branch>', desc: '切换分支' },
+            { cmd: 'git checkout -b <name>', desc: '创建并切换分支' },
+            { cmd: 'git merge <branch>', desc: '合并分支到当前' },
+            { cmd: 'git branch -d <name>', desc: '删除分支' },
+            { cmd: 'git branch -D <name>', desc: '强制删除分支' }
+          ]
+        },
+        {
+          title: '查看历史',
+          items: [
+            { cmd: 'git log', desc: '查看提交日志' },
+            { cmd: 'git log --oneline', desc: '简洁日志' },
+            { cmd: 'git log --graph', desc: '图形化日志' },
+            { cmd: 'git log -p', desc: '查看提交差异' },
+            { cmd: 'git show <commit>', desc: '查看某次提交详情' },
+            { cmd: 'git diff', desc: '查看工作区差异' },
+            { cmd: 'git diff --staged', desc: '查看暂存区差异' }
+          ]
+        },
+        {
+          title: '撤销与恢复',
+          items: [
+            { cmd: 'git restore <file>', desc: '撤销工作区修改' },
+            { cmd: 'git restore --staged <file>', desc: '取消暂存' },
+            { cmd: 'git reset --soft HEAD~1', desc: '撤销上次提交，保留更改' },
+            { cmd: 'git reset --hard HEAD~1', desc: '撤销上次提交，丢弃更改' },
+            { cmd: 'git revert <commit>', desc: '创建反转提交' },
+            { cmd: 'git clean -fd', desc: '删除未跟踪文件' }
+          ]
+        },
+        {
+          title: '远程同步',
+          items: [
+            { cmd: 'git fetch', desc: '拉取远程更新' },
+            { cmd: 'git pull', desc: '拉取并合并' },
+            { cmd: 'git push', desc: '推送到远程' },
+            { cmd: 'git push origin <branch>', desc: '推送指定分支' },
+            { cmd: 'git push -u origin <branch>', desc: '推送并设置上游' },
+            { cmd: 'git push --tags', desc: '推送标签' }
+          ]
+        },
+        {
+          title: '标签',
+          items: [
+            { cmd: 'git tag', desc: '查看标签' },
+            { cmd: 'git tag <name>', desc: '创建轻量标签' },
+            { cmd: 'git tag -a <name> -m "msg"', desc: '创建附注标签' },
+            { cmd: 'git push origin <tag>', desc: '推送标签' }
+          ]
+        },
+        {
+          title: '暂存与储藏',
+          items: [
+            { cmd: 'git stash', desc: '暂存当前更改' },
+            { cmd: 'git stash pop', desc: '恢复最近暂存' },
+            { cmd: 'git stash list', desc: '查看暂存列表' },
+            { cmd: 'git stash drop', desc: '删除暂存' }
+          ]
+        }
+      ];
+
+      function render(query) {
+        contentEl.innerHTML = '';
+        var lowerQuery = query ? query.toLowerCase() : '';
+
+        for (var s = 0; s < sections.length; s++) {
+          var sec = sections[s];
+          var sectionDiv = document.createElement('div');
+          sectionDiv.className = 'git-section';
+
+          var hasVisible = false;
+          var itemsHtml = '';
+
+          for (var i = 0; i < sec.items.length; i++) {
+            var item = sec.items[i];
+            var combined = (item.cmd + ' ' + item.desc).toLowerCase();
+            var match = !lowerQuery || combined.indexOf(lowerQuery) >= 0;
+
+            if (match) {
+              hasVisible = true;
+              var cmdDisplay = item.cmd;
+              var descDisplay = item.desc;
+              if (lowerQuery) {
+                var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                cmdDisplay = item.cmd.replace(re, '<span class="git-highlight">$1</span>');
+                descDisplay = item.desc.replace(re, '<span class="git-highlight">$1</span>');
+              }
+              itemsHtml += '<div class="git-card"><code>' + cmdDisplay + '</code><div class="desc">' + descDisplay + '</div></div>';
+            }
+          }
+
+          if (hasVisible) {
+            var titleEl = document.createElement('h2');
+            titleEl.textContent = sec.title;
+            sectionDiv.appendChild(titleEl);
+            var div = document.createElement('div');
+            div.innerHTML = itemsHtml;
+            sectionDiv.appendChild(div);
+            contentEl.appendChild(sectionDiv);
+          }
+        }
+
+        if (contentEl.children.length === 0) {
+          contentEl.innerHTML = '<div class="card" style="text-align:center;color:var(--color-text-disabled);">没有匹配的命令</div>';
+        }
+      }
+
+      searchEl.addEventListener('input', function () {
+        render(this.value);
+      });
+
+      render('');
+    })();
+  </script>
+</body>
+</html>

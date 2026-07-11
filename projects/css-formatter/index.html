@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 格式化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>CSS 格式化</h1>
+    <p class="tool-desc">CSS 代码格式化：缩进、换行、属性排序。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 CSS 代码..." style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="formatBtn" class="btn btn-primary">格式化</button>
+      <button id="minifyBtn" class="btn btn-secondary">压缩</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var formatBtn = document.getElementById('formatBtn');
+      var minifyBtn = document.getElementById('minifyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function sortProperties(block) {
+        var props = block.split(';');
+        var sorted = props.filter(function (p) { return p.trim(); }).sort();
+        return sorted.join(';\n  ') + ';';
+      }
+
+      function formatCSS(css) {
+        var result = '';
+        var i = 0;
+        var buf = '';
+        var inBlock = false;
+        var selector = '';
+
+        while (i < css.length) {
+          var ch = css[i];
+          if (ch === '{' && !inBlock) {
+            selector = buf.trim();
+            buf = '';
+            inBlock = true;
+            result += selector + ' {\n  ';
+          } else if (ch === '}' && inBlock) {
+            result += buf.trim() + '\n}\n\n';
+            buf = '';
+            inBlock = false;
+          } else if (ch === '@' && !inBlock) {
+            var atRule = '';
+            while (i < css.length && css[i] !== '{') {
+              atRule += css[i];
+              i++;
+            }
+            if (css[i] === '{') {
+              result += atRule + '{\n';
+              i++;
+              var inner = '';
+              var depth = 1;
+              while (i < css.length && depth > 0) {
+                if (css[i] === '{') depth++;
+                else if (css[i] === '}') depth--;
+                if (depth > 0) inner += css[i];
+                i++;
+              }
+              var formatted = formatCSS(inner);
+              var lines = formatted.trim().split('\n');
+              for (var li = 0; li < lines.length; li++) {
+                result += '  ' + lines[li] + '\n';
+              }
+              result += '}\n\n';
+              buf = '';
+            }
+          } else {
+            buf += ch;
+            i++;
+          }
+        }
+        return result.trim();
+      }
+
+      function minifyCSS(css) {
+        return css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').replace(/\s*([{}:;,])\s*/g, '$1').replace(/;\s*}/g, '}').trim();
+      }
+
+      function update(mode) {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 CSS 代码', 'error'); return; }
+        try {
+          if (mode === 'format') {
+            outputEl.textContent = formatCSS(text);
+          } else {
+            outputEl.textContent = minifyCSS(text);
+          }
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('处理失败', 'error');
+        }
+      }
+
+      formatBtn.addEventListener('click', function () { update('format'); });
+      minifyBtn.addEventListener('click', function () { update('minify'); });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

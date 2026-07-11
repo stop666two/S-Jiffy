@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temperature Converter - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .temp-grid { display:grid; gap:var(--space-2); }
+    .temp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .temp-row .field { flex:1; min-width:130px; }
+    .temp-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; font-family:var(--font-mono); }
+    .temp-all { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--space-2); margin-top:var(--space-2); }
+    .temp-card { border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 12px; text-align:center; }
+    .temp-card .tc-label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+    .temp-card .tc-value { font-size:var(--font-size-lg); font-family:var(--font-mono); font-weight:600; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Temperature Converter</h1>
+    <p class="tool-desc">摄氏度 / 华氏度 / 开尔文 / Rankine / Delisle / Newton / Réaumur / Rømer 互转。</p>
+    <div class="card" id="inputCard">
+      <div class="temp-grid">
+        <div class="temp-row">
+          <div class="field"><label for="celsiusInput">摄氏度 (°C)</label><input id="celsiusInput" class="input" type="number" value="100"></div>
+          <div class="field"><label for="fahrenheitInput">华氏度 (°F)</label><input id="fahrenheitInput" class="input" type="number" value="212"></div>
+          <div class="field"><label for="kelvinInput">开尔文 (K)</label><input id="kelvinInput" class="input" type="number" value="373.15"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);">所有单位</div>
+      <div class="temp-all" id="allTemps"></div>
+    </div>
+
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var cIn = document.getElementById('celsiusInput');
+      var fIn = document.getElementById('fahrenheitInput');
+      var kIn = document.getElementById('kelvinInput');
+      var allTemps = document.getElementById('allTemps');
+      var outputEl = document.getElementById('outputText');
+      var updating = false;
+
+      var units = [
+        { id: 'celsius', label: '°C', name: 'Celsius' },
+        { id: 'fahrenheit', label: '°F', name: 'Fahrenheit' },
+        { id: 'kelvin', label: 'K', name: 'Kelvin' },
+        { id: 'rankine', label: '°R', name: 'Rankine' },
+        { id: 'delisle', label: '°De', name: 'Delisle' },
+        { id: 'newton', label: '°N', name: 'Newton' },
+        { id: 'reaumur', label: '°Ré', name: 'Réaumur' },
+        { id: 'romer', label: '°Rø', name: 'Rømer' }
+      ];
+
+      function round(v) { return Math.round(v * 10000) / 10000; }
+
+      function fromCelsius(c) {
+        return {
+          celsius: c,
+          fahrenheit: c * 9 / 5 + 32,
+          kelvin: c + 273.15,
+          rankine: (c + 273.15) * 9 / 5,
+          delisle: (100 - c) * 3 / 2,
+          newton: c * 33 / 100,
+          reaumur: c * 4 / 5,
+          romer: c * 21 / 40 + 7.5
+        };
+      }
+
+      function updateAll(source, value) {
+        if (updating) return;
+        updating = true;
+        var c;
+        if (source === 'celsius') c = value;
+        else if (source === 'fahrenheit') c = (value - 32) * 5 / 9;
+        else if (source === 'kelvin') c = value - 273.15;
+        else if (source === 'rankine') c = (value - 491.67) * 5 / 9;
+        else if (source === 'delisle') c = 100 - value * 2 / 3;
+        else if (source === 'newton') c = value * 100 / 33;
+        else if (source === 'reaumur') c = value * 5 / 4;
+        else if (source === 'romer') c = (value - 7.5) * 40 / 21;
+        else c = value;
+
+        var vals = fromCelsius(c);
+        cIn.value = round(vals.celsius);
+        fIn.value = round(vals.fahrenheit);
+        kIn.value = round(vals.kelvin);
+
+        var html = '';
+        units.forEach(function(u) {
+          html += '<div class="temp-card"><div class="tc-label">' + u.name + ' (' + u.label + ')</div><div class="tc-value">' + round(vals[u.id]) + '</div></div>';
+        });
+        allTemps.innerHTML = html;
+
+        outputEl.textContent = round(vals.celsius) + ' °C = ' + round(vals.fahrenheit) + ' °F = ' + round(vals.kelvin) + ' K';
+        updating = false;
+      }
+
+      cIn.addEventListener('input', function () { updateAll('celsius', parseFloat(this.value) || 0); });
+      fIn.addEventListener('input', function () { updateAll('fahrenheit', parseFloat(this.value) || 0); });
+      kIn.addEventListener('input', function () { updateAll('kelvin', parseFloat(this.value) || 0); });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, this); setStatus('已复制到剪贴板'); }
+      });
+
+      updateAll('celsius', 100);
+    })();
+  </script>
+</body>
+</html>

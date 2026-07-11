@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据存储单位转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ds-grid { display:grid; gap:var(--space-3); }
+    .ds-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .ds-row .field { flex:1; min-width:120px; }
+    .ds-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>数据存储单位转换</h1>
+    <p class="tool-desc">B / KB / MB / GB / TB / PB 互转（基于 1024）。</p>
+    <div class="card">
+      <div class="ds-grid">
+        <div class="ds-row">
+          <div class="field"><label for="inputByte">字节 (B)</label><input id="inputByte" class="input" type="number" value="1024"></div>
+          <div class="field"><label for="inputKB">千字节 (KB)</label><input id="inputKB" class="input" type="number" value="1"></div>
+        </div>
+        <div class="ds-row">
+          <div class="field"><label for="inputMB">兆字节 (MB)</label><input id="inputMB" class="input" type="number"></div>
+          <div class="field"><label for="inputGB">吉字节 (GB)</label><input id="inputGB" class="input" type="number"></div>
+        </div>
+        <div class="ds-row">
+          <div class="field"><label for="inputTB">太字节 (TB)</label><input id="inputTB" class="input" type="number"></div>
+          <div class="field"><label for="inputPB">拍字节 (PB)</label><input id="inputPB" class="input" type="number"></div>
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputByte = document.getElementById('inputByte');
+      var inputKB = document.getElementById('inputKB');
+      var inputMB = document.getElementById('inputMB');
+      var inputGB = document.getElementById('inputGB');
+      var inputTB = document.getElementById('inputTB');
+      var inputPB = document.getElementById('inputPB');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var updating = false;
+
+      function r(v) { return Math.round(v * 1e10) / 1e10; }
+
+      function fromBytes(b) {
+        if (updating) return;
+        updating = true;
+        inputByte.value = b;
+        inputKB.value = r(b / 1024);
+        inputMB.value = r(b / 1048576);
+        inputGB.value = r(b / 1073741824);
+        inputTB.value = r(b / 1099511627776);
+        inputPB.value = r(b / 1125899906842624);
+        outputEl.textContent = b + ' B = ' + inputKB.value + ' KB = ' + inputMB.value + ' MB = ' + inputGB.value + ' GB';
+        updating = false;
+      }
+
+      function fromKB(kb) { fromBytes(kb * 1024); }
+      function fromMB(mb) { fromBytes(mb * 1048576); }
+      function fromGB(gb) { fromBytes(gb * 1073741824); }
+      function fromTB(tb) { fromBytes(tb * 1099511627776); }
+      function fromPB(pb) { fromBytes(pb * 1125899906842624); }
+
+      inputByte.addEventListener('input', function() { fromBytes(parseFloat(this.value) || 0); });
+      inputKB.addEventListener('input', function() { fromKB(parseFloat(this.value) || 0); });
+      inputMB.addEventListener('input', function() { fromMB(parseFloat(this.value) || 0); });
+      inputGB.addEventListener('input', function() { fromGB(parseFloat(this.value) || 0); });
+      inputTB.addEventListener('input', function() { fromTB(parseFloat(this.value) || 0); });
+      inputPB.addEventListener('input', function() { fromPB(parseFloat(this.value) || 0); });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      fromBytes(1024);
+    })();
+  </script>
+</body>
+</html>

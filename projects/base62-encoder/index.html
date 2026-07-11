@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base62 编解码 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Base62 编解码</h1>
+    <p class="tool-desc">使用 0-9a-zA-Z 字符集进行 Base62 编码与解码。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="encodeBtn" class="btn btn-primary">编码</button>
+      <button id="decodeBtn" class="btn btn-secondary">解码</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="swapBtn" class="btn btn-secondary">交换</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var encodeBtn = document.getElementById('encodeBtn');
+      var decodeBtn = document.getElementById('decodeBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var swapBtn = document.getElementById('swapBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+      function base62Encode(str) {
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+          bytes.push(str.charCodeAt(i));
+        }
+        var hex = '';
+        for (var j = 0; j < bytes.length; j++) {
+          hex += bytes[j].toString(16).padStart(2, '0');
+        }
+        if (hex === '') return '';
+        var result = '';
+        while (hex.length > 0 && hex !== '0') {
+          var remainder = 0;
+          var next = '';
+          for (var k = 0; k < hex.length; k++) {
+            remainder = remainder * 16 + parseInt(hex[k], 16);
+            next += Math.floor(remainder / 62).toString(16);
+            remainder = remainder % 62;
+          }
+          result = BASE62[remainder] + result;
+          hex = next.replace(/^0+/, '') || '0';
+        }
+        return result || '0';
+      }
+
+      function base62Decode(str) {
+        var bigInt = '0';
+        for (var i = 0; i < str.length; i++) {
+          var digit = BASE62.indexOf(str[i]);
+          if (digit === -1) return null;
+          var carry = digit;
+          var next = '';
+          for (var j = 0; j < bigInt.length; j++) {
+            carry += parseInt(bigInt[j], 16) * 62;
+            next += (carry % 16).toString(16);
+            carry = Math.floor(carry / 16);
+          }
+          while (carry > 0) {
+            next += (carry % 16).toString(16);
+            carry = Math.floor(carry / 16);
+          }
+          bigInt = next || '0';
+        }
+        var bytes = [];
+        for (var k = 0; k < bigInt.length; k += 2) {
+          var byteVal = parseInt(bigInt.substr(k, 2), 16);
+          if (!isNaN(byteVal)) bytes.push(byteVal);
+        }
+        return String.fromCharCode.apply(null, bytes);
+      }
+
+      encodeBtn.addEventListener('click', function () {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        outputEl.textContent = base62Encode(text);
+        setStatus('');
+      });
+
+      decodeBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 Base62 文本', 'error'); return; }
+        var result = base62Decode(text);
+        if (result === null) { setStatus('Base62 格式无效', 'error'); return; }
+        outputEl.textContent = result;
+        setStatus('');
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      swapBtn.addEventListener('click', function () { var tmp = inputEl.value; inputEl.value = outputEl.textContent; outputEl.textContent = tmp; });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

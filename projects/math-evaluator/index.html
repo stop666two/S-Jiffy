@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Evaluator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .math-input { position:relative; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Math Evaluator</h1>
+    <p class="tool-desc">数学表达式求值，支持 + - * / 及 Math 函数（sin, cos, sqrt 等）。</p>
+    <div class="card">
+      <div class="math-input">
+        <input id="exprInput" class="input js-focus-input" type="text" placeholder="输入表达式，如 sqrt(25) + sin(PI/2)" value="2 + 2 * 3">
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:var(--space-3); flex-wrap:wrap;">
+      <button id="evalBtn" class="btn btn-primary">计算</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="card" style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">
+      <strong>可用函数：</strong> abs, ceil, floor, round, sqrt, cbrt, pow, exp, log, log2, log10,
+      sin, cos, tan, asin, acos, atan, atan2, sinh, cosh, tanh,
+      min, max, PI, E, 随机: random()
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var exprInput = document.getElementById('exprInput');
+      var outputEl = document.getElementById('outputText');
+      var evalBtn = document.getElementById('evalBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function evaluate() {
+        var expr = exprInput.value.trim();
+        if (!expr) { outputEl.textContent = ''; return; }
+        try {
+          var body = '';
+          var scope = {
+            abs: Math.abs, ceil: Math.ceil, floor: Math.floor, round: Math.round,
+            sqrt: Math.sqrt, cbrt: Math.cbrt, pow: Math.pow, exp: Math.exp,
+            log: Math.log, log2: Math.log2, log10: Math.log10,
+            sin: Math.sin, cos: Math.cos, tan: Math.tan,
+            asin: Math.asin, acos: Math.acos, atan: Math.atan, atan2: Math.atan2,
+            sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+            min: Math.min, max: Math.max,
+            PI: Math.PI, E: Math.E,
+            random: Math.random
+          };
+          var keys = [];
+          var vals = [];
+          for (var k in scope) {
+            if (scope.hasOwnProperty(k)) {
+              keys.push(k);
+              vals.push(scope[k]);
+            }
+          }
+          var fn = new (Function.prototype.bind.apply(Function, [null].concat(keys, ['return (' + expr + ')'])));
+          var result = fn.apply(null, vals);
+          outputEl.textContent = expr + ' = ' + result;
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('表达式错误：' + e.message, 'error');
+        }
+      }
+
+      evalBtn.addEventListener('click', evaluate);
+
+      exprInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') evaluate();
+      });
+
+      clearBtn.addEventListener('click', function () {
+        exprInput.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        exprInput.focus();
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      evaluate();
+    })();
+  </script>
+</body>
+</html>

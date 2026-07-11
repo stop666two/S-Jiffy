@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPv4 范围展开 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .range-stats { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+    .range-stat { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .range-stat strong { color:var(--color-text-primary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>IPv4 范围展开</h1>
+    <p class="tool-desc">输入 CIDR 网段，展开显示该范围内的所有 IP 地址。</p>
+    <div class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <input id="cidrInput" class="input js-focus-input" placeholder="192.168.1.0/24" style="width:240px;">
+      <button id="expandBtn" class="btn btn-primary">展开</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div id="statsArea" class="range-stats" style="display:none;"></div>
+    <div class="output-box" id="outputContainer" style="min-height:200px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var cidrEl = document.getElementById('cidrInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var statsArea = document.getElementById('statsArea');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function expandCIDR(cidr) {
+        var parts = cidr.split('/');
+        if (parts.length !== 2) return null;
+        var ipStr = parts[0];
+        var prefix = parseInt(parts[1], 10);
+        if (isNaN(prefix) || prefix < 0 || prefix > 32) return null;
+        var octets = ipStr.split('.');
+        if (octets.length !== 4) return null;
+        var ipNum = 0;
+        for (var i = 0; i < 4; i++) {
+          var o = parseInt(octets[i], 10);
+          if (isNaN(o) || o < 0 || o > 255) return null;
+          ipNum = (ipNum << 8) + o;
+        }
+        var mask = ~((1 << (32 - prefix)) - 1) >>> 0;
+        var network = (ipNum & mask) >>> 0;
+        var broadcast = network | (~mask >>> 0) >>> 0;
+        var count = prefix === 32 ? 1 : (prefix === 31 ? 2 : (broadcast - network - 1));
+        var firstHost = prefix >= 31 ? network : network + 1;
+        var lastHost = prefix >= 31 ? broadcast : broadcast - 1;
+        var list = [];
+        for (var addr = firstHost; addr <= lastHost; addr++) {
+          list.push(((addr >>> 24) & 255) + '.' + ((addr >>> 16) & 255) + '.' + ((addr >>> 8) & 255) + '.' + (addr & 255));
+        }
+        return { network: network, broadcast: broadcast, prefix: prefix, count: count, firstHost: firstHost, lastHost: lastHost, list: list };
+      }
+
+      document.getElementById('expandBtn').addEventListener('click', function() {
+        var cidr = cidrEl.value.trim();
+        if (!cidr) { setStatus('请输入 CIDR 网段', 'error'); return; }
+        var result = expandCIDR(cidr);
+        if (!result) { setStatus('无效的 CIDR 格式', 'error'); return; }
+        if (result.list.length > 65536) {
+          setStatus('范围过大（超过 65536 个 IP），请输入更小的前缀（如 /24）', 'error');
+          return;
+        }
+        outputEl.textContent = result.list.join('\n');
+        statsArea.style.display = 'flex';
+        statsArea.innerHTML = '<span class="range-stat">前缀: <strong>/' + result.prefix + '</strong></span>'
+          + '<span class="range-stat">总 IP 数: <strong>' + result.count + '</strong></span>'
+          + '<span class="range-stat">可用 IP: <strong>' + result.list.length + '</strong></span>'
+          + '<span class="range-stat">网络地址: <strong>' + ((result.network>>>24)&255)+'.'+((result.network>>>16)&255)+'.'+((result.network>>>8)&255)+'.'+(result.network&255) + '</strong></span>'
+          + '<span class="range-stat">广播地址: <strong>' + ((result.broadcast>>>24)&255)+'.'+((result.broadcast>>>16)&255)+'.'+((result.broadcast>>>8)&255)+'.'+(result.broadcast&255) + '</strong></span>';
+        setStatus('已展开 ' + result.list.length + ' 个 IP');
+      });
+
+      clearBtn.addEventListener('click', function() {
+        cidrEl.value = '';
+        outputEl.textContent = '';
+        statsArea.style.display = 'none';
+        statsArea.innerHTML = '';
+        setStatus('');
+        cidrEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+
+      cidrEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { document.getElementById('expandBtn').click(); }
+      });
+    })();
+  </script>
+</body>
+</html>

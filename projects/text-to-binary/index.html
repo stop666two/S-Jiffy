@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本与二进制互转 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文本与二进制互转</h1>
+    <p class="tool-desc">将文本转换为二进制（每字符 8 位），或将二进制序列还原为文本。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或二进制..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="toBinaryBtn" class="btn btn-primary">文本 → 二进制</button>
+      <button id="toTextBtn" class="btn btn-secondary">二进制 → 文本</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      document.getElementById('toBinaryBtn').addEventListener('click', function() {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        var result = [];
+        for (var i = 0; i < text.length; i++) {
+          var code = text.charCodeAt(i);
+          result.push(code.toString(2).padStart(8, '0'));
+        }
+        outputEl.textContent = result.join(' ');
+        setStatus('已转换 ' + text.length + ' 个字符');
+      });
+
+      document.getElementById('toTextBtn').addEventListener('click', function() {
+        var bin = inputEl.value.trim();
+        if (!bin) { setStatus('请输入二进制序列', 'error'); return; }
+        // Remove spaces, newlines
+        var clean = bin.replace(/\s+/g, '');
+        if (clean.length % 8 !== 0) {
+          setStatus('二进制位数不是 8 的倍数', 'error');
+          return;
+        }
+        var result = '';
+        for (var i = 0; i < clean.length; i += 8) {
+          var byteStr = clean.substring(i, i + 8);
+          var code = parseInt(byteStr, 2);
+          if (isNaN(code)) {
+            setStatus('包含无效的二进制字符（只能含 0 和 1）', 'error');
+            return;
+          }
+          result += String.fromCharCode(code);
+        }
+        outputEl.textContent = result;
+        setStatus('已转换 ' + (clean.length / 8) + ' 字节');
+      });
+
+      clearBtn.addEventListener('click', function() {
+        inputEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        inputEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HSL 转 HEX - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.color-preview{width:100%;height:60px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s}.slider-group{display:flex;flex-direction:column;gap:12px;max-width:400px;margin-bottom:16px}.slider-row{display:flex;align-items:center;gap:12px}.slider-row label{width:30px;font-weight:600;font-size:13px}.slider-row input[type=range]{flex:1;accent-color:var(--color-text-primary)}.slider-row input[type=number]{width:65px;text-align:center;font-family:var(--font-mono);padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-sm)}.result-row{font-family:var(--font-mono);font-size:20px;font-weight:600;margin-top:8px}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>HSL 转 HEX</h1><p class="tool-desc">将 HSL（色相、饱和度、亮度）颜色值转换为十六进制 HEX 格式。</p>
+<div class="card">
+<div class="color-preview" id="colorPreview" style="background:#3498db;"></div>
+<div class="slider-group">
+<div class="slider-row"><label style="color:var(--color-text-primary)">H</label><input type="range" id="hSlider" min="0" max="360" value="204"><input type="number" id="hNum" min="0" max="360" value="204"></div>
+<div class="slider-row"><label style="color:var(--color-text-primary)">S%</label><input type="range" id="sSlider" min="0" max="100" value="70"><input type="number" id="sNum" min="0" max="100" value="70"></div>
+<div class="slider-row"><label style="color:var(--color-text-primary)">L%</label><input type="range" id="lSlider" min="0" max="100" value="53"><input type="number" id="lNum" min="0" max="100" value="53"></div>
+</div>
+<div class="result-row" id="hexResult">#3498DB</div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>(function(){
+var hSlider=document.getElementById('hSlider');
+var sSlider=document.getElementById('sSlider');
+var lSlider=document.getElementById('lSlider');
+var hNum=document.getElementById('hNum');
+var sNum=document.getElementById('sNum');
+var lNum=document.getElementById('lNum');
+var colorPreview=document.getElementById('colorPreview');
+var hexResult=document.getElementById('hexResult');
+var outputEl=document.getElementById('outputText');
+var copyBtn=document.getElementById('copyBtn');
+
+function hslToRgb(h,s,l){
+s/=100;l/=100;
+var c=(1-Math.abs(2*l-1))*s;
+var x=c*(1-Math.abs((h/60)%2-1));
+var m=l-c/2;
+var r=0,g=0,b=0;
+if(h<60){r=c;g=x;}
+else if(h<120){r=x;g=c;}
+else if(h<180){g=c;b=x;}
+else if(h<240){g=x;b=c;}
+else if(h<300){r=x;b=c;}
+else{r=c;b=x;}
+return{
+r:Math.round((r+m)*255),
+g:Math.round((g+m)*255),
+b:Math.round((b+m)*255)
+};
+}
+
+function toHex(v){
+var h=v.toString(16).toUpperCase();
+return h.length===1?'0'+h:h;
+}
+
+function update(src){
+var h,g,l;
+if(src==='h'){h=parseInt(hSlider.value);hNum.value=h;}
+else if(src==='s'){g=parseInt(sSlider.value);sNum.value=g;}
+else if(src==='l'){l=parseInt(lSlider.value);lNum.value=l;}
+if(src==='hn'){var hv=parseInt(hNum.value);if(hv<0)hv=0;if(hv>360)hv=360;hSlider.value=hv;h=hv;}
+else if(src==='sn'){var sv=parseInt(sNum.value);if(sv<0)sv=0;if(sv>100)sv=100;sSlider.value=sv;g=sv;}
+else if(src==='ln'){var lv=parseInt(lNum.value);if(lv<0)lv=0;if(lv>100)lv=100;lSlider.value=lv;l=lv;}
+if(h===undefined)h=parseInt(hSlider.value);
+if(g===undefined)g=parseInt(sSlider.value);
+if(l===undefined)l=parseInt(lSlider.value);
+var rgb=hslToRgb(h,g,l);
+var hex='#'+toHex(rgb.r)+toHex(rgb.g)+toHex(rgb.b);
+hexResult.textContent=hex;
+colorPreview.style.background=hex;
+outputEl.textContent='HSL('+h+','+g+'%,'+l+'%) = '+hex;
+}
+
+hSlider.addEventListener('input',function(){update('h');});
+sSlider.addEventListener('input',function(){update('s');});
+lSlider.addEventListener('input',function(){update('l');});
+hNum.addEventListener('input',function(){update('hn');});
+sNum.addEventListener('input',function(){update('sn');});
+lNum.addEventListener('input',function(){update('ln');});
+copyBtn.addEventListener('click',function(){if(hexResult.textContent){copyToClipboard(hexResult.textContent,copyBtn);setStatus('已复制');}});
+update('h');
+})();</script></body></html>

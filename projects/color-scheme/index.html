@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>配色方案生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.scheme-controls{display:flex;gap:16px;flex-wrap:wrap;align-items:end;margin-bottom:16px}.scheme-controls label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--color-text-secondary)}.scheme-controls input,.scheme-controls select{height:40px;padding:0 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;outline:none;font-family:var(--font-mono)}.scheme-controls input:focus,.scheme-controls select:focus{border-color:var(--color-text-primary)}.scheme-controls input[type=number]{width:70px;text-align:center}.scheme-controls input[type=color]{width:60px;padding:2px;cursor:pointer;height:40px}.scheme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px}.scheme-card{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;transition:transform .15s}.scheme-card:hover{transform:scale(1.02)}.scheme-card .preview{padding:24px 16px;text-align:center;font-size:16px;font-weight:500;transition:all .2s}.scheme-card .preview .sm{font-size:11px;font-weight:400;opacity:.7;margin-top:4px}.scheme-card .meta{display:flex;justify-content:space-between;padding:8px 12px;font-size:11px;font-family:var(--font-mono)}.scheme-card .meta .badge{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--color-bg-soft)}.pass{color:#346538}.fail{color:#9f2f2d}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>配色方案生成</h1><p class="tool-desc">生成 WCAG 合规的前景色/背景色配对方案，确保文本可读性和无障碍标准。</p>
+<div class="card">
+<div class="scheme-controls">
+<label>背景色 <input id="baseColor" type="color" value="#F7F6F3"></label>
+<label>色相变化 <select id="hueVar"><option value="0">0° (同色系)</option><option value="30">30°</option><option value="60">60° (邻近)</option><option value="90">90°</option><option value="120">120° (三分)</option><option value="180" selected>180° (互补)</option></select></label>
+<label>数量 <input id="countInput" type="number" min="2" max="20" value="6"></label>
+<button id="generateBtn" class="btn btn-primary" style="height:40px;">生成</button>
+</div>
+<div class="scheme-grid" id="schemeGrid"></div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>(function(){
+var baseColor=document.getElementById('baseColor');
+var hueVar=document.getElementById('hueVar');
+var countInput=document.getElementById('countInput');
+var generateBtn=document.getElementById('generateBtn');
+var schemeGrid=document.getElementById('schemeGrid');
+var outputEl=document.getElementById('outputText');
+var copyBtn=document.getElementById('copyBtn');
+
+function hexToRgb(hex){
+hex=hex.replace('#','');
+if(hex.length===3)hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+return{
+r:parseInt(hex.slice(0,2),16),
+g:parseInt(hex.slice(2,4),16),
+b:parseInt(hex.slice(4,6),16)
+};
+}
+
+function rgbToHex(r,g,b){
+return '#'+[r,g,b].map(function(v){
+var h=Math.round(v).toString(16);
+return h.length===1?'0'+h:h;
+}).join('');
+}
+
+function rgbToHsl(r,g,b){
+r/=255;g/=255;b/=255;
+var max=Math.max(r,g,b),min=Math.min(r,g,b);
+var h,s,l=(max+min)/2;
+if(max===min){h=0;s=0;}
+else{
+var d=max-min;
+s=l>0.5?d/(2-max-min):d/(max+min);
+switch(max){
+case r:h=(g-b)/d+(g<b?6:0);break;
+case g:h=(b-r)/d+2;break;
+case b:h=(r-g)/d+4;break;
+}
+h/=6;
+}
+return{h:h*360,s:s*100,l:l*100};
+}
+
+function hslToRgb(h,s,l){
+h/=360;s/=100;l/=100;
+var c=(1-Math.abs(2*l-1))*s;
+var x=c*(1-Math.abs((h*6)%2-1));
+var m=l-c/2;
+var r=0,g=0,b=0;
+if(h<1/6){r=c;g=x;}
+else if(h<2/6){r=x;g=c;}
+else if(h<3/6){g=c;b=x;}
+else if(h<4/6){g=x;b=c;}
+else if(h<5/6){r=x;b=c;}
+else{r=c;b=x;}
+return{
+r:Math.round((r+m)*255),
+g:Math.round((g+m)*255),
+b:Math.round((b+m)*255)
+};
+}
+
+function luminance(r,g,b){
+var a=[r,g,b].map(function(v){
+v/=255;
+return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+});
+return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
+}
+
+function contrastRatio(l1,l2){
+var lighter=Math.max(l1,l2);
+var darker=Math.min(l1,l2);
+return (lighter+0.05)/(darker+0.05);
+}
+
+function wcagLevel(ratio,size){
+if(size==='normal')return ratio>=7?'AAA':ratio>=4.5?'AA':'FAIL';
+return ratio>=4.5?'AAA':ratio>=3?'AA':'FAIL';
+}
+
+function generate(){
+var bg=baseColor.value;
+var hueShift=parseInt(hueVar.value);
+var count=parseInt(countInput.value)||6;
+if(count<2)count=2;if(count>20)count=20;
+var bgRgb=hexToRgb(bg);
+var bgHsl=rgbToHsl(bgRgb.r,bgRgb.g,bgRgb.b);
+var bgLum=luminance(bgRgb.r,bgRgb.g,bgRgb.b);
+var html='';
+for(var i=0;i<count;i++){
+var hue=bgHsl.h+((i+1)/(count+1))*hueShift;
+var sat=Math.min(100,bgHsl.s+(i%2===0?15:-15));
+var lig=50+(i-(count-1)/2)*8;
+if(lig<10)lig=10;if(lig>90)lig=90;
+var fgRgb=hslToRgb(hue,sat,lig);
+var fgLum=luminance(fgRgb.r,fgRgb.g,fgRgb.b);
+var ratio=contrastRatio(bgLum,fgLum);
+var levelAA=wcagLevel(ratio,'normal');
+var levelAAA=wcagLevel(ratio,'small');
+var fgHex=rgbToHex(fgRgb.r,fgRgb.g,fgRgb.b);
+var passAA=levelAA==='AA'||levelAA==='AAA';
+var passAAA=levelAAA==='AAA';
+html+='<div class="scheme-card" data-fg="'+fgHex+'" data-bg="'+bg+'" data-ratio="'+ratio.toFixed(2)+'">';
+html+='<div class="preview" style="background:'+bg+';color:'+fgHex+';">AaBb 示例文本<div class="sm">小字 12px · 标准文本</div></div>';
+html+='<div class="meta"><span>'+fgHex+' <span class="badge" style="background:'+fgHex+';color:'+bg+';">前景</span></span><span>'+bg+' <span class="badge" style="background:'+bg+';color:"#000";">背景</span></span></div>';
+html+='<div class="meta" style="border-top:1px solid var(--color-border);"><span>对比度: '+ratio.toFixed(2)+':1</span><span class="'+(passAA?'pass':'fail')+'">AA: '+(levelAA==='FAIL'?'✘':levelAA)+'</span><span class="'+(passAAA?'pass':'fail')+'">AAA: '+(levelAAA==='AAA'?'✔ '+levelAAA:'✘')+'</span></div>';
+html+='</div>';
+}
+schemeGrid.innerHTML=html;
+outputEl.textContent='生成 '+count+' 个配色方案';
+var cards=schemeGrid.querySelectorAll('.scheme-card');
+for(var i=0;i<cards.length;i++){
+(function(el){
+el.addEventListener('click',function(){
+var fg=this.getAttribute('data-fg');
+var bg=this.getAttribute('data-bg');
+var ratio=this.getAttribute('data-ratio');
+var txt='前景: '+fg+' | 背景: '+bg+' | 对比度: '+ratio+':1';
+copyToClipboard(txt,copyBtn);
+setStatus('已复制配色信息');
+});
+})(cards[i]);
+}
+setStatus('');
+}
+
+generateBtn.addEventListener('click',generate);
+baseColor.addEventListener('input',generate);
+copyBtn.addEventListener('click',function(){
+var cards=document.querySelectorAll('.scheme-card');
+var lines=[];
+for(var i=0;i<cards.length;i++){
+var fg=cards[i].getAttribute('data-fg');
+var bg=cards[i].getAttribute('data-bg');
+var ratio=cards[i].getAttribute('data-ratio');
+lines.push('前景:'+fg+' 背景:'+bg+' 对比度:'+ratio);
+}
+copyToClipboard(lines.join('\n'),copyBtn);setStatus('已复制全部');
+});
+generate();
+})();</script></body></html>

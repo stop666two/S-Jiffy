@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通用进制转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .base-table { width:100%; border-collapse:collapse; font-size:var(--font-size-sm); margin-top:var(--space-2); }
+    .base-table th { text-align:left; padding:6px 12px; border-bottom:2px solid var(--color-border); font-size:var(--font-size-xs); color:var(--color-text-disabled); }
+    .base-table td { padding:6px 12px; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); }
+    .base-table tr:hover td { background:var(--color-bg-soft); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>通用进制转换</h1>
+    <p class="tool-desc">2-36 进制任意互转，多进制同时显示。</p>
+
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input id="inputValue" class="input js-focus-input" placeholder="输入数值" style="width:200px;">
+      <select id="fromBase" class="input" style="width:auto;min-width:100px;">
+        <option value="2">二进制 (2)</option>
+        <option value="8">八进制 (8)</option>
+        <option value="10" selected>十进制 (10)</option>
+        <option value="16">十六进制 (16)</option>
+        <option value="32">三十二进制 (32)</option>
+        <option value="36">三十六进制 (36)</option>
+      </select>
+      <span style="color:var(--color-text-secondary);">→</span>
+      <select id="toBase" class="input" style="width:auto;min-width:100px;">
+        <option value="2">二进制 (2)</option>
+        <option value="8">八进制 (8)</option>
+        <option value="10">十进制 (10)</option>
+        <option value="16" selected>十六进制 (16)</option>
+        <option value="32">三十二进制 (32)</option>
+        <option value="36">三十六进制 (36)</option>
+      </select>
+      <button id="convertBtn" class="btn btn-primary">转换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <div id="tableArea"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputVal = document.getElementById('inputValue'), fromBase = document.getElementById('fromBase'), toBase = document.getElementById('toBase');
+      var o = document.getElementById('outputText'), tableArea = document.getElementById('tableArea');
+      var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+
+      var baseNames = { 2: '二进制', 3: '三进制', 4: '四进制', 5: '五进制', 6: '六进制', 7: '七进制', 8: '八进制', 9: '九进制', 10: '十进制', 11: '十一进制', 12: '十二进制', 13: '十三进制', 14: '十四进制', 15: '十五进制', 16: '十六进制', 17: '十七进制', 18: '十八进制', 19: '十九进制', 20: '二十进制', 21: '二十进制', 22: '二十二进制', 23: '二十三进制', 24: '二十四进制', 25: '二十五进制', 26: '二十六进制', 27: '二十七进制', 28: '二十八进制', 29: '二十九进制', 30: '三十进制', 31: '三十一进制', 32: '三十二进制', 33: '三十三进制', 34: '三十四进制', 35: '三十五进制', 36: '三十六进制' };
+
+      var showBases = [2, 8, 10, 16, 32, 36];
+
+      function convert() {
+        var str = inputVal.value.trim();
+        if (!str) { setStatus('请输入数值', 'error'); return; }
+        var from = parseInt(fromBase.value, 10);
+        var to = parseInt(toBase.value, 10);
+        var dec;
+        if (from <= 36) {
+          dec = parseInt(str, from);
+        } else {
+          setStatus('源进制不支持', 'error'); return;
+        }
+        if (isNaN(dec)) { setStatus('输入与所选进制不匹配', 'error'); o.textContent = ''; tableArea.innerHTML = ''; return; }
+
+        var result = dec.toString(to).toUpperCase();
+        o.textContent = baseNames[to] + ': ' + result + '  (十进制: ' + dec + ')';
+
+        var html = '<table class="base-table"><thead><tr><th>进制</th><th>名称</th><th>值</th></tr></thead><tbody>';
+        for (var i = 0; i < showBases.length; i++) {
+          var b = showBases[i];
+          var val = dec.toString(b).toUpperCase();
+          html += '<tr><td>' + b + '</td><td>' + baseNames[b] + '</td><td>' + val + '</td></tr>';
+        }
+        html += '</tbody></table>';
+        tableArea.innerHTML = html;
+        setStatus('');
+      }
+
+      convertBtn.addEventListener('click', convert);
+      clearBtn.addEventListener('click', function () { inputVal.value = ''; o.textContent = ''; tableArea.innerHTML = ''; setStatus(''); inputVal.focus(); });
+      copyBtn.addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, copyBtn); setStatus('已复制'); } });
+      inputVal.addEventListener('keydown', function (e) { if (e.key === 'Enter') convert(); });
+    })();
+  </script>
+</body>
+</html>

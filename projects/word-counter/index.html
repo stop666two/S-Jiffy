@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词统计器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .wc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
+    .wc-stat { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); text-align:center; }
+    .wc-stat .num { font-size:var(--font-size-xl); font-weight:600; }
+    .wc-stat .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>单词统计器</h1>
+    <p class="tool-desc">统计单词数、唯一单词数、平均词长、最长/最短单词。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..."></textarea>
+    </div>
+    <div class="wc-grid">
+      <div class="wc-stat"><div class="num" id="wordCount">0</div><div class="label">总单词</div></div>
+      <div class="wc-stat"><div class="num" id="uniqueCount">0</div><div class="label">唯一单词</div></div>
+      <div class="wc-stat"><div class="num" id="avgLength">0</div><div class="label">平均词长</div></div>
+      <div class="wc-stat"><div class="num" id="longestWord">-</div><div class="label">最长单词</div></div>
+      <div class="wc-stat"><div class="num" id="shortestWord">-</div><div class="label">最短单词</div></div>
+      <div class="wc-stat"><div class="num" id="charCount">0</div><div class="label">总字符</div></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function count() {
+        var text = inputEl.value;
+        var wordCountEl = document.getElementById('wordCount');
+        var uniqueCountEl = document.getElementById('uniqueCount');
+        var avgLengthEl = document.getElementById('avgLength');
+        var longestEl = document.getElementById('longestWord');
+        var shortestEl = document.getElementById('shortestWord');
+        var charCountEl = document.getElementById('charCount');
+
+        var charCount = text.length;
+        charCountEl.textContent = charCount;
+
+        var words = text.match(/[a-zA-Z0-9\u00C0-\u024F]+(?:[''][a-zA-Z]+)?/g) || text.match(/[\u4e00-\u9fff]+/g) ? text.split(/[\s,;:!?.\n]+/).filter(function(w) { return w.length > 0; }) : [];
+        words = text.split(/[\s,;:!?.\n]+/).filter(function(w) { return w.length > 0; });
+
+        if (words.length === 0) {
+          wordCountEl.textContent = '0';
+          uniqueCountEl.textContent = '0';
+          avgLengthEl.textContent = '0';
+          longestEl.textContent = '-';
+          shortestEl.textContent = '-';
+          outputEl.textContent = '无单词';
+          return;
+        }
+
+        wordCountEl.textContent = words.length;
+
+        var unique = {};
+        var totalLen = 0;
+        var longest = words[0];
+        var shortest = words[0];
+        for (var i = 0; i < words.length; i++) {
+          var w = words[i];
+          unique[w] = true;
+          totalLen += w.length;
+          if (w.length > longest.length) longest = w;
+          if (w.length < shortest.length) shortest = w;
+        }
+
+        uniqueCountEl.textContent = Object.keys(unique).length;
+        avgLengthEl.textContent = (totalLen / words.length).toFixed(1);
+        longestEl.textContent = longest;
+        shortestEl.textContent = shortest;
+
+        outputEl.textContent = '总单词: ' + words.length + ' | 唯一: ' + Object.keys(unique).length + ' | 平均词长: ' + (totalLen / words.length).toFixed(1) + ' | 最长: ' + longest + ' | 最短: ' + shortest;
+        setStatus('统计完成');
+      }
+
+      inputEl.addEventListener('input', count);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      count();
+    })();
+  </script>
+</body>
+</html>

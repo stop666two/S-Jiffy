@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HMAC 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>HMAC 生成器</h1>
+    <p class="tool-desc">使用密钥和消息生成 HMAC 签名（MD5/SHA1/SHA256/SHA512）。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入消息 (message)..." style="min-height:80px;"></textarea>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input id="keyInput" class="input" placeholder="密钥 (secret)" style="width:220px;">
+      <select id="algoSelect" class="input" style="width:auto;min-width:120px;">
+        <option value="SHA-256">SHA-256</option>
+        <option value="SHA-1">SHA-1</option>
+        <option value="SHA-384">SHA-384</option>
+        <option value="SHA-512">SHA-512</option>
+      </select>
+      <button id="generateBtn" class="btn btn-primary">生成 HMAC</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var keyEl = document.getElementById('keyInput');
+      var algoEl = document.getElementById('algoSelect');
+      var outputEl = document.getElementById('outputText');
+      var generateBtn = document.getElementById('generateBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function generate() {
+        var msg = inputEl.value;
+        var key = keyEl.value.trim();
+        if (!msg) { setStatus('请输入消息', 'error'); return; }
+        if (!key) { setStatus('请输入密钥', 'error'); return; }
+
+        var encoder = new TextEncoder();
+        var keyData = encoder.encode(key);
+        var msgData = encoder.encode(msg);
+
+        crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: { name: algoEl.value } }, false, ['sign']).then(function (cryptoKey) {
+          return crypto.subtle.sign('HMAC', cryptoKey, msgData);
+        }).then(function (sig) {
+          var hex = Array.from(new Uint8Array(sig)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+          outputEl.textContent = hex;
+          setStatus('');
+        }).catch(function () {
+          setStatus('HMAC 生成失败', 'error');
+        });
+      }
+
+      generateBtn.addEventListener('click', generate);
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 请求测试器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .method-select { height:48px; border:1px solid #ddd; border-radius:var(--radius-md); padding:0 12px; font-size:var(--font-size-base); outline:none; font-family:var(--font-mono); }
+    .kv-row { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+    .kv-row .input { flex:1; }
+    .kv-row .btn { flex-shrink:0; height:36px; min-width:auto; }
+    .status-tag { display:inline-block; padding:2px 8px; border-radius:var(--radius-sm); font-weight:600; }
+    .status-2xx { color:var(--color-success); background:#e6f4ea; }
+    .status-3xx { color:#096bde; background:#e8f0fe; }
+    .status-4xx { color:#e37400; background:#fef7e0; }
+    .status-5xx { color:var(--color-error); background:#fce8e6; }
+    #respHeaders { font-size:13px; line-height:1.5; }
+    #respBody { font-size:13px; line-height:1.5; max-height:400px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>API 请求测试器</h1>
+    <p class="tool-desc">发送 HTTP 请求并查看响应</p>
+
+    <div class="card">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <select id="methodSelect" class="method-select">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="PATCH">PATCH</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+        <input id="urlInput" class="input js-focus-input" placeholder="https://api.example.com/data" style="flex:1;">
+        <button id="sendBtn" class="btn btn-primary">发送请求</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">请求头</label>
+        <button id="addHeaderBtn" class="btn btn-secondary" style="height:32px;min-width:auto;padding:0 12px;">+ 添加</button>
+      </div>
+      <div id="headersContainer"></div>
+    </div>
+
+    <div class="card" id="bodyCard" style="display:none;">
+      <textarea id="bodyInput" class="input textarea" placeholder="请求体 (JSON)" style="min-height:140px;"></textarea>
+    </div>
+
+    <div class="output-box" id="responseBox" style="min-height:120px;">
+      <div id="responseHeader"></div>
+      <div id="respHeaders" style="margin-top:8px;"></div>
+      <div id="respBody" style="margin-top:8px;"></div>
+      <span id="outputText" style="display:none;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var urlInput = document.getElementById('urlInput');
+      var methodSelect = document.getElementById('methodSelect');
+      var sendBtn = document.getElementById('sendBtn');
+      var headersContainer = document.getElementById('headersContainer');
+      var bodyInput = document.getElementById('bodyInput');
+      var bodyCard = document.getElementById('bodyCard');
+      var responseHeader = document.getElementById('responseHeader');
+      var respHeaders = document.getElementById('respHeaders');
+      var respBody = document.getElementById('respBody');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var headerRows = [];
+
+      function addHeaderRow(name, value) {
+        var idx = headerRows.length;
+        var row = document.createElement('div');
+        row.className = 'kv-row';
+        var nameInput = document.createElement('input');
+        nameInput.className = 'input';
+        nameInput.placeholder = 'Header-Name';
+        nameInput.value = name || '';
+        nameInput.style.height = '36px';
+        var valueInput = document.createElement('input');
+        valueInput.className = 'input';
+        valueInput.placeholder = 'Value';
+        valueInput.value = value || '';
+        valueInput.style.height = '36px';
+        var delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-secondary';
+        delBtn.textContent = '✕';
+        delBtn.addEventListener('click', function () {
+          row.remove();
+          headerRows.splice(idx, 1);
+        });
+        row.appendChild(nameInput);
+        row.appendChild(valueInput);
+        row.appendChild(delBtn);
+        headersContainer.appendChild(row);
+        headerRows.push({ nameInput: nameInput, valueInput: valueInput });
+      }
+
+      document.getElementById('addHeaderBtn').addEventListener('click', function () {
+        addHeaderRow('', '');
+      });
+
+      methodSelect.addEventListener('change', function () {
+        var v = methodSelect.value;
+        bodyCard.style.display = (v === 'GET' || v === 'DELETE') ? 'none' : 'block';
+      });
+
+      sendBtn.addEventListener('click', function () {
+        var url = urlInput.value.trim();
+        if (!url) { setStatus('请输入 URL', 'error'); return; }
+        var method = methodSelect.value;
+        var headers = {};
+        for (var i = 0; i < headerRows.length; i++) {
+          var row = headerRows[i];
+          var n = row.nameInput.value.trim();
+          var v = row.valueInput.value.trim();
+          if (n) headers[n] = v;
+        }
+        var body = null;
+        if (method !== 'GET' && method !== 'DELETE') {
+          var b = bodyInput.value.trim();
+          if (b) body = b;
+        }
+        var startTime = Date.now();
+        responseHeader.innerHTML = '';
+        respHeaders.textContent = '';
+        respBody.textContent = '发送中...';
+        setStatus('');
+
+        fetch(url, {
+          method: method,
+          headers: headers,
+          body: body
+        })
+        .then(function (res) {
+          var elapsed = Date.now() - startTime;
+          var sc = res.status;
+          var cls = 'status-tag ';
+          if (sc < 300) cls += 'status-2xx';
+          else if (sc < 400) cls += 'status-3xx';
+          else if (sc < 500) cls += 'status-4xx';
+          else cls += 'status-5xx';
+          var hText = '';
+          res.headers.forEach(function (v, k) { hText += k + ': ' + v + '\n'; });
+          responseHeader.innerHTML = '<span class="' + cls + '">' + sc + ' ' + res.statusText + '</span> <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">' + elapsed + 'ms</span>';
+          respHeaders.textContent = hText;
+          outputText.textContent = sc + ' ' + res.statusText + '\n' + hText;
+          return res.text();
+        })
+        .then(function (text) {
+          respBody.textContent = text;
+          outputText.textContent += '\n' + text;
+          setStatus('请求完成');
+        })
+        .catch(function (err) {
+          respBody.textContent = '请求失败: ' + err.message;
+          responseHeader.innerHTML = '<span style="color:var(--color-error);">错误</span>';
+          setStatus('请求失败', 'error');
+        });
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var t = responseHeader.textContent + '\n' + respHeaders.textContent + '\n' + respBody.textContent;
+        if (t.trim()) { copyToClipboard(t, this); setStatus('已复制'); }
+      });
+
+      urlInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') sendBtn.click(); });
+    })();
+  </script>
+</body>
+</html>

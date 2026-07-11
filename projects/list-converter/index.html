@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>列表格式转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .lc-options { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .lc-options label { font-size:var(--font-size-sm); color:var(--color-text-secondary); display:flex; align-items:center; gap:6px; }
+    .lc-options select, .lc-options input { height:36px; padding:0 10px; font-size:13px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>列表格式转换</h1>
+    <p class="tool-desc">在逗号分隔、换行分隔、编号列表等格式之间互转。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="item1, item2, item3" style="min-height:120px;"></textarea>
+    </div>
+    <div class="card lc-options">
+      <label>输入格式:
+        <select id="inputFormat">
+          <option value="comma">逗号分隔</option>
+          <option value="newline">换行分隔</option>
+          <option value="numbered">编号列表 (1. )</option>
+          <option value="bullet">符号列表 (- / *)</option>
+          <option value="space">空格分隔</option>
+        </select>
+      </label>
+      <label>输出格式:
+        <select id="outputFormat">
+          <option value="comma">逗号分隔</option>
+          <option value="newline" selected>换行分隔</option>
+          <option value="numbered">编号列表 (1. )</option>
+          <option value="bullet">符号列表 (- / *)</option>
+          <option value="space">空格分隔</option>
+        </select>
+      </label>
+      <button id="convertBtn" class="btn btn-primary">转换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var inFmt = document.getElementById('inputFormat');
+      var outFmt = document.getElementById('outputFormat');
+
+      function parseItems(text, format) {
+        var items = [];
+        switch (format) {
+          case 'comma':
+            items = text.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s !== ''; });
+            break;
+          case 'newline':
+            items = text.split('\n').map(function (s) { return s.trim(); }).filter(function (s) { return s !== ''; });
+            break;
+          case 'numbered':
+            items = text.split('\n').map(function (s) {
+              var t = s.trim();
+              return t.replace(/^\d+[\.\)]\s*/, '');
+            }).filter(function (s) { return s !== ''; });
+            break;
+          case 'bullet':
+            items = text.split('\n').map(function (s) {
+              var t = s.trim();
+              return t.replace(/^[-*+]\s*/, '');
+            }).filter(function (s) { return s !== ''; });
+            break;
+          case 'space':
+            items = text.split(/\s+/).filter(function (s) { return s !== ''; });
+            break;
+        }
+        return items;
+      }
+
+      function formatItems(items, format) {
+        switch (format) {
+          case 'comma':
+            return items.join(', ');
+          case 'newline':
+            return items.join('\n');
+          case 'numbered':
+            var lines = [];
+            for (var i = 0; i < items.length; i++) {
+              lines.push((i + 1) + '. ' + items[i]);
+            }
+            return lines.join('\n');
+          case 'bullet':
+            var lines = [];
+            for (var i = 0; i < items.length; i++) {
+              lines.push('- ' + items[i]);
+            }
+            return lines.join('\n');
+          case 'space':
+            return items.join(' ');
+        }
+        return items.join('\n');
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入内容', 'error'); return; }
+        var parsed = parseItems(text, inFmt.value);
+        if (parsed.length === 0) { outputEl.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
+        outputEl.textContent = formatItems(parsed, outFmt.value);
+        setStatus('共 ' + parsed.length + ' 项');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

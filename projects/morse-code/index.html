@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摩斯密码 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .morse-map { font-size:var(--font-size-xs); color:var(--color-text-secondary); max-height:200px; overflow-y:auto; column-count:4; margin-top:var(--space-2); }
+    .morse-map span { display:block; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>摩斯密码</h1>
+    <p class="tool-desc">文本与摩斯密码互转，支持音频播放。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或摩斯密码（空格分隔字母，斜杠分隔单词）..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:var(--space-2); flex-wrap:wrap; align-items:center;">
+      <button id="encodeBtn" class="btn btn-primary">文本 → 摩斯</button>
+      <button id="decodeBtn" class="btn btn-secondary">摩斯 → 文本</button>
+      <button id="playBtn" class="btn btn-secondary">播放音频</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+    <details style="margin-top:var(--space-2);">
+      <summary style="cursor:pointer;font-size:var(--font-size-sm);color:var(--color-text-secondary);">摩斯码表</summary>
+      <div id="morseMap" class="morse-map"></div>
+    </details>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var encodeBtn = document.getElementById('encodeBtn');
+      var decodeBtn = document.getElementById('decodeBtn');
+      var playBtn = document.getElementById('playBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var map = {
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+        'Y': '-.--', 'Z': '--..',
+        '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+        '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+        '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', ':': '---...',
+        ';': '-.-.-.', '"': '.-..-.', '(': '-.--.', ')': '-.--.-', "'": '.----.',
+        '-': '-....-', '/': '-..-.', '@': '.--.-.', ' ': '/'
+      };
+      var revMap = {};
+      for (var k in map) { if (map.hasOwnProperty(k)) { revMap[map[k]] = k; } }
+
+      function renderMorseMap() {
+        var el = document.getElementById('morseMap');
+        var html = '';
+        for (var ch in map) {
+          if (ch !== ' ') html += '<span>' + ch + ' → ' + map[ch] + '</span>';
+        }
+        el.innerHTML = html;
+      }
+
+      function textToMorse(text) {
+        var upper = text.toUpperCase();
+        var parts = [];
+        for (var i = 0; i < upper.length; i++) {
+          var ch = upper[i];
+          if (map[ch] !== undefined) parts.push(map[ch]);
+          else if (ch === ' ') parts.push('/');
+        }
+        return parts.join(' ');
+      }
+
+      function morseToText(morse) {
+        var words = morse.trim().split('/');
+        var result = [];
+        for (var w = 0; w < words.length; w++) {
+          var letters = words[w].trim().split(/\s+/);
+          var word = '';
+          for (var i = 0; i < letters.length; i++) {
+            if (revMap[letters[i]] !== undefined) word += revMap[letters[i]];
+            else word += '?';
+          }
+          result.push(word);
+        }
+        return result.join(' ');
+      }
+
+      function playMorse() {
+        var morse = outputEl.textContent.trim();
+        if (!morse || morse.indexOf('.') === -1 && morse.indexOf('-') === -1) {
+          setStatus('无摩斯码可播放', 'error'); return;
+        }
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var dotLen = 0.08;
+        var freq = 700;
+        var t = audioCtx.currentTime;
+
+        function addTone(start, dur) {
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.3, start);
+          gain.gain.setValueAtTime(0.3, start + dur - 0.01);
+          gain.gain.linearRampToValueAtTime(0, start + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + dur);
+        }
+
+        for (var i = 0; i < morse.length; i++) {
+          var sym = morse[i];
+          if (sym === '.') { addTone(t, dotLen); t += dotLen + dotLen; }
+          else if (sym === '-') { addTone(t, dotLen * 3); t += dotLen * 3 + dotLen; }
+          else if (sym === ' ') { t += dotLen * 2; }
+          else if (sym === '/') { t += dotLen * 4; }
+        }
+      }
+
+      renderMorseMap();
+
+      encodeBtn.addEventListener('click', function () {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        outputEl.textContent = textToMorse(text);
+        setStatus('');
+      });
+
+      decodeBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入摩斯密码', 'error'); return; }
+        outputEl.textContent = morseToText(text);
+        setStatus('');
+      });
+
+      playBtn.addEventListener('click', playMorse);
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

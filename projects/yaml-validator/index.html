@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML 验证器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .yaml-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .yaml-pane textarea { min-height:300px; font-family:var(--font-mono); font-size:12px; }
+    .yaml-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
+    .yaml-output { font-family:var(--font-mono); font-size:12px; line-height:1.6; white-space:pre-wrap; }
+    .yaml-error { color:var(--color-error); }
+    .yaml-success { color:var(--color-success); }
+    @media (max-width:700px) { .yaml-container { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>YAML 验证器</h1>
+    <p class="tool-desc">验证 YAML 语法并格式化输出，显示错误信息。</p>
+    <div class="yaml-container">
+      <div class="yaml-pane">
+        <label for="inputText">YAML 输入</label>
+        <textarea id="inputText" class="input textarea js-focus-input" placeholder="name: Alice&#10;age: 30&#10;skills:&#10;  - Python&#10;  - JavaScript"></textarea>
+      </div>
+      <div class="yaml-pane">
+        <label>输出</label>
+        <div class="output-box" style="min-height:300px;background:var(--color-bg);">
+          <div id="outputText" class="yaml-output" style="display:block;padding-right:60px;"></div>
+          <button class="copy-btn" id="copyBtn">复制</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="validateBtn" class="btn btn-primary">验证</button>
+      <button id="formatBtn" class="btn btn-secondary">美化输出</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var validateBtn = document.getElementById('validateBtn');
+      var formatBtn = document.getElementById('formatBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function simpleYamlParse(text) {
+        var lines = text.split('\n');
+        var result = {};
+        var stack = [{ obj: result, indent: -1 }];
+        var errors = [];
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (/^\s*$/.test(line) || /^\s*#/.test(line)) continue;
+          var indent = line.search(/\S/);
+          if (indent === -1) indent = 0;
+          var content = line.trim();
+
+          var colonIdx = content.indexOf(':');
+          if (colonIdx === -1) {
+            errors.push('第 ' + (i + 1) + ' 行: 格式错误，缺少冒号');
+            continue;
+          }
+          var key = content.substring(0, colonIdx).trim();
+          var value = content.substring(colonIdx + 1).trim();
+
+          if (/^["']/.test(key) && key[0] === key[key.length - 1]) {
+            key = key.slice(1, -1);
+          }
+
+          while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
+            stack.pop();
+          }
+
+          var parent = stack[stack.length - 1].obj;
+          if (key === '' && value === '') {
+            errors.push('第 ' + (i + 1) + ' 行: 空键名');
+            continue;
+          }
+
+          if (value === '') {
+            var newObj = {};
+            parent[key] = newObj;
+            stack.push({ obj: newObj, indent: indent });
+          } else if (value === '|' || value === '>') {
+            parent[key] = '';
+          } else {
+            parent[key] = parseScalar(value);
+          }
+        }
+        return { result: result, errors: errors };
+      }
+
+      function parseScalar(value) {
+        if (value === 'null' || value === '~') return null;
+        if (value === 'true' || value === 'True') return true;
+        if (value === 'false' || value === 'False') return false;
+        if (/^[-+]?\d+$/.test(value)) {
+          var n = parseInt(value, 10);
+          if (!isNaN(n)) return n;
+        }
+        if (/^[-+]?\d+\.\d+$/.test(value)) {
+          var f = parseFloat(value);
+          if (!isNaN(f)) return f;
+        }
+        if ((value[0] === '"' && value[value.length - 1] === '"') || (value[0] === "'" && value[value.length - 1] === "'")) {
+          return value.slice(1, -1);
+        }
+        return value;
+      }
+
+      function yamlStringify(obj, indent) {
+        indent = indent || 0;
+        var pad = '  '.repeat(indent);
+        var result = '';
+        if (obj === null || obj === undefined) return pad + 'null\n';
+        if (typeof obj === 'string') return pad + obj + '\n';
+        if (typeof obj === 'number' || typeof obj === 'boolean') return pad + obj + '\n';
+        if (Array.isArray(obj)) {
+          for (var i = 0; i < obj.length; i++) {
+            if (typeof obj[i] === 'object' && obj[i] !== null) {
+              result += pad + '- ' + yamlStringify(obj[i], indent + 1).trim() + '\n';
+            } else {
+              result += pad + '- ' + obj[i] + '\n';
+            }
+          }
+          return result;
+        }
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            var val = obj[key];
+            if (val !== null && typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length > 0) {
+              result += pad + key + ':\n' + yamlStringify(val, indent + 1);
+            } else if (val !== null && typeof val === 'object') {
+              result += pad + key + ': ' + (Array.isArray(val) ? yamlStringify(val, indent) : (val === null ? 'null' : JSON.stringify(val))) + '\n';
+            } else {
+              result += pad + key + ': ' + formatScalar(val) + '\n';
+            }
+          }
+        }
+        return result;
+      }
+
+      function formatScalar(val) {
+        if (val === null || val === undefined) return 'null';
+        if (typeof val === 'string') {
+          if (/[:\{\}\[\],&\*\?\|<>=!%@`#]/.test(val) || val === '' || /^\s/.test(val)) {
+            return '"' + val.replace(/"/g, '\\"') + '"';
+          }
+          return val;
+        }
+        return String(val);
+      }
+
+      function validate() {
+        var text = inputEl.value;
+        if (!text.trim()) { setStatus('请输入 YAML 内容', 'error'); return; }
+
+        try {
+          var parsed = simpleYamlParse(text);
+          if (parsed.errors.length > 0) {
+            var html = '<div class="yaml-error"><strong>\u2716 验证失败 (' + parsed.errors.length + ' 个错误):</strong><br>';
+            for (var i = 0; i < parsed.errors.length; i++) {
+              html += escapeHtml(parsed.errors[i]) + '<br>';
+            }
+            html += '</div>';
+            outputEl.innerHTML = html;
+            setStatus(parsed.errors.length + ' 个错误', 'error');
+          } else {
+            outputEl.innerHTML = '<div class="yaml-success"><strong>\u2714 YAML 语法有效</strong></div>';
+            setStatus('验证通过');
+          }
+        } catch (e) {
+          outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 解析错误:</strong> ' + escapeHtml(e.message) + '</div>';
+          setStatus('解析失败', 'error');
+        }
+      }
+
+      function format() {
+        var text = inputEl.value;
+        if (!text.trim()) { setStatus('请输入 YAML 内容', 'error'); return; }
+
+        try {
+          var parsed = simpleYamlParse(text);
+          if (parsed.errors.length > 0) {
+            var html = '<div class="yaml-error"><strong>\u2716 无法美化，存在 ' + parsed.errors.length + ' 个错误:</strong><br>';
+            for (var i = 0; i < parsed.errors.length; i++) {
+              html += escapeHtml(parsed.errors[i]) + '<br>';
+            }
+            html += '</div>';
+            outputEl.innerHTML = html;
+            setStatus(parsed.errors.length + ' 个错误', 'error');
+          } else {
+            outputEl.textContent = yamlStringify(parsed.result).trim() + '\n';
+            setStatus('美化完成');
+          }
+        } catch (e) {
+          outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 错误:</strong> ' + escapeHtml(e.message) + '</div>';
+          setStatus('格式化失败', 'error');
+        }
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      validateBtn.addEventListener('click', validate);
+      formatBtn.addEventListener('click', format);
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent || '';
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

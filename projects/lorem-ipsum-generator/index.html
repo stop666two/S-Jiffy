@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorem Ipsum Generator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .lorem-controls { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .lorem-controls label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .lorem-controls .field { min-width:100px; }
+    .lorem-controls input { width:100px; }
+    .gen-stats { display:flex; gap:var(--space-2); margin-bottom:var(--space-2); flex-wrap:wrap; }
+    .gen-stats .stat { font-size:var(--font-size-sm); color:var(--color-text-secondary); background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:4px 12px; }
+    .gen-stats .stat strong { color:var(--color-text-primary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Lorem Ipsum Generator</h1>
+    <p class="tool-desc">生成假文示例文本，支持段落/句子/单词/字符模式，可输出 HTML 或 Markdown。</p>
+    <div class="card">
+      <div class="lorem-controls">
+        <div class="field">
+          <label for="loremUnit">单位</label>
+          <select id="loremUnit" class="input" style="width:auto;">
+            <option value="paragraphs">段落</option>
+            <option value="sentences">句子</option>
+            <option value="words">单词</option>
+            <option value="chars">字符</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="loremCount">数量</label>
+          <input id="loremCount" class="input" type="number" min="1" max="500" value="3">
+        </div>
+        <div class="field">
+          <label for="loremFormat">输出格式</label>
+          <select id="loremFormat" class="input" style="width:auto;">
+            <option value="text">纯文本</option>
+            <option value="html">HTML</option>
+            <option value="markdown">Markdown</option>
+          </select>
+        </div>
+        <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
+      </div>
+      <div class="gen-stats" id="genStats">
+        <span class="stat">单词: <strong id="statWords">0</strong></span>
+        <span class="stat">字符: <strong id="statChars">0</strong></span>
+        <span class="stat">段落: <strong id="statParas">0</strong></span>
+        <span class="stat">句子: <strong id="statSents">0</strong></span>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var loremUnit = document.getElementById('loremUnit');
+      var loremCount = document.getElementById('loremCount');
+      var loremFormat = document.getElementById('loremFormat');
+      var generateBtn = document.getElementById('generateBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var statWords = document.getElementById('statWords');
+      var statChars = document.getElementById('statChars');
+      var statParas = document.getElementById('statParas');
+      var statSents = document.getElementById('statSents');
+
+      var words = [
+        'lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do',
+        'eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','ut',
+        'enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi',
+        'aliquip','ex','ea','commodo','consequat','duis','aute','irure','dolor','in',
+        'reprehenderit','in','voluptate','velit','esse','cillum','dolore','eu','fugiat','nulla',
+        'pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','qui',
+        'officia','deserunt','mollit','anim','id','est','laborum'
+      ];
+
+      function randomWord() {
+        return words[Math.floor(Math.random() * words.length)];
+      }
+
+      function capitalize(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      function makeSentence() {
+        var len = 5 + Math.floor(Math.random() * 10);
+        var sent = [];
+        for (var i = 0; i < len; i++) sent.push(randomWord());
+        return capitalize(sent.join(' ')) + '.';
+      }
+
+      function generate() {
+        var unit = loremUnit.value;
+        var count = parseInt(loremCount.value, 10) || 1;
+        if (count < 1) count = 1;
+        var max = unit === 'chars' ? 5000 : 500;
+        if (count > max) count = max;
+        var format = loremFormat.value;
+        var result = [];
+
+        if (unit === 'words') {
+          for (var i = 0; i < count; i++) result.push(randomWord());
+          outputEl.textContent = result.join(' ');
+        } else if (unit === 'chars') {
+          var str = '';
+          while (str.replace(/\s/g, '').length < count) {
+            str += makeSentence() + ' ';
+          }
+          outputEl.textContent = str.trim();
+        } else if (unit === 'sentences') {
+          for (var i = 0; i < count; i++) result.push(makeSentence());
+          outputEl.textContent = result.join(' ');
+        } else {
+          for (var p = 0; p < count; p++) {
+            var para = [];
+            var sentCount = 3 + Math.floor(Math.random() * 5);
+            for (var i = 0; i < sentCount; i++) para.push(makeSentence());
+            result.push(para.join(' '));
+          }
+          outputEl.textContent = result.join('\n\n');
+        }
+
+        var raw = outputEl.textContent;
+        if (format === 'html') {
+          var htmlParts = raw.split('\n\n');
+          var htmlOut = [];
+          for (var i = 0; i < htmlParts.length; i++) {
+            if (htmlParts[i].trim()) htmlOut.push('<p>' + htmlParts[i].trim() + '</p>');
+          }
+          outputEl.textContent = htmlOut.join('\n');
+        } else if (format === 'markdown') {
+          var mdParts = raw.split('\n\n');
+          var mdOut = [];
+          for (var i = 0; i < mdParts.length; i++) {
+            if (mdParts[i].trim()) mdOut.push(mdParts[i].trim() + '\n');
+          }
+          outputEl.textContent = mdOut.join('\n\n');
+        }
+
+        var finalText = outputEl.textContent;
+        statWords.textContent = finalText.trim() ? finalText.trim().split(/\s+/).length : 0;
+        statChars.textContent = finalText.length;
+        statParas.textContent = finalText.split(/\n\s*\n/).filter(function(p) { return p.trim().length > 0; }).length || (finalText.trim() ? 1 : 0);
+        statSents.textContent = finalText.split(/[.!?。！？]+/).filter(function(s) { return s.trim().length > 0; }).length;
+
+        setStatus('已生成 ' + count + ' ' + (unit === 'words' ? '词' : unit === 'chars' ? '字符' : unit === 'sentences' ? '句' : '段'));
+      }
+
+      generateBtn.addEventListener('click', generate);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      generate();
+    })();
+  </script>
+</body>
+</html>

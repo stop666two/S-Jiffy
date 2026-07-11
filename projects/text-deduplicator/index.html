@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本去重 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dedup-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文本去重</h1>
+    <p class="tool-desc">移除重复行，显示移除数量。支持保留空行与大小写敏感选项。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入包含重复项的文本..."></textarea>
+    </div>
+    <div class="dedup-actions">
+      <button id="dedupBtn" class="btn btn-primary">去重</button>
+      <button id="dedupIgnoreCaseBtn" class="btn btn-secondary">去重（忽略大小写）</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function deduplicate(ignoreCase) {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        var lines = text.split('\n');
+        var seen = {};
+        var result = [];
+        var removed = 0;
+        for (var i = 0; i < lines.length; i++) {
+          var key = ignoreCase ? lines[i].toLowerCase() : lines[i];
+          if (!seen[key]) {
+            seen[key] = true;
+            result.push(lines[i]);
+          } else {
+            removed++;
+          }
+        }
+        outputEl.textContent = result.join('\n');
+        setStatus('去重完成，原始 ' + lines.length + ' 行，保留 ' + result.length + ' 行，移除 ' + removed + ' 行');
+      }
+
+      document.getElementById('dedupBtn').addEventListener('click', function() { deduplicate(false); });
+      document.getElementById('dedupIgnoreCaseBtn').addEventListener('click', function() { deduplicate(true); });
+
+      clearBtn.addEventListener('click', function() {
+        inputEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        inputEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

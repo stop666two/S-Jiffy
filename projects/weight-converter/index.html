@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重量单位转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .wg-grid { display:grid; gap:var(--space-3); }
+    .wg-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .wg-row .field { flex:1; min-width:120px; }
+    .wg-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>重量单位转换</h1>
+    <p class="tool-desc">kg / g / lb / oz / ton 互转。</p>
+    <div class="card">
+      <div class="wg-grid">
+        <div class="wg-row">
+          <div class="field"><label for="inputKg">千克 (kg)</label><input id="inputKg" class="input" type="number" value="100"></div>
+          <div class="field"><label for="inputG">克 (g)</label><input id="inputG" class="input" type="number" value="100000"></div>
+        </div>
+        <div class="wg-row">
+          <div class="field"><label for="inputLb">磅 (lb)</label><input id="inputLb" class="input" type="number" value="220.46"></div>
+          <div class="field"><label for="inputOz">盎司 (oz)</label><input id="inputOz" class="input" type="number" value="3527.4"></div>
+        </div>
+        <div class="wg-row">
+          <div class="field"><label for="inputTon">公吨 (ton)</label><input id="inputTon" class="input" type="number" value="0.1"></div>
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputKg = document.getElementById('inputKg');
+      var inputG = document.getElementById('inputG');
+      var inputLb = document.getElementById('inputLb');
+      var inputOz = document.getElementById('inputOz');
+      var inputTon = document.getElementById('inputTon');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var updating = false;
+
+      function r(v) { return Math.round(v * 1e6) / 1e6; }
+
+      function fromKg(kg) {
+        if (updating) return;
+        updating = true;
+        inputKg.value = kg;
+        inputG.value = r(kg * 1000);
+        inputLb.value = r(kg * 2.20462);
+        inputOz.value = r(kg * 35.274);
+        inputTon.value = r(kg / 1000);
+        outputEl.textContent = kg + ' kg = ' + inputLb.value + ' lb = ' + inputOz.value + ' oz = ' + inputTon.value + ' ton';
+        updating = false;
+      }
+
+      inputKg.addEventListener('input', function() { fromKg(parseFloat(this.value) || 0); });
+      inputG.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) / 1000); });
+      inputLb.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) / 2.20462); });
+      inputOz.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) / 35.274); });
+      inputTon.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) * 1000); });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      fromKg(100);
+    })();
+  </script>
+</body>
+</html>

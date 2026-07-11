@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则表达式备忘录 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .regex-search { margin-bottom:var(--space-3); }
+    .regex-search input { width:100%; height:44px; padding:0 16px; font-size:14px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); outline:none; }
+    .regex-search input:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+    .rx-section { margin-bottom:var(--space-3); }
+    .rx-section h2 { font-size:var(--font-size-base); font-weight:600; margin-bottom:var(--space-2); padding-bottom:4px; border-bottom:1px solid var(--color-border); }
+    .rx-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); margin-bottom:var(--space-2); }
+    .rx-card.hidden { display:none; }
+    .rx-card .pattern { font-size:14px; font-weight:600; color:var(--color-text-primary); margin-bottom:4px; font-family:var(--font-mono); }
+    .rx-card .example { font-size:12px; color:var(--color-text-secondary); }
+    .rx-card .example span { background:var(--color-bg-soft); padding:1px 4px; border-radius:2px; }
+    .rx-highlight { background:#FFF3CD; padding:0 2px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>正则表达式备忘录</h1>
+    <p class="tool-desc">常用正则模式速查，支持搜索。</p>
+    <div class="regex-search">
+      <input id="searchInput" class="js-focus-input" placeholder="搜索正则模式...">
+    </div>
+    <div id="rxContent"></div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var searchEl = document.getElementById('searchInput');
+      var contentEl = document.getElementById('rxContent');
+
+      var sections = [
+        {
+          title: '字符匹配',
+          items: [
+            { pattern: '.', desc: '匹配任意单个字符（除换行符）', example: 'a.b → "acb"' },
+            { pattern: '\\d', desc: '匹配数字 [0-9]', example: '\\d{3} → "123"' },
+            { pattern: '\\D', desc: '匹配非数字', example: '\\D+ → "abc"' },
+            { pattern: '\\w', desc: '匹配字母、数字、下划线 [a-zA-Z0-9_]', example: '\\w+ → "hello_1"' },
+            { pattern: '\\W', desc: '匹配非单词字符', example: '\\W → "@"' },
+            { pattern: '\\s', desc: '匹配空白字符（空格、制表符、换行）', example: '' },
+            { pattern: '\\S', desc: '匹配非空白字符', example: '' }
+          ]
+        },
+        {
+          title: '量词',
+          items: [
+            { pattern: '*', desc: '匹配前一个字符 0 次或多次', example: 'ab*c → "ac", "abc", "abbc"' },
+            { pattern: '+', desc: '匹配前一个字符 1 次或多次', example: 'ab+c → "abc", "abbc"' },
+            { pattern: '?', desc: '匹配前一个字符 0 次或 1 次', example: 'ab?c → "ac", "abc"' },
+            { pattern: '{n}', desc: '匹配前一个字符恰好 n 次', example: '\\d{3} → "123"' },
+            { pattern: '{n,}', desc: '匹配前一个字符至少 n 次', example: 'a{2,} → "aa", "aaa"' },
+            { pattern: '{n,m}', desc: '匹配前一个字符 n 到 m 次', example: 'a{2,4} → "aa", "aaa", "aaaa"' },
+            { pattern: '*?', desc: '非贪婪匹配（尽可能少）', example: 'a.*?b 在 "aabab" 中 → "aab"' }
+          ]
+        },
+        {
+          title: '位置与边界',
+          items: [
+            { pattern: '^', desc: '匹配字符串开头', example: '^hello → "hello world"' },
+            { pattern: '$', desc: '匹配字符串结尾', example: 'world$ → "hello world"' },
+            { pattern: '\\b', desc: '匹配单词边界', example: '\\bword\\b → "a word a"' },
+            { pattern: '\\B', desc: '匹配非单词边界', example: '\\Bword\\B → "swords"' }
+          ]
+        },
+        {
+          title: '分组与引用',
+          items: [
+            { pattern: '(...)', desc: '捕获分组', example: '(\\w+)@ → "name@"' },
+            { pattern: '(?:...)', desc: '非捕获分组', example: '(?:https?):\\/\\/ → "http://"' },
+            { pattern: '\\1, \\2...', desc: '反向引用', example: '(\\w)\\1 → "aa", "bb"' },
+            { pattern: '(?<name>...)', desc: '命名捕获（ES2018+）', example: '(?<year>\\d{4})' },
+            { pattern: '\\k<name>', desc: '命名反向引用', example: '(?<q>[\'"]).+?\\k<q>' }
+          ]
+        },
+        {
+          title: '字符集合',
+          items: [
+            { pattern: '[abc]', desc: '匹配方括号中的任意一个字符', example: '[aeiou] → 匹配元音' },
+            { pattern: '[^abc]', desc: '匹配不在方括号中的字符', example: '[^0-9] → 匹配非数字' },
+            { pattern: '[a-z]', desc: '匹配范围中的字符', example: '[a-zA-Z] → 匹配任意字母' },
+            { pattern: '[0-9]', desc: '匹配数字范围', example: '' }
+          ]
+        },
+        {
+          title: '断言（Lookahead/Lookbehind）',
+          items: [
+            { pattern: '(?=...)', desc: '正向先行断言', example: '\\d(?=px) → "5" 在 "5px" 中' },
+            { pattern: '(?!...)', desc: '负向先行断言', example: '\\d(?!px) → "5" 在 "5em" 中' },
+            { pattern: '(?<=...)', desc: '正向后行断言（ES2018+）', example: '(?<=\\$)\\d+ → "100" 在 "$100" 中' },
+            { pattern: '(?<!...)', desc: '负向后行断言（ES2018+）', example: '(?<!\\$)\\d+ → "100" 在 "100" 中' }
+          ]
+        },
+        {
+          title: '常用正则（实战）',
+          items: [
+            { pattern: '^[\\w.-]+@[\\w.-]+\\.\\w+$', desc: '匹配 Email 地址（简单）', example: 'user@example.com' },
+            { pattern: '^(https?:\\/\\/)?[\\w./?-]+$', desc: '匹配 URL（简单）', example: 'https://example.com' },
+            { pattern: '^1[3-9]\\d{9}$', desc: '匹配中国大陆手机号', example: '13800138000' },
+            { pattern: '^\\d{17}[\\dXx]$', desc: '匹配 18 位身份证号', example: '110101199001011234' },
+            { pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$', desc: '密码强度（大小写+数字，至少8位）', example: 'Pass1234' },
+            { pattern: '^(\\d{3}-?\\d{8}|\\d{4}-?\\d{7,8})$', desc: '匹配座机号码', example: '010-12345678' },
+            { pattern: '^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$', desc: '匹配 IPv4 地址', example: '192.168.1.1' },
+            { pattern: '^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$', desc: '匹配 MAC 地址', example: '00:1B:44:11:22:33' },
+            { pattern: '^\\d{4}-\\d{2}-\\d{2}$', desc: '匹配日期 YYYY-MM-DD', example: '2024-01-15' },
+            { pattern: '^(https?:\\/\\/)?(www\\.)?(youtube\\.com|bilibili\\.com)/.*$', desc: '匹配视频平台链接', example: '' }
+          ]
+        }
+      ];
+
+      function render(query) {
+        contentEl.innerHTML = '';
+        var lowerQuery = query ? query.toLowerCase() : '';
+
+        for (var s = 0; s < sections.length; s++) {
+          var sec = sections[s];
+          var sectionDiv = document.createElement('div');
+          sectionDiv.className = 'rx-section';
+          var hasVisible = false;
+          var itemsHtml = '';
+
+          for (var i = 0; i < sec.items.length; i++) {
+            var item = sec.items[i];
+            var combined = (item.pattern + ' ' + item.desc + ' ' + item.example).toLowerCase();
+            var match = !lowerQuery || combined.indexOf(lowerQuery) >= 0;
+
+            if (match) {
+              hasVisible = true;
+              var pat = item.pattern;
+              var desc = item.desc;
+              var example = item.example;
+
+              if (lowerQuery) {
+                var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                pat = pat.replace(re, '<span class="rx-highlight">$1</span>');
+                desc = desc.replace(re, '<span class="rx-highlight">$1</span>');
+                example = example.replace(re, '<span class="rx-highlight">$1</span>');
+              }
+
+              var exampleHtml = example ? '<div class="example">示例: <span>' + example + '</span></div>' : '';
+              itemsHtml += '<div class="rx-card"><div class="pattern">/' + pat + '/</div><div class="example">' + desc + '</div>' + exampleHtml + '</div>';
+            }
+          }
+
+          if (hasVisible) {
+            var titleEl = document.createElement('h2');
+            titleEl.textContent = sec.title;
+            sectionDiv.appendChild(titleEl);
+            var div = document.createElement('div');
+            div.innerHTML = itemsHtml;
+            sectionDiv.appendChild(div);
+            contentEl.appendChild(sectionDiv);
+          }
+        }
+
+        if (contentEl.children.length === 0) {
+          contentEl.innerHTML = '<div class="card" style="text-align:center;color:var(--color-text-disabled);">没有匹配的模式</div>';
+        }
+      }
+
+      searchEl.addEventListener('input', function () { render(this.value); });
+      render('');
+    })();
+  </script>
+</body>
+</html>

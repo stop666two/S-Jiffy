@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git 提交信息生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .type-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:var(--space-3); }
+    .type-btn { padding:8px 16px; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; font-size:13px; font-family:var(--font-mono); transition:all 0.1s; }
+    .type-btn:hover { border-color:var(--color-text-primary); }
+    .type-btn.active { background:var(--color-text-primary); color:#fff; border-color:var(--color-text-primary); }
+    .preview-card { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-3); font-family:var(--font-mono); font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-all; min-height:80px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>Git 提交信息生成器</h1>
+    <p class="tool-desc">生成符合 Conventional Commits 规范的提交信息</p>
+
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:8px;">类型</label>
+      <div class="type-grid" id="typeGrid">
+        <button class="type-btn" data-type="feat">feat</button>
+        <button class="type-btn" data-type="fix">fix</button>
+        <button class="type-btn" data-type="docs">docs</button>
+        <button class="type-btn" data-type="refactor">refactor</button>
+        <button class="type-btn" data-type="perf">perf</button>
+        <button class="type-btn" data-type="test">test</button>
+        <button class="type-btn" data-type="chore">chore</button>
+        <button class="type-btn" data-type="ci">ci</button>
+        <button class="type-btn" data-type="style">style</button>
+        <button class="type-btn" data-type="revert">revert</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <div>
+          <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">范围 (可选)</label>
+          <input id="scopeInput" class="input" placeholder="ui, api, config..." style="height:40px;">
+        </div>
+        <div>
+          <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">Breaking change</label>
+          <input type="checkbox" id="breakingCheck" style="width:20px;height:20px;accent-color:var(--color-text-primary);margin-top:8px;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">描述</label>
+        <input id="descInput" class="input js-focus-input" placeholder="添加用户登录功能..." style="height:40px;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">正文 (可选，每行一个) </label>
+        <textarea id="bodyInput" class="input textarea" placeholder="详细描述这次提交的内容..." style="min-height:80px;"></textarea>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">脚注 (可选，每行一个，如 BREAKING CHANGE: 或 Ref: )</label>
+        <textarea id="footerInput" class="input textarea" placeholder="BREAKING CHANGE: 移除旧版 API 支持&#10;Ref: #123" style="min-height:60px;"></textarea>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">引用 Issue</label>
+        <input id="issueInput" class="input" placeholder="#123, #456 (可选)" style="height:40px;">
+      </div>
+
+      <button id="generateBtn" class="btn btn-primary">生成提交信息</button>
+    </div>
+
+    <div class="output-box" style="min-height:100px;">
+      <div id="previewArea" class="preview-card" style="background:transparent;border:none;padding:0;min-height:0;"></div>
+      <span id="outputText" style="display:none;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var selectedType = 'feat';
+      var typeBtns = document.querySelectorAll('#typeGrid .type-btn');
+      var scopeInput = document.getElementById('scopeInput');
+      var descInput = document.getElementById('descInput');
+      var bodyInput = document.getElementById('bodyInput');
+      var footerInput = document.getElementById('footerInput');
+      var issueInput = document.getElementById('issueInput');
+      var breakingCheck = document.getElementById('breakingCheck');
+      var previewArea = document.getElementById('previewArea');
+      var outputText = document.getElementById('outputText');
+      var generateBtn = document.getElementById('generateBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      for (var i = 0; i < typeBtns.length; i++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            for (var j = 0; j < typeBtns.length; j++) typeBtns[j].classList.remove('active');
+            btn.classList.add('active');
+            selectedType = btn.getAttribute('data-type');
+          });
+        })(typeBtns[i]);
+      }
+      typeBtns[0].classList.add('active');
+
+      function generateMessage() {
+        var desc = descInput.value.trim();
+        if (!desc) { return null; }
+
+        var scope = scopeInput.value.trim();
+        var breaking = breakingCheck.checked;
+        var msg = selectedType;
+        if (scope) msg += '(' + scope + ')';
+        if (breaking) msg += '!';
+        msg += ': ' + desc;
+
+        var body = bodyInput.value.trim();
+        if (body) msg += '\n\n' + body;
+
+        var footer = footerInput.value.trim();
+        var issue = issueInput.value.trim();
+
+        if (breaking && footer.indexOf('BREAKING CHANGE') === -1) {
+          if (footer) footer = 'BREAKING CHANGE: ' + (footer || '');
+          else footer = 'BREAKING CHANGE: ';
+        }
+
+        var footers = [];
+        if (footer) footers.push(footer);
+        if (issue) footers.push('Closes ' + issue);
+        if (footers.length) msg += '\n\n' + footers.join('\n');
+
+        return msg;
+      }
+
+      generateBtn.addEventListener('click', function () {
+        var msg = generateMessage();
+        if (!msg) { setStatus('请输入描述', 'error'); return; }
+        previewArea.textContent = msg;
+        outputText.textContent = msg;
+        setStatus('已生成');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+      });
+
+      descInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generateBtn.click(); });
+    })();
+  </script>
+</body>
+</html>

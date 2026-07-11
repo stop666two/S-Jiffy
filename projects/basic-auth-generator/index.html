@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic Auth Generator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .auth-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .auth-row .field { flex:1; min-width:200px; }
+    .auth-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Basic Auth Generator</h1>
+    <p class="tool-desc">将用户名和密码转换为 HTTP Basic Authentication 请求头。</p>
+    <div class="card">
+      <div class="auth-row">
+        <div class="field"><label for="authUsername">用户名</label><input id="authUsername" class="input" type="text" placeholder="username"></div>
+        <div class="field"><label for="authPassword">密码</label><input id="authPassword" class="input" type="password" placeholder="password"></div>
+      </div>
+      <div style="margin-top:var(--space-3);"><button id="generateBtn" class="btn btn-primary">生成 Header</button></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var authUsername = document.getElementById('authUsername');
+      var authPassword = document.getElementById('authPassword');
+      var generateBtn = document.getElementById('generateBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      generateBtn.addEventListener('click', function () {
+        var user = authUsername.value;
+        var pass = authPassword.value;
+        if (!user && !pass) { setStatus('请输入用户名和密码', 'error'); return; }
+        var token = btoa(unescape(encodeURIComponent(user + ':' + pass)));
+        var header = 'Authorization: Basic ' + token;
+        outputEl.textContent = header;
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片转 Base64 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>图片转 Base64</h1>
+    <p class="tool-desc">上传图片，生成 Base64 数据 URL，一键复制。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+      <input type="file" id="fileInput" accept="image/*" style="font-family:inherit;">
+      <div id="previewArea" style="max-width:300px;display:none;">
+        <img id="previewImg" style="max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;word-break:break-all;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var fileInput = document.getElementById('fileInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var previewImg = document.getElementById('previewImg');
+      var previewArea = document.getElementById('previewArea');
+
+      fileInput.addEventListener('change', function() {
+        var file = fileInput.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var dataUrl = e.target.result;
+          outputEl.textContent = dataUrl;
+          previewImg.src = dataUrl;
+          previewArea.style.display = 'block';
+          setStatus('转换完成，共 ' + dataUrl.length + ' 字符');
+        };
+        reader.onerror = function() {
+          setStatus('读取文件失败', 'error');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

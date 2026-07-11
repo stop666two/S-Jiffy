@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>列表随机化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .lr-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>列表随机化</h1>
+    <p class="tool-desc">输入列表（每行一项），打乱顺序或随机抽取。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入列表..."></textarea>
+    </div>
+    <div class="lr-actions">
+      <button id="shuffleBtn" class="btn btn-primary">打乱顺序</button>
+      <button id="pickOneBtn" class="btn btn-secondary">随机抽取一项</button>
+      <button id="pickSomeBtn" class="btn btn-secondary">随机抽取多项</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function getItems() {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入列表', 'error'); return null; }
+        return text.split('\n').filter(function(l) { return l.trim().length > 0; });
+      }
+
+      function shuffle(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
+      document.getElementById('shuffleBtn').addEventListener('click', function() {
+        var items = getItems();
+        if (!items) return;
+        outputEl.textContent = shuffle(items).join('\n');
+        setStatus('已打乱，共 ' + items.length + ' 项');
+      });
+
+      document.getElementById('pickOneBtn').addEventListener('click', function() {
+        var items = getItems();
+        if (!items) return;
+        var picked = items[Math.floor(Math.random() * items.length)];
+        outputEl.textContent = '→ ' + picked;
+        setStatus('已随机抽取一项');
+      });
+
+      document.getElementById('pickSomeBtn').addEventListener('click', function() {
+        var items = getItems();
+        if (!items) return;
+        var count = Math.min(3, items.length);
+        var shuffled = shuffle(items.slice());
+        outputEl.textContent = shuffled.slice(0, count).map(function(s) { return '→ ' + s; }).join('\n');
+        setStatus('已随机抽取 ' + count + ' 项');
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

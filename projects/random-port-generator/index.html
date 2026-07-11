@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机端口生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .port-options { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+    .port-options label { font-size:var(--font-size-sm); color:var(--color-text-secondary); display:flex; align-items:center; gap:6px; }
+    .port-options input[type="number"] { width:70px; height:36px; padding:0 8px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); font-size:13px; }
+    .port-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; margin-top:var(--space-2); }
+    .port-item { font-family:var(--font-mono); font-size:13px; padding:6px; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); text-align:center; }
+    .port-info { font-size:12px; color:var(--color-text-disabled); margin-top:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>随机端口生成器</h1>
+    <p class="tool-desc">生成 1-65535 范围内随机端口号，可排除常用端口。</p>
+    <div class="card port-options">
+      <label>生成数量:
+        <input id="countInput" type="number" value="5" min="1" max="100">
+      </label>
+      <label>最小值:
+        <input id="minInput" type="number" value="1024" min="1" max="65535">
+      </label>
+      <label>最大值:
+        <input id="maxInput" type="number" value="65535" min="1" max="65535">
+      </label>
+      <label>
+        <input type="checkbox" id="excludeCommon" checked> 排除常用端口
+      </label>
+      <button id="generateBtn" class="btn btn-primary">生成</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div id="portInfo" class="port-info"></div>
+    <div class="output-box" id="outputContainer" style="min-height:100px;">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var countEl = document.getElementById('countInput');
+      var minEl = document.getElementById('minInput');
+      var maxEl = document.getElementById('maxInput');
+      var excludeChk = document.getElementById('excludeCommon');
+      var outputEl = document.getElementById('outputText');
+      var infoEl = document.getElementById('portInfo');
+
+      var commonPorts = [
+        20, 21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 389, 443, 445,
+        993, 995, 1433, 1521, 2049, 3306, 3389, 5432, 5900, 5985, 5986, 6379,
+        8080, 8443, 9000, 9090, 27017
+      ];
+
+      function generatePorts() {
+        var count = parseInt(countEl.value) || 5;
+        var min = parseInt(minEl.value) || 1;
+        var max = parseInt(maxEl.value) || 65535;
+        var exclude = excludeChk.checked;
+
+        if (min < 1) min = 1;
+        if (max > 65535) max = 65535;
+        if (min > max) { var tmp = min; min = max; max = tmp; }
+
+        var range = max - min + 1;
+        var maxAttempts = range * 2;
+        var ports = [];
+        var attempts = 0;
+
+        while (ports.length < count && attempts < maxAttempts) {
+          attempts++;
+          var port = Math.floor(Math.random() * (max - min + 1)) + min;
+          if (ports.indexOf(port) >= 0) continue;
+          if (exclude && commonPorts.indexOf(port) >= 0) continue;
+          ports.push(port);
+        }
+
+        ports.sort(function (a, b) { return a - b; });
+
+        return ports;
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var ports = generatePorts();
+        if (ports.length === 0) {
+          outputEl.textContent = '';
+          setStatus('无法生成端口，请调整范围', 'error');
+          return;
+        }
+
+        minEl.value = parseInt(minEl.value) || 1;
+        maxEl.value = parseInt(maxEl.value) || 65535;
+
+        var grid = '';
+        for (var i = 0; i < ports.length; i++) {
+          grid += '<div class="port-item">' + ports[i] + '</div>';
+        }
+        outputEl.innerHTML = '<div class="port-grid">' + grid + '</div>';
+        infoEl.textContent = '范围: ' + minEl.value + '-' + maxEl.value + ' · ' + (excludeChk.checked ? '已排除 ' + commonPorts.length + ' 个常用端口' : '不排除');
+        setStatus('已生成 ' + ports.length + ' 个端口');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        outputEl.textContent = ''; infoEl.textContent = ''; setStatus('');
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text && text.trim()) {
+          var nums = text.trim().split(/\s+/).join(', ');
+          copyToClipboard(nums, this);
+          setStatus('已复制端口列表');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

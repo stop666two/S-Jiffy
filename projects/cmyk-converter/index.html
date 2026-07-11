@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CMYK 转换器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.color-preview{width:100%;height:50px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s}.dual-pane{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:700px){.dual-pane{grid-template-columns:1fr}}.slider-group{display:flex;flex-direction:column;gap:10px}.slider-row{display:flex;align-items:center;gap:8px}.slider-row label{width:16px;font-weight:600;font-size:12px}.slider-row input[type=range]{flex:1;accent-color:var(--color-text-primary)}.slider-row input[type=number]{width:55px;text-align:center;font-family:var(--font-mono);font-size:13px;padding:3px;border:1px solid var(--color-border);border-radius:var(--radius-sm)}.value-display{font-family:var(--font-mono);font-size:15px;margin-top:8px}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>CMYK 转换器</h1><p class="tool-desc">CMYK ↔ RGB 双向转换，带颜色预览。</p>
+<div class="card">
+<div class="color-preview" id="colorPreview"></div>
+<div class="dual-pane">
+<div>
+<h3 style="font-size:14px;margin-bottom:8px;">CMYK</h3>
+<div class="slider-group">
+<div class="slider-row"><label style="color:#00bcd4">C</label><input type="range" id="cSlider" min="0" max="100" value="0"><input type="number" id="cNum" min="0" max="100" value="0"></div>
+<div class="slider-row"><label style="color:#e91e63">M</label><input type="range" id="mSlider" min="0" max="100" value="100"><input type="number" id="mNum" min="0" max="100" value="100"></div>
+<div class="slider-row"><label style="color:#ffeb3b">Y</label><input type="range" id="ySlider" min="0" max="100" value="100"><input type="number" id="yNum" min="0" max="100" value="100"></div>
+<div class="slider-row"><label style="color:#333">K</label><input type="range" id="kSlider" min="0" max="100" value="0"><input type="number" id="kNum" min="0" max="100" value="0"></div>
+</div>
+<div class="value-display" id="cmykDisplay">cmyk(0%, 100%, 100%, 0%)</div>
+</div>
+<div>
+<h3 style="font-size:14px;margin-bottom:8px;">RGB</h3>
+<div class="slider-group">
+<div class="slider-row"><label style="color:#e74c3c">R</label><input type="range" id="rSlider" min="0" max="255" value="255" disabled><input type="number" id="rNum" min="0" max="255" value="255" disabled></div>
+<div class="slider-row"><label style="color:#2ecc71">G</label><input type="range" id="gSlider" min="0" max="255" value="0" disabled><input type="number" id="gNum" min="0" max="255" value="0" disabled></div>
+<div class="slider-row"><label style="color:#3498db">B</label><input type="range" id="bSlider" min="0" max="255" value="0" disabled><input type="number" id="bNum" min="0" max="255" value="0" disabled></div>
+</div>
+<div class="value-display" id="rgbDisplay">rgb(255, 0, 0)</div>
+</div>
+</div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>(function(){
+var cSlider=document.getElementById('cSlider'),mSlider=document.getElementById('mSlider'),ySlider=document.getElementById('ySlider'),kSlider=document.getElementById('kSlider');
+var cNum=document.getElementById('cNum'),mNum=document.getElementById('mNum'),yNum=document.getElementById('yNum'),kNum=document.getElementById('kNum');
+var rSlider=document.getElementById('rSlider'),gSlider=document.getElementById('gSlider'),bSlider=document.getElementById('bSlider');
+var rNum=document.getElementById('rNum'),gNum=document.getElementById('gNum'),bNum=document.getElementById('bNum');
+var colorPreview=document.getElementById('colorPreview');
+var cmykDisplay=document.getElementById('cmykDisplay');
+var rgbDisplay=document.getElementById('rgbDisplay');
+var outputEl=document.getElementById('outputText');
+var copyBtn=document.getElementById('copyBtn');
+
+function cmykToRgb(c,m,y,k){
+c/=100;m/=100;y/=100;k/=100;
+var r=255*(1-c)*(1-k);
+var g=255*(1-m)*(1-k);
+var b=255*(1-y)*(1-k);
+return {r:Math.round(r),g:Math.round(g),b:Math.round(b)};
+}
+
+function updateCMYK(src){
+var c,m,y,k;
+if(src==='c'||src===''){c=parseInt(cSlider.value);cNum.value=c;}
+else if(src==='m'){m=parseInt(mSlider.value);mNum.value=m;}
+else if(src==='y'){y=parseInt(ySlider.value);yNum.value=y;}
+else if(src==='k'){k=parseInt(kSlider.value);kNum.value=k;}
+if(src==='cn'){var cv=parseInt(cNum.value);if(cv<0)cv=0;if(cv>100)cv=100;cSlider.value=cv;c=cv;}
+if(src==='mn'){var mv=parseInt(mNum.value);if(mv<0)mv=0;if(mv>100)mv=100;mSlider.value=mv;m=mv;}
+if(src==='yn'){var yv=parseInt(yNum.value);if(yv<0)yv=0;if(yv>100)yv=100;ySlider.value=yv;y=yv;}
+if(src==='kn'){var kv=parseInt(kNum.value);if(kv<0)kv=0;if(kv>100)kv=100;kSlider.value=kv;k=kv;}
+if(c===undefined)c=parseInt(cSlider.value);
+if(m===undefined)m=parseInt(mSlider.value);
+if(y===undefined)y=parseInt(ySlider.value);
+if(k===undefined)k=parseInt(kSlider.value);
+cmykDisplay.textContent='cmyk('+c+'%, '+m+'%, '+y+'%, '+k+'%)';
+var rgb=cmykToRgb(c,m,y,k);
+rSlider.value=rgb.r;rNum.value=rgb.r;
+gSlider.value=rgb.g;gNum.value=rgb.g;
+bSlider.value=rgb.b;bNum.value=rgb.b;
+var rgbStr='rgb('+rgb.r+', '+rgb.g+', '+rgb.b+')';
+rgbDisplay.textContent=rgbStr;
+colorPreview.style.background=rgbStr;
+outputEl.textContent='CMYK('+c+'%,'+m+'%,'+y+'%,'+k+'%) = RGB('+rgb.r+','+rgb.g+','+rgb.b+')';
+}
+
+cSlider.addEventListener('input',function(){updateCMYK('c');});
+mSlider.addEventListener('input',function(){updateCMYK('m');});
+ySlider.addEventListener('input',function(){updateCMYK('y');});
+kSlider.addEventListener('input',function(){updateCMYK('k');});
+cNum.addEventListener('input',function(){updateCMYK('cn');});
+mNum.addEventListener('input',function(){updateCMYK('mn');});
+yNum.addEventListener('input',function(){updateCMYK('yn');});
+kNum.addEventListener('input',function(){updateCMYK('kn');});
+copyBtn.addEventListener('click',function(){if(rgbDisplay.textContent){copyToClipboard(rgbDisplay.textContent,copyBtn);setStatus('已复制 RGB');}});
+updateCMYK('c');
+})();</script></body></html>

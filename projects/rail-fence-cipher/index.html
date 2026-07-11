@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rail Fence 密码 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rail-config { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .rail-config label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .rail-config input[type="number"] { width:80px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Rail Fence 密码</h1>
+    <p class="tool-desc">栅栏密码加密解密，可配置栅栏数量。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div class="card rail-config">
+      <label>栅栏数量 (Rails)：<input id="railsInput" type="number" value="3" min="2" max="20"></label>
+      <button id="encryptBtn" class="btn btn-primary">加密</button>
+      <button id="decryptBtn" class="btn btn-secondary">解密</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var railsEl = document.getElementById('railsInput');
+      var outputEl = document.getElementById('outputText');
+      var encryptBtn = document.getElementById('encryptBtn');
+      var decryptBtn = document.getElementById('decryptBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function railFenceEncrypt(text, rails) {
+        if (rails <= 1) return text;
+        var fence = [];
+        for (var i = 0; i < rails; i++) fence[i] = [];
+        var row = 0, dir = 1;
+        for (var j = 0; j < text.length; j++) {
+          fence[row].push(text[j]);
+          row += dir;
+          if (row === rails - 1 || row === 0) dir = -dir;
+        }
+        var result = '';
+        for (var k = 0; k < rails; k++) {
+          result += fence[k].join('');
+        }
+        return result;
+      }
+
+      function railFenceDecrypt(text, rails) {
+        if (rails <= 1) return text;
+        var pattern = [];
+        for (var i = 0; i < rails; i++) pattern[i] = [];
+        var row = 0, dir = 1;
+        for (var j = 0; j < text.length; j++) {
+          pattern[row].push(j);
+          row += dir;
+          if (row === rails - 1 || row === 0) dir = -dir;
+        }
+        var indexMap = [];
+        for (var k = 0; k < rails; k++) {
+          for (var m = 0; m < pattern[k].length; m++) {
+            indexMap[pattern[k][m]] = k;
+          }
+        }
+        var fence = [];
+        for (var n = 0; n < rails; n++) fence[n] = [];
+        var pos = 0;
+        for (var r = 0; r < rails; r++) {
+          for (var c = 0; c < pattern[r].length; c++) {
+            fence[r].push(text[pos++]);
+          }
+        }
+        var result = '';
+        for (var p = 0; p < text.length; p++) {
+          result += fence[indexMap[p]].shift();
+        }
+        return result;
+      }
+
+      encryptBtn.addEventListener('click', function () {
+        var text = inputEl.value;
+        var rails = parseInt(railsEl.value, 10) || 3;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
+        outputEl.textContent = railFenceEncrypt(text, rails);
+        setStatus('');
+      });
+
+      decryptBtn.addEventListener('click', function () {
+        var text = inputEl.value;
+        var rails = parseInt(railsEl.value, 10) || 3;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
+        outputEl.textContent = railFenceDecrypt(text, rails);
+        setStatus('');
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

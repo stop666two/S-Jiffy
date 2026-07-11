@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INI JSON 互转 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>INI ↔ JSON 互转</h1>
+    <p class="tool-desc">INI 配置文件格式与 JSON 互相转换。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 INI 或 JSON..." style="min-height:180px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="toJsonBtn" class="btn btn-primary">INI → JSON</button>
+      <button id="toIniBtn" class="btn btn-secondary">JSON → INI</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var toJsonBtn = document.getElementById('toJsonBtn');
+      var toIniBtn = document.getElementById('toIniBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function iniToJson(ini) {
+        var result = {};
+        var lines = ini.split('\n');
+        var section = result;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line || line.startsWith(';') || line.startsWith('#')) continue;
+          if (line.startsWith('[') && line.endsWith(']')) {
+            var sName = line.slice(1, -1).trim();
+            result[sName] = {};
+            section = result[sName];
+            continue;
+          }
+          var eqIdx = line.indexOf('=');
+          if (eqIdx === -1) eqIdx = line.indexOf(':');
+          if (eqIdx === -1) continue;
+          var key = line.substring(0, eqIdx).trim();
+          var val = line.substring(eqIdx + 1).trim();
+          if (val.toLowerCase() === 'true') val = true;
+          else if (val.toLowerCase() === 'false') val = false;
+          else if (!isNaN(val) && val !== '') val = Number(val);
+          section[key] = val;
+        }
+        return result;
+      }
+
+      function jsonToIni(obj) {
+        var lines = [];
+        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+          return JSON.stringify(obj);
+        }
+        for (var key in obj) {
+          if (!obj.hasOwnProperty(key)) continue;
+          var val = obj[key];
+          if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+            lines.push('[' + key + ']');
+            for (var sk in val) {
+              if (val.hasOwnProperty(sk)) {
+                lines.push(sk + '=' + String(val[sk]));
+              }
+            }
+            lines.push('');
+          } else {
+            lines.push(key + '=' + String(val));
+          }
+        }
+        return lines.join('\n').trim();
+      }
+
+      toJsonBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 INI 内容', 'error'); return; }
+        try {
+          var parsed = iniToJson(text);
+          outputEl.textContent = JSON.stringify(parsed, null, 2);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('INI 解析失败', 'error');
+        }
+      });
+
+      toIniBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JSON 内容', 'error'); return; }
+        try {
+          var parsed = JSON.parse(text);
+          outputEl.textContent = jsonToIni(parsed);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('JSON 解析失败: ' + e.message, 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

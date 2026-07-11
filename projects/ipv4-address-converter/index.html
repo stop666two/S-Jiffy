@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPv4 Address Converter - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ipconv-grid { display:grid; gap:var(--space-3); }
+    .ipconv-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .ipconv-row .field { flex:1; min-width:200px; }
+    .ipconv-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .ipconv-result { margin-top:var(--space-3); }
+    .ipconv-result .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); font-size:var(--font-size-sm); }
+    .ipconv-result .item:last-child { border-bottom:none; }
+    .ipconv-result .lbl { color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>IPv4 Address Converter</h1>
+    <p class="tool-desc">将 IPv4 地址转换为十进制、十六进制、二进制以及 IPv6 映射地址。</p>
+    <div class="card">
+      <div class="ipconv-grid">
+        <div class="ipconv-row">
+          <div class="field"><label for="ipInput">IPv4 地址</label><input id="ipInput" class="input js-focus-input" type="text" placeholder="192.168.1.1" value="192.168.1.1"></div>
+          <button id="convertBtn" class="btn btn-primary">转换</button>
+        </div>
+      </div>
+      <div class="ipconv-result" id="resultContainer"></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var ipInput = document.getElementById('ipInput');
+      var convertBtn = document.getElementById('convertBtn');
+      var resultContainer = document.getElementById('resultContainer');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function ipToNum(ip) {
+        var parts = ip.split('.');
+        if (parts.length !== 4) return -1;
+        var num = 0;
+        for (var i = 0; i < 4; i++) {
+          var octet = parseInt(parts[i], 10);
+          if (isNaN(octet) || octet < 0 || octet > 255) return -1;
+          num = (num << 8) + octet;
+        }
+        return num >>> 0;
+      }
+
+      function convert() {
+        var ip = ipInput.value.trim();
+        var num = ipToNum(ip);
+        if (num === -1) {
+          resultContainer.innerHTML = '<div style="color:var(--color-error);">无效的 IPv4 地址</div>';
+          outputEl.textContent = '';
+          setStatus('请输入有效的 IPv4 地址', 'error');
+          return;
+        }
+
+        var hex = '0x' + num.toString(16).toUpperCase();
+        var dec = num.toString(10);
+        var binary = num.toString(2).padStart(32, '0');
+        var binaryGrouped = binary.slice(0,8) + ' ' + binary.slice(8,16) + ' ' + binary.slice(16,24) + ' ' + binary.slice(24);
+        var ipv6Mapped = '::ffff:' + ip;
+
+        var html = '';
+        var items = [
+          ['十进制（整数）', dec],
+          ['十六进制', hex],
+          ['二进制', binaryGrouped],
+          ['IPv6 映射地址', ipv6Mapped]
+        ];
+        for (var i = 0; i < items.length; i++) {
+          html += '<div class="item"><span class="lbl">' + items[i][0] + '</span><span>' + items[i][1] + '</span></div>';
+        }
+        resultContainer.innerHTML = html;
+        outputEl.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
+        setStatus('');
+      }
+
+      convertBtn.addEventListener('click', convert);
+      ipInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') convert(); });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      convert();
+    })();
+  </script>
+</body>
+</html>

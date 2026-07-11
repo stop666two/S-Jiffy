@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数字签名验证 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pem-area { font-family:var(--font-mono); font-size:12px; line-height:1.4; }
+    .sig-detail { font-size:var(--font-size-sm); margin-top:8px; }
+    .sig-detail dt { color:var(--color-text-secondary); display:inline; }
+    .sig-detail dd { display:inline; margin-right:16px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>数字签名验证</h1>
+    <p class="tool-desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。</p>
+    <div class="card">
+      <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;">粘贴 PEM 公钥 / 证书</label>
+      <textarea id="pemInput" class="input textarea pem-area js-focus-input" placeholder="-----BEGIN PUBLIC KEY-----&#10;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...&#10;-----END PUBLIC KEY-----" style="min-height:160px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="parseBtn" class="btn btn-primary">解析</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var pemEl = document.getElementById('pemInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function pemToArrayBuffer(pem) {
+        var b64 = pem.replace(/-{2,}[A-Z ]+-{2,}/g, '').replace(/\s/g, '');
+        var binary = atob(b64);
+        var len = binary.length;
+        var buf = new ArrayBuffer(len);
+        var view = new Uint8Array(buf);
+        for (var i = 0; i < len; i++) {
+          view[i] = binary.charCodeAt(i);
+        }
+        return buf;
+      }
+
+      function parseASN1(buf) {
+        var view = new Uint8Array(buf);
+        var offset = 0;
+        function readTag() {
+          if (offset >= view.length) return null;
+          var tag = view[offset++];
+          var length = 0;
+          var lenByte = view[offset++];
+          if (lenByte & 0x80) {
+            var numLen = lenByte & 0x7F;
+            for (var i = 0; i < numLen; i++) {
+              length = (length << 8) + view[offset++];
+            }
+          } else {
+            length = lenByte;
+          }
+          var value = buf.slice(offset, offset + length);
+          offset += length;
+          return { tag: tag, length: length, value: value };
+        }
+        var root = readTag();
+        if (!root || root.tag !== 0x30) return null;
+        // Sequence
+        var innerOffset = 0;
+        var inner = new Uint8Array(root.value);
+        var items = [];
+        while (innerOffset < inner.length) {
+          var tag = inner[innerOffset++];
+          var lenByte = inner[innerOffset];
+          var len = 0;
+          innerOffset++;
+          if (lenByte & 0x80) {
+            var numLen = lenByte & 0x7F;
+            for (var i = 0; i < numLen; i++) {
+              len = (len << 8) + inner[innerOffset++];
+            }
+          } else {
+            len = lenByte;
+          }
+          var val = root.value.slice(innerOffset - 2 - (lenByte & 0x80 ? (lenByte & 0x7F) : 0), innerOffset + len);
+          items.push({ tag: tag, length: len });
+          innerOffset += len;
+        }
+        return items;
+      }
+
+      function formatPem(pem) {
+        var header = pem.match(/^-----[A-Z ]+-----/);
+        var footer = pem.match(/-----[A-Z ]+-----$/);
+        if (!header || !footer) return null;
+        var h = header[0], f = footer[0];
+        var b64 = pem.replace(h, '').replace(f, '').replace(/\s/g, '');
+        if (!b64) return null;
+        var lines = [];
+        for (var i = 0; i < b64.length; i += 64) {
+          lines.push(b64.substring(i, i + 64));
+        }
+        return h + '\n' + lines.join('\n') + '\n' + f;
+      }
+
+      document.getElementById('parseBtn').addEventListener('click', function() {
+        var pem = pemEl.value.trim();
+        if (!pem) { setStatus('请粘贴 PEM 内容', 'error'); return; }
+        try {
+          var label = '';
+          if (pem.indexOf('PUBLIC KEY') !== -1) label = '公钥';
+          else if (pem.indexOf('PRIVATE KEY') !== -1) label = '私钥';
+          else if (pem.indexOf('CERTIFICATE') !== -1) label = '证书 (X.509)';
+          else label = '未知 PEM 类型';
+
+          var formatted = formatPem(pem);
+          var ab = pemToArrayBuffer(pem);
+          var algoInfo = '';
+          var sizeInfo = '';
+
+          // Try to import as key to get algorithm info
+          var importPromise;
+          if (pem.indexOf('PRIVATE KEY') !== -1) {
+            importPromise = crypto.subtle.importKey('pkcs8', ab, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt'])
+              .then(function(key) { return key; })
+              .catch(function() { return null; });
+          } else {
+            importPromise = crypto.subtle.importKey('spki', ab, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt'])
+              .then(function(key) { return key; })
+              .catch(function() {
+                // Try RSASSA-PKCS1
+                return crypto.subtle.importKey('spki', ab, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, true, ['verify'])
+                  .then(function(key) { return key; })
+                  .catch(function() {
+                    // Try ECDSA
+                    return crypto.subtle.importKey('spki', ab, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify'])
+                      .then(function(key) { return key; })
+                      .catch(function() { return null; });
+                  });
+              });
+          }
+
+          importPromise.then(function(key) {
+            if (key) {
+              crypto.subtle.exportKey('spki', key).then(function(exported) {
+                var view = new Uint8Array(exported);
+                var size = view.length;
+                outputEl.textContent = '类型: ' + label + '\n'
+                  + '算法: ' + key.algorithm.name + '\n'
+                  + '密钥长度: ' + (size * 8) + ' bits (' + size + ' bytes)\n'
+                  + (key.algorithm.modulusLength ? '模数长度: ' + key.algorithm.modulusLength + ' bits\n' : '')
+                  + (key.algorithm.namedCurve ? '曲线: ' + key.algorithm.namedCurve + '\n' : '')
+                  + '\n--- 格式化 PEM ---\n' + (formatted || '') + '\n'
+                  + '\n--- 原始数据 ---\n'
+                  + 'Hex: ' + Array.from(view.slice(0, 32)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '...\n'
+                  + 'Base64 长度: ' + btoa(String.fromCharCode.apply(null, view)).length + ' chars';
+                setStatus('解析成功：' + label);
+              });
+            } else {
+              // Fallback: show PEM structure info
+              var raw = new Uint8Array(ab);
+              outputEl.textContent = '类型: ' + label + '\n'
+                + '原始字节数: ' + raw.length + '\n'
+                + '前 16 字节 Hex: ' + Array.from(raw.slice(0, 16)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '\n'
+                + '算法: 无法自动识别（可能不是 RSA/EC 密钥）\n'
+                + '\n--- 格式化 PEM ---\n' + (formatted || pem);
+              setStatus('已解析（部分信息）');
+            }
+          }).catch(function(err) {
+            outputEl.textContent = '类型: ' + label + '\n'
+              + '原始字节数: ' + (new Uint8Array(ab)).length + '\n'
+              + '解析失败: ' + err.message + '\n'
+              + '\n--- 格式化 PEM ---\n' + (formatted || pem);
+            setStatus('解析出错', 'error');
+          });
+        } catch (e) {
+          outputEl.textContent = '解析失败: ' + e.message;
+          setStatus('解析失败', 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function() {
+        pemEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        pemEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

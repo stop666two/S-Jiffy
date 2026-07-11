@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML to TOML - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>YAML → TOML</h1>
+    <p class="tool-desc">将 YAML 格式转换为 TOML。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="server:
+  host: localhost
+  port: 8080
+logging:
+  level: debug" style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 TOML</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function parseYaml(src) {
+        var lines = src.split('\n');
+        var stack = [];
+        var root = {};
+        var current = root;
+        var currentIndent = -1;
+        var keyStack = [];
+        var objStack = [root];
+        var indentStack = [-1];
+        var lastKey = null;
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.trim() === '' || line.trim().charAt(0) === '#') continue;
+          var indent = 0;
+          for (var j = 0; j < line.length; j++) {
+            if (line.charAt(j) === ' ') indent++;
+            else break;
+          }
+          var content = line.trim();
+
+          // array item
+          var isArrayItem = content.indexOf('- ') === 0;
+          if (isArrayItem) {
+            content = content.substring(2).trim();
+            // find parent array
+            while (indentStack.length > 0 && indent <= indentStack[indentStack.length - 1]) {
+              objStack.pop();
+              indentStack.pop();
+              keyStack.pop();
+            }
+            var parentObj = objStack[objStack.length - 1];
+            if (!parentObj._arr) {
+              parentObj._arr = [];
+              var parentKey = keyStack[keyStack.length - 1];
+              parentObj[parentKey] = parentObj._arr;
+            }
+            var arr = parentObj._arr;
+            if (content === '' || content.indexOf(':') === -1) {
+              var val = parseYamlScalar(content);
+              arr.push(val);
+              if (val && typeof val === 'object') {
+                objStack.push(val);
+                indentStack.push(indent + 2);
+                keyStack.push(arr.length - 1);
+              }
+            } else {
+              var obj = {};
+              arr.push(obj);
+              objStack.push(obj);
+              indentStack.push(indent);
+              keyStack.push(arr.length - 1);
+              // process inline key:value
+              var colonIdx = content.indexOf(':');
+              var k = content.substring(0, colonIdx).trim();
+              var v = content.substring(colonIdx + 1).trim();
+              lastKey = k;
+              if (v !== '') {
+                obj[k] = parseYamlScalar(v);
+              } else {
+                objStack.push(obj);
+                indentStack.push(indent + 2);
+                keyStack.push(k);
+              }
+            }
+            continue;
+          }
+
+          var colonIdx = content.indexOf(':');
+          if (colonIdx === -1) continue;
+          var key = content.substring(0, colonIdx).trim();
+          var rest = content.substring(colonIdx + 1).trim();
+
+          while (indentStack.length > 0 && indent <= indentStack[indentStack.length - 1]) {
+            objStack.pop();
+            indentStack.pop();
+            keyStack.pop();
+          }
+
+          var curObj = objStack[objStack.length - 1];
+          if (rest === '') {
+            var newObj = {};
+            curObj[key] = newObj;
+            objStack.push(newObj);
+            indentStack.push(indent);
+            keyStack.push(key);
+            lastKey = key;
+          } else {
+            curObj[key] = parseYamlScalar(rest);
+            lastKey = key;
+          }
+        }
+
+        // remove _arr temp keys
+        function clean(o) {
+          if (o && typeof o === 'object' && !Array.isArray(o)) {
+            if (o._arr !== undefined) {
+              var arr = o._arr;
+              delete o._arr;
+              return arr;
+            }
+            var keys = Object.keys(o);
+            for (var i = 0; i < keys.length; i++) {
+              o[keys[i]] = clean(o[keys[i]]);
+            }
+          }
+          return o;
+        }
+
+        function parseYamlScalar(s) {
+          if (s === 'null' || s === '~') return null;
+          if (s === 'true') return true;
+          if (s === 'false') return false;
+          if (s.charAt(0) === "'" && s.charAt(s.length - 1) === "'") return s.substring(1, s.length - 1).replace(/''/g, "'");
+          if (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') return s.substring(1, s.length - 1);
+          var n = Number(s);
+          if (!isNaN(n) && s !== '') return n;
+          return s;
+        }
+
+        return clean(root);
+      }
+
+      function toToml(val, path) {
+        if (path === undefined) path = [];
+        var lines = [];
+        if (val === null || typeof val === 'boolean' || typeof val === 'number' || typeof val === 'string') {
+          if (path.length > 0) {
+            var key = path[path.length - 1];
+            if (typeof val === 'string') {
+              val = '"' + val.replace(/"/g, '\\"') + '"';
+            } else if (val === null) {
+              val = 'nil';
+            }
+            lines.push(key + ' = ' + val);
+          }
+          return lines;
+        }
+        if (Array.isArray(val)) {
+          if (path.length > 0) {
+            var key = path[path.length - 1];
+            var items = val.map(function (x) {
+              if (typeof x === 'string') return '"' + x.replace(/"/g, '\\"') + '"';
+              return String(x);
+            });
+            lines.push(key + ' = [' + items.join(', ') + ']');
+          }
+          return lines;
+        }
+        if (typeof val === 'object') {
+          var keys = Object.keys(val);
+          var simpleLines = [];
+          var hasTables = false;
+          for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var v = val[k];
+            if (v !== null && typeof v === 'object') {
+              hasTables = true;
+            } else {
+              Array.prototype.push.apply(simpleLines, toToml(v, [k]));
+            }
+          }
+          if (path.length > 0) {
+            if (simpleLines.length > 0) {
+              lines.push('[' + path.join('.') + ']');
+              Array.prototype.push.apply(lines, simpleLines);
+              lines.push('');
+            }
+            for (var i = 0; i < keys.length; i++) {
+              var k = keys[i];
+              var v = val[k];
+              if (v !== null && typeof v === 'object') {
+                Array.prototype.push.apply(lines, toToml(v, path.concat([k])));
+              }
+            }
+          } else {
+            for (var i = 0; i < simpleLines.length; i++) lines.push(simpleLines[i]);
+            if (simpleLines.length > 0 && hasTables) lines.push('');
+            for (var i = 0; i < keys.length; i++) {
+              var k = keys[i];
+              var v = val[k];
+              if (v !== null && typeof v === 'object') {
+                Array.prototype.push.apply(lines, toToml(v, [k]));
+              }
+            }
+          }
+          return lines;
+        }
+        return lines;
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 YAML', 'error'); return; }
+        try {
+          var parsed = parseYaml(text);
+          var result = toToml(parsed, []);
+          outputEl.textContent = result.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('YAML 解析错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

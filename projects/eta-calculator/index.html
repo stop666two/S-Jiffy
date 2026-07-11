@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETA Calculator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .eta-grid { display:grid; gap:var(--space-3); }
+    .eta-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .eta-row .field { flex:1; min-width:140px; }
+    .eta-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>ETA Calculator</h1>
+    <p class="tool-desc">基于总量和速率计算预计完成时间（amount / rate × time）。</p>
+    <div class="card">
+      <div class="eta-grid">
+        <div class="eta-row">
+          <div class="field"><label for="etaAmount">总量 (Amount)</label><input id="etaAmount" class="input" type="number" value="1000"></div>
+          <div class="field"><label for="etaRate">速率 (Rate/单位时间)</label><input id="etaRate" class="input" type="number" value="50"></div>
+          <div class="field"><label for="etaUnit">时间单位</label>
+            <select id="etaUnit" class="input">
+              <option value="seconds">秒</option>
+              <option value="minutes" selected>分钟</option>
+              <option value="hours">小时</option>
+              <option value="days">天</option>
+            </select>
+          </div>
+        </div>
+        <div><button id="calcBtn" class="btn btn-primary">计算 ETA</button></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var etaAmount = document.getElementById('etaAmount');
+      var etaRate = document.getElementById('etaRate');
+      var etaUnit = document.getElementById('etaUnit');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      calcBtn.addEventListener('click', function () {
+        var amount = parseFloat(etaAmount.value);
+        var rate = parseFloat(etaRate.value);
+        if (isNaN(amount) || isNaN(rate) || rate <= 0) {
+          outputEl.textContent = '请输入有效的正数';
+          setStatus('', 'error');
+          return;
+        }
+        var unit = etaUnit.value;
+        var raw = amount / rate;
+        var unitLabel = '';
+        var display = raw;
+
+        if (unit === 'seconds') unitLabel = '秒';
+        else if (unit === 'minutes') unitLabel = '分钟';
+        else if (unit === 'hours') unitLabel = '小时';
+        else if (unit === 'days') unitLabel = '天';
+
+        if (display >= 60 && unit === 'seconds') {
+          display = display / 60;
+          unitLabel = '分钟';
+        }
+        if (display >= 60 && (unit === 'seconds' || unit === 'minutes')) {
+          display = display / 60;
+          unitLabel = '小时';
+        }
+        if (display >= 24 && (unit === 'seconds' || unit === 'minutes' || unit === 'hours')) {
+          unitLabel = '天';
+        }
+
+        var result = (raw).toFixed(2);
+        var human = '';
+        if (raw >= 86400 && unit === 'seconds') human = (raw / 86400).toFixed(2) + ' 天';
+        else if (raw >= 3600 && unit === 'seconds') human = (raw / 3600).toFixed(2) + ' 小时';
+        else if (raw >= 3600 && unit === 'minutes') human = (raw / 60).toFixed(2) + ' 小时';
+        else if (raw >= 1440 && unit === 'minutes') human = (raw / 1440).toFixed(2) + ' 天';
+        else if (raw >= 24 && unit === 'hours') human = (raw / 24).toFixed(2) + ' 天';
+        else human = result + ' ' + unitLabel;
+
+        outputEl.textContent = amount + ' ÷ ' + rate + ' = ' + human;
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+    })();
+  </script>
+</body>
+</html>

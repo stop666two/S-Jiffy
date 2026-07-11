@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则替换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>正则替换</h1>
+    <p class="tool-desc">使用正则表达式查找替换文本。</p>
+
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <span style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">查找</span>
+      <input id="patternInput" class="input js-focus-input" placeholder="正则表达式" style="width:240px;">
+      <input id="flagsInput" class="input" placeholder="gim" style="width:60px;">
+      <span style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">替换为</span>
+      <input id="replaceInput" class="input" placeholder="替换文本" style="width:200px;">
+    </div>
+
+    <div class="card" style="margin-top:var(--space-3);">
+      <textarea id="inputText" class="input textarea" placeholder="输入要替换的文本..." style="min-height:140px;"></textarea>
+    </div>
+
+    <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
+      <button id="replaceBtn" class="btn btn-primary">替换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), rep = document.getElementById('replaceInput'), inp = document.getElementById('inputText'), o = document.getElementById('outputText');
+      document.getElementById('replaceBtn').addEventListener('click', function () {
+        var p = pat.value.trim(), t = inp.value;
+        if (!p) { setStatus('请输入正则表达式', 'error'); return; }
+        if (!t) { setStatus('请输入文本', 'error'); return; }
+        try {
+          var re = new RegExp(p, flags.value);
+          var matches = (t.match(re) || []).length;
+          if (!re.global && matches > 0) matches = 1;
+          var result = t.replace(re, rep.value);
+          o.textContent = result + '\n\n--- 匹配 ' + matches + ' 处 ---';
+          setStatus('');
+        } catch (e) {
+          o.textContent = '';
+          setStatus('正则语法错误: ' + e.message, 'error');
+        }
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () { pat.value = ''; flags.value = ''; rep.value = ''; inp.value = ''; o.textContent = ''; setStatus(''); pat.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+      inp.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') { document.getElementById('replaceBtn').click(); } });
+    })();
+  </script>
+</body>
+</html>

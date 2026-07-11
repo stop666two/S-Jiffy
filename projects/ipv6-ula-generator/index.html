@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPv6 ULA 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ula-addr { font-size:20px; letter-spacing:0.05em; word-break:break-all; }
+    .ula-detail { font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-top:8px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>IPv6 ULA 生成器</h1>
+    <p class="tool-desc">生成随机 IPv6 唯一本地地址 (Unique Local Address)，符合 RFC 4193 标准，固定 fd00::/8 前缀。</p>
+    <div class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <button id="generateBtn" class="btn btn-primary">生成新地址</button>
+      <button id="generateMultiBtn" class="btn btn-secondary">生成 5 个</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function randomHex(len) {
+        var s = '';
+        for (var i = 0; i < len; i++) {
+          s += Math.floor(Math.random() * 16).toString(16);
+        }
+        return s;
+      }
+
+      function generateULA() {
+        // RFC 4193: fd + 40-bit random global ID + 16-bit subnet + 64-bit interface ID
+        var globalId = randomHex(10);
+        var subnet = randomHex(4);
+        var interfaceId = randomHex(16);
+        var raw = 'fd' + globalId + subnet + interfaceId;
+        // Format as IPv6
+        var parts = [];
+        for (var i = 0; i < 32; i += 4) {
+          parts.push(raw.substring(i, i + 4));
+        }
+        return parts.join(':');
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function() {
+        outputEl.textContent = generateULA();
+        setStatus('已生成 ULA 地址');
+      });
+
+      document.getElementById('generateMultiBtn').addEventListener('click', function() {
+        var arr = [];
+        for (var i = 0; i < 5; i++) arr.push(generateULA());
+        outputEl.textContent = arr.join('\n\n');
+        setStatus('已生成 5 个 ULA 地址');
+      });
+
+      clearBtn = document.getElementById('clearBtn');
+      clearBtn.addEventListener('click', function() {
+        outputEl.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

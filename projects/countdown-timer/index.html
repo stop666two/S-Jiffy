@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>倒计时器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cd-display { display:flex; gap:var(--space-2); justify-content:center; margin:var(--space-4) 0; }
+    .cd-unit { text-align:center; min-width:80px; }
+    .cd-unit .val { font-size:48px; font-weight:600; line-height:1.2; font-variant-numeric:tabular-nums; }
+    .cd-unit .lbl { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .cd-expired { text-align:center; font-size:var(--font-size-xl); color:var(--color-error); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>倒计时器</h1>
+    <p class="tool-desc">设置目标日期时间，实时显示倒计时。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <label for="targetDatetime" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">目标日期时间</label>
+        <input id="targetDatetime" class="input" type="datetime-local">
+      </div>
+      <div><button id="startBtn" class="btn btn-primary">开始倒计时</button></div>
+    </div>
+    <div class="cd-display" id="cdDisplay">
+      <div class="cd-unit"><div class="val" id="cdDays">--</div><div class="lbl">天</div></div>
+      <div class="cd-unit"><div class="val" id="cdHours">--</div><div class="lbl">时</div></div>
+      <div class="cd-unit"><div class="val" id="cdMins">--</div><div class="lbl">分</div></div>
+      <div class="cd-unit"><div class="val" id="cdSecs">--</div><div class="lbl">秒</div></div>
+    </div>
+    <div class="cd-expired" id="cdExpired" style="display:none;">时间已到！</div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var targetEl = document.getElementById('targetDatetime');
+      var startBtn = document.getElementById('startBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var cdDays = document.getElementById('cdDays');
+      var cdHours = document.getElementById('cdHours');
+      var cdMins = document.getElementById('cdMins');
+      var cdSecs = document.getElementById('cdSecs');
+      var cdExpired = document.getElementById('cdExpired');
+      var cdDisplay = document.getElementById('cdDisplay');
+      var timerId = null;
+
+      function pad2(n) { return String(n).padStart(2, '0'); }
+
+      function update() {
+        var targetStr = targetEl.value;
+        if (!targetStr) { stopTimer(); return; }
+        var target = new Date(targetStr);
+        var now = new Date();
+        var diff = target - now;
+
+        if (diff <= 0) {
+          cdDays.textContent = '00';
+          cdHours.textContent = '00';
+          cdMins.textContent = '00';
+          cdSecs.textContent = '00';
+          cdExpired.style.display = 'block';
+          outputEl.textContent = '目标时间已过';
+          stopTimer();
+          return;
+        }
+
+        cdExpired.style.display = 'none';
+        var totalSecs = Math.floor(diff / 1000);
+        var days = Math.floor(totalSecs / 86400);
+        var hours = Math.floor((totalSecs % 86400) / 3600);
+        var mins = Math.floor((totalSecs % 3600) / 60);
+        var secs = totalSecs % 60;
+
+        cdDays.textContent = days;
+        cdHours.textContent = pad2(hours);
+        cdMins.textContent = pad2(mins);
+        cdSecs.textContent = pad2(secs);
+        outputEl.textContent = '剩余 ' + days + ' 天 ' + hours + ' 时 ' + mins + ' 分 ' + secs + ' 秒';
+      }
+
+      function stopTimer() {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }
+
+      function startCountdown() {
+        stopTimer();
+        if (!targetEl.value) { setStatus('请设置目标时间', 'error'); return; }
+        update();
+        timerId = setInterval(update, 1000);
+        setStatus('倒计时已开始');
+      }
+
+      startBtn.addEventListener('click', startCountdown);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

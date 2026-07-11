@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XML Formatter - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>XML Formatter</h1>
+    <p class="tool-desc">格式化与压缩 XML 数据。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='<root><item id="1"><name>test</name></item></root>' style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="formatBtn" class="btn btn-primary">格式化</button>
+      <button id="minifyBtn" class="btn btn-secondary">压缩</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function formatXml(xml, minify) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xml, 'text/xml');
+        var parseError = doc.querySelector('parsererror');
+        if (parseError) throw new Error(parseError.textContent);
+
+        var serializer = new XMLSerializer();
+        if (minify) {
+          return serializer.serializeToString(doc);
+        }
+        return formatXmlString(serializer.serializeToString(doc));
+      }
+
+      function formatXmlString(str) {
+        var indent = 0;
+        var result = [];
+        var pad = '  ';
+        // Normalize: remove whitespace between tags
+        str = str.replace(/>\s*</g, '>\n<');
+        var lines = str.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (line === '') continue;
+          // closing tag
+          if (line.indexOf('</') === 0) {
+            indent--;
+          }
+          result.push(pad.repeat(Math.max(0, indent)) + line);
+          // opening tag (not self-closing)
+          if (line.indexOf('<?') === 0) {
+            // no indent change
+          } else if (line.indexOf('</') === 0) {
+            // no indent change
+          } else if (line.indexOf('<![CDATA[') === 0) {
+            // no indent change
+          } else if (line.indexOf('<!--') === 0) {
+            // no indent change
+          } else if (line.indexOf('<') === 0 && line.lastIndexOf('/') !== line.length - 1 && line.lastIndexOf('>') !== line.indexOf('>') + 1 && line.indexOf('/>') === -1) {
+            indent++;
+          }
+        }
+        return result.join('\n');
+      }
+
+      document.getElementById('formatBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 XML', 'error'); return; }
+        try {
+          outputEl.textContent = formatXml(text, false);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('XML 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('minifyBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 XML', 'error'); return; }
+        try {
+          outputEl.textContent = formatXml(text, true);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('XML 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

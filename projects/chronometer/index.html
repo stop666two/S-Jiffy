@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronometer - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .chrono-display { font-size:48px; font-weight:600; text-align:center; padding:var(--space-4) 0; font-variant-numeric:tabular-nums; letter-spacing:2px; }
+    .chrono-controls { display:flex; gap:12px; justify-content:center; }
+    .chrono-laps { margin-top:var(--space-3); max-height:200px; overflow-y:auto; }
+    .chrono-laps table { width:100%; border-collapse:collapse; }
+    .chrono-laps td { padding:6px 12px; border-bottom:1px solid var(--color-border); font-size:var(--font-size-sm); }
+    .chrono-laps td:first-child { color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Chronometer</h1>
+    <p class="tool-desc">精密的秒表工具，支持计次（Lap）记录。</p>
+    <div class="card">
+      <div class="chrono-display" id="chronoDisplay">00:00.000</div>
+      <div class="chrono-controls">
+        <button id="startBtn" class="btn btn-primary">开始</button>
+        <button id="lapBtn" class="btn btn-secondary" disabled>计次</button>
+        <button id="stopBtn" class="btn btn-secondary" disabled>停止</button>
+        <button id="resetBtn" class="btn btn-secondary">复位</button>
+      </div>
+      <div class="chrono-laps" id="lapsContainer"></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var chronoDisplay = document.getElementById('chronoDisplay');
+      var startBtn = document.getElementById('startBtn');
+      var lapBtn = document.getElementById('lapBtn');
+      var stopBtn = document.getElementById('stopBtn');
+      var resetBtn = document.getElementById('resetBtn');
+      var lapsContainer = document.getElementById('lapsContainer');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var running = false;
+      var startTime = 0;
+      var elapsed = 0;
+      var timerId = null;
+      var laps = [];
+
+      function formatTime(ms) {
+        var totalMs = Math.floor(ms);
+        var minutes = Math.floor(totalMs / 60000);
+        var seconds = Math.floor((totalMs % 60000) / 1000);
+        var millis = totalMs % 1000;
+        return (minutes < 10 ? '0' : '') + minutes + ':' +
+               (seconds < 10 ? '0' : '') + seconds + '.' +
+               (millis < 100 ? '0' : '') + (millis < 10 ? '0' : '') + millis;
+      }
+
+      function updateDisplay() {
+        var now = running ? Date.now() : 0;
+        var diff = elapsed + (running ? now - startTime : 0);
+        chronoDisplay.textContent = formatTime(diff);
+      }
+
+      function tick() {
+        updateDisplay();
+        timerId = setTimeout(tick, 10);
+      }
+
+      function start() {
+        if (running) return;
+        running = true;
+        startTime = Date.now();
+        startBtn.disabled = true;
+        lapBtn.disabled = false;
+        stopBtn.disabled = false;
+        resetBtn.disabled = true;
+        tick();
+        setStatus('计时中');
+      }
+
+      function stop() {
+        if (!running) return;
+        running = false;
+        elapsed += Date.now() - startTime;
+        clearTimeout(timerId);
+        timerId = null;
+        startBtn.disabled = false;
+        startBtn.textContent = '继续';
+        lapBtn.disabled = true;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+        updateDisplay();
+        setStatus('已暂停');
+      }
+
+      function reset() {
+        running = false;
+        if (timerId) { clearTimeout(timerId); timerId = null; }
+        elapsed = 0;
+        laps = [];
+        startBtn.disabled = false;
+        startBtn.textContent = '开始';
+        lapBtn.disabled = true;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+        lapsContainer.innerHTML = '';
+        chronoDisplay.textContent = '00:00.000';
+        setStatus('');
+      }
+
+      function lap() {
+        if (!running) return;
+        var now = Date.now();
+        var diff = elapsed + (now - startTime);
+        var lastLap = laps.length > 0 ? laps[laps.length - 1] : 0;
+        var lapDiff = diff - lastLap;
+        laps.push(diff);
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);';
+        row.innerHTML = '<span>Lap ' + laps.length + '</span><span>' + formatTime(lapDiff) + '</span><span>' + formatTime(diff) + '</span>';
+        lapsContainer.insertBefore(row, lapsContainer.firstChild);
+        setStatus('计次 ' + laps.length);
+      }
+
+      startBtn.addEventListener('click', start);
+      stopBtn.addEventListener('click', stop);
+      resetBtn.addEventListener('click', reset);
+      lapBtn.addEventListener('click', lap);
+
+      copyBtn.addEventListener('click', function () {
+        var text = chronoDisplay.textContent;
+        if (text && text !== '00:00.000') { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+    })();
+  </script>
+</body>
+</html>

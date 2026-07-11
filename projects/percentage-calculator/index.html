@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Percentage Calculator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pc-form { display:grid; gap:var(--space-3); }
+    .pc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .pc-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); display:block; margin-bottom:4px; }
+    .pc-row .field { flex:1; min-width:120px; }
+    .pc-row .op { font-size:var(--font-size-lg); padding-bottom:12px; color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Percentage Calculator</h1>
+    <p class="tool-desc">百分比快速计算：求百分比、求占比、求变化率。</p>
+    <div class="card">
+      <div class="pc-form">
+        <div class="pc-row">
+          <div class="field"><label for="pctA">数值 A</label><input id="pctA" class="input" type="number" value="20"></div>
+          <div class="op">%</div>
+          <div class="field"><label for="pctB">数值 B</label><input id="pctB" class="input" type="number" value="200"></div>
+          <div><button id="pctOfBtn" class="btn btn-primary">求 A 是 B 的 ?%</button></div>
+        </div>
+        <div class="pc-row">
+          <div class="field"><label for="pctX">百分比</label><input id="pctX" class="input" type="number" value="15"></div>
+          <div class="op">% of</div>
+          <div class="field"><label for="pctY">数值</label><input id="pctY" class="input" type="number" value="300"></div>
+          <div><button id="pctWhatBtn" class="btn btn-primary">求 X% of Y = ?</button></div>
+        </div>
+        <div class="pc-row">
+          <div class="field"><label for="pctOld">原值</label><input id="pctOld" class="input" type="number" value="100"></div>
+          <div class="op">→</div>
+          <div class="field"><label for="pctNew">新值</label><input id="pctNew" class="input" type="number" value="150"></div>
+          <div><button id="pctChangeBtn" class="btn btn-primary">求变化率</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var pctA = document.getElementById('pctA');
+      var pctB = document.getElementById('pctB');
+      var pctX = document.getElementById('pctX');
+      var pctY = document.getElementById('pctY');
+      var pctOld = document.getElementById('pctOld');
+      var pctNew = document.getElementById('pctNew');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var pctOfBtn = document.getElementById('pctOfBtn');
+      var pctWhatBtn = document.getElementById('pctWhatBtn');
+      var pctChangeBtn = document.getElementById('pctChangeBtn');
+
+      pctOfBtn.addEventListener('click', function () {
+        var a = parseFloat(pctA.value);
+        var b = parseFloat(pctB.value);
+        if (b === 0) { outputEl.textContent = '除数不能为 0'; setStatus('', 'error'); return; }
+        var result = (a / b) * 100;
+        outputEl.textContent = a + ' 是 ' + b + ' 的 ' + result.toFixed(2) + '%';
+        setStatus('');
+      });
+
+      pctWhatBtn.addEventListener('click', function () {
+        var x = parseFloat(pctX.value);
+        var y = parseFloat(pctY.value);
+        var result = (x / 100) * y;
+        outputEl.textContent = x + '% of ' + y + ' = ' + result.toFixed(2);
+        setStatus('');
+      });
+
+      pctChangeBtn.addEventListener('click', function () {
+        var oldVal = parseFloat(pctOld.value);
+        var newVal = parseFloat(pctNew.value);
+        if (oldVal === 0) { outputEl.textContent = '原值不能为 0'; setStatus('', 'error'); return; }
+        var change = ((newVal - oldVal) / oldVal) * 100;
+        var sign = change >= 0 ? '增长' : '下降';
+        outputEl.textContent = '从 ' + oldVal + ' 到 ' + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+    })();
+  </script>
+</body>
+</html>

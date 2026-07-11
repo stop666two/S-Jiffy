@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML 实时预览 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .split-view { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); min-height:400px; }
+    .split-view textarea { width:100%; height:400px; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .split-view textarea:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+    .preview-frame { width:100%; height:400px; border:1px solid var(--color-border); border-radius:var(--radius-md); background:#fff; }
+    @media (max-width:700px) { .split-view { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>HTML 实时预览</h1>
+    <p class="tool-desc">编写 HTML，右侧实时预览渲染效果。</p>
+    <div class="split-view">
+      <textarea id="htmlInput" class="js-focus-input" placeholder="<!DOCTYPE html>\n<html>\n<head>\n  <title>Demo</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>" spellcheck="false"></textarea>
+      <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts"></iframe>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var htmlInput = document.getElementById('htmlInput');
+      var frame = document.getElementById('previewFrame');
+      var debounceTimer = null;
+
+      function updatePreview() {
+        var html = htmlInput.value;
+        frame.srcdoc = html;
+      }
+
+      function debouncedUpdate() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updatePreview, 300);
+      }
+
+      htmlInput.addEventListener('input', debouncedUpdate);
+      htmlInput.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.key === 'Enter') { updatePreview(); setStatus('已刷新预览'); }
+      });
+
+      updatePreview();
+      setStatus('输入 HTML 即可实时预览');
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG 占位图生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .svg-preview { display: flex; justify-content: center; align-items: center; padding: var(--space-3); background: repeating-conic-gradient(var(--color-bg-soft) 0% 25%, #fff 0% 50%) 0 0 / 20px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); min-height: 200px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>SVG 占位图生成器</h1>
+    <p class="tool-desc">生成 SVG 占位图片，自定义尺寸、文字和颜色。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">宽度</label>
+        <input id="widthInput" class="input" type="number" value="800" min="10" max="2000" style="width:90px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">高度</label>
+        <input id="heightInput" class="input" type="number" value="400" min="10" max="2000" style="width:90px;">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">背景色</label>
+        <input id="bgColorInput" class="input" type="text" value="#CCCCCC" style="width:120px;">
+        <input id="bgColorPicker" type="color" value="#cccccc" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">文字色</label>
+        <input id="textColorInput" class="input" type="text" value="#333333" style="width:120px;">
+        <input id="textColorPicker" type="color" value="#333333" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">文字</label>
+        <input id="textInput" class="input js-focus-input" type="text" value="800 x 400" style="flex:1;min-width:150px;">
+        <button id="generateBtn" class="btn btn-primary">生成 SVG</button>
+      </div>
+    </div>
+    <div class="svg-preview" id="previewContainer"></div>
+    <div class="output-box" style="min-height:120px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制 SVG 代码</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var wEl = document.getElementById('widthInput');
+    var hEl = document.getElementById('heightInput');
+    var bgEl = document.getElementById('bgColorInput');
+    var bgPicker = document.getElementById('bgColorPicker');
+    var tcEl = document.getElementById('textColorInput');
+    var tcPicker = document.getElementById('textColorPicker');
+    var textEl = document.getElementById('textInput');
+    var previewEl = document.getElementById('previewContainer');
+    var outputEl = document.getElementById('outputText');
+    function generateSvg() {
+      var w = parseInt(wEl.value) || 800;
+      var h = parseInt(hEl.value) || 400;
+      if (w < 10) w = 10; if (w > 2000) w = 2000;
+      if (h < 10) h = 10; if (h > 2000) h = 2000;
+      var bg = bgEl.value.trim() || '#CCCCCC';
+      var tc = tcEl.value.trim() || '#333333';
+      var txt = textEl.value.trim() || (w + ' x ' + h);
+      var fontSize = Math.max(14, Math.min(72, Math.floor(Math.min(w, h) / 8)));
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">';
+      svg += '<rect width="' + w + '" height="' + h + '" fill="' + bg + '"/>';
+      svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="' + fontSize + '" fill="' + tc + '">' + escapeXml(txt) + '</text>';
+      svg += '</svg>';
+      previewEl.innerHTML = svg;
+      outputEl.textContent = svg;
+      setStatus('SVG 已生成 (' + w + ' x ' + h + ')');
+    }
+    function escapeXml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    document.getElementById('generateBtn').addEventListener('click', generateSvg);
+    bgPicker.addEventListener('input', function() { bgEl.value = this.value; generateSvg(); });
+    bgEl.addEventListener('input', function() { bgPicker.value = this.value; });
+    tcPicker.addEventListener('input', function() { tcEl.value = this.value; generateSvg(); });
+    tcEl.addEventListener('input', function() { tcPicker.value = this.value; });
+    wEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === wEl.defaultValue + ' x ' + hEl.defaultValue) textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
+    hEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === '800 x 400') textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('SVG 代码已复制'); } });
+    generateSvg();
+  })();</script>
+</body>
+</html>

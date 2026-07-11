@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON 对比 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .json-diff-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .json-pane { }
+    .json-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
+    .json-pane textarea { min-height:200px; font-family:var(--font-mono); font-size:12px; }
+    .diff-result { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
+    .diff-added { background:#e6ffe6; color:#1a7d1a; }
+    .diff-removed { background:#ffe6e6; color:#cc3333; }
+    .diff-changed { background:#fffbe6; color:#b8860b; }
+    .diff-same { color:#888; }
+    .diff-path { font-weight:600; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JSON 对比</h1>
+    <p class="tool-desc">输入两个 JSON 对象，对比找出差异（新增/删除/修改的字段）。</p>
+    <div class="json-diff-container">
+      <div class="json-pane">
+        <label for="jsonA">JSON A (左/旧)</label>
+        <textarea id="jsonA" class="input textarea" placeholder='{"name":"Alice","age":30}' style="min-height:180px;"></textarea>
+      </div>
+      <div class="json-pane">
+        <label for="jsonB">JSON B (右/新)</label>
+        <textarea id="jsonB" class="input textarea" placeholder='{"name":"Bob","age":31,"city":"NYC"}' style="min-height:180px;"></textarea>
+      </div>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin:16px 0; flex-wrap:wrap;">
+      <button id="diffBtn" class="btn btn-primary">对比</button>
+      <button id="swapBtn" class="btn btn-secondary">交换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;line-height:1.6;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var jsonA = document.getElementById('jsonA');
+      var jsonB = document.getElementById('jsonB');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function typeName(v) {
+        if (v === null) return 'null';
+        if (Array.isArray(v)) return 'array';
+        return typeof v;
+      }
+
+      function deepDiff(a, b, path) {
+        var diffs = [];
+        path = path || '';
+
+        var keysA = (a && typeof a === 'object') ? Object.keys(a) : [];
+        var keysB = (b && typeof b === 'object') ? Object.keys(b) : [];
+        var allKeys = {};
+        for (var i = 0; i < keysA.length; i++) allKeys[keysA[i]] = true;
+        for (var i = 0; i < keysB.length; i++) allKeys[keysB[i]] = true;
+
+        for (var key in allKeys) {
+          var fullPath = path ? path + '.' + key : key;
+          var inA = key in (a || {});
+          var inB = key in (b || {});
+
+          if (inA && !inB) {
+            diffs.push({ type: 'removed', path: fullPath, oldVal: JSON.stringify(a[key]), newVal: undefined });
+          } else if (!inA && inB) {
+            diffs.push({ type: 'added', path: fullPath, oldVal: undefined, newVal: JSON.stringify(b[key]) });
+          } else {
+            var va = a[key], vb = b[key];
+            if (typeName(va) !== typeName(vb) || JSON.stringify(va) !== JSON.stringify(vb)) {
+              if (va && vb && typeof va === 'object' && typeof vb === 'object' && !Array.isArray(va) && !Array.isArray(vb)) {
+                var nested = deepDiff(va, vb, fullPath);
+                diffs = diffs.concat(nested);
+              } else {
+                diffs.push({ type: 'changed', path: fullPath, oldVal: JSON.stringify(va), newVal: JSON.stringify(vb) });
+              }
+            }
+          }
+        }
+        return diffs;
+      }
+
+      document.getElementById('diffBtn').addEventListener('click', function() {
+        var textA = jsonA.value.trim();
+        var textB = jsonB.value.trim();
+        if (!textA || !textB) { setStatus('请同时输入两个 JSON', 'error'); return; }
+
+        var objA, objB;
+        try { objA = JSON.parse(textA); } catch (e) { setStatus('JSON A 格式错误: ' + e.message, 'error'); return; }
+        try { objB = JSON.parse(textB); } catch (e) { setStatus('JSON B 格式错误: ' + e.message, 'error'); return; }
+
+        var diffs = deepDiff(objA, objB, '');
+        if (diffs.length === 0) {
+          outputEl.innerHTML = '<span style="color:#27ae60;">✅ 两个 JSON 完全一致</span>';
+          setStatus('完全一致');
+          return;
+        }
+
+        var html = '';
+        var added = 0, removed = 0, changed = 0;
+        for (var i = 0; i < diffs.length; i++) {
+          var d = diffs[i];
+          if (d.type === 'added') {
+            html += '<div class="diff-added"><span class="diff-path">+ ' + d.path + '</span> → ' + d.newVal + '</div>';
+            added++;
+          } else if (d.type === 'removed') {
+            html += '<div class="diff-removed"><span class="diff-path">- ' + d.path + '</span> → (已删除) 原值: ' + d.oldVal + '</div>';
+            removed++;
+          } else {
+            html += '<div class="diff-changed"><span class="diff-path">~ ' + d.path + '</span> ' + d.oldVal + ' → ' + d.newVal + '</div>';
+            changed++;
+          }
+        }
+        html = '<div style="margin-bottom:8px;font-size:var(--font-size-sm);">发现 ' + diffs.length + ' 处差异：新增 ' + added + '，删除 ' + removed + '，修改 ' + changed + '</div>' + html;
+        outputEl.innerHTML = html;
+        setStatus('发现 ' + diffs.length + ' 处差异');
+      });
+
+      document.getElementById('swapBtn').addEventListener('click', function() {
+        var tmp = jsonA.value;
+        jsonA.value = jsonB.value;
+        jsonB.value = tmp;
+      });
+
+      clearBtn.addEventListener('click', function() {
+        jsonA.value = '';
+        jsonB.value = '';
+        outputEl.innerHTML = '';
+        setStatus('');
+        jsonA.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent || outputEl.innerText;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

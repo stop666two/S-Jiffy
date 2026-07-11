@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XML to JSON - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>XML → JSON</h1>
+    <p class="tool-desc">将 XML 格式转换为 JSON。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='<root><item id="1"><name>Alice</name><age>30</age></item><item id="2"><name>Bob</name><age>25</age></item></root>' style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 JSON</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function xmlNodeToJson(node) {
+        var obj = {};
+        // attributes
+        if (node.attributes && node.attributes.length > 0) {
+          for (var i = 0; i < node.attributes.length; i++) {
+            var attr = node.attributes[i];
+            obj['@' + attr.name] = attr.value;
+          }
+        }
+        // children
+        var children = node.childNodes;
+        var hasElements = false;
+        var textContent = '';
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i];
+          if (child.nodeType === 1) { // ELEMENT_NODE
+            hasElements = true;
+            var childName = child.nodeName;
+            var childObj = xmlNodeToJson(child);
+            if (obj[childName] === undefined) {
+              obj[childName] = childObj;
+            } else {
+              if (!Array.isArray(obj[childName])) {
+                obj[childName] = [obj[childName]];
+              }
+              obj[childName].push(childObj);
+            }
+          } else if (child.nodeType === 3 || child.nodeType === 4) { // TEXT or CDATA
+            textContent += child.nodeValue;
+          }
+        }
+        if (!hasElements) {
+          var trimmed = textContent.trim();
+          if (trimmed !== '') {
+            // If obj has attributes, keep as object with #text
+            if (Object.keys(obj).length > 0) {
+              obj['#text'] = trimmed;
+            } else {
+              obj = tryParseNumber(trimmed);
+            }
+          } else if (Object.keys(obj).length === 0) {
+            obj = null;
+          }
+        }
+        return obj;
+      }
+
+      function tryParseNumber(s) {
+        if (s === 'true') return true;
+        if (s === 'false') return false;
+        if (s === 'null') return null;
+        var n = Number(s);
+        if (!isNaN(n) && s !== '') return n;
+        return s;
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 XML', 'error'); return; }
+        try {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(text, 'text/xml');
+          var parseError = doc.querySelector('parsererror');
+          if (parseError) throw new Error(parseError.textContent);
+          var root = doc.documentElement;
+          var result = {};
+          result[root.nodeName] = xmlNodeToJson(root);
+          outputEl.textContent = JSON.stringify(result, null, 2);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('XML 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 压缩 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.code-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:300px}@media(max-width:700px){.code-pair{grid-template-columns:1fr}}.code-pair textarea{height:300px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.code-pair textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.stats{display:flex;gap:16px;font-size:12px;color:var(--color-text-secondary);margin-top:8px;flex-wrap:wrap}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>HTML 压缩</h1><p class="tool-desc">压缩 HTML 代码：移除注释、多余空白、缩短标签属性引号。</p>
+<div class="card">
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+<button id="minifyBtn" class="btn btn-primary">压缩</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="code-pair">
+<textarea id="htmlInput" class="js-focus-input" placeholder="粘贴 HTML 代码..."><!-- 文档 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>示例</title>
+</head>
+<body>
+  <div class="container">
+    <p>Hello World</p>
+  </div>
+</body>
+</html>
+</textarea>
+<textarea id="htmlOutput" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+</div>
+<div class="stats" id="stats"></div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>(function(){
+var htmlInput=document.getElementById('htmlInput');
+var htmlOutput=document.getElementById('htmlOutput');
+var minifyBtn=document.getElementById('minifyBtn');
+var clearBtn=document.getElementById('clearBtn');
+var outputEl=document.getElementById('outputText');
+var copyBtn=document.getElementById('copyBtn');
+var stats=document.getElementById('stats');
+
+function minify(){
+var h=htmlInput.value;
+if(!h.trim()){htmlOutput.value='';stats.textContent='';outputEl.textContent='';setStatus('请输入 HTML','error');return;}
+var r=h;
+r=r.replace(/<!--[\s\S]*?-->/g,'');
+r=r.replace(/>\s+</g,'><');
+r=r.replace(/\s{2,}/g,' ');
+r=r.replace(/\s+/g,' ');
+r=r.replace(/^\s+|\s+$/gm,'');
+r=r.replace(/\s*=\s*/g,'=');
+r=r.replace(/"([^"']*?)"/g,function(m,p){
+if(/^[a-zA-Z0-9\-_]+$/.test(p)&&!/^[0-9]/.test(p)){return p;}
+return m;
+});
+r=r.replace(/\s+/g,' ');
+r=r.replace(/>\s+</g,'><');
+htmlOutput.value=r;
+var inputSize=h.length;
+var outputSize=r.length;
+var saved=inputSize-outputSize;
+var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
+stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
+outputEl.textContent='压缩完成';
+setStatus('');
+}
+
+clearBtn.addEventListener('click',function(){htmlInput.value='';htmlOutput.value='';stats.textContent='';outputEl.textContent='';setStatus('');htmlInput.focus();});
+minifyBtn.addEventListener('click',minify);
+copyBtn.addEventListener('click',function(){if(htmlOutput.value){copyToClipboard(htmlOutput.value,copyBtn);setStatus('已复制');}});
+htmlInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minify();});
+})();</script></body></html>

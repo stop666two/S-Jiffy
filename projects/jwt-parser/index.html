@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT 解析器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .jwt-section { margin-bottom:16px; }
+    .jwt-section h2 { font-size:var(--font-size-base); font-weight:600; margin-bottom:8px; }
+    .jwt-section pre { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); font-size:12px; overflow-x:auto; white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JWT 解析器</h1>
+    <p class="tool-desc">粘贴 JWT Token，解码查看 Header 和 Payload 内容（Base64 解码）。</p>
+    <div class="card">
+      <textarea id="jwtInput" class="input textarea js-focus-input" placeholder="粘贴 JWT Token...&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..." style="min-height:80px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="parseBtn" class="btn btn-primary">解析</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var jwtEl = document.getElementById('jwtInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function base64UrlDecode(str) {
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        try {
+          return decodeURIComponent(escape(atob(str)));
+        } catch (e) {
+          return atob(str);
+        }
+      }
+
+      document.getElementById('parseBtn').addEventListener('click', function() {
+        var token = jwtEl.value.trim();
+        if (!token) { setStatus('请输入 JWT Token', 'error'); return; }
+        var parts = token.split('.');
+        if (parts.length !== 3) {
+          outputEl.textContent = '无效的 JWT 格式。JWT 应包含 3 个由点号分隔的部分 (header.payload.signature)';
+          setStatus('格式错误', 'error');
+          return;
+        }
+
+        try {
+          var headerB64 = parts[0];
+          var payloadB64 = parts[1];
+          var signatureB64 = parts[2];
+
+          var headerRaw = base64UrlDecode(headerB64);
+          var payloadRaw = base64UrlDecode(payloadB64);
+
+          var headerObj, payloadObj;
+          try { headerObj = JSON.parse(headerRaw); } catch(e) { headerObj = headerRaw; }
+          try { payloadObj = JSON.parse(payloadRaw); } catch(e) { payloadObj = payloadRaw; }
+
+          var result = '';
+          result += '═══════ Header ═══════\n';
+          result += JSON.stringify(headerObj, null, 2) + '\n\n';
+          result += '═══════ Payload ═══════\n';
+          result += JSON.stringify(payloadObj, null, 2) + '\n\n';
+
+          // Expiration check
+          if (payloadObj && payloadObj.exp) {
+            var expDate = new Date(payloadObj.exp * 1000);
+            var now = new Date();
+            result += '═══════ 时效检查 ═══════\n';
+            result += '过期时间: ' + expDate.toLocaleString() + '\n';
+            result += '当前时间: ' + now.toLocaleString() + '\n';
+            result += (expDate > now) ? '✅ Token 未过期' : '❌ Token 已过期';
+          }
+
+          result += '\n\n═══════ Signature (原始) ═══════\n';
+          result += signatureB64.substring(0, 40) + '... (' + signatureB64.length + ' chars)';
+
+          outputEl.textContent = result;
+          setStatus('解析成功');
+
+        } catch (e) {
+          outputEl.textContent = '解析失败: ' + e.message;
+          setStatus('解析失败', 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function() {
+        jwtEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        jwtEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

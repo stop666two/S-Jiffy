@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本反转器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rev-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文本反转器</h1>
+    <p class="tool-desc">反转文本、反转单词顺序、反转行顺序。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要反转的文本..."></textarea>
+    </div>
+    <div class="rev-actions">
+      <button id="reverseTextBtn" class="btn btn-primary">反转字符</button>
+      <button id="reverseWordsBtn" class="btn btn-secondary">反转单词</button>
+      <button id="reverseLinesBtn" class="btn btn-secondary">反转行</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function reverseChars() {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        outputEl.textContent = text.split('').reverse().join('');
+        setStatus('字符反转完成');
+      }
+
+      function reverseWords() {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        outputEl.textContent = text.split(/\s+/).reverse().join(' ');
+        setStatus('单词反转完成');
+      }
+
+      function reverseLines() {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        var lines = text.split('\n');
+        outputEl.textContent = lines.reverse().join('\n');
+        setStatus('行反转完成');
+      }
+
+      document.getElementById('reverseTextBtn').addEventListener('click', reverseChars);
+      document.getElementById('reverseWordsBtn').addEventListener('click', reverseWords);
+      document.getElementById('reverseLinesBtn').addEventListener('click', reverseLines);
+
+      clearBtn.addEventListener('click', function() {
+        inputEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        inputEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

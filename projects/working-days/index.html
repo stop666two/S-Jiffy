@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作日计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .wd-config { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .wd-config label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .wd-config input[type="date"] { font-family:var(--font-mono); font-size:13px; padding:8px 12px; border:1px solid var(--color-border); border-radius:var(--radius-md); outline:none; }
+    .wd-config input[type="date"]:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+    .wd-holidays { margin-top:var(--space-2); }
+    .wd-holidays textarea { min-height:80px; font-family:var(--font-mono); font-size:12px; }
+    .wd-result { font-family:var(--font-mono); }
+    .wd-result strong { font-size:var(--font-size-lg); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>工作日计算器</h1>
+    <p class="tool-desc">计算两个日期之间的工作日数量，排除周末和可选节假日。</p>
+    <div class="card wd-config">
+      <label>开始日期：<input id="startDate" type="date"></label>
+      <label>结束日期：<input id="endDate" type="date"></label>
+      <button id="calcBtn" class="btn btn-primary">计算</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="card wd-holidays">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">节假日（每行一个日期，格式 YYYY-MM-DD，可选）</label>
+      <textarea id="holidaysInput" class="input textarea" placeholder="2026-01-01&#10;2026-01-28"></textarea>
+    </div>
+    <div class="output-box">
+      <div id="outputText" class="wd-result" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var startEl = document.getElementById('startDate');
+      var endEl = document.getElementById('endDate');
+      var holidaysEl = document.getElementById('holidaysInput');
+      var outputEl = document.getElementById('outputText');
+      var calcBtn = document.getElementById('calcBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function parseDate(str) {
+        var parts = str.split('-');
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      }
+
+      function formatDate(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      function isWeekend(d) {
+        var day = d.getDay();
+        return day === 0 || day === 6;
+      }
+
+      function dateEqual(a, b) {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      }
+
+      function calcWorkingDays() {
+        var startStr = startEl.value;
+        var endStr = endEl.value;
+        if (!startStr || !endStr) { setStatus('请选择开始和结束日期', 'error'); return; }
+
+        var start = parseDate(startStr);
+        var end = parseDate(endStr);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          setStatus('日期格式无效', 'error');
+          return;
+        }
+
+        if (start > end) {
+          setStatus('开始日期不能晚于结束日期', 'error');
+          return;
+        }
+
+        var holidayStrs = holidaysEl.value.trim().split('\n').filter(function (l) { return l.trim(); });
+        var holidays = [];
+        for (var i = 0; i < holidayStrs.length; i++) {
+          var h = parseDate(holidayStrs[i].trim());
+          if (!isNaN(h.getTime())) holidays.push(h);
+        }
+
+        var totalDays = 0;
+        var workingDays = 0;
+        var weekendDays = 0;
+        var holidayDays = 0;
+        var current = new Date(start);
+
+        while (current <= end) {
+          totalDays++;
+          if (isWeekend(current)) {
+            weekendDays++;
+          } else {
+            var isHoliday = false;
+            for (var j = 0; j < holidays.length; j++) {
+              if (dateEqual(current, holidays[j])) {
+                isHoliday = true;
+                break;
+              }
+            }
+            if (isHoliday) {
+              holidayDays++;
+            } else {
+              workingDays++;
+            }
+          }
+          current.setDate(current.getDate() + 1);
+        }
+
+        var includeEnd = !isWeekend(end);
+        var result = '<strong>' + workingDays + '</strong> 个工作日';
+        result += '<br>总天数: ' + totalDays;
+        result += '<br>周末: ' + weekendDays + ' 天';
+        if (holidays.length > 0) result += '<br>节假日: ' + holidayDays + ' 天';
+        result += '<br><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">' + formatDate(start) + ' \u2192 ' + formatDate(end) + '</span>';
+
+        outputEl.innerHTML = result;
+        setStatus('');
+      }
+
+      (function setDefaultDates() {
+        var now = new Date();
+        startEl.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-01';
+        var end = new Date(now);
+        end.setMonth(end.getMonth() + 1);
+        end.setDate(0);
+        endEl.value = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+      })();
+
+      calcBtn.addEventListener('click', calcWorkingDays);
+      clearBtn.addEventListener('click', function () {
+        startEl.value = ''; endEl.value = ''; holidaysEl.value = ''; outputEl.innerHTML = ''; setStatus('');
+      });
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent || '';
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

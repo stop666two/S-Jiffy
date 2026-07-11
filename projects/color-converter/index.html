@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>颜色转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .color-preview-lg { width:100%;height:80px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-3);transition:background .2s; }
+    .color-grid { display:grid; gap:var(--space-2); }
+    .color-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .color-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); min-width:60px; font-family:var(--font-mono); }
+    .color-row .val { font-family:var(--font-mono); font-size:var(--font-size-sm); color:var(--color-text-primary); min-width:180px; word-break:break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>颜色转换</h1>
+    <p class="tool-desc">HEX / RGB / HSL / CMYK / HSV / HSLA 互转，自动检测输入格式。</p>
+
+    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">输入</label>
+      <input id="colorInput" class="input js-focus-input" placeholder="#1E6DF2 或 rgb(30,109,242) 或 hsl(220,80%,53%)" style="width:320px;">
+      <button id="convertBtn" class="btn btn-primary">转换</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div id="previewBox" class="color-preview-lg"></div>
+
+    <div class="card">
+      <div class="color-grid">
+        <div class="color-row"><label>HEX</label><span class="val" id="valHex">—</span></div>
+        <div class="color-row"><label>RGB</label><span class="val" id="valRgb">—</span></div>
+        <div class="color-row"><label>HSL</label><span class="val" id="valHsl">—</span></div>
+        <div class="color-row"><label>HSLA</label><span class="val" id="valHsla">—</span></div>
+        <div class="color-row"><label>HSV</label><span class="val" id="valHsv">—</span></div>
+        <div class="color-row"><label>CMYK</label><span class="val" id="valCmyk">—</span></div>
+      </div>
+    </div>
+
+    <div class="output-box" id="outputContainer" style="min-height:60px;">
+      <span id="outputText" style="display:block; padding-right:60px; white-space:pre-line;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('colorInput'), preview = document.getElementById('previewBox');
+      var vHex = document.getElementById('valHex'), vRgb = document.getElementById('valRgb'), vHsl = document.getElementById('valHsl');
+      var vHsla = document.getElementById('valHsla'), vHsv = document.getElementById('valHsv'), vCmyk = document.getElementById('valCmyk');
+      var o = document.getElementById('outputText');
+
+      function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+      function parseHex(h) {
+        h = h.replace('#', '');
+        if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+        if (h.length === 8) {
+          return { r: parseInt(h.substr(0, 2), 16), g: parseInt(h.substr(2, 2), 16), b: parseInt(h.substr(4, 2), 16), a: Math.round((parseInt(h.substr(6, 2), 16) / 255) * 100) / 100 };
+        }
+        if (h.length !== 6) return null;
+        return { r: parseInt(h.substr(0, 2), 16), g: parseInt(h.substr(2, 2), 16), b: parseInt(h.substr(4, 2), 16), a: 1 };
+      }
+
+      function parseRgb(s) {
+        var m = s.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
+        return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 } : null;
+      }
+
+      function parseHsl(s) {
+        var m = s.match(/hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+))?\s*\)/);
+        if (!m) return null;
+        return hslToRgb(+m[1], +m[2], +m[3], m[4] !== undefined ? +m[4] : 1);
+      }
+
+      function parseCmyk(s) {
+        var m = s.match(/cmyk\s*\(\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*\)/);
+        if (!m) return null;
+        var c = +m[1] / 100, m2 = +m[2] / 100, y = +m[3] / 100, k = +m[4] / 100;
+        var r = Math.round(255 * (1 - c) * (1 - k));
+        var g = Math.round(255 * (1 - m2) * (1 - k));
+        var b = Math.round(255 * (1 - y) * (1 - k));
+        return { r: clamp(r, 0, 255), g: clamp(g, 0, 255), b: clamp(b, 0, 255), a: 1 };
+      }
+
+      function hslToRgb(h, s, l, a) {
+        h = h / 360; s = s / 100; l = l / 100;
+        var c2 = s * (1 - Math.abs(2 * l - 1));
+        var x = c2 * (1 - Math.abs((h * 6) % 2 - 1));
+        var m = l - c2 / 2;
+        var r, g, b;
+        if (h < 1 / 6) { r = c2; g = x; b = 0; }
+        else if (h < 2 / 6) { r = x; g = c2; b = 0; }
+        else if (h < 3 / 6) { r = 0; g = c2; b = x; }
+        else if (h < 4 / 6) { r = 0; g = x; b = c2; }
+        else if (h < 5 / 6) { r = x; g = 0; b = c2; }
+        else { r = c2; g = 0; b = x; }
+        return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255), a: a !== undefined ? a : 1 };
+      }
+
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, s = 0, h = 0;
+        if (max !== min) {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+          else if (max === g) h = ((b - r) / d + 2);
+          else h = ((r - g) / d + 4);
+          h = h * 60;
+        }
+        return { h: h, s: s * 100, l: l * 100 };
+      }
+
+      function rgbToHsv(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h = 0, s = max === 0 ? 0 : (max - min) / max, v = max;
+        if (max !== min) {
+          var d = max - min;
+          if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+          else if (max === g) h = ((b - r) / d + 2);
+          else h = ((r - g) / d + 4);
+          h = h * 60;
+        }
+        return { h: h, s: s * 100, v: v * 100 };
+      }
+
+      function rgbToCmyk(r, g, b) {
+        var c = 1 - r / 255, m2 = 1 - g / 255, y = 1 - b / 255, k = Math.min(c, m2, y);
+        if (k === 1) return { c: 0, m: 0, y: 0, k: 100 };
+        return {
+          c: Math.round(((c - k) / (1 - k)) * 100),
+          m: Math.round(((m2 - k) / (1 - k)) * 100),
+          y: Math.round(((y - k) / (1 - k)) * 100),
+          k: Math.round(k * 100)
+        };
+      }
+
+      function toHex(r, g, b) { return '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('').toUpperCase(); }
+
+      function toRgbStr(r, g, b, a) { return a < 1 ? 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')' : 'rgb(' + r + ', ' + g + ', ' + b + ')'; }
+
+      function toHslStr(r, g, b, a) {
+        var hsl = rgbToHsl(r, g, b);
+        var s = Math.round(hsl.s), l = Math.round(hsl.l), h2 = Math.round(hsl.h);
+        return a < 1 ? 'hsla(' + h2 + ', ' + s + '%, ' + l + '%, ' + a + ')' : 'hsl(' + h2 + ', ' + s + '%, ' + l + '%)';
+      }
+
+      function toHsvStr(r, g, b) {
+        var hsv = rgbToHsv(r, g, b);
+        return 'hsv(' + Math.round(hsv.h) + ', ' + Math.round(hsv.s) + '%, ' + Math.round(hsv.v) + '%)';
+      }
+
+      function toCmykStr(r, g, b) {
+        var cmyk = rgbToCmyk(r, g, b);
+        return 'cmyk(' + cmyk.c + '%, ' + cmyk.m + '%, ' + cmyk.y + '%, ' + cmyk.k + '%)';
+      }
+
+      function updateAll(rgb) {
+        if (!rgb) return;
+        var r = clamp(rgb.r, 0, 255), g = clamp(rgb.g, 0, 255), b = clamp(rgb.b, 0, 255), a = rgb.a !== undefined ? rgb.a : 1;
+        preview.style.background = toRgbStr(r, g, b, a);
+        vHex.textContent = toHex(r, g, b);
+        vRgb.textContent = toRgbStr(r, g, b, a);
+        vHsl.textContent = toHslStr(r, g, b, a);
+        vHsla.textContent = 'hsla(' + Math.round(rgbToHsl(r, g, b).h) + ', ' + Math.round(rgbToHsl(r, g, b).s) + '%, ' + Math.round(rgbToHsl(r, g, b).l) + '%, ' + a + ')';
+        vHsv.textContent = toHsvStr(r, g, b);
+        vCmyk.textContent = toCmykStr(r, g, b);
+        o.textContent = toHex(r, g, b) + '  ' + toRgbStr(r, g, b, a) + '  ' + toHslStr(r, g, b, a);
+      }
+
+      function detectAndConvert(v) {
+        v = v.trim();
+        if (!v) return null;
+        var rgb = parseHex(v) || parseRgb(v) || parseHsl(v) || parseCmyk(v);
+        return rgb;
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var v = inputEl.value.trim();
+        if (!v) { setStatus('请输入颜色值', 'error'); return; }
+        var rgb = detectAndConvert(v);
+        if (!rgb) { setStatus('无法解析颜色值', 'error'); preview.style.background = ''; o.textContent = ''; return; }
+        updateAll(rgb);
+        setStatus('');
+      });
+      inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('convertBtn').click(); });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; o.textContent = ''; preview.style.background = ''; [vHex, vRgb, vHsl, vHsla, vHsv, vCmyk].forEach(function (el) { el.textContent = '—'; }); setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

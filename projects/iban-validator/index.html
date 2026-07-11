@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBAN 验证器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .iban-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-2); margin-top: var(--space-3); }
+    .iban-item { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); }
+    .iban-item label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .iban-item span { font-size: var(--font-size-sm); font-weight: 500; }
+    .valid { color: var(--color-success); }
+    .invalid { color: var(--color-error); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>IBAN 验证器</h1>
+    <p class="tool-desc">验证国际银行账号 (IBAN) 格式、国家代码和校验位。</p>
+    <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <input id="ibanInput" class="input js-focus-input" type="text" placeholder="输入 IBAN，如 GB33BUKB20201555555555" style="flex:1;min-width:200px;font-size:14px;letter-spacing:1px;">
+      <button id="validateBtn" class="btn btn-primary">验证</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="resultBox">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+    <div class="iban-grid" id="ibanGrid"></div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('ibanInput');
+    var outputEl = document.getElementById('outputText');
+    var gridEl = document.getElementById('ibanGrid');
+    var countryInfo = {
+      'AL': '阿尔巴尼亚', 'AD': '安道尔', 'AT': '奥地利', 'AZ': '阿塞拜疆', 'BH': '巴林',
+      'BY': '白俄罗斯', 'BE': '比利时', 'BA': '波黑', 'BR': '巴西', 'BG': '保加利亚',
+      'CR': '哥斯达黎加', 'HR': '克罗地亚', 'CY': '塞浦路斯', 'CZ': '捷克', 'DK': '丹麦',
+      'DO': '多米尼加', 'EE': '爱沙尼亚', 'FO': '法罗群岛', 'FI': '芬兰', 'FR': '法国',
+      'GE': '格鲁吉亚', 'DE': '德国', 'GI': '直布罗陀', 'GR': '希腊', 'GL': '格陵兰',
+      'GT': '危地马拉', 'HU': '匈牙利', 'IS': '冰岛', 'IE': '爱尔兰', 'IL': '以色列',
+      'IT': '意大利', 'JO': '约旦', 'KZ': '哈萨克斯坦', 'XK': '科索沃', 'KW': '科威特',
+      'LV': '拉脱维亚', 'LB': '黎巴嫩', 'LI': '列支敦士登', 'LT': '立陶宛', 'LU': '卢森堡',
+      'MT': '马耳他', 'MR': '毛里塔尼亚', 'MU': '毛里求斯', 'MC': '摩纳哥', 'ME': '黑山',
+      'NL': '荷兰', 'MK': '北马其顿', 'NO': '挪威', 'PK': '巴基斯坦', 'PS': '巴勒斯坦',
+      'PL': '波兰', 'PT': '葡萄牙', 'QA': '卡塔尔', 'RO': '罗马尼亚', 'LC': '圣卢西亚',
+      'SM': '圣马力诺', 'ST': '圣多美', 'SA': '沙特阿拉伯', 'RS': '塞尔维亚', 'SC': '塞舌尔',
+      'SK': '斯洛伐克', 'SI': '斯洛文尼亚', 'ES': '西班牙', 'SE': '瑞典', 'CH': '瑞士',
+      'TL': '东帝汶', 'TN': '突尼斯', 'TR': '土耳其', 'UA': '乌克兰', 'AE': '阿联酋',
+      'GB': '英国', 'VA': '梵蒂冈', 'VG': '英属维尔京群岛'
+    };
+    var ibanLengths = {
+      'AL': 28, 'AD': 24, 'AT': 20, 'AZ': 28, 'BH': 22, 'BY': 28, 'BE': 16, 'BA': 20,
+      'BR': 29, 'BG': 22, 'CR': 22, 'HR': 21, 'CY': 28, 'CZ': 24, 'DK': 18,
+      'DO': 28, 'EE': 20, 'FO': 18, 'FI': 18, 'FR': 27, 'GE': 22, 'DE': 22,
+      'GI': 23, 'GR': 27, 'GL': 18, 'GT': 28, 'HU': 28, 'IS': 26, 'IE': 22,
+      'IL': 23, 'IT': 27, 'JO': 30, 'KZ': 20, 'XK': 20, 'KW': 30, 'LV': 21,
+      'LB': 28, 'LI': 21, 'LT': 20, 'LU': 20, 'MT': 31, 'MR': 27, 'MU': 30,
+      'MC': 27, 'ME': 22, 'NL': 18, 'MK': 19, 'NO': 15, 'PK': 24, 'PS': 29,
+      'PL': 28, 'PT': 25, 'QA': 29, 'RO': 24, 'LC': 32, 'SM': 27, 'ST': 25,
+      'SA': 24, 'RS': 22, 'SC': 31, 'SK': 24, 'SI': 19, 'ES': 24, 'SE': 24,
+      'CH': 21, 'TL': 23, 'TN': 24, 'TR': 26, 'UA': 29, 'AE': 23, 'GB': 22,
+      'VA': 22, 'VG': 24
+    };
+    function validateIBAN(iban) {
+      var clean = iban.replace(/\s/g, '').toUpperCase();
+      if (!clean) return null;
+      if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: '格式无效', clean: clean }; }
+      var cc = clean.substr(0, 2);
+      if (!(cc in countryInfo)) { return { valid: false, reason: '未知的国家代码: ' + cc, clean: clean, country: cc }; }
+      var expectedLen = ibanLengths[cc];
+      if (clean.length !== expectedLen) { return { valid: false, reason: '长度错误: 期望 ' + expectedLen + ', 实际 ' + clean.length, clean: clean, country: cc }; }
+      var reordered = clean.substr(4) + clean.substr(0, 4);
+      var numeric = '';
+      for (var i = 0; i < reordered.length; i++) {
+        var ch = reordered[i];
+        if (ch >= 'A' && ch <= 'Z') { numeric += (ch.charCodeAt(0) - 55); }
+        else { numeric += ch; }
+      }
+      var remainder = 0;
+      for (var i = 0; i < numeric.length; i++) {
+        remainder = (remainder * 10 + parseInt(numeric[i])) % 97;
+      }
+      var valid = remainder === 1;
+      return { valid: valid, reason: valid ? '校验通过' : '校验位无效', clean: clean, country: cc, countryName: countryInfo[cc] };
+    }
+    function render(d) {
+      if (!d) { outputEl.textContent = ''; gridEl.innerHTML = ''; return; }
+      outputEl.textContent = d.clean + (d.valid ? ' ✓' : ' ✗');
+      outputEl.style.color = d.valid ? 'var(--color-success)' : 'var(--color-error)';
+      var items = [
+        { label: 'IBAN', val: d.clean },
+        { label: '状态', val: d.valid ? '有效' : '无效' },
+        { label: '国家代码', val: d.country || '-' },
+        { label: '国家名称', val: d.countryName || '-' },
+        { label: '长度', val: d.clean ? d.clean.length : '-' + (d.country && ibanLengths[d.country] ? ' (期望 ' + ibanLengths[d.country] + ')' : '') },
+        { label: '校验结果', val: d.reason }
+      ];
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        html += '<div class="iban-item"><label>' + items[i].label + '</label><span class="' + (d.valid ? 'valid' : 'invalid') + '">' + items[i].val + '</span></div>';
+      }
+      gridEl.innerHTML = html;
+    }
+    function doValidate() {
+      var iban = inputEl.value.trim();
+      if (!iban) { setStatus('请输入 IBAN', 'error'); render(null); return; }
+      var result = validateIBAN(iban);
+      render(result);
+      setStatus(result ? (result.valid ? 'IBAN 验证通过' : result.reason) : '无效');
+    }
+    document.getElementById('validateBtn').addEventListener('click', doValidate);
+    inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doValidate(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent.replace(/ [✓✗]$/, ''), this); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

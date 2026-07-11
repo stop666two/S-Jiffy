@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本排序器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .sort-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文本排序器</h1>
+    <p class="tool-desc">对文本行进行 A-Z、Z-A、按长度、随机打乱、去重排序。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入要排序的文本..."></textarea>
+    </div>
+    <div class="sort-actions">
+      <button id="sortAZBtn" class="btn btn-primary">A-Z</button>
+      <button id="sortZABtn" class="btn btn-secondary">Z-A</button>
+      <button id="sortLengthBtn" class="btn btn-secondary">按长度</button>
+      <button id="shuffleBtn" class="btn btn-secondary">打乱</button>
+      <button id="uniqueBtn" class="btn btn-secondary">去重</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+
+      function getLines() {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return null; }
+        return text.split('\n');
+      }
+
+      function setLines(lines) {
+        outputEl.textContent = lines.join('\n');
+      }
+
+      document.getElementById('sortAZBtn').addEventListener('click', function() {
+        var lines = getLines();
+        if (!lines) return;
+        lines.sort(function(a, b) { return a.localeCompare(b); });
+        setLines(lines);
+        setStatus('A-Z 排序完成');
+      });
+
+      document.getElementById('sortZABtn').addEventListener('click', function() {
+        var lines = getLines();
+        if (!lines) return;
+        lines.sort(function(a, b) { return b.localeCompare(a); });
+        setLines(lines);
+        setStatus('Z-A 排序完成');
+      });
+
+      document.getElementById('sortLengthBtn').addEventListener('click', function() {
+        var lines = getLines();
+        if (!lines) return;
+        lines.sort(function(a, b) { return a.length - b.length; });
+        setLines(lines);
+        setStatus('按长度排序完成');
+      });
+
+      document.getElementById('shuffleBtn').addEventListener('click', function() {
+        var lines = getLines();
+        if (!lines) return;
+        for (var i = lines.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = lines[i];
+          lines[i] = lines[j];
+          lines[j] = tmp;
+        }
+        setLines(lines);
+        setStatus('已打乱');
+      });
+
+      document.getElementById('uniqueBtn').addEventListener('click', function() {
+        var lines = getLines();
+        if (!lines) return;
+        var seen = {};
+        var result = [];
+        var removed = 0;
+        for (var i = 0; i < lines.length; i++) {
+          if (!seen[lines[i]]) {
+            seen[lines[i]] = true;
+            result.push(lines[i]);
+          } else {
+            removed++;
+          }
+        }
+        setLines(result);
+        setStatus('去重完成，移除 ' + removed + ' 行');
+      });
+
+      clearBtn.addEventListener('click', function() {
+        inputEl.value = '';
+        outputEl.textContent = '';
+        setStatus('');
+        inputEl.focus();
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

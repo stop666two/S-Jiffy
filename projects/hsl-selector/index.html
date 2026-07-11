@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSL 颜色选择器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .hsl-preview { width:100%; height:200px; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-3); transition:background 0.1s; }
+    .hsl-controls { display:flex; flex-direction:column; gap:var(--space-2); }
+    .hsl-row { display:flex; align-items:center; gap:12px; }
+    .hsl-row label { font-family:var(--font-mono); font-size:13px; min-width:60px; color:var(--color-text-secondary); }
+    .hsl-row input[type="range"] { flex:1; }
+    .hsl-row input[type="number"] { width:70px; font-family:var(--font-mono); font-size:13px; }
+    .hsl-values { display:flex; gap:16px; flex-wrap:wrap; font-family:var(--font-mono); font-size:13px; margin-top:var(--space-2); }
+    .hsl-values span { background:var(--color-bg-soft); padding:4px 12px; border-radius:var(--radius-sm); border:1px solid var(--color-border); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>HSL 颜色选择器</h1>
+    <p class="tool-desc">通过 HSL 滑块精确选择颜色，支持 Alpha 通道。</p>
+    <div id="preview" class="hsl-preview"></div>
+    <div class="card hsl-controls">
+      <div class="hsl-row">
+        <label>H 色相</label>
+        <input id="hueSlider" type="range" min="0" max="360" value="0">
+        <input id="hueVal" type="number" min="0" max="360" value="0">
+      </div>
+      <div class="hsl-row">
+        <label>S 饱和度</label>
+        <input id="satSlider" type="range" min="0" max="100" value="100">
+        <input id="satVal" type="number" min="0" max="100" value="100">
+      </div>
+      <div class="hsl-row">
+        <label>L 亮度</label>
+        <input id="lightSlider" type="range" min="0" max="100" value="50">
+        <input id="lightVal" type="number" min="0" max="100" value="50">
+      </div>
+      <div class="hsl-row">
+        <label>A 透明度</label>
+        <input id="alphaSlider" type="range" min="0" max="100" value="100">
+        <input id="alphaVal" type="number" min="0" max="100" value="100">
+      </div>
+    </div>
+    <div class="output-box" style="min-height:auto;background:var(--color-bg);">
+      <div id="outputText" class="hsl-values" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var hueSlider = document.getElementById('hueSlider');
+      var satSlider = document.getElementById('satSlider');
+      var lightSlider = document.getElementById('lightSlider');
+      var alphaSlider = document.getElementById('alphaSlider');
+      var hueVal = document.getElementById('hueVal');
+      var satVal = document.getElementById('satVal');
+      var lightVal = document.getElementById('lightVal');
+      var alphaVal = document.getElementById('alphaVal');
+      var preview = document.getElementById('preview');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function hslToHex(h, s, l) {
+        s /= 100;
+        l /= 100;
+        var a = s * Math.min(l, 1 - l);
+        var f = function (n) {
+          var k = (n + h / 30) % 12;
+          return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        };
+        var toHex = function (v) {
+          return Math.round(v * 255).toString(16).padStart(2, '0');
+        };
+        return '#' + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
+      }
+
+      function update() {
+        var h = parseInt(hueSlider.value, 10);
+        var s = parseInt(satSlider.value, 10);
+        var l = parseInt(lightSlider.value, 10);
+        var a = parseInt(alphaSlider.value, 10);
+
+        hueVal.value = h;
+        satVal.value = s;
+        lightVal.value = l;
+        alphaVal.value = a;
+
+        var hex = hslToHex(h, s, l);
+        var rgb = 'rgb(' + Math.round(parseInt(hex.substr(1,2),16)) + ', ' + Math.round(parseInt(hex.substr(3,2),16)) + ', ' + Math.round(parseInt(hex.substr(5,2),16)) + ')';
+        var hsla = 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + (a / 100) + ')';
+        var hexa = hex + (a < 100 ? (Math.round(a / 100 * 255).toString(16).padStart(2, '0')) : '');
+
+        preview.style.background = a < 100 ? hsla : hex;
+        outputEl.innerHTML = '<span>HEX: ' + hexa + '</span><span>RGB: ' + rgb + '</span><span>HSL: ' + hsla + '</span>';
+      }
+
+      function syncFromSlider() { update(); }
+      function syncFromInput() {
+        hueSlider.value = hueVal.value;
+        satSlider.value = satVal.value;
+        lightSlider.value = lightVal.value;
+        alphaSlider.value = alphaVal.value;
+        update();
+      }
+
+      hueSlider.addEventListener('input', syncFromSlider);
+      satSlider.addEventListener('input', syncFromSlider);
+      lightSlider.addEventListener('input', syncFromSlider);
+      alphaSlider.addEventListener('input', syncFromSlider);
+      hueVal.addEventListener('input', syncFromInput);
+      satVal.addEventListener('input', syncFromInput);
+      lightVal.addEventListener('input', syncFromInput);
+      alphaVal.addEventListener('input', syncFromInput);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent || '';
+        if (text) {
+          var lines = text.split(/\s+/);
+          copyToClipboard(lines[1] || text, copyBtn);
+          setStatus('已复制 HEX');
+        }
+      });
+
+      update();
+    })();
+  </script>
+</body>
+</html>

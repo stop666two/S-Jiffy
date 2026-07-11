@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NanoID 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .nanoid-config { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .nanoid-config label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .nanoid-config input[type="number"] { width:80px; }
+    .nanoid-config input[type="text"] { width:240px; }
+    .nanoid-batch { font-family:var(--font-mono); font-size:13px; line-height:1.8; }
+    .nanoid-batch span { display:inline-block; background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:2px 8px; margin:2px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>NanoID 生成器</h1>
+    <p class="tool-desc">生成紧凑型唯一 ID，长度与字符集可自定义。</p>
+    <div class="card nanoid-config">
+      <label>长度：<input id="idLength" type="number" value="21" min="1" max="128"></label>
+      <label>数量：<input id="idCount" type="number" value="1" min="1" max="100"></label>
+      <button id="generateBtn" class="btn btn-primary">生成</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">字符集（可选留空使用默认）</label>
+      <input id="alphabetInput" class="input" placeholder="默认: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-">
+    </div>
+    <div class="output-box">
+      <div id="outputText" class="nanoid-batch" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var lengthEl = document.getElementById('idLength');
+      var countEl = document.getElementById('idCount');
+      var alphabetEl = document.getElementById('alphabetInput');
+      var outputEl = document.getElementById('outputText');
+      var generateBtn = document.getElementById('generateBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var DEFAULT_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-';
+
+      function nanoid(len, alphabet) {
+        var result = '';
+        var alphaLen = alphabet.length;
+        for (var i = 0; i < len; i++) {
+          result += alphabet[Math.floor(Math.random() * alphaLen)];
+        }
+        return result;
+      }
+
+      function generate() {
+        var len = parseInt(lengthEl.value, 10) || 21;
+        var count = parseInt(countEl.value, 10) || 1;
+        var alpha = alphabetEl.value.trim() || DEFAULT_ALPHABET;
+        if (len < 1) len = 1;
+        if (len > 128) len = 128;
+        if (count < 1) count = 1;
+        if (count > 100) count = 100;
+        var html = '';
+        for (var i = 0; i < count; i++) {
+          html += '<span>' + nanoid(len, alpha) + '</span>';
+        }
+        outputEl.innerHTML = html;
+        setStatus('生成了 ' + count + ' 个 ID（长度 ' + len + '，字符集 ' + alpha.length + ' 种）');
+      }
+
+      generateBtn.addEventListener('click', generate);
+      clearBtn.addEventListener('click', function () { outputEl.innerHTML = ''; setStatus(''); });
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent.replace(/\s+/g, '\n').trim();
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

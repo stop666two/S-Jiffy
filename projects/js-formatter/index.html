@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript 格式化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JavaScript 格式化</h1>
+    <p class="tool-desc">JavaScript 代码格式化与压缩。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 JavaScript 代码..." style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="formatBtn" class="btn btn-primary">格式化</button>
+      <button id="minifyBtn" class="btn btn-secondary">压缩</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var formatBtn = document.getElementById('formatBtn');
+      var minifyBtn = document.getElementById('minifyBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function formatJS(code) {
+        var indent = 0;
+        var result = '';
+        var inStr = null;
+        var escape = false;
+
+        for (var i = 0; i < code.length; i++) {
+          var ch = code[i];
+
+          if (escape) { result += ch; escape = false; continue; }
+          if (inStr) {
+            if (ch === '\\') { escape = true; result += ch; }
+            else if (ch === inStr) { inStr = null; result += ch; }
+            else { result += ch; }
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
+          if (ch === '/' && i + 1 < code.length) {
+            if (code[i + 1] === '/') {
+              while (i < code.length && code[i] !== '\n') { result += code[i]; i++; }
+              result += '\n';
+              continue;
+            }
+            if (code[i + 1] === '*') {
+              result += '/*';
+              i += 2;
+              while (i < code.length) {
+                result += code[i];
+                if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') {
+                  result += '/'; i++; break;
+                }
+                i++;
+              }
+              continue;
+            }
+          }
+
+          if (ch === '{') { result += ' {\n'; indent++; result += '  '.repeat(indent); }
+          else if (ch === '}') { result += '\n'; indent = Math.max(0, indent - 1); result += '  '.repeat(indent) + '}'; }
+          else if (ch === ';') { result += ';\n'; result += '  '.repeat(indent); }
+          else if (ch === '\n' || ch === '\r') { }
+          else if (ch === '(') { result += '('; }
+          else if (ch === ')') { result += ')'; }
+          else { result += ch; }
+        }
+        return result.replace(/\n\s*\n/g, '\n').trim();
+      }
+
+      function minifyJS(code) {
+        var result = '';
+        var inStr = null;
+        var escape = false;
+
+        for (var i = 0; i < code.length; i++) {
+          var ch = code[i];
+          if (escape) { result += ch; escape = false; continue; }
+          if (inStr) {
+            if (ch === '\\') { escape = true; result += ch; }
+            else if (ch === inStr) { inStr = null; result += ch; }
+            else { result += ch; }
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
+          if (ch === '/' && i + 1 < code.length) {
+            if (code[i + 1] === '/') { while (i < code.length && code[i] !== '\n') i++; continue; }
+            if (code[i + 1] === '*') { i += 2; while (i < code.length) { if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') { i++; break; } i++; } continue; }
+          }
+          if (/\s/.test(ch)) {
+            var next = i + 1 < code.length ? code[i + 1] : '';
+            var prev = result.length ? result[result.length - 1] : '';
+            if (prev && next && /\w/.test(prev) && /\w/.test(next)) { result += ' '; }
+            continue;
+          }
+          result += ch;
+        }
+        return result;
+      }
+
+      formatBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
+        outputEl.textContent = formatJS(text);
+        setStatus('');
+      });
+
+      minifyBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
+        outputEl.textContent = minifyJS(text);
+        setStatus('');
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

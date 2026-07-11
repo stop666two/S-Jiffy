@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抛硬币 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .coin { width:120px;height:120px;border-radius:50%;background:var(--color-text-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto var(--space-3);transition:transform 0.1s;user-select:none; }
+    .coin.flipping { animation:flip 0.6s ease-in-out; }
+    @keyframes flip { 0%{transform:rotateY(0);} 50%{transform:rotateY(180deg);} 100%{transform:rotateY(360deg);} }
+    .coin-stats { display:flex;gap:var(--space-3);justify-content:center;margin-bottom:var(--space-3); }
+    .coin-stats div { text-align:center; }
+    .coin-stats .num { font-size:var(--font-size-xl); font-weight:600; }
+    .coin-stats .lbl { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>抛硬币</h1>
+    <p class="tool-desc">抛硬币模拟，带动画，记录正反面统计。</p>
+    <div class="coin" id="coin">?</div>
+    <div style="text-align:center;margin-bottom:var(--space-3);">
+      <button id="flipBtn" class="btn btn-primary">抛一次</button>
+      <button id="flipManyBtn" class="btn btn-secondary">抛 10 次</button>
+    </div>
+    <div class="coin-stats">
+      <div><div class="num" id="headsCount">0</div><div class="lbl">正面 (Head)</div></div>
+      <div><div class="num" id="tailsCount">0</div><div class="lbl">反面 (Tail)</div></div>
+      <div><div class="num" id="totalCount">0</div><div class="lbl">总计</div></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var coin = document.getElementById('coin');
+      var flipBtn = document.getElementById('flipBtn');
+      var flipManyBtn = document.getElementById('flipManyBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var headsCount = document.getElementById('headsCount');
+      var tailsCount = document.getElementById('tailsCount');
+      var totalCount = document.getElementById('totalCount');
+      var heads = 0;
+      var tails = 0;
+      var flipping = false;
+
+      function flip(showAnimation) {
+        if (flipping) return;
+        var result = Math.random() < 0.5 ? 'H' : 'T';
+        if (showAnimation) {
+          flipping = true;
+          coin.classList.add('flipping');
+          coin.textContent = '?';
+        }
+        setTimeout(function() {
+          if (result === 'H') {
+            coin.textContent = 'H';
+            heads++;
+          } else {
+            coin.textContent = 'T';
+            tails++;
+          }
+          headsCount.textContent = heads;
+          tailsCount.textContent = tails;
+          totalCount.textContent = heads + tails;
+          if (showAnimation) {
+            coin.classList.remove('flipping');
+            flipping = false;
+          }
+          outputEl.textContent = '结果: ' + (result === 'H' ? '正面 (Head)' : '反面 (Tail)') + ' | 正:' + heads + ' 反:' + tails + ' 共:' + (heads + tails);
+        }, showAnimation ? 300 : 0);
+        return result;
+      }
+
+      flipBtn.addEventListener('click', function() { flip(true); });
+      flipManyBtn.addEventListener('click', function() {
+        for (var i = 0; i < 10; i++) flip(false);
+        flip(true);
+      });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

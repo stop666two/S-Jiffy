@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker Compose 转换器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .dc-field { display:flex; flex-direction:column; gap:4px; }
+    .dc-field label { font-size:12px; color:var(--color-text-secondary); }
+    .dc-field input, .dc-field select { height:36px; padding:0 10px; font-size:13px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); }
+    .dc-checkboxes { display:flex; flex-wrap:wrap; gap:8px; }
+    .dc-checkboxes label { font-size:13px; color:var(--color-text-secondary); display:flex; align-items:center; gap:4px; cursor:pointer; }
+    .dc-addl { margin-top:12px; }
+    .dc-addl textarea { min-height:60px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Docker Run → Compose</h1>
+    <p class="tool-desc">将 <code>docker run</code> 参数转换为 docker-compose.yml 格式。</p>
+    <div class="card">
+      <div class="dc-fields">
+        <div class="dc-field">
+          <label>镜像 (image)</label>
+          <input id="imageInput" class="js-focus-input" placeholder="nginx:latest">
+        </div>
+        <div class="dc-field">
+          <label>容器名称 (--name)</label>
+          <input id="nameInput" placeholder="my-container">
+        </div>
+        <div class="dc-field">
+          <label>端口映射 (-p, 如 80:80)</label>
+          <input id="portsInput" placeholder="80:80">
+        </div>
+        <div class="dc-field">
+          <label>卷挂载 (-v, 如 ./html:/usr/share/nginx/html)</label>
+          <input id="volumesInput" placeholder="./html:/usr/share/nginx/html">
+        </div>
+        <div class="dc-field">
+          <label>环境变量 (-e, 如 KEY=value)</label>
+          <input id="envInput" placeholder="KEY=value">
+        </div>
+        <div class="dc-field">
+          <label>网络 (--network)</label>
+          <input id="networkInput" placeholder="bridge">
+        </div>
+        <div class="dc-field">
+          <label>重启策略 (--restart)</label>
+          <select id="restartSelect">
+            <option value="">无</option>
+            <option value="no">no</option>
+            <option value="always">always</option>
+            <option value="on-failure">on-failure</option>
+            <option value="unless-stopped">unless-stopped</option>
+          </select>
+        </div>
+        <div class="dc-field">
+          <label>命令 (command)</label>
+          <input id="commandInput" placeholder="nginx -g daemon off;">
+        </div>
+      </div>
+      <div class="dc-checkboxes" style="margin-top:12px;">
+        <label><input type="checkbox" id="detachChk"> -d (后台运行)</label>
+        <label><input type="checkbox" id="ttyChk"> -t (TTY)</label>
+        <label><input type="checkbox" id="interactiveChk"> -i (交互)</label>
+        <label><input type="checkbox" id="rmChk"> --rm (自动删除)</label>
+        <label><input type="checkbox" id="privilegedChk"> --privileged</label>
+      </div>
+      <div class="dc-addl">
+        <textarea id="extraInput" class="input textarea" placeholder='额外 docker run 参数 (每行一个, 如 --restart=always 等)' style="min-height:40px;"></textarea>
+      </div>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">生成 Compose</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var outputEl = document.getElementById('outputText');
+      var imageEl = document.getElementById('imageInput');
+      var nameEl = document.getElementById('nameInput');
+      var portsEl = document.getElementById('portsInput');
+      var volumesEl = document.getElementById('volumesInput');
+      var envEl = document.getElementById('envInput');
+      var networkEl = document.getElementById('networkInput');
+      var restartEl = document.getElementById('restartSelect');
+      var commandEl = document.getElementById('commandInput');
+      var detachChk = document.getElementById('detachChk');
+      var ttyChk = document.getElementById('ttyChk');
+      var interactiveChk = document.getElementById('interactiveChk');
+      var rmChk = document.getElementById('rmChk');
+      var privilegedChk = document.getElementById('privilegedChk');
+      var extraEl = document.getElementById('extraInput');
+
+      function yamlVal(s) {
+        if (s === undefined || s === null) return '';
+        return String(s);
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var image = imageEl.value.trim();
+        if (!image) { setStatus('请输入镜像名称', 'error'); return; }
+
+        var lines = [];
+        lines.push('version: "3.8"');
+        lines.push('');
+        lines.push('services:');
+        var svcName = nameEl.value.trim() || 'app';
+        lines.push('  ' + svcName + ':');
+        lines.push('    image: ' + image);
+
+        var ports = portsEl.value.trim();
+        if (ports) {
+          lines.push('    ports:');
+          var portList = ports.split(/[\s,]+/);
+          for (var i = 0; i < portList.length; i++) {
+            if (portList[i].trim()) {
+              lines.push('      - "' + portList[i].trim() + '"');
+            }
+          }
+        }
+
+        var volumes = volumesEl.value.trim();
+        if (volumes) {
+          lines.push('    volumes:');
+          var volList = volumes.split(/[\s,]+/);
+          for (var i = 0; i < volList.length; i++) {
+            if (volList[i].trim()) {
+              lines.push('      - ' + volList[i].trim());
+            }
+          }
+        }
+
+        var env = envEl.value.trim();
+        if (env) {
+          lines.push('    environment:');
+          var envList = env.split(/[\s,]+/);
+          for (var i = 0; i < envList.length; i++) {
+            var e = envList[i].trim();
+            if (e) {
+              var eqIdx = e.indexOf('=');
+              if (eqIdx > 0) {
+                var k = e.substring(0, eqIdx);
+                var v = e.substring(eqIdx + 1);
+                lines.push('      ' + k + ': "' + v + '"');
+              } else {
+                lines.push('      ' + e + ': ""');
+              }
+            }
+          }
+        }
+
+        var restart = restartEl.value;
+        if (restart) lines.push('    restart: ' + restart);
+
+        var network = networkEl.value.trim();
+        if (network) {
+          lines.push('    networks:');
+          lines.push('      - ' + network);
+        }
+
+        var command = commandEl.value.trim();
+        if (command) {
+          lines.push('    command: ' + command);
+        }
+
+        var extraOpts = [];
+        if (detachChk.checked) extraOpts.push('detach: true');
+        if (ttyChk.checked) extraOpts.push('tty: true');
+        if (interactiveChk.checked) extraOpts.push('stdin_open: true');
+        if (rmChk.checked) extraOpts.push('auto_remove: true');
+        if (privilegedChk.checked) extraOpts.push('privileged: true');
+
+        var extraRaw = extraEl.value.trim();
+        if (extraRaw) {
+          var extraLines = extraRaw.split('\n');
+          for (var i = 0; i < extraLines.length; i++) {
+            var el = extraLines[i].trim();
+            if (el) extraOpts.push(el);
+          }
+        }
+
+        if (extraOpts.length > 0) {
+          for (var i = 0; i < extraOpts.length; i++) {
+            lines.push('    ' + extraOpts[i]);
+          }
+        }
+
+        outputEl.textContent = lines.join('\n');
+        setStatus('已生成 docker-compose.yml');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        imageEl.value = ''; nameEl.value = ''; portsEl.value = ''; volumesEl.value = '';
+        envEl.value = ''; networkEl.value = ''; restartEl.value = ''; commandEl.value = '';
+        detachChk.checked = false; ttyChk.checked = false; interactiveChk.checked = false;
+        rmChk.checked = false; privilegedChk.checked = false;
+        extraEl.value = ''; outputEl.textContent = ''; setStatus(''); imageEl.focus();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

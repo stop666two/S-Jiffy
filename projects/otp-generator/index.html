@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Generator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .otp-display { text-align:center; padding:var(--space-3) 0; }
+    .otp-current { font-size:56px; font-weight:600; letter-spacing:8px; font-variant-numeric:tabular-nums; }
+    .otp-countdown { font-size:24px; color:var(--color-text-secondary); margin-top:var(--space-1); }
+    .otp-others { display:flex; justify-content:center; gap:var(--space-4); margin-top:var(--space-3); }
+    .otp-others > div { text-align:center; }
+    .otp-others .lbl { font-size:var(--font-size-xs); color:var(--color-text-disabled); }
+    .otp-others .val { font-size:var(--font-size-lg); font-family:var(--font-mono); letter-spacing:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>OTP Generator</h1>
+    <p class="tool-desc">TOTP 一次性密码生成器（基于 SHA-1 模拟，显示当前/上一组/下一组令牌）。</p>
+    <div class="card">
+      <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:var(--space-3); flex-wrap:wrap;">
+        <div class="field" style="flex:1;min-width:200px;">
+          <label for="otpSecret" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">Base32 密钥</label>
+          <input id="otpSecret" class="input" type="text" value="JBSWY3DPEHPK3PXP" placeholder="Base32 密钥">
+        </div>
+        <button id="otpRefreshBtn" class="btn btn-secondary">刷新</button>
+      </div>
+      <div class="otp-display">
+        <div class="otp-current" id="otpCurrent">------</div>
+        <div class="otp-countdown" id="otpCountdown">--s</div>
+        <div class="otp-others">
+          <div><div class="lbl">上一组</div><div class="val" id="otpPrev">------</div></div>
+          <div><div class="lbl">下一组</div><div class="val" id="otpNext">------</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var otpSecret = document.getElementById('otpSecret');
+      var otpCurrent = document.getElementById('otpCurrent');
+      var otpCountdown = document.getElementById('otpCountdown');
+      var otpPrev = document.getElementById('otpPrev');
+      var otpNext = document.getElementById('otpNext');
+      var otpRefreshBtn = document.getElementById('otpRefreshBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var timerId = null;
+
+      function base32ToBytes(b32) {
+        var alp = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        var bits = '';
+        for (var i = 0; i < b32.length; i++) {
+          var idx = alp.indexOf(b32[i].toUpperCase());
+          if (idx === -1) continue;
+          bits += idx.toString(2).padStart(5, '0');
+        }
+        var bytes = [];
+        for (var i = 0; i + 8 <= bits.length; i += 8) {
+          bytes.push(parseInt(bits.slice(i, i + 8), 2));
+        }
+        return bytes;
+      }
+
+      function hotp(keyBytes, counter) {
+        var msg = [];
+        for (var i = 7; i >= 0; i--) {
+          msg.push((counter >>> (i * 8)) & 0xFF);
+        }
+        var combined = keyBytes.concat(msg);
+        var hash = sha1(combined);
+        var offset = hash[hash.length - 1] & 0x0F;
+        var binCode = ((hash[offset] & 0x7F) << 24) | ((hash[offset + 1] & 0xFF) << 16) | ((hash[offset + 2] & 0xFF) << 8) | (hash[offset + 3] & 0xFF);
+        var otp = binCode % 1000000;
+        return otp.toString(10).padStart(6, '0');
+      }
+
+      function sha1(bytes) {
+        function rotateLeft(n, b) { return ((n << b) | (n >>> (32 - b))) >>> 0; }
+        var len = bytes.length;
+        var ml = len * 8;
+        var padded = bytes.slice();
+        padded.push(0x80);
+        while ((padded.length % 64) !== 56) padded.push(0);
+        for (var i = 7; i >= 0; i--) padded.push((ml >>> (i * 8)) & 0xFF);
+        var h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0;
+        for (var block = 0; block < padded.length; block += 64) {
+          var w = [];
+          for (var i = 0; i < 16; i++) {
+            w[i] = ((padded[block + i * 4] << 24) | (padded[block + i * 4 + 1] << 16) | (padded[block + i * 4 + 2] << 8) | padded[block + i * 4 + 3]) >>> 0;
+          }
+          for (var i = 16; i < 80; i++) {
+            w[i] = rotateLeft(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
+          }
+          var a = h0, b = h1, c = h2, d = h3, e = h4;
+          for (var i = 0; i < 80; i++) {
+            var f, k;
+            if (i < 20) { f = (b & c) | (~b & d); k = 0x5A827999; }
+            else if (i < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
+            else if (i < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
+            else { f = b ^ c ^ d; k = 0xCA62C1D6; }
+            var temp = (rotateLeft(a, 5) + f + e + k + w[i]) >>> 0;
+            e = d; d = c; c = rotateLeft(b, 30); b = a; a = temp;
+          }
+          h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+        }
+        var result = [];
+        for (var i = 0; i < 20; i++) {
+          var word = [h0, h1, h2, h3, h4][i >>> 2];
+          result.push((word >>> (24 - (i % 4) * 8)) & 0xFF);
+        }
+        return result;
+      }
+
+      function updateOTP() {
+        var secret = otpSecret.value.trim();
+        if (!secret) {
+          otpCurrent.textContent = '------';
+          otpPrev.textContent = '------';
+          otpNext.textContent = '------';
+          otpCountdown.textContent = '--s';
+          return;
+        }
+        try {
+          var keyBytes = base32ToBytes(secret);
+          var now = Math.floor(Date.now() / 1000);
+          var counter = Math.floor(now / 30);
+          var elapsed = now % 30;
+          var remaining = 30 - elapsed;
+
+          var cur = hotp(keyBytes, counter);
+          var prev = hotp(keyBytes, counter - 1);
+          var next = hotp(keyBytes, counter + 1);
+
+          otpCurrent.textContent = cur;
+          otpPrev.textContent = prev;
+          otpNext.textContent = next;
+          otpCountdown.textContent = remaining + 's';
+
+          outputEl.textContent = '当前: ' + cur + ' | 剩余: ' + remaining + 's';
+        } catch (e) {
+          otpCurrent.textContent = '------';
+          setStatus('密钥无效', 'error');
+        }
+      }
+
+      function startTimer() {
+        if (timerId) clearInterval(timerId);
+        updateOTP();
+        timerId = setInterval(updateOTP, 1000);
+      }
+
+      otpSecret.addEventListener('input', startTimer);
+      otpRefreshBtn.addEventListener('click', startTimer);
+
+      copyBtn.addEventListener('click', function () {
+        var text = otpCurrent.textContent;
+        if (text && text !== '------') { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      startTimer();
+    })();
+  </script>
+</body>
+</html>

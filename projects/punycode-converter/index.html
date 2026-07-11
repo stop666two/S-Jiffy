@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Punycode 转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Punycode 转换</h1>
+    <p class="tool-desc">域名 Punycode 与 Unicode 互转（国际化域名 IDN）。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入域名（如：m\xe4rketplace.com 或 xn--mrketplace-9g.com）..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="toPunyBtn" class="btn btn-primary">Unicode → Punycode</button>
+      <button id="toUniBtn" class="btn btn-secondary">Punycode → Unicode</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var toPunyBtn = document.getElementById('toPunyBtn');
+      var toUniBtn = document.getElementById('toUniBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var BASE = 36;
+      var TMIN = 1;
+      var TMAX = 26;
+      var SKEW = 38;
+      var DAMP = 700;
+      var INITIAL_BIAS = 72;
+      var INITIAL_N = 128;
+      var DELIMITER = '-';
+
+      function adaptBias(delta, numPoints, firstTime) {
+        delta = Math.floor(delta / (firstTime ? DAMP : 2));
+        delta += Math.floor(delta / numPoints);
+        var k = 0;
+        while (delta > ((BASE - TMIN) * (TMAX - TMIN)) / 2) {
+          delta = Math.floor(delta / (BASE - TMIN));
+          k += BASE;
+        }
+        return k + Math.floor((BASE - TMIN + 1) * delta / (delta + SKEW));
+      }
+
+      function punycodeEncode(input) {
+        var output = [];
+        var n = INITIAL_N;
+        var bias = INITIAL_BIAS;
+        var handled = 0;
+        var basic = [];
+
+        for (var i = 0; i < input.length; i++) {
+          var cp = input.charCodeAt(i);
+          if (cp < 128) {
+            basic.push(String.fromCharCode(cp));
+            handled++;
+          }
+        }
+
+        var h = handled;
+        if (basic.length > 0) {
+          for (var j = 0; j < basic.length; j++) output.push(basic[j]);
+          if (h < input.length) output.push(DELIMITER);
+        }
+
+        while (h < input.length) {
+          var m = Infinity;
+          for (var k = 0; k < input.length; k++) {
+            var cp2 = input.charCodeAt(k);
+            if (cp2 >= n && cp2 < m) m = cp2;
+          }
+          var delta = (m - n) * (h + 1);
+          n = m;
+
+          for (var k2 = 0; k2 < input.length; k2++) {
+            var cp3 = input.charCodeAt(k2);
+            if (cp3 < n) {
+              delta++;
+            }
+            if (cp3 === n) {
+              var q = delta;
+              for (var k3 = BASE; ; k3 += BASE) {
+                var t = k3 <= bias ? TMIN : k3 >= bias + TMAX ? TMAX : k3 - bias;
+                if (q < t) break;
+                var digit = t + (q - t) % (BASE - t);
+                output.push(String.fromCharCode(digit < 26 ? digit + 97 : digit + 22));
+                q = Math.floor((q - t) / (BASE - t));
+              }
+              output.push(String.fromCharCode(q < 26 ? q + 97 : q + 22));
+              bias = adaptBias(delta, h + 1, h === handled);
+              delta = 0;
+              h++;
+            }
+          }
+          delta++;
+          n++;
+        }
+        return output.join('');
+      }
+
+      function punycodeDecode(input) {
+        var output = [];
+        var n = INITIAL_N;
+        var bias = INITIAL_BIAS;
+        var i = 0;
+        var basicLen = input.lastIndexOf(DELIMITER);
+        if (basicLen === -1) basicLen = 0;
+
+        for (var j = 0; j < basicLen; j++) {
+          var cp = input.charCodeAt(j);
+          if (cp >= 128) throw new Error('Invalid basic codepoint');
+          output.push(cp);
+        }
+
+        var pos = basicLen > 0 ? basicLen + 1 : 0;
+        while (pos < input.length) {
+          var oldI = i;
+          var w = 1;
+          for (var k = BASE; ; k += BASE) {
+            var digit = input.charCodeAt(pos++);
+            if (digit >= 97 && digit <= 122) digit = digit - 97;
+            else if (digit >= 48 && digit <= 57) digit = digit - 22;
+            else throw new Error('Invalid punycode digit');
+            i += digit * w;
+            var t = k <= bias ? TMIN : k >= bias + TMAX ? TMAX : k - bias;
+            if (digit < t) break;
+            w *= BASE - t;
+          }
+          bias = adaptBias(i - oldI, output.length + 1, oldI === 0);
+          n += Math.floor(i / (output.length + 1));
+          i %= (output.length + 1);
+          output.splice(i, 0, n);
+          i++;
+        }
+        return String.fromCharCode.apply(null, output);
+      }
+
+      function encodeDomain(domain) {
+        return domain.split('.').map(function (label) {
+          if (/^[\x00-\x7f]+$/.test(label)) return label;
+          return 'xn--' + punycodeEncode(label);
+        }).join('.');
+      }
+
+      function decodeDomain(domain) {
+        return domain.split('.').map(function (label) {
+          if (label.indexOf('xn--') === 0) {
+            try { return punycodeDecode(label.substr(4)); } catch (e) { return label; }
+          }
+          return label;
+        }).join('.');
+      }
+
+      toPunyBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入域名', 'error'); return; }
+        try { outputEl.textContent = encodeDomain(text); setStatus(''); }
+        catch (e) { setStatus('转换失败: ' + e.message, 'error'); }
+      });
+
+      toUniBtn.addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入域名', 'error'); return; }
+        try { outputEl.textContent = decodeDomain(text); setStatus(''); }
+        catch (e) { setStatus('转换失败: ' + e.message, 'error'); }
+      });
+
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

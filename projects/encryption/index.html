@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加密工具 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>加密工具</h1>
+    <p class="tool-desc">凯撒密码和 ROT13 加密/解密，纯浏览器端实现。</p>
+    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">模式</label>
+      <select id="modeSelect" class="input" style="width:auto;min-width:90px;">
+        <option value="encrypt">加密</option>
+        <option value="decrypt">解密</option>
+      </select>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">算法</label>
+      <select id="algoSelect" class="input" style="width:auto;min-width:100px;">
+        <option value="caesar">凯撒密码</option>
+        <option value="rot13">ROT13</option>
+      </select>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">移位</label>
+      <input id="shiftInput" class="input" type="number" value="3" min="1" max="25" style="width:70px;">
+    </div>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
+      <button id="processBtn" class="btn btn-primary">执行</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var modeEl = document.getElementById('modeSelect');
+    var algoEl = document.getElementById('algoSelect');
+    var shiftEl = document.getElementById('shiftInput');
+    var inputEl = document.getElementById('inputText');
+    var outputEl = document.getElementById('outputText');
+    function caesarShift(text, shift, decrypt) {
+      if (decrypt) shift = -shift;
+      return text.split('').map(function(ch) {
+        var code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) {
+          return String.fromCharCode(((code - 65 + shift + 26) % 26) + 65);
+        }
+        if (code >= 97 && code <= 122) {
+          return String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
+        }
+        return ch;
+      }).join('');
+    }
+    function rot13(text) {
+      return text.split('').map(function(ch) {
+        var code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) {
+          return String.fromCharCode(((code - 65 + 13) % 26) + 65);
+        }
+        if (code >= 97 && code <= 122) {
+          return String.fromCharCode(((code - 97 + 13) % 26) + 97);
+        }
+        return ch;
+      }).join('');
+    }
+    document.getElementById('processBtn').addEventListener('click', function() {
+      var text = inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var algo = algoEl.value;
+      var decrypt = modeEl.value === 'decrypt';
+      var result;
+      if (algo === 'rot13') {
+        result = rot13(text);
+      } else {
+        var shift = parseInt(shiftEl.value) || 3;
+        result = caesarShift(text, shift, decrypt);
+      }
+      outputEl.textContent = result;
+      setStatus((decrypt ? '解密' : '加密') + '完成');
+    });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    algoEl.addEventListener('change', function() {
+      shiftEl.disabled = algoEl.value === 'rot13';
+    });
+    shiftEl.disabled = algoEl.value === 'rot13';
+  })();</script>
+</body>
+</html>

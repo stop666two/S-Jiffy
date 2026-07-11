@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机字符串生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rs-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rs-row .field { flex:1; min-width:100px; }
+    .rs-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .charset-options { display:flex; gap:16px; flex-wrap:wrap; }
+    .charset-options label { display:flex; align-items:center; gap:4px; font-size:var(--font-size-sm); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>随机字符串生成器</h1>
+    <p class="tool-desc">生成随机字母数字字符串，可配置长度和字符集。</p>
+    <div class="card">
+      <div class="rs-row">
+        <div class="field"><label for="strLength">长度</label><input id="strLength" class="input" type="number" value="12" min="1" max="9999"></div>
+        <div class="field"><label for="strCount">生成数量</label><input id="strCount" class="input" type="number" value="1" min="1" max="1000"></div>
+      </div>
+      <div class="charset-options">
+        <label><input id="chLower" type="checkbox" checked> a-z</label>
+        <label><input id="chUpper" type="checkbox" checked> A-Z</label>
+        <label><input id="chDigits" type="checkbox" checked> 0-9</label>
+        <label><input id="chSpecial" type="checkbox"> !@#$%</label>
+      </div>
+      <div style="margin-top:var(--space-2);margin-bottom:var(--space-3);">
+        <label for="customCharset" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">自定义字符集（覆盖上方勾选）</label>
+        <input id="customCharset" class="input" placeholder="留空则使用勾选的字符集">
+      </div>
+      <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var lengthEl = document.getElementById('strLength');
+      var countEl = document.getElementById('strCount');
+      var chLower = document.getElementById('chLower');
+      var chUpper = document.getElementById('chUpper');
+      var chDigits = document.getElementById('chDigits');
+      var chSpecial = document.getElementById('chSpecial');
+      var customEl = document.getElementById('customCharset');
+      var generateBtn = document.getElementById('generateBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function generate() {
+        var len = parseInt(lengthEl.value, 10) || 12;
+        var count = parseInt(countEl.value, 10) || 1;
+        if (len < 1) len = 1;
+        if (len > 10000) len = 10000;
+        if (count < 1) count = 1;
+        if (count > 1000) count = 1000;
+
+        var charset = customEl.value;
+        if (!charset) {
+          charset = '';
+          if (chLower.checked) charset += 'abcdefghijklmnopqrstuvwxyz';
+          if (chUpper.checked) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          if (chDigits.checked) charset += '0123456789';
+          if (chSpecial.checked) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        }
+        if (!charset) { setStatus('请至少选择一个字符集', 'error'); return; }
+
+        var results = [];
+        for (var n = 0; n < count; n++) {
+          var s = '';
+          for (var i = 0; i < len; i++) {
+            s += charset.charAt(Math.floor(Math.random() * charset.length));
+          }
+          results.push(s);
+        }
+        outputEl.textContent = results.join('\n');
+        setStatus('已生成 ' + count + ' 个随机字符串');
+      }
+
+      generateBtn.addEventListener('click', generate);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

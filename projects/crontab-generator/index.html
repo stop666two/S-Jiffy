@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crontab Generator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cron-grid { display:grid; gap:var(--space-2); max-width:500px; }
+    .cron-row { display:flex; gap:8px; align-items:center; }
+    .cron-row label { font-size:var(--font-size-sm); min-width:60px; color:var(--color-text-secondary); }
+    .cron-row select { flex:1; height:48px; padding:0 8px; font-family:var(--font-mono); font-size:var(--font-size-base); border:1px solid #ddd; border-radius:var(--radius-md); }
+    .cron-preview { margin-top:var(--space-3); padding:var(--space-2); background:var(--color-bg-soft); border-radius:var(--radius-md); font-size:18px; text-align:center; letter-spacing:2px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Crontab Generator</h1>
+    <p class="tool-desc">通过人类可读的选择生成 cron 表达式。</p>
+    <div class="card">
+      <div class="cron-grid">
+        <div class="cron-row"><label>分钟</label><select id="cronMinute"><option value="*">每分钟 (*)</option><option value="0">整点 (0)</option><option value="15">15 分</option><option value="30">30 分</option><option value="45">45 分</option><option value="*/5">每 5 分钟</option><option value="*/10">每 10 分钟</option><option value="*/15">每 15 分钟</option><option value="*/30">每 30 分钟</option></select></div>
+        <div class="cron-row"><label>小时</label><select id="cronHour"><option value="*">每小时 (*)</option><option value="0">0 点（午夜）</option><option value="6">6 点</option><option value="8">8 点</option><option value="9">9 点</option><option value="12">12 点</option><option value="18">18 点</option><option value="*/2">每 2 小时</option><option value="*/6">每 6 小时</option><option value="*/12">每 12 小时</option></select></div>
+        <div class="cron-row"><label>日期</label><select id="cronDay"><option value="*">每天 (*)</option><option value="1">1 日</option><option value="15">15 日</option><option value="28">28 日</option><option value="*/2">每 2 天</option></select></div>
+        <div class="cron-row"><label>月份</label><select id="cronMonth"><option value="*">每月 (*)</option><option value="1">一月</option><option value="3">三月</option><option value="6">六月</option><option value="9">九月</option><option value="12">十二月</option><option value="*/3">每季度</option></select></div>
+        <div class="cron-row"><label>星期</label><select id="cronWeekday"><option value="*">每天 (*)</option><option value="0">周日</option><option value="1">周一</option><option value="2">周二</option><option value="3">周三</option><option value="4">周四</option><option value="5">周五</option><option value="6">周六</option><option value="1-5">周一至周五</option><option value="0,6">周末</option></select></div>
+      </div>
+      <div class="cron-preview" id="cronPreview">* * * * *</div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var cronMinute = document.getElementById('cronMinute');
+      var cronHour = document.getElementById('cronHour');
+      var cronDay = document.getElementById('cronDay');
+      var cronMonth = document.getElementById('cronMonth');
+      var cronWeekday = document.getElementById('cronWeekday');
+      var cronPreview = document.getElementById('cronPreview');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var presets = [
+        { expr: '0 9 * * 1-5', label: '工作日 9:00' },
+        { expr: '0 0 * * *', label: '每天午夜' },
+        { expr: '*/5 * * * *', label: '每 5 分钟' },
+        { expr: '0 */2 * * *', label: '每 2 小时' },
+        { expr: '0 3 * * 0', label: '每周日凌晨 3 点' },
+        { expr: '0 0 1 * *', label: '每月 1 日午夜' },
+        { expr: '0 0 * * 0', label: '每周日午夜' },
+        { expr: '30 18 * * 1-5', label: '工作日 18:30' }
+      ];
+
+      function updateCron() {
+        var parts = [
+          cronMinute.value,
+          cronHour.value,
+          cronDay.value,
+          cronMonth.value,
+          cronWeekday.value
+        ];
+        var expr = parts.join(' ');
+        cronPreview.textContent = expr;
+        outputEl.textContent = expr;
+        setStatus('');
+      }
+
+      var selects = [cronMinute, cronHour, cronDay, cronMonth, cronWeekday];
+      for (var i = 0; i < selects.length; i++) {
+        selects[i].addEventListener('change', updateCron);
+      }
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text && text !== '* * * * *') {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      updateCron();
+    })();
+  </script>
+</body>
+</html>

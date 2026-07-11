@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD5 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+  <style>
+    .md5-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-3);}
+    .md5-res{display:grid;gap:8px;}
+    .md5-res .row{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:14px;}
+    .md5-res .row .lbl{min-width:80px;color:var(--color-text-secondary);font-size:var(--font-size-sm);}
+    .md5-res .row .val{word-break:break-all;flex:1;}
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>MD5 生成器</h1>
+    <p class="tool-desc">使用标准 MD5 算法计算文本或文件的哈希值。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算 MD5 的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div class="md5-opts">
+      <button id="calcBtn" class="btn btn-primary">计算 MD5</button>
+      <button id="fileBtn" class="btn btn-secondary">选择文件</button>
+      <input type="file" id="fileInput" style="display:none;">
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="card">
+      <div class="md5-res" id="resultArea">
+        <div class="row"><span class="lbl">32位小写</span><span class="val" id="res32l"></span><button class="copy-btn" style="position:static;display:inline;" id="copy32l">复制</button></div>
+        <div class="row"><span class="lbl">32位大写</span><span class="val" id="res32u"></span><button class="copy-btn" style="position:static;display:inline;" id="copy32u">复制</button></div>
+        <div class="row"><span class="lbl">16位小写</span><span class="val" id="res16l"></span><button class="copy-btn" style="position:static;display:inline;" id="copy16l">复制</button></div>
+        <div class="row"><span class="lbl">16位大写</span><span class="val" id="res16u"></span><button class="copy-btn" style="position:static;display:inline;" id="copy16u">复制</button></div>
+      </div>
+    </div>
+    <div class="output-box" style="min-height:40px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制全部</button>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function(){
+      var i=document.getElementById('inputText'), fi=document.getElementById('fileInput');
+      var r32l=document.getElementById('res32l'),r32u=document.getElementById('res32u');
+      var r16l=document.getElementById('res16l'),r16u=document.getElementById('res16u');
+      var o=document.getElementById('outputText');
+      var lastHash='';
+
+      function show(h){
+        if(!h){r32l.textContent=r32u.textContent=r16l.textContent=r16u.textContent='';o.textContent='';return;}
+        lastHash=h;
+        r32l.textContent=h;
+        r32u.textContent=h.toUpperCase();
+        r16l.textContent=h.substr(8,16);
+        r16u.textContent=h.substr(8,16).toUpperCase();
+        o.textContent='MD5: '+h;
+      }
+
+      function calcMD5(str){return md5(str);}
+
+      function readFile(file){
+        var reader=new FileReader();
+        reader.onload=function(e){
+          var words=e.target.result;
+          var hex=md5(words);
+          show(hex);
+          setStatus('文件 MD5 计算完成');
+        };
+        reader.onerror=function(){setStatus('文件读取失败','error');};
+        reader.readAsBinaryString(file);
+      }
+
+      document.getElementById('calcBtn').addEventListener('click',function(){
+        var t=i.value.trim();if(!t){setStatus('请输入内容','error');return;}
+        show(calcMD5(t));setStatus('');
+      });
+
+      document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
+      fi.addEventListener('change',function(){if(fi.files.length>0)readFile(fi.files[0]);});
+
+      document.getElementById('clearBtn').addEventListener('click',function(){i.value='';show('');setStatus('');i.focus();fi.value='';});
+
+      document.getElementById('copy32l').addEventListener('click',function(){if(r32l.textContent){copyToClipboard(r32l.textContent,this);setStatus('已复制 32位小写');}});
+      document.getElementById('copy32u').addEventListener('click',function(){if(r32u.textContent){copyToClipboard(r32u.textContent,this);setStatus('已复制 32位大写');}});
+      document.getElementById('copy16l').addEventListener('click',function(){if(r16l.textContent){copyToClipboard(r16l.textContent,this);setStatus('已复制 16位小写');}});
+      document.getElementById('copy16u').addEventListener('click',function(){if(r16u.textContent){copyToClipboard(r16u.textContent,this);setStatus('已复制 16位大写');}});
+      document.getElementById('copyBtn').addEventListener('click',function(){var t=r32l.textContent;if(t){copyToClipboard('32位小写: '+t+'\n32位大写: '+r32u.textContent+'\n16位小写: '+r16l.textContent+'\n16位大写: '+r16u.textContent,this);setStatus('已复制全部');}});
+    })();
+  </script>
+</body>
+</html>

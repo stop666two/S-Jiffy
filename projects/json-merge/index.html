@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON 合并 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .merge-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .merge-pane textarea { min-height:200px; font-family:var(--font-mono); font-size:12px; }
+    .merge-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
+    .merge-result { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
+    .merge-conflict { background:#fff3cd; border:1px solid #ffc107; border-radius:var(--radius-sm); padding:var(--space-2); margin-top:var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JSON 合并</h1>
+    <p class="tool-desc">深度合并两个 JSON 对象，显示冲突解决策略。</p>
+    <div class="merge-container">
+      <div class="merge-pane">
+        <label for="jsonA">JSON A (基准)</label>
+        <textarea id="jsonA" class="input textarea" placeholder='{"name":"Alice","age":30,"address":{"city":"NYC"}}' style="min-height:180px;"></textarea>
+      </div>
+      <div class="merge-pane">
+        <label for="jsonB">JSON B (覆盖)</label>
+        <textarea id="jsonB" class="input textarea" placeholder='{"age":31,"email":"alice@example.com","address":{"zip":"10001"}}' style="min-height:180px;"></textarea>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="mergeBtn" class="btn btn-primary">深度合并 (B 覆盖 A)</button>
+      <button id="mergeReverseBtn" class="btn btn-secondary">深度合并 (A 覆盖 B)</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <div id="outputText" class="merge-result" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var jsonA = document.getElementById('jsonA');
+      var jsonB = document.getElementById('jsonB');
+      var outputEl = document.getElementById('outputText');
+      var mergeBtn = document.getElementById('mergeBtn');
+      var mergeReverseBtn = document.getElementById('mergeReverseBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function isObject(v) {
+        return v && typeof v === 'object' && !Array.isArray(v);
+      }
+
+      function deepMerge(target, source, path) {
+        var result = {};
+        var conflicts = [];
+
+        if (target && typeof target === 'object') {
+          for (var key in target) {
+            if (Object.prototype.hasOwnProperty.call(target, key)) {
+              result[key] = target[key];
+            }
+          }
+        }
+
+        if (source && typeof source === 'object') {
+          for (var key2 in source) {
+            if (Object.prototype.hasOwnProperty.call(source, key2)) {
+              var fullPath = path ? path + '.' + key2 : key2;
+              if (key2 in result && isObject(result[key2]) && isObject(source[key2])) {
+                var merged = deepMerge(result[key2], source[key2], fullPath);
+                result[key2] = merged.result;
+                conflicts = conflicts.concat(merged.conflicts);
+              } else if (key2 in result && result[key2] !== source[key2]) {
+                conflicts.push({ path: fullPath, oldVal: JSON.stringify(result[key2]), newVal: JSON.stringify(source[key2]) });
+                result[key2] = source[key2];
+              } else {
+                result[key2] = source[key2];
+              }
+            }
+          }
+        }
+
+        return { result: result, conflicts: conflicts };
+      }
+
+      function doMerge(priorityA, priorityB) {
+        var textA = jsonA.value.trim();
+        var textB = jsonB.value.trim();
+        if (!textA && !textB) { setStatus('请至少输入一个 JSON', 'error'); return; }
+
+        var objA = textA ? (function () { try { return JSON.parse(textA); } catch (e) { setStatus('JSON A 格式错误: ' + e.message, 'error'); return undefined; } })() : {};
+        if (objA === undefined) return;
+        var objB = textB ? (function () { try { return JSON.parse(textB); } catch (e) { setStatus('JSON B 格式错误: ' + e.message, 'error'); return undefined; } })() : {};
+        if (objB === undefined) return;
+
+        var merged, conflicts;
+        if (priorityA) {
+          var m1 = deepMerge(objB, objA, '');
+          merged = m1.result;
+          conflicts = m1.conflicts;
+        } else {
+          var m2 = deepMerge(objA, objB, '');
+          merged = m2.result;
+          conflicts = m2.conflicts;
+        }
+
+        var html = '<pre style="margin:0;">' + escapeHtml(JSON.stringify(merged, null, 2)) + '</pre>';
+        if (conflicts.length > 0) {
+          html += '<div class="merge-conflict"><strong>冲突解决 (' + conflicts.length + ' 处):</strong><br>';
+          for (var i = 0; i < conflicts.length; i++) {
+            html += '<span style="color:#856404;">~ ' + conflicts[i].path + ': ' + conflicts[i].oldVal + ' → ' + conflicts[i].newVal + '</span><br>';
+          }
+          html += '</div>';
+        }
+        outputEl.innerHTML = html;
+        setStatus('合并完成' + (conflicts.length ? '，' + conflicts.length + ' 处冲突以 B 为准' : '，无冲突'));
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      mergeBtn.addEventListener('click', function () { doMerge(false, true); });
+      mergeReverseBtn.addEventListener('click', function () { doMerge(true, false); });
+      clearBtn.addEventListener('click', function () { jsonA.value = ''; jsonB.value = ''; outputEl.innerHTML = ''; setStatus(''); jsonA.focus(); });
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent || outputEl.innerText;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

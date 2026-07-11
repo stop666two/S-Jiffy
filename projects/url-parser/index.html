@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL 解析器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .url-result { margin-top: var(--space-2); }
+    .url-result dt { font-size: var(--font-size-xs); color: var(--color-text-disabled); text-transform: uppercase; letter-spacing: 0.05em; margin-top: var(--space-2); }
+    .url-result dd { font-size: var(--font-size-sm); font-family: var(--font-mono); word-break: break-all; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>URL 解析器</h1>
+    <p class="tool-desc">将 URL 解析为协议、主机、路径、查询参数、哈希等组成部分。</p>
+    <div class="card">
+      <input id="urlInput" class="input js-focus-input" placeholder="输入 URL，如 https://example.com/path?q=1#hash">
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('urlInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function parseURL(url) {
+        var result = { raw: url, protocol: '', host: '', hostname: '', port: '', path: '', query: '', hash: '', params: [] };
+        try {
+          var u = new URL(url);
+          result.protocol = u.protocol;
+          result.host = u.host;
+          result.hostname = u.hostname;
+          result.port = u.port || '(default)';
+          result.path = u.pathname;
+          result.query = u.search || '(none)';
+          result.hash = u.hash || '(none)';
+          u.searchParams.forEach(function (v, k) { result.params.push({ key: k, value: v }); });
+        } catch (e) {
+          return null;
+        }
+        return result;
+      }
+
+      function update() {
+        var raw = inputEl.value.trim();
+        if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
+        var r = parseURL(raw);
+        if (!r) { outputEl.innerHTML = '<span style="color:var(--color-error)">无效 URL</span>'; setStatus('URL 格式错误', 'error'); return; }
+        var html = '<dl class="url-result">';
+        html += '<dt>协议 (Protocol)</dt><dd>' + r.protocol + '</dd>';
+        html += '<dt>主机 (Host)</dt><dd>' + r.host + '</dd>';
+        html += '<dt>主机名 (Hostname)</dt><dd>' + r.hostname + '</dd>';
+        html += '<dt>端口 (Port)</dt><dd>' + r.port + '</dd>';
+        html += '<dt>路径 (Path)</dt><dd>' + r.path + '</dd>';
+        html += '<dt>查询字符串 (Query)</dt><dd>' + r.query + '</dd>';
+        html += '<dt>哈希 (Hash)</dt><dd>' + r.hash + '</dd>';
+        if (r.params.length) {
+          html += '<dt>查询参数</dt>';
+          for (var i = 0; i < r.params.length; i++) {
+            html += '<dd>' + r.params[i].key + ' = ' + r.params[i].value + '</dd>';
+          }
+        }
+        html += '</dl>';
+        outputEl.innerHTML = html;
+        setStatus('');
+      }
+
+      inputEl.addEventListener('input', update);
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

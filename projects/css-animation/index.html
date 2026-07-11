@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>CSS 动画生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    @keyframes previewAnim{from{transform:translateX(0);opacity:1}to{transform:translateX(200px);opacity:.5}}
+    .anim-stage{width:100%;height:220px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);position:relative;overflow:hidden;margin-bottom:var(--space-3)}
+    .anim-ball{width:60px;height:60px;background:var(--color-text-primary);border-radius:12px;position:absolute;top:80px;left:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600}
+    .ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .ctrl-group{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2)}
+    .ctrl-group h3{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px}
+    .ctrl-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+    .ctrl-row label{font-size:var(--font-size-sm);min-width:60px}
+    .ctrl-row .input{width:auto}
+    .ctrl-row input[type=number]{width:70px}
+    .ctrl-row select{min-width:110px}
+    .keyframe-list{margin:var(--space-2) 0;font-size:13px;font-family:var(--font-mono);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-2);max-height:200px;overflow-y:auto;white-space:pre-wrap}
+    .btn-play{display:flex;gap:8px;margin:var(--space-2) 0;flex-wrap:wrap}
+    .preset-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--space-2)}
+    .preset-btn{padding:4px 12px;font-size:var(--font-size-xs);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer}
+    .preset-btn:hover{background:var(--color-bg-soft)}
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>CSS 动画生成器</h1>
+    <p class="tool-desc">构建自定义 CSS 关键帧动画，含预设、缓动函数、时长/迭代/延迟控制，实时预览并复制代码。</p>
+    <div class="card">
+      <div class="anim-stage" id="animStage"><div class="anim-ball" id="animBall">动画</div></div>
+      <div style="margin-bottom:var(--space-2);">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-right:8px;">动画预设:</span>
+        <div class="preset-grid" id="presetGrid">
+          <button class="preset-btn" data-preset="fadeIn">淡入</button>
+          <button class="preset-btn" data-preset="slideIn">滑入</button>
+          <button class="preset-btn" data-preset="bounce">弹跳</button>
+          <button class="preset-btn" data-preset="rotate">旋转</button>
+          <button class="preset-btn" data-preset="pulse">脉冲</button>
+          <button class="preset-btn" data-preset="shake">抖动</button>
+          <button class="preset-btn" data-preset="flip">翻转</button>
+        </div>
+      </div>
+      <div class="ctrl-grid">
+        <div class="ctrl-group">
+          <h3>动画属性</h3>
+          <div class="ctrl-row"><label>持续时间</label><input id="durInput" class="input" type="number" value="2" min="0.1" max="30" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
+          <div class="ctrl-row"><label>延迟时间</label><input id="delayInput" class="input" type="number" value="0" min="0" max="10" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
+          <div class="ctrl-row"><label>缓动函数</label><select id="easeSelect" class="input">
+            <option value="ease">ease</option>
+            <option value="linear">linear</option>
+            <option value="ease-in">ease-in</option>
+            <option value="ease-out">ease-out</option>
+            <option value="ease-in-out">ease-in-out</option>
+            <option value="cubic-bezier(0.68,-0.55,0.265,1.55)">bounce</option>
+            <option value="cubic-bezier(0.175,0.885,0.32,1.275)">spring</option>
+            <option value="cubic-bezier(0.6,-0.28,0.735,0.045)">snap</option>
+            <option value="cubic-bezier(0.22,1,0.36,1)">ease-out quint</option>
+            <option value="cubic-bezier(0.87,0,0.13,1)">ease-in-out quint</option>
+            <option value="cubic-bezier(0.34,1.56,0.64,1)">spring light</option>
+            <option value="cubic-bezier(0.95,0.05,0.795,0.035)">sharp</option>
+            <option value="cubic-bezier(0.16,1,0.3,1)">smooth out</option>
+          </select></div>
+          <div class="ctrl-row"><label>方向</label><select id="dirSelect" class="input">
+            <option value="normal">normal</option>
+            <option value="reverse">reverse</option>
+            <option value="alternate">alternate</option>
+            <option value="alternate-reverse">alternate-reverse</option>
+          </select></div>
+          <div class="ctrl-row"><label>重复</label><select id="iterSelect" class="input">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="infinite">∞ infinite</option>
+          </select></div>
+          <div class="ctrl-row"><label>填充模式</label><select id="fillSelect" class="input">
+            <option value="none">none</option>
+            <option value="forwards">forwards</option>
+            <option value="backwards">backwards</option>
+            <option value="both">both</option>
+          </select></div>
+        </div>
+        <div class="ctrl-group">
+          <h3>变换属性</h3>
+          <div class="ctrl-row"><label>X 移动</label><input id="xInput" class="input" type="number" value="200" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
+          <div class="ctrl-row"><label>Y 移动</label><input id="yInput" class="input" type="number" value="0" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
+          <div class="ctrl-row"><label>旋转</label><input id="rotInput" class="input" type="number" value="360" min="-720" max="720"><span style="font-size:var(--font-size-sm)">deg</span></div>
+          <div class="ctrl-row"><label>缩放</label><input id="scaleInput" class="input" type="number" value="1.5" min="0.1" max="5" step="0.1"></div>
+          <div class="ctrl-row"><label>透明度</label><input id="opacityInput" class="input" type="number" value="0.5" min="0" max="1" step="0.1"></div>
+        </div>
+      </div>
+      <div class="btn-play">
+        <button id="playBtn" class="btn btn-primary">播放</button>
+        <button id="pauseBtn" class="btn btn-secondary">暂停</button>
+        <button id="stopBtn" class="btn btn-secondary">停止</button>
+      </div>
+      <div class="keyframe-list" id="keyframeDisplay">@keyframes anim-helper { ... }</div>
+    </div>
+    <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <style id="animStyle"></style>
+  <script>
+    (function() {
+      var ball=document.getElementById('animBall');
+      var animStyle=document.getElementById('animStyle');
+      var playBtn=document.getElementById('playBtn');
+      var pauseBtn=document.getElementById('pauseBtn');
+      var stopBtn=document.getElementById('stopBtn');
+      var durInp=document.getElementById('durInput');
+      var delayInp=document.getElementById('delayInput');
+      var easeSel=document.getElementById('easeSelect');
+      var dirSel=document.getElementById('dirSelect');
+      var iterSel=document.getElementById('iterSelect');
+      var fillSel=document.getElementById('fillSelect');
+      var xInp=document.getElementById('xInput');
+      var yInp=document.getElementById('yInput');
+      var rotInp=document.getElementById('rotInput');
+      var scaleInp=document.getElementById('scaleInput');
+      var opaInp=document.getElementById('opacityInput');
+      var kfDisplay=document.getElementById('keyframeDisplay');
+      var out=document.getElementById('outputText');
+      var copyBtn=document.getElementById('copyBtn');
+
+      var animName='anim_'+Date.now();
+      var isPlaying=false;
+
+      var presets = {
+        fadeIn: { x:0, y:0, rot:0, scale:1, opa:1, easing:'ease' },
+        slideIn: { x:200, y:0, rot:0, scale:1, opa:1, easing:'ease-out' },
+        bounce: { x:200, y:0, rot:0, scale:1, opa:1, easing:'cubic-bezier(0.68,-0.55,0.265,1.55)' },
+        rotate: { x:0, y:0, rot:360, scale:1, opa:1, easing:'linear' },
+        pulse: { x:0, y:0, rot:0, scale:1.3, opa:1, easing:'ease-in-out' },
+        shake: { x:3, y:0, rot:0, scale:1, opa:1, easing:'ease-in-out' },
+        flip: { x:0, y:0, rot:360, scale:0.5, opa:1, easing:'ease-out' }
+      };
+
+      function generateKeyframes() {
+        var x=parseInt(xInp.value)||0, y=parseInt(yInp.value)||0;
+        var rot=parseInt(rotInp.value)||0, scale=parseFloat(scaleInp.value)||1;
+        var opa=parseFloat(opaInp.value)||0.5;
+        var isShake = animName.indexOf('shake') > -1 || (x <= 10 && rot === 0);
+
+        var css;
+        if (isShake && x <= 10) {
+          css = '@keyframes '+animName+' {\n' +
+            '  0%, 100% { transform: translateX(0); }\n' +
+            '  10%, 30%, 50%, 70%, 90% { transform: translateX(-'+Math.max(1,Math.abs(x))+'px); }\n' +
+            '  20%, 40%, 60%, 80% { transform: translateX('+Math.max(1,Math.abs(x))+'px); }\n' +
+            '}';
+        } else {
+          css = '@keyframes '+animName+' {\n' +
+            '  0% {\n    transform: translateX(0) translateY(0) rotate(0deg) scale(1);\n    opacity: 1;\n  }\n' +
+            '  100% {\n    transform: translateX('+x+'px) translateY('+y+'px) rotate('+rot+'deg) scale('+scale+');\n    opacity: '+opa+';\n  }\n}';
+        }
+        animStyle.textContent = css;
+        kfDisplay.textContent = css;
+        out.textContent = css;
+      }
+
+      function applyAnimation() {
+        var dur=durInp.value||2, ease=easeSel.value, dir=dirSel.value;
+        var iter=iterSel.value, fill=fillSel.value, delay=delayInp.value||0;
+        ball.style.animation = animName+' '+dur+'s '+ease+' '+iter+' '+dir+' '+fill+' '+delay+'s';
+        isPlaying = true;
+      }
+
+      function loadPreset(name) {
+        var p = presets[name];
+        if (!p) return;
+        animName = 'anim_'+name+'_'+Date.now();
+        xInp.value = p.x;
+        yInp.value = p.y;
+        rotInp.value = p.rot;
+        scaleInp.value = p.scale;
+        opaInp.value = p.opa;
+        if (name === 'shake') { xInp.value = 5; rotInp.value = 0; }
+        easeSel.value = p.easing;
+        generateKeyframes();
+        if (isPlaying) applyAnimation();
+        setStatus('预设: ' + name);
+      }
+
+      var presetBtns = document.querySelectorAll('.preset-btn');
+      for (var i = 0; i < presetBtns.length; i++) {
+        presetBtns[i].addEventListener('click', function() {
+          loadPreset(this.getAttribute('data-preset'));
+        });
+      }
+
+      generateKeyframes();
+
+      playBtn.addEventListener('click', function() {
+        ball.style.animationPlayState = 'running';
+        if (!isPlaying) applyAnimation();
+        isPlaying = true;
+        setStatus('动画已播放');
+      });
+
+      pauseBtn.addEventListener('click', function() {
+        ball.style.animationPlayState = 'paused';
+        setStatus('已暂停');
+      });
+
+      stopBtn.addEventListener('click', function() {
+        ball.style.animation = 'none';
+        void ball.offsetHeight;
+        isPlaying = false;
+        setStatus('已停止');
+      });
+
+      function onChange() { generateKeyframes(); if (isPlaying) applyAnimation(); }
+      durInp.addEventListener('change', onChange);
+      delayInp.addEventListener('change', onChange);
+      easeSel.addEventListener('change', onChange);
+      dirSel.addEventListener('change', onChange);
+      iterSel.addEventListener('change', onChange);
+      fillSel.addEventListener('change', onChange);
+      xInp.addEventListener('change', onChange);
+      yInp.addEventListener('change', onChange);
+      rotInp.addEventListener('change', onChange);
+      scaleInp.addEventListener('change', onChange);
+      opaInp.addEventListener('change', onChange);
+
+      copyBtn.addEventListener('click', function() {
+        var text = out.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制 CSS 代码'); }
+      });
+    })();
+  </script>
+</body>
+</html>

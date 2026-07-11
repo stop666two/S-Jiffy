@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bencode 编解码 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mode-toggle { display:flex; gap:12px; margin-bottom:var(--space-3); }
+    .mode-toggle label { font-size:var(--font-size-sm); display:flex; align-items:center; gap:6px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Bencode 编解码</h1>
+    <p class="tool-desc">BitTorrent 使用的 Bencode 格式编码与解码。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或 Bencode 数据..." style="min-height:160px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+      <button id="encodeBtn" class="btn btn-primary">编码 Encode</button>
+      <button id="decodeBtn" class="btn btn-secondary">解码 Decode</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var encodeBtn = document.getElementById('encodeBtn');
+      var decodeBtn = document.getElementById('decodeBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function bencodeEncode(val) {
+        if (typeof val === 'string') {
+          var bytes = unescape(encodeURIComponent(val));
+          return bytes.length + ':' + val;
+        } else if (typeof val === 'number') {
+          return 'i' + val + 'e';
+        } else if (Array.isArray(val)) {
+          var parts = ['l'];
+          for (var i = 0; i < val.length; i++) parts.push(bencodeEncode(val[i]));
+          parts.push('e');
+          return parts.join('');
+        } else if (typeof val === 'object' && val !== null) {
+          var keys = Object.keys(val).sort();
+          var parts2 = ['d'];
+          for (var j = 0; j < keys.length; j++) {
+            parts2.push(bencodeEncode(keys[j]));
+            parts2.push(bencodeEncode(val[keys[j]]));
+          }
+          parts2.push('e');
+          return parts2.join('');
+        }
+        return '';
+      }
+
+      var decodePos = 0;
+      var decodeStr = '';
+
+      function bencodeDecode() {
+        if (decodePos >= decodeStr.length) return null;
+        var ch = decodeStr[decodePos];
+        if (ch === 'i') {
+          decodePos++;
+          var end = decodeStr.indexOf('e', decodePos);
+          if (end === -1) throw new Error('Invalid integer');
+          var num = parseInt(decodeStr.substring(decodePos, end), 10);
+          decodePos = end + 1;
+          return num;
+        } else if (ch === 'l') {
+          decodePos++;
+          var arr = [];
+          while (decodePos < decodeStr.length && decodeStr[decodePos] !== 'e') {
+            arr.push(bencodeDecode());
+          }
+          if (decodePos >= decodeStr.length) throw new Error('Unterminated list');
+          decodePos++;
+          return arr;
+        } else if (ch === 'd') {
+          decodePos++;
+          var obj = {};
+          while (decodePos < decodeStr.length && decodeStr[decodePos] !== 'e') {
+            var key = bencodeDecode();
+            var value = bencodeDecode();
+            obj[key] = value;
+          }
+          if (decodePos >= decodeStr.length) throw new Error('Unterminated dict');
+          decodePos++;
+          return obj;
+        } else if (ch >= '0' && ch <= '9') {
+          var colon = decodeStr.indexOf(':', decodePos);
+          if (colon === -1) throw new Error('Invalid string');
+          var len = parseInt(decodeStr.substring(decodePos, colon), 10);
+          decodePos = colon + 1;
+          var s = decodeStr.substring(decodePos, decodePos + len);
+          decodePos += len;
+          return s;
+        }
+        throw new Error('Unexpected char: ' + ch);
+      }
+
+      function encode() {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入内容', 'error'); return; }
+        try {
+          var parsed = JSON.parse(text);
+          decodePos = 0;
+          var result = bencodeEncode(parsed);
+          outputEl.textContent = result;
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('编码失败：请输入有效 JSON', 'error');
+        }
+      }
+
+      function decode() {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入内容', 'error'); return; }
+        try {
+          decodeStr = text;
+          decodePos = 0;
+          var result = bencodeDecode();
+          if (result === null) throw new Error('Empty');
+          outputEl.textContent = JSON.stringify(result, null, 2);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('解码失败：Bencode 格式错误', 'error');
+        }
+      }
+
+      encodeBtn.addEventListener('click', encode);
+      decodeBtn.addEventListener('click', decode);
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

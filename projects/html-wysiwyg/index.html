@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML 编辑器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .editor-toolbar { display:flex; gap:4px; padding:8px; background:var(--color-bg-soft); border:1px solid var(--color-border); border-bottom:0; border-radius:var(--radius-md) var(--radius-md) 0 0; flex-wrap:wrap; }
+    .editor-toolbar button { background:transparent; border:1px solid transparent; border-radius:var(--radius-sm); padding:4px 10px; cursor:pointer; font-size:13px; font-family:var(--font-family); color:var(--color-text-primary); }
+    .editor-toolbar button:hover { background:var(--color-border); }
+    .editor-toolbar select { border:1px solid #ddd; border-radius:var(--radius-sm); padding:4px 6px; font-size:13px; font-family:var(--font-family); }
+    .editor-area { border:1px solid var(--color-border); padding:16px; min-height:300px; outline:none; font-family:var(--font-family); line-height:1.7; border-radius:0 0 var(--radius-md) var(--radius-md); }
+    .editor-area:focus { box-shadow:var(--shadow-focus); }
+    .mode-tabs { display:flex; gap:0; margin-bottom:0; }
+    .mode-tabs button { padding:8px 16px; border:1px solid var(--color-border); background:var(--color-bg); cursor:pointer; font-size:13px; font-family:var(--font-family); color:var(--color-text-secondary); }
+    .mode-tabs button.active { background:var(--color-bg-soft); color:var(--color-text-primary); border-bottom-color:transparent; }
+    .html-source { width:100%; min-height:300px; border:1px solid var(--color-border); border-radius:0 0 var(--radius-md) var(--radius-md); padding:16px; font-family:var(--font-mono); font-size:var(--font-size-sm); resize:vertical; outline:none; }
+    .html-source:focus { box-shadow:var(--shadow-focus); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>HTML 编辑器</h1>
+    <p class="tool-desc">简易所见即所得 (WYSIWYG) HTML 编辑器，支持富文本编辑和 HTML 源码切换。</p>
+    <div class="mode-tabs">
+      <button id="editModeBtn" class="active">可视化编辑</button>
+      <button id="sourceModeBtn">源码</button>
+    </div>
+    <div class="editor-toolbar" id="toolbar">
+      <button data-cmd="bold" title="粗体"><b>B</b></button>
+      <button data-cmd="italic" title="斜体"><i>I</i></button>
+      <button data-cmd="underline" title="下划线"><u>U</u></button>
+      <button data-cmd="strikeThrough" title="删除线"><s>S</s></button>
+      <span style="color:#ddd;">|</span>
+      <button data-cmd="insertUnorderedList" title="无序列表">UL</button>
+      <button data-cmd="insertOrderedList" title="有序列表">OL</button>
+      <span style="color:#ddd;">|</span>
+      <button data-cmd="formatBlock" data-value="h1" title="标题1">H1</button>
+      <button data-cmd="formatBlock" data-value="h2" title="标题2">H2</button>
+      <button data-cmd="formatBlock" data-value="p" title="段落">P</button>
+      <span style="color:#ddd;">|</span>
+      <button data-cmd="createLink" title="插入链接">🔗</button>
+      <button data-cmd="insertImage" title="插入图片">🖼</button>
+      <span style="color:#ddd;">|</span>
+      <button data-cmd="undo" title="撤销">↩</button>
+      <button data-cmd="redo" title="重做">↪</button>
+    </div>
+    <div id="editorContainer">
+      <div id="editor" class="editor-area" contenteditable="true"><h2>欢迎使用 HTML 编辑器</h2><p>在这里编辑内容...</p></div>
+      <textarea id="sourceEditor" class="html-source" style="display:none;"></textarea>
+    </div>
+    <div class="output-box" id="outputContainer" style="margin-top:16px; min-height:60px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制 HTML</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var editor = document.getElementById('editor');
+      var sourceEditor = document.getElementById('sourceEditor');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var editModeBtn = document.getElementById('editModeBtn');
+      var sourceModeBtn = document.getElementById('sourceModeBtn');
+      var toolbar = document.getElementById('toolbar');
+      var isSourceMode = false;
+
+      function execCommand(cmd, value) {
+        if (cmd === 'createLink') {
+          var url = prompt('输入链接 URL:', 'https://');
+          if (url) document.execCommand(cmd, false, url);
+          return;
+        }
+        if (cmd === 'insertImage') {
+          var url = prompt('输入图片 URL:', 'https://');
+          if (url) document.execCommand(cmd, false, url);
+          return;
+        }
+        if (cmd === 'formatBlock' && value) {
+          document.execCommand(cmd, false, '<' + value + '>');
+          return;
+        }
+        document.execCommand(cmd, false, value || null);
+      }
+
+      toolbar.addEventListener('click', function(e) {
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        var cmd = btn.getAttribute('data-cmd');
+        var value = btn.getAttribute('data-value');
+        if (isSourceMode) return;
+        execCommand(cmd, value);
+        editor.focus();
+      });
+
+      function switchToEdit() {
+        isSourceMode = false;
+        var html = sourceEditor.value;
+        editor.innerHTML = html;
+        editor.style.display = '';
+        sourceEditor.style.display = 'none';
+        editModeBtn.className = 'active';
+        sourceModeBtn.className = '';
+      }
+
+      function switchToSource() {
+        isSourceMode = true;
+        sourceEditor.value = editor.innerHTML;
+        editor.style.display = 'none';
+        sourceEditor.style.display = 'block';
+        editModeBtn.className = '';
+        sourceModeBtn.className = 'active';
+      }
+
+      editModeBtn.addEventListener('click', switchToEdit);
+      sourceModeBtn.addEventListener('click', switchToSource);
+
+      function updateOutput() {
+        var html = isSourceMode ? sourceEditor.value : editor.innerHTML;
+        outputText.textContent = html || '(空)';
+      }
+
+      editor.addEventListener('input', updateOutput);
+      sourceEditor.addEventListener('input', updateOutput);
+
+      copyBtn.addEventListener('click', function() {
+        var html = isSourceMode ? sourceEditor.value : editor.innerHTML;
+        if (html) { copyToClipboard(html, copyBtn); setStatus('HTML 已复制'); }
+      });
+
+      updateOutput();
+    })();
+  </script>
+</body>
+</html>

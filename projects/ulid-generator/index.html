@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ULID 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>ULID 生成器</h1>
+    <p class="tool-desc">生成 ULID (Universally Unique Lexicographically Sortable Identifier) — 26 字符、按时间排序、比 UUID 更短。</p>
+    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">数量</label>
+      <input id="countInput" class="input" type="number" value="1" min="1" max="100" style="width:80px;">
+      <button id="generateBtn" class="btn btn-primary">生成</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer" style="min-height:200px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var countEl = document.getElementById('countInput');
+      var clearBtn = document.getElementById('clearBtn');
+
+      var CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+      function encodeULID(time, random) {
+        var chars = [];
+        // Time: 10 chars (48 bits)
+        for (var i = 9; i >= 0; i--) {
+          chars[i] = CROCKFORD[time % 32];
+          time = Math.floor(time / 32);
+        }
+        // Random: 16 chars (80 bits)
+        for (var i = 25; i >= 10; i--) {
+          chars[i] = CROCKFORD[random % 32];
+          random = Math.floor(random / 32);
+        }
+        return chars.join('');
+      }
+
+      function generateULID() {
+        var now = Date.now();
+        // time: 48-bit timestamp (milliseconds)
+        var time = now;
+        // random: 80 bits of randomness
+        var random = 0;
+        // Build random from 3 32-bit chunks to avoid precision loss
+        var r1 = Math.floor(Math.random() * 0xFFFFFFFF);
+        var r2 = Math.floor(Math.random() * 0xFFFFFFFF);
+        // Only use 16 bits for the third chunk (80 total = 32+32+16)
+        var r3 = Math.floor(Math.random() * 0x10000);
+        random = ((r1 * 0x100000000) + r2) * 0x10000 + r3;
+        return encodeULID(time, random);
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function() {
+        var n = parseInt(countEl.value) || 1;
+        if (n < 1) n = 1;
+        if (n > 100) n = 100;
+        var arr = [];
+        for (var i = 0; i < n; i++) arr.push(generateULID());
+        outputEl.textContent = arr.join('\n');
+        setStatus('已生成 ' + n + ' 个 ULID');
+      });
+
+      clearBtn.addEventListener('click', function() {
+        outputEl.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function() {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

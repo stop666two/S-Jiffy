@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAC 地址查询 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mac-input-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .mac-input-row input { font-family:var(--font-mono); font-size:16px; letter-spacing:0.1em; }
+    .mac-result { display:flex; align-items:center; gap:16px; padding:var(--space-2); }
+    .mac-vendor { font-size:18px; font-weight:600; }
+    .mac-oui { font-size:12px; color:var(--color-text-disabled); }
+    .mac-empty { color:var(--color-text-disabled); text-align:center; padding:var(--space-4); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>MAC 地址查询</h1>
+    <p class="tool-desc">查询 MAC 地址厂商信息。输入 MAC 或 OUI 前缀（如 00:1B:44）。</p>
+    <div class="card mac-input-row">
+      <input id="macInput" class="input js-focus-input" placeholder="00:1B:44:11:22:33" style="width:260px; text-transform:uppercase;">
+      <button id="lookupBtn" class="btn btn-primary">查询</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer" style="min-height:80px;">
+      <div id="resultArea" class="mac-empty">输入 MAC 地址即可查询</div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var macInput = document.getElementById('macInput');
+      var resultEl = document.getElementById('resultArea');
+
+      var ouiDb = [
+        { oui: '00:00:0C', vendor: 'Cisco Systems, Inc' },
+        { oui: '00:01:42', vendor: 'Hewlett-Packard Company' },
+        { oui: '00:01:5C', vendor: 'Canon Inc.' },
+        { oui: '00:02:6F', vendor: 'Dell Inc.' },
+        { oui: '00:03:47', vendor: 'Intel Corporate' },
+        { oui: '00:04:AC', vendor: 'Fujitsu Limited' },
+        { oui: '00:05:5D', vendor: 'Sony Corporation' },
+        { oui: '00:07:E9', vendor: 'Cisco Systems, Inc' },
+        { oui: '00:08:74', vendor: 'Motorola Mobility LLC' },
+        { oui: '00:09:5B', vendor: 'Huawei Technologies Co., Ltd' },
+        { oui: '00:0A:28', vendor: 'Samsung Electronics' },
+        { oui: '00:0B:6B', vendor: 'Apple, Inc.' },
+        { oui: '00:0D:93', vendor: 'Apple, Inc.' },
+        { oui: '00:0E:35', vendor: 'TP-LINK Technologies Co., Ltd.' },
+        { oui: '00:0F:1F', vendor: 'Xerox Corporation' },
+        { oui: '00:10:18', vendor: '3Com Corporation' },
+        { oui: '00:10:DB', vendor: 'Nortel Networks' },
+        { oui: '00:11:24', vendor: 'ASUSTek COMPUTER INC.' },
+        { oui: '00:11:50', vendor: 'Microsoft Corporation' },
+        { oui: '00:12:17', vendor: 'Linksys' },
+        { oui: '00:12:3F', vendor: 'Broadcom Corporation' },
+        { oui: '00:13:10', vendor: 'Netgear Inc.' },
+        { oui: '00:13:46', vendor: 'Lenovo Group Limited' },
+        { oui: '00:14:22', vendor: 'Dell Inc.' },
+        { oui: '00:14:BF', vendor: 'Nintendo Co., Ltd.' },
+        { oui: '00:15:5D', vendor: 'Microsoft Corporation (Hyper-V)' },
+        { oui: '00:16:3E', vendor: 'XenSource, Inc. (Xen)' },
+        { oui: '00:17:31', vendor: 'Xiaomi Communications Co., Ltd.' },
+        { oui: '00:18:0A', vendor: 'ZTE Corporation' },
+        { oui: '00:18:4D', vendor: 'Panasonic Corporation' },
+        { oui: '00:19:5B', vendor: 'LG Electronics' },
+        { oui: '00:1A:11', vendor: 'Google, Inc.' },
+        { oui: '00:1B:44', vendor: 'Cisco Systems, Inc' },
+        { oui: '00:1C:10', vendor: 'Toshiba Corporation' },
+        { oui: '00:1C:BF', vendor: 'Intel Corporate' },
+        { oui: '00:1D:72', vendor: 'AMD' },
+        { oui: '00:1E:58', vendor: 'Raspberry Pi Foundation' },
+        { oui: '00:1E:68', vendor: 'Nokia Corporation' },
+        { oui: '00:1F:16', vendor: 'Acer Incorporated' },
+        { oui: '00:1F:29', vendor: 'Seiko Epson Corporation' },
+        { oui: '00:20:ED', vendor: 'Mitsubishi Electric' },
+        { oui: '00:21:5A', vendor: 'Roku, Inc.' },
+        { oui: '00:21:6C', vendor: 'HTC Corporation' },
+        { oui: '00:22:15', vendor: 'Renesas Technology Corp.' },
+        { oui: '00:22:68', vendor: 'NVIDIA' },
+        { oui: '00:22:75', vendor: 'Hon Hai Precision Ind. Co., Ltd. (Foxconn)' },
+        { oui: '00:23:14', vendor: 'Wistron Corporation' },
+        { oui: '00:23:8B', vendor: 'Aruba Networks' },
+        { oui: '00:23:DF', vendor: 'Logitech, Inc.' },
+        { oui: '00:24:1C', vendor: 'Ralink Technology Corp.' },
+        { oui: '00:24:6C', vendor: 'Omron Corporation' },
+        { oui: '00:24:81', vendor: 'D-Link International' },
+        { oui: '00:25:36', vendor: 'Buffalo Inc.' },
+        { oui: '00:25:64', vendor: 'Giga-Byte Technology Co., Ltd.' },
+        { oui: '00:25:90', vendor: 'Zyxel Communications Corp.' },
+        { oui: '00:26:AB', vendor: 'Technicolor' },
+        { oui: '00:26:BB', vendor: 'IBM Corporation' },
+        { oui: '00:26:E1', vendor: 'MikroTik' },
+        { oui: '00:27:10', vendor: 'Palo Alto Networks' },
+        { oui: '00:50:56', vendor: 'VMware, Inc.' },
+        { oui: '00:50:79', vendor: 'VMware, Inc.' },
+        { oui: '00:0C:29', vendor: 'VMware, Inc.' },
+        { oui: '00:05:69', vendor: 'VMware, Inc.' },
+        { oui: '08:00:27', vendor: 'Oracle VirtualBox' },
+        { oui: '08:00:46', vendor: 'Oracle/Sun' },
+        { oui: '0A:00:27', vendor: 'Oracle VirtualBox' },
+        { oui: '52:54:00', vendor: 'QEMU / Red Hat KVM' },
+        { oui: 'AC:DE:48', vendor: 'Privat' },
+        { oui: 'BC:AE:C5', vendor: 'Cisco Systems, Inc' },
+        { oui: 'C0:EA:E4', vendor: 'Intel Corporate' },
+        { oui: 'CC:46:D6', vendor: 'Cisco Systems, Inc' },
+        { oui: 'E0:55:3D', vendor: 'TP-LINK Technologies Co., Ltd.' },
+        { oui: 'E0:5A:1B', vendor: 'TP-LINK Technologies Co., Ltd.' },
+        { oui: 'F0:2F:74', vendor: 'Dell Inc.' },
+        { oui: 'F4:5C:89', vendor: 'TP-LINK Technologies Co., Ltd.' },
+        { oui: 'FC:AA:14', vendor: 'Xiaomi Communications Co., Ltd.' },
+        { oui: '00:0F:53', vendor: 'Texas Instruments' },
+        { oui: '00:12:4B', vendor: 'Micro-Star International' },
+        { oui: '00:1B:21', vendor: 'ASUS' },
+        { oui: '00:23:54', vendor: 'Belkin International Inc.' },
+        { oui: '00:24:23', vendor: 'Samsung Electronics Co., Ltd.' },
+        { oui: '2C:54:91', vendor: 'Raspberry Pi Trading Ltd' },
+        { oui: 'B8:27:EB', vendor: 'Raspberry Pi Foundation' },
+        { oui: 'DC:A6:32', vendor: 'Raspberry Pi Foundation' },
+        { oui: 'E4:5F:01', vendor: 'Raspberry Pi Trading Ltd' },
+        { oui: '00:0E:C6', vendor: 'Apache Mynewt / Orangepi' },
+        { oui: '00:1F:C6', vendor: 'Cisco Systems, Inc' },
+        { oui: '48:3F:DA', vendor: 'Huawei Technologies Co., Ltd' },
+        { oui: '7C:DD:90', vendor: 'Hewlett-Packard Company' },
+        { oui: '3C:5A:B4', vendor: 'Intel Corporate' },
+        { oui: '10:A5:D0', vendor: 'Dell Inc.' },
+        { oui: '18:C0:4D', vendor: 'Microsoft Corporation (Xbox)' },
+        { oui: '10:C5:95', vendor: 'Amazon Technologies Inc.' },
+        { oui: 'A8:93:4A', vendor: 'Amazon Technologies Inc.' },
+        { oui: 'AC:63:BE', vendor: 'Google, Inc.' },
+        { oui: '00:DB:DF', vendor: 'Ubiquiti Networks Inc.' },
+        { oui: '78:8C:B5', vendor: 'Ubiquiti Networks Inc.' },
+        { oui: '04:18:D6', vendor: 'Ubiquiti Inc.' },
+        { oui: '00:05:1C', vendor: 'Huawei Technologies Co., Ltd' },
+        { oui: '00:25:9C', vendor: 'Huawei Technologies Co., Ltd' },
+        { oui: '00:0A:E6', vendor: 'Nokia Danmark A/S' },
+        { oui: '00:1A:7D', vendor: 'Nokia Corporation' },
+        { oui: '00:19:97', vendor: 'ZTE Corporation' },
+        { oui: '00:1D:D2', vendor: 'Lenovo Mobile Communication' },
+        { oui: '00:23:76', vendor: 'OnePlus Tech (Shenzhen) Co., Ltd' },
+        { oui: '00:26:5E', vendor: 'Apple, Inc.' },
+        { oui: 'B0:65:BD', vendor: 'Google, Inc.' },
+        { oui: '18:FE:34', vendor: 'Google, Inc.' },
+        { oui: '60:92:17', vendor: 'Tecno Mobile Ltd' },
+        { oui: '58:CB:52', vendor: 'Xiaomi Communications Co., Ltd.' },
+        { oui: '50:C7:BF', vendor: 'LG Electronics' },
+        { oui: '34:A8:3E', vendor: 'Sony Mobile Communications' },
+        { oui: '28:6C:07', vendor: 'Samsung Electronics Co., Ltd.' },
+        { oui: '38:59:F9', vendor: 'Samsung Electronics Co., Ltd.' },
+        { oui: '9C:FC:E8', vendor: 'Samsung Electronics Co., Ltd.' },
+        { oui: '00:0C:43', vendor: 'IBM Corp' },
+        { oui: '28:D2:44', vendor: 'Cisco SPVTG' },
+        { oui: '70:4C:A5', vendor: 'Cisco Systems, Inc' },
+        { oui: '38:44:93', vendor: 'Realtek Semiconductor Corp.' },
+        { oui: '80:C5:F2', vendor: 'Toshiba Global Commerce Solutions' },
+        { oui: '08:96:D7', vendor: 'Espressif Inc. (ESP32)' },
+        { oui: '24:62:AB', vendor: 'Espressif Inc. (ESP8266)' },
+        { oui: '10:06:1C', vendor: 'Espressif Inc.' },
+        { oui: '48:27:E2', vendor: 'Espressif Inc.' },
+        { oui: '5C:CF:7F', vendor: 'Espressif Inc.' },
+        { oui: '84:F3:EB', vendor: 'Espressif Inc.' },
+        { oui: '18:FE:34', vendor: 'Espressif Inc.' },
+        { oui: 'C8:C9:A3', vendor: 'Hewlett-Packard Company' },
+        { oui: '0C:9D:92', vendor: 'Apple, Inc.' },
+        { oui: '04:0E:3C', vendor: 'Intel Corporate' },
+        { oui: '40:31:3C', vendor: 'Hon Hai Precision Ind.' },
+        { oui: '00:23:69', vendor: 'Mitsumi Electric Co., Ltd.' },
+        { oui: '70:5A:0F', vendor: 'Intel Corporate' },
+        { oui: 'D0:17:C2', vendor: 'Polk Audio' },
+        { oui: '00:26:5D', vendor: 'Analog Devices Inc.' },
+        { oui: '00:1B:E4', vendor: 'Oki Electric Industry Co., Ltd.' },
+        { oui: '52:74:00', vendor: 'QEMU' },
+        { oui: '52:74:01', vendor: 'QEMU' },
+        { oui: '52:74:02', vendor: 'QEMU' },
+        { oui: '52:74:03', vendor: 'QEMU' },
+        { oui: '52:74:04', vendor: 'QEMU' },
+        { oui: '52:74:05', vendor: 'QEMU' },
+        { oui: '52:74:06', vendor: 'QEMU' },
+        { oui: '52:74:07', vendor: 'QEMU' },
+        { oui: '52:74:08', vendor: 'QEMU' },
+        { oui: '52:74:09', vendor: 'QEMU' },
+        { oui: '52:74:0A', vendor: 'QEMU' },
+        { oui: '52:74:0B', vendor: 'QEMU' },
+        { oui: '52:74:0C', vendor: 'QEMU' },
+        { oui: '52:74:0D', vendor: 'QEMU' },
+        { oui: '52:74:0E', vendor: 'QEMU' },
+        { oui: '52:74:0F', vendor: 'QEMU' }
+      ];
+
+      function normalizeMac(s) {
+        s = s.toUpperCase().replace(/[^0-9A-F]/g, '');
+        if (s.length < 6) return null;
+        var parts = [];
+        for (var i = 0; i < s.length && i < 12; i += 2) {
+          parts.push(s.substring(i, i + 2));
+        }
+        return parts.join(':');
+      }
+
+      function lookupOui(normalized) {
+        var oui3 = normalized.substring(0, 8);
+        var oui6 = normalized.substring(0, 17);
+        // Try full MAC first
+        for (var i = 0; i < ouiDb.length; i++) {
+          if (ouiDb[i].oui === oui6) return ouiDb[i];
+        }
+        for (var i = 0; i < ouiDb.length; i++) {
+          if (ouiDb[i].oui === oui3) return ouiDb[i];
+        }
+        return null;
+      }
+
+      document.getElementById('lookupBtn').addEventListener('click', function () {
+        var raw = macInput.value.trim();
+        if (!raw) { setStatus('请输入 MAC 地址', 'error'); return; }
+
+        var normalized = normalizeMac(raw);
+        if (!normalized || normalized.length < 8) {
+          resultEl.innerHTML = '<div class="mac-empty">无效的 MAC 地址格式</div>';
+          setStatus('格式错误', 'error');
+          return;
+        }
+
+        var found = lookupOui(normalized);
+        if (found) {
+          resultEl.innerHTML = '<div class="mac-result"><div><div class="mac-vendor">' + found.vendor + '</div><div class="mac-oui">OUI: ' + found.oui + ' · 完整 MAC: ' + normalized + '</div></div></div>';
+          setStatus('查询成功');
+        } else {
+          resultEl.innerHTML = '<div class="mac-empty">未找到厂商信息 (OUI: ' + normalized.substring(0, 8) + ')</div>';
+          setStatus('未匹配到厂商', 'error');
+        }
+      });
+
+      macInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') document.getElementById('lookupBtn').click();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { macInput.value = ''; resultEl.innerHTML = '<div class="mac-empty">输入 MAC 地址即可查询</div>'; setStatus(''); macInput.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = resultEl.textContent;
+        if (text && text.indexOf('输入 MAC') === -1 && text.trim()) { copyToClipboard(text.trim(), this); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

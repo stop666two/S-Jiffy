@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则表达式可视化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pattern-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .pattern-row .input { width:auto; }
+    .match-item { padding:6px 0; border-bottom:1px solid var(--color-border); font-size:13px; }
+    .match-item:last-child { border-bottom:none; }
+    .match-pos { color:var(--color-text-secondary); margin-right:8px; }
+    .match-val { font-weight:600; }
+    .match-group { color:#096bde; }
+    .token-explain { margin-top:var(--space-2); font-size:13px; line-height:1.6; }
+    .token-explain code { background:var(--color-bg-soft); padding:2px 6px; border-radius:3px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>正则表达式可视化</h1>
+    <p class="tool-desc">可视化调试正则表达式匹配过程</p>
+
+    <div class="card">
+      <div class="pattern-row">
+        <span style="font-family:var(--font-mono);font-size:20px;color:var(--color-text-secondary);">/</span>
+        <input id="patternInput" class="input js-focus-input" placeholder="\d{3}-\d{2}-\d{4}" style="width:340px;font-family:var(--font-mono);">
+        <span style="font-family:var(--font-mono);font-size:20px;color:var(--color-text-secondary);">/</span>
+        <input id="flagsInput" class="input" placeholder="gi" style="width:60px;">
+        <button id="testBtn" class="btn btn-primary">测试</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <textarea id="testInput" class="input textarea" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
+    </div>
+
+    <div id="tokenBox" class="card" style="display:none;"></div>
+
+    <div class="output-box" style="min-height:100px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var patternInput = document.getElementById('patternInput');
+      var flagsInput = document.getElementById('flagsInput');
+      var testInput = document.getElementById('testInput');
+      var outputText = document.getElementById('outputText');
+      var tokenBox = document.getElementById('tokenBox');
+      var testBtn = document.getElementById('testBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var tokenExplanations = {
+        '\\d': '匹配数字 (0-9)',
+        '\\D': '匹配非数字',
+        '\\w': '匹配单词字符 (字母、数字、下划线)',
+        '\\W': '匹配非单词字符',
+        '\\s': '匹配空白字符 (空格、制表符、换行)',
+        '\\S': '匹配非空白字符',
+        '\\b': '匹配单词边界',
+        '\\B': '匹配非单词边界',
+        '^': '匹配字符串开头',
+        '$': '匹配字符串结尾',
+        '.': '匹配任意单个字符（除换行）',
+        '*': '匹配前一个字符 0 次或多次',
+        '+': '匹配前一个字符 1 次或多次',
+        '?': '匹配前一个字符 0 次或 1 次',
+        '|': '逻辑或',
+        '\\t': '匹配制表符',
+        '\\n': '匹配换行符',
+        '\\r': '匹配回车符',
+        '\\f': '匹配换页符',
+        '\\v': '匹配垂直制表符'
+      };
+
+      function explainPattern(pat) {
+        var html = '<div class="token-explain"><strong>模式解析:</strong><br>';
+        var i = 0;
+        while (i < pat.length) {
+          var token = pat[i];
+          var full = '';
+          if (token === '\\' && i + 1 < pat.length) {
+            full = pat.substr(i, 2);
+            if (tokenExplanations[full]) {
+              html += '<code>' + full + '</code> → ' + tokenExplanations[full] + '<br>';
+              i += 2;
+              continue;
+            }
+            token = full;
+            i += 2;
+            continue;
+          }
+          if (tokenExplanations[token]) {
+            html += '<code>' + token + '</code> → ' + tokenExplanations[token] + '<br>';
+          } else if (token === '(' || token === ')' || token === '[' || token === ']' || token === '{' || token === '}') {
+            html += '<code>' + token + '</code> 分组/量词标记<br>';
+          } else {
+            html += '<code>' + token + '</code> 字面量<br>';
+          }
+          i++;
+        }
+        html += '</div>';
+        return html;
+      }
+
+      testBtn.addEventListener('click', function () {
+        var pat = patternInput.value.trim();
+        var text = testInput.value;
+        outputText.textContent = '';
+        tokenBox.style.display = 'none';
+
+        if (!pat) { setStatus('请输入正则表达式', 'error'); return; }
+        if (!text) { setStatus('请输入测试文本', 'error'); return; }
+
+        tokenBox.innerHTML = explainPattern(pat);
+        tokenBox.style.display = 'block';
+
+        try {
+          var re = new RegExp(pat, flagsInput.value);
+          var matches = [];
+          var m;
+          while ((m = re.exec(text)) !== null) {
+            var info = '<span class="match-pos">[' + m.index + '-' + (m.index + m[0].length) + ']</span>';
+            info += '<span class="match-val">"' + m[0] + '"</span>';
+            if (m.length > 1) {
+              var gs = [];
+              for (var i = 1; i < m.length; i++) {
+                gs.push('<span class="match-group">$' + i + '="' + (m[i] || '') + '"</span>');
+              }
+              info += ' ' + gs.join(' ');
+            }
+            matches.push(info);
+            if (!re.global) break;
+          }
+          if (matches.length === 0) {
+            outputText.innerHTML = '无匹配结果';
+          } else {
+            outputText.innerHTML = '共 <strong>' + matches.length + '</strong> 处匹配:<br><br>' + matches.join('<br>');
+          }
+          setStatus('');
+        } catch (e) {
+          outputText.innerHTML = '';
+          setStatus('正则语法错误: ' + e.message, 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', function () {
+        patternInput.value = '';
+        flagsInput.value = '';
+        testInput.value = '';
+        outputText.textContent = '';
+        tokenBox.style.display = 'none';
+        setStatus('');
+        patternInput.focus();
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+      });
+
+      testInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') testBtn.click(); });
+    })();
+  </script>
+</body>
+</html>

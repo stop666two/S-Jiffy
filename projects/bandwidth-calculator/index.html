@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>带宽计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .calc-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-top:var(--space-2); }
+    .calc-item { padding:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .calc-item label { font-size:var(--font-size-xs); color:var(--color-text-disabled); display:block; }
+    .calc-item span { font-size:var(--font-size-sm); font-family:var(--font-mono); word-break:break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>带宽计算器</h1>
+    <p class="tool-desc">计算文件传输时间与带宽。</p>
+
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">文件大小</label>
+      <input id="fileSize" class="input js-focus-input" type="number" value="100" style="width:120px;">
+      <select id="sizeUnit" class="input" style="width:auto;min-width:80px;">
+        <option value="B">字节 (B)</option>
+        <option value="KB">KB</option>
+        <option value="MB" selected>MB</option>
+        <option value="GB">GB</option>
+        <option value="TB">TB</option>
+      </select>
+    </div>
+
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">带宽</label>
+      <input id="bandwidth" class="input" type="number" value="100" style="width:120px;">
+      <select id="bwUnit" class="input" style="width:auto;min-width:80px;">
+        <option value="bps">bps</option>
+        <option value="Kbps">Kbps</option>
+        <option value="Mbps" selected>Mbps</option>
+        <option value="Gbps">Gbps</option>
+      </select>
+    </div>
+
+    <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
+      <button id="calcBtn" class="btn btn-primary">计算</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div id="resultBox" class="output-box" style="min-height:180px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var fileSize = document.getElementById('fileSize'), sizeUnit = document.getElementById('sizeUnit');
+      var bw = document.getElementById('bandwidth'), bwUnit = document.getElementById('bwUnit');
+      var o = document.getElementById('outputText');
+      var calcBtn = document.getElementById('calcBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+
+      var sizeMultiplier = { B: 1, KB: 1024, MB: 1048576, GB: 1073741824, TB: 1099511627776 };
+
+      function calc() {
+        var fs = parseFloat(fileSize.value);
+        var bwVal = parseFloat(bw.value);
+        if (isNaN(fs) || fs <= 0) { setStatus('请输入有效的文件大小', 'error'); return; }
+        if (isNaN(bwVal) || bwVal <= 0) { setStatus('请输入有效的带宽值', 'error'); return; }
+
+        var bytes = fs * sizeMultiplier[sizeUnit.value];
+        var bits = bytes * 8;
+        var bps = bwVal;
+        if (bwUnit.value === 'Kbps') bps *= 1000;
+        else if (bwUnit.value === 'Mbps') bps *= 1000000;
+        else if (bwUnit.value === 'Gbps') bps *= 1000000000;
+
+        var seconds = bits / bps;
+
+        function formatTime(s) {
+          if (s < 1) return (s * 1000).toFixed(2) + ' 毫秒';
+          if (s < 60) return s.toFixed(2) + ' 秒';
+          var m = Math.floor(s / 60), sec = (s % 60).toFixed(1);
+          if (m < 60) return m + ' 分 ' + sec + ' 秒';
+          var h = Math.floor(m / 60); m = m % 60;
+          if (h < 24) return h + ' 小时 ' + m + ' 分 ' + sec + ' 秒';
+          var d = Math.floor(h / 24); h = h % 24;
+          return d + ' 天 ' + h + ' 小时 ' + m + ' 分 ' + sec + ' 秒';
+        }
+
+        var html = '<div class="calc-grid">';
+        html += '<div class="calc-item"><label>传输时间</label><span>' + formatTime(seconds) + '</span></div>';
+        html += '<div class="calc-item"><label>文件大小（位）</label><span>' + bits.toLocaleString() + ' bit</span></div>';
+        html += '<div class="calc-item"><label>有效带宽</label><span>' + bps.toLocaleString() + ' bps</span></div>';
+        html += '<div class="calc-item"><label>下载速度</label><span>' + (bps / 8).toLocaleString() + ' B/s</span></div>';
+        html += '<div class="calc-item"><label>实际速率</label><span>' + (bytes / seconds / 1048576).toFixed(2) + ' MB/s</span></div>';
+        html += '<div class="calc-item"><label>理论效率</label><span>' + (bytes / seconds / (bps / 8) * 100).toFixed(1) + '%</span></div>';
+        html += '</div>';
+        o.innerHTML = html;
+        setStatus('');
+      }
+
+      calcBtn.addEventListener('click', calc);
+      clearBtn.addEventListener('click', function () { fileSize.value = ''; bw.value = ''; o.innerHTML = ''; setStatus(''); fileSize.focus(); });
+      copyBtn.addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, copyBtn); setStatus('已复制'); } });
+      fileSize.addEventListener('keydown', function (e) { if (e.key === 'Enter') calc(); });
+    })();
+  </script>
+</body>
+</html>

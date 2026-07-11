@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>浏览器性能测试 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .bm-score { font-size:36px; font-weight:600; text-align:center; padding:24px 0; }
+    .bm-detail { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .bm-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>浏览器性能测试</h1>
+    <p class="tool-desc">通过循环计算测试浏览器 JavaScript 引擎性能，评估你的设备算力。</p>
+    <div class="card" style="text-align:center; padding:32px;">
+      <p style="margin-bottom:16px; font-size:var(--font-size-sm); color:var(--color-text-secondary);">点击下方按钮运行测试，约需 2-5 秒。</p>
+      <button id="runBtn" class="btn btn-primary" style="width:200px;">运行测试</button>
+    </div>
+    <div class="card" id="resultCard" style="display:none;">
+      <div class="bm-score" id="scoreDisplay">0</div>
+      <div id="scoreLabel" style="text-align:center; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:16px;">计算中...</div>
+      <div id="detailRows"></div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var runBtn = document.getElementById('runBtn');
+      var resultCard = document.getElementById('resultCard');
+      var scoreDisplay = document.getElementById('scoreDisplay');
+      var scoreLabel = document.getElementById('scoreLabel');
+      var detailRows = document.getElementById('detailRows');
+
+      function runBenchmark() {
+        var results = {};
+
+        // Test 1: Integer arithmetic (500M operations)
+        var start = performance.now();
+        var sum = 0;
+        for (var i = 0; i < 50000000; i++) {
+          sum += i * 3 - 7;
+        }
+        var t1 = performance.now() - start;
+        results['整数运算 (5000万次)'] = t1.toFixed(1);
+
+        // Test 2: Float arithmetic (20M operations)
+        start = performance.now();
+        var f = 0.0;
+        for (var i = 0; i < 20000000; i++) {
+          f += Math.sqrt(i * 1.5) * Math.sin(i * 0.1);
+        }
+        var t2 = performance.now() - start;
+        results['浮点运算 (2000万次)'] = t2.toFixed(1);
+
+        // Test 3: String concatenation (500K iterations, growing string)
+        start = performance.now();
+        var s = '';
+        for (var i = 0; i < 500000; i++) {
+          s += String.fromCharCode(65 + (i % 26));
+        }
+        var t3 = performance.now() - start;
+        results['字符串拼接 (50万次)'] = t3.toFixed(1);
+
+        // Test 4: Array sort (100 arrays of 1000 elements)
+        start = performance.now();
+        for (var n = 0; n < 100; n++) {
+          var arr = [];
+          for (var i = 0; i < 1000; i++) arr.push(Math.random());
+          arr.sort(function(a,b) { return a - b; });
+        }
+        var t4 = performance.now() - start;
+        results['数组排序 (100×1000)'] = t4.toFixed(1);
+
+        // Test 5: Object operations (500K iterations)
+        start = performance.now();
+        var obj = {};
+        for (var i = 0; i < 500000; i++) {
+          obj['key' + (i % 1000)] = i;
+          var v = obj['key' + (i % 1000)];
+        }
+        var t5 = performance.now() - start;
+        results['对象操作 (50万次)'] = t5.toFixed(1);
+
+        // Compute score: weighted composite (lower ms = higher score)
+        var totalMs = t1 + t2 + t3 + t4 + t5;
+        var score = Math.round(1000000 / Math.max(totalMs, 1) * 100) / 100;
+
+        // Show results
+        scoreDisplay.textContent = score;
+        var label;
+        if (score > 500) label = '🚀 极速';
+        else if (score > 200) label = '⚡ 快速';
+        else if (score > 100) label = '👍 良好';
+        else if (score > 50) label = '👌 一般';
+        else label = '🐢 较慢';
+        scoreLabel.textContent = '评分: ' + label + ' (总分越高越好)';
+
+        var html = '';
+        var keys = Object.keys(results);
+        for (var i = 0; i < keys.length; i++) {
+          html += '<div class="bm-row"><span>' + keys[i] + '</span><span>' + results[keys[i]] + ' ms</span></div>';
+        }
+        html += '<div class="bm-row" style="font-weight:600;"><span>总耗时</span><span>' + totalMs.toFixed(1) + ' ms</span></div>';
+        detailRows.innerHTML = html;
+
+        resultCard.style.display = 'block';
+        setStatus('测试完成，评分: ' + score);
+      }
+
+      runBtn.addEventListener('click', function() {
+        runBtn.disabled = true;
+        runBtn.textContent = '运行中...';
+        resultCard.style.display = 'none';
+        setStatus('正在测试，请稍候...');
+        // Use setTimeout to allow UI to update
+        setTimeout(function() {
+          runBenchmark();
+          runBtn.disabled = false;
+          runBtn.textContent = '运行测试';
+        }, 50);
+      });
+    })();
+  </script>
+</body>
+</html>

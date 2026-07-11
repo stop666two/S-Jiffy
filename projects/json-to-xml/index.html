@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON to XML - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JSON → XML</h1>
+    <p class="tool-desc">将 JSON 格式转换为 XML。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"root":{"item":[{"@id":"1","name":"Alice","age":30},{"@id":"2","name":"Bob","age":25}]}}' style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 XML</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function jsonToXml(obj, nodeName, indent) {
+        if (indent === undefined) indent = 0;
+        var pad = '  ';
+        var padStr = pad.repeat(indent);
+        var result = '';
+
+        if (obj === null || obj === undefined) {
+          result += padStr + '<' + nodeName + '/>\n';
+          return result;
+        }
+
+        if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+          result += padStr + '<' + nodeName + '>' + escapeXml(String(obj)) + '</' + nodeName + '>\n';
+          return result;
+        }
+
+        if (Array.isArray(obj)) {
+          for (var i = 0; i < obj.length; i++) {
+            result += jsonToXml(obj[i], nodeName, indent);
+          }
+          return result;
+        }
+
+        if (typeof obj === 'object') {
+          var attrs = '';
+          var children = {};
+          var hasText = false;
+          var textVal = '';
+
+          var keys = Object.keys(obj);
+          for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var v = obj[k];
+            if (k.charAt(0) === '@') {
+              attrs += ' ' + k.substring(1) + '="' + escapeXml(String(v)) + '"';
+            } else if (k === '#text') {
+              hasText = true;
+              textVal = escapeXml(String(v));
+            } else {
+              children[k] = v;
+            }
+          }
+
+          var childKeys = Object.keys(children);
+          if (childKeys.length === 0) {
+            if (hasText) {
+              result += padStr + '<' + nodeName + attrs + '>' + textVal + '</' + nodeName + '>\n';
+            } else {
+              result += padStr + '<' + nodeName + attrs + '/>\n';
+            }
+          } else {
+            result += padStr + '<' + nodeName + attrs + '>\n';
+            if (hasText) {
+              result += padStr + pad + textVal + '\n';
+            }
+            for (var i = 0; i < childKeys.length; i++) {
+              result += jsonToXml(children[childKeys[i]], childKeys[i], indent + 1);
+            }
+            result += padStr + '</' + nodeName + '>\n';
+          }
+          return result;
+        }
+        return result;
+      }
+
+      function escapeXml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        try {
+          var parsed = JSON.parse(text);
+          var keys = Object.keys(parsed);
+          if (keys.length === 0) { outputEl.textContent = ''; setStatus('空对象', 'error'); return; }
+          var rootName = keys[0];
+          var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
+          result += jsonToXml(parsed[rootName], rootName, 0);
+          outputEl.textContent = result;
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('JSON 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

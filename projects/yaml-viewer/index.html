@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML Viewer - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>YAML Viewer</h1>
+    <p class="tool-desc">粘贴 JSON，查看对应的 YAML 格式输出。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","version":1,"list":[1,2,3]}' style="min-height:150px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 YAML</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function toYaml(val, indent) {
+        if (indent === undefined) indent = 0;
+        var pad = '  ';
+        if (val === null) return 'null';
+        if (typeof val === 'boolean') return val ? 'true' : 'false';
+        if (typeof val === 'number') return String(val);
+        if (typeof val === 'string') {
+          if (/^[0-9]|^[^a-zA-Z0-9_ -]|^[yYnNtTfF]|^null|^true|^false|^~|^$|: |#/.test(val) || val.indexOf("'") >= 0 || val.indexOf('"') >= 0 || val.indexOf('\n') >= 0) {
+            return "'" + val.replace(/'/g, "''") + "'";
+          }
+          return val;
+        }
+        if (Array.isArray(val)) {
+          if (val.length === 0) return '[]';
+          var lines = [];
+          for (var i = 0; i < val.length; i++) {
+            var v = val[i];
+            if (v !== null && typeof v === 'object') {
+              var sub = toYaml(v, indent + 1);
+              var subLines = sub.split('\n');
+              lines.push(pad.repeat(indent) + '- ' + subLines[0]);
+              for (var j = 1; j < subLines.length; j++) {
+                lines.push(pad.repeat(indent) + '  ' + subLines[j]);
+              }
+            } else {
+              lines.push(pad.repeat(indent) + '- ' + toYaml(v, indent + 1));
+            }
+          }
+          return lines.join('\n');
+        }
+        if (typeof val === 'object') {
+          var keys = Object.keys(val);
+          if (keys.length === 0) return '{}';
+          var lines = [];
+          for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var v = val[k];
+            if (v !== null && typeof v === 'object') {
+              lines.push(pad.repeat(indent) + k + ':');
+              var sub = toYaml(v, indent + 1);
+              lines.push(sub);
+            } else {
+              lines.push(pad.repeat(indent) + k + ': ' + toYaml(v, indent + 1));
+            }
+          }
+          return lines.join('\n');
+        }
+        return String(val);
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        try {
+          var parsed = JSON.parse(text);
+          outputEl.textContent = toYaml(parsed, 0);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('JSON 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); }
+      });
+    })();
+  </script>
+</body>
+</html>

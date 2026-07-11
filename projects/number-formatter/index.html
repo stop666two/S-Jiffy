@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数字格式化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .nf-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .nf-row .field { flex:1; min-width:160px; }
+    .nf-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .nf-results { display:grid; gap:var(--space-2); }
+    .nf-item { display:flex; justify-content:space-between; padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); }
+    .nf-item .key { color:var(--color-text-secondary); font-size:var(--font-size-sm); }
+    .nf-item .val { font-weight:500; font-family:var(--font-mono); font-size:var(--font-size-sm); word-break:break-all; text-align:right; max-width:60%; }
+    .nf-extra { margin-top:var(--space-2); padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); }
+    .nf-extra label { font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-right:8px; }
+    .nf-extra input, .nf-extra select { margin-right:12px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>数字格式化</h1>
+    <p class="tool-desc">格式化数字：千分位、英文/中文读法、序数、罗马数字、科学计数法、百分比、货币。</p>
+    <div class="card">
+      <div class="nf-row">
+        <div class="field">
+          <label for="inputNum">输入数字</label>
+          <input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button id="formatBtn" class="btn btn-primary">格式化</button>
+        </div>
+      </div>
+      <div class="nf-results">
+        <div class="nf-item"><span class="key">千分位格式</span><span class="val" id="resultComma">-</span></div>
+        <div class="nf-item"><span class="key">百分比 (保留4位)</span><span class="val" id="resultPercent">-</span></div>
+        <div class="nf-item"><span class="key">序数词</span><span class="val" id="resultOrdinal">-</span></div>
+        <div class="nf-item"><span class="key">英文读法</span><span class="val" id="resultWords">-</span></div>
+        <div class="nf-item"><span class="key">中文读法</span><span class="val" id="resultCnWords">-</span></div>
+        <div class="nf-item"><span class="key">罗马数字</span><span class="val" id="resultRoman">-</span></div>
+        <div class="nf-item"><span class="key">科学计数法</span><span class="val" id="resultSci">-</span></div>
+      </div>
+      <div class="nf-extra">
+        <label>货币符号</label>
+        <input id="currencySymbol" class="input" value="$" style="width:60px;display:inline-block;">
+        <span id="resultCurrency" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">-</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputNum = document.getElementById('inputNum');
+      var formatBtn = document.getElementById('formatBtn');
+      var resultComma = document.getElementById('resultComma');
+      var resultPercent = document.getElementById('resultPercent');
+      var resultOrdinal = document.getElementById('resultOrdinal');
+      var resultWords = document.getElementById('resultWords');
+      var resultCnWords = document.getElementById('resultCnWords');
+      var resultRoman = document.getElementById('resultRoman');
+      var resultSci = document.getElementById('resultSci');
+      var resultCurrency = document.getElementById('resultCurrency');
+      var currencySymbol = document.getElementById('currencySymbol');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+      var tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+      function numberToWords(n) {
+        if (n === 0) return 'zero';
+        if (n < 0) return 'minus ' + numberToWords(-n);
+        var word = '';
+        if (Math.floor(n / 1000000) > 0) {
+          word += numberToWords(Math.floor(n / 1000000)) + ' million ';
+          n %= 1000000;
+        }
+        if (Math.floor(n / 1000) > 0) {
+          word += numberToWords(Math.floor(n / 1000)) + ' thousand ';
+          n %= 1000;
+        }
+        if (Math.floor(n / 100) > 0) {
+          word += ones[Math.floor(n / 100)] + ' hundred ';
+          n %= 100;
+        }
+        if (n > 0) {
+          if (word !== '') word += 'and ';
+          if (n < 20) word += ones[n];
+          else {
+            word += tens[Math.floor(n / 10)];
+            if (n % 10 > 0) word += '-' + ones[n % 10];
+          }
+        }
+        return word.trim();
+      }
+
+      var cnDigits = ['零','一','二','三','四','五','六','七','八','九'];
+      var cnUnits = ['','十','百','千','万','十','百','千','亿'];
+
+      function numberToCn(n) {
+        if (n === 0) return '零';
+        if (n < 0) return '负' + numberToCn(-n);
+        var s = n.toString();
+        var result = '';
+        var len = s.length;
+        for (var i = 0; i < len; i++) {
+          var digit = parseInt(s[i]);
+          var pos = len - 1 - i;
+          if (digit === 0) {
+            if (pos === 4 || pos === 8) {
+              result += cnUnits[pos];
+            } else if (result.slice(-1) !== '零' && i < len - 1) {
+              result += '零';
+            }
+          } else {
+            result += cnDigits[digit] + cnUnits[pos];
+          }
+        }
+        return result;
+      }
+
+      function ordinalSuffix(n) {
+        var j = n % 10;
+        var k = n % 100;
+        if (j === 1 && k !== 11) return n + 'st';
+        if (j === 2 && k !== 12) return n + 'nd';
+        if (j === 3 && k !== 13) return n + 'rd';
+        return n + 'th';
+      }
+
+      function toRoman(n) {
+        if (n <= 0 || n > 3999) return 'N/A';
+        var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+        var chars = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+        var result = '';
+        for (var i = 0; i < vals.length; i++) {
+          while (n >= vals[i]) {
+            result += chars[i];
+            n -= vals[i];
+          }
+        }
+        return result;
+      }
+
+      function format() {
+        var val = parseFloat(inputNum.value);
+        if (isNaN(val)) { setStatus('请输入有效数字', 'error'); return; }
+        resultComma.textContent = val.toLocaleString('en-US');
+        resultPercent.textContent = (val / 100).toFixed(4) + '%';
+        var intPart = Math.floor(Math.abs(val));
+        resultOrdinal.textContent = ordinalSuffix(intPart);
+        resultWords.textContent = numberToWords(intPart);
+        resultCnWords.textContent = numberToCn(intPart);
+        resultRoman.textContent = toRoman(intPart);
+        resultSci.textContent = val.toExponential(6);
+        var sym = currencySymbol.value || '$';
+        resultCurrency.textContent = sym + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        outputEl.textContent = resultComma.textContent + ' | ' + resultWords.textContent;
+        setStatus('格式化完成');
+      }
+
+      formatBtn.addEventListener('click', format);
+      inputNum.addEventListener('keydown', function(e) { if (e.key === 'Enter') format(); });
+      currencySymbol.addEventListener('input', format);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      format();
+    })();
+  </script>
+</body>
+</html>

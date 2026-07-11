@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meta 标签生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .form-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+    .form-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-width: 80px; }
+    .form-row .input { flex: 1; min-width: 150px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Meta 标签生成器</h1>
+    <p class="tool-desc">从表单输入生成标准 HTML Meta 标签代码。</p>
+    <div class="card">
+      <div class="form-row"><label>页面标题</label><input id="fieldTitle" class="input" type="text" placeholder="页面标题"></div>
+      <div class="form-row"><label>描述</label><textarea id="fieldDesc" class="input textarea" placeholder="页面描述" style="min-height:60px;"></textarea></div>
+      <div class="form-row"><label>关键词</label><input id="fieldKeywords" class="input" type="text" placeholder="关键词，逗号分隔"></div>
+      <div class="form-row"><label>作者</label><input id="fieldAuthor" class="input" type="text" placeholder="作者姓名"></div>
+      <div class="form-row"><label>视口</label><input id="fieldViewport" class="input" type="text" value="width=device-width, initial-scale=1.0"></div>
+      <div class="form-row"><label>字符集</label><select id="fieldCharset" class="input" style="width:auto;min-width:120px;"><option value="UTF-8">UTF-8</option><option value="GB2312">GB2312</option><option value="ISO-8859-1">ISO-8859-1</option></select></div>
+      <div class="form-row"><label>Robots</label><select id="fieldRobots" class="input" style="width:auto;min-width:150px;"><option value="index, follow">index, follow</option><option value="noindex, follow">noindex, follow</option><option value="index, nofollow">index, nofollow</option><option value="noindex, nofollow">noindex, nofollow</option></select></div>
+      <div class="form-row"><label>OG 标题</label><input id="fieldOgTitle" class="input" type="text" placeholder="Open Graph 标题"></div>
+      <div class="form-row"><label>OG 描述</label><textarea id="fieldOgDesc" class="input textarea" placeholder="Open Graph 描述" style="min-height:60px;"></textarea></div>
+      <div class="form-row"><label>OG 图片</label><input id="fieldOgImage" class="input" type="text" placeholder="https://..."></div>
+      <div class="form-row"><label>OG URL</label><input id="fieldOgUrl" class="input" type="text" placeholder="https://..."></div>
+      <div class="form-row"><label>语言</label><input id="fieldLang" class="input" type="text" placeholder="zh-CN" value="zh-CN"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:var(--space-2);">
+        <button id="generateBtn" class="btn btn-primary">生成 Meta 标签</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div class="output-box" style="min-height:200px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var fields = {
+      title: document.getElementById('fieldTitle'),
+      desc: document.getElementById('fieldDesc'),
+      keywords: document.getElementById('fieldKeywords'),
+      author: document.getElementById('fieldAuthor'),
+      viewport: document.getElementById('fieldViewport'),
+      charset: document.getElementById('fieldCharset'),
+      robots: document.getElementById('fieldRobots'),
+      ogTitle: document.getElementById('fieldOgTitle'),
+      ogDesc: document.getElementById('fieldOgDesc'),
+      ogImage: document.getElementById('fieldOgImage'),
+      ogUrl: document.getElementById('fieldOgUrl'),
+      lang: document.getElementById('fieldLang')
+    };
+    var outputEl = document.getElementById('outputText');
+    function escapeAttr(v) { return v.replace(/"/g, '&quot;'); }
+    function generate() {
+      var lines = [];
+      var lang = fields.lang.value.trim() || 'zh-CN';
+      lines.push('<!DOCTYPE html>');
+      lines.push('<html lang="' + escapeAttr(lang) + '">');
+      lines.push('<head>');
+      lines.push('  <meta charset="' + escapeAttr(fields.charset.value) + '">');
+      var vp = fields.viewport.value.trim();
+      if (vp) lines.push('  <meta name="viewport" content="' + escapeAttr(vp) + '">');
+      var t = fields.title.value.trim();
+      if (t) {
+        lines.push('  <title>' + escapeAttr(t) + '</title>');
+        lines.push('  <meta name="title" content="' + escapeAttr(t) + '">');
+      }
+      var d = fields.desc.value.trim();
+      if (d) lines.push('  <meta name="description" content="' + escapeAttr(d) + '">');
+      var kw = fields.keywords.value.trim();
+      if (kw) lines.push('  <meta name="keywords" content="' + escapeAttr(kw) + '">');
+      var a = fields.author.value.trim();
+      if (a) lines.push('  <meta name="author" content="' + escapeAttr(a) + '">');
+      var r = fields.robots.value;
+      if (r) lines.push('  <meta name="robots" content="' + escapeAttr(r) + '">');
+      if (t) lines.push('  <meta property="og:title" content="' + escapeAttr(fields.ogTitle.value.trim() || t) + '">');
+      lines.push('  <meta property="og:type" content="website">');
+      var od = fields.ogDesc.value.trim() || d;
+      if (od) lines.push('  <meta property="og:description" content="' + escapeAttr(od) + '">');
+      var oi = fields.ogImage.value.trim();
+      if (oi) lines.push('  <meta property="og:image" content="' + escapeAttr(oi) + '">');
+      var ou = fields.ogUrl.value.trim();
+      if (ou) lines.push('  <meta property="og:url" content="' + escapeAttr(ou) + '">');
+      lines.push('</head>');
+      lines.push('<body>');
+      lines.push('');
+      lines.push('</body>');
+      lines.push('</html>');
+      outputEl.textContent = lines.join('\n');
+      setStatus('Meta 标签已生成');
+    }
+    document.getElementById('generateBtn').addEventListener('click', generate);
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      for (var k in fields) { fields[k].value = ''; }
+      fields.charset.value = 'UTF-8';
+      fields.viewport.value = 'width=device-width, initial-scale=1.0';
+      fields.robots.value = 'index, follow';
+      fields.lang.value = 'zh-CN';
+      outputEl.textContent = '';
+      setStatus('');
+    });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

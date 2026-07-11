@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON to CSV - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>JSON → CSV</h1>
+    <p class="tool-desc">将 JSON 数组转换为 CSV 表格。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='[{"name":"Alice","age":30,"city":"北京"},{"name":"Bob","age":25,"city":"上海"}]' style="min-height:150px;"></textarea>
+    </div>
+    <div class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">分隔符</label>
+      <select id="delimiterSelect" class="input" style="width:100px;">
+        <option value=",">逗号 (,)</option>
+        <option value=";">分号 (;)</option>
+        <option value="\t">制表符 (\t)</option>
+      </select>
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">
+        <input type="checkbox" id="headerCheck" checked> 包含表头
+      </label>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 CSV</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var delimiterEl = document.getElementById('delimiterSelect');
+      var headerChk = document.getElementById('headerCheck');
+
+      function escapeCsv(val, delim) {
+        var s = String(val);
+        if (s.indexOf('"') >= 0 || s.indexOf(delim) >= 0 || s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0) {
+          return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        try {
+          var data = JSON.parse(text);
+          if (!Array.isArray(data) || data.length === 0) {
+            setStatus('请输入非空 JSON 数组', 'error'); return;
+          }
+          var delim = delimiterEl.value;
+          if (delim === '\\t') delim = '\t';
+
+          var keys = [];
+          for (var i = 0; i < data.length; i++) {
+            var item = data[i];
+            if (item && typeof item === 'object') {
+              var itemKeys = Object.keys(item);
+              for (var j = 0; j < itemKeys.length; j++) {
+                if (keys.indexOf(itemKeys[j]) === -1) {
+                  keys.push(itemKeys[j]);
+                }
+              }
+            }
+          }
+
+          var lines = [];
+          if (headerChk.checked) {
+            lines.push(keys.map(function (k) { return escapeCsv(k, delim); }).join(delim));
+          }
+
+          for (var i = 0; i < data.length; i++) {
+            var item = data[i];
+            var row = [];
+            for (var j = 0; j < keys.length; j++) {
+              var val = (item && item[keys[j]] !== undefined) ? item[keys[j]] : '';
+              row.push(escapeCsv(val, delim));
+            }
+            lines.push(row.join(delim));
+          }
+
+          outputEl.textContent = lines.join('\n');
+          setStatus('已生成 ' + data.length + ' 行');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('JSON 格式错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

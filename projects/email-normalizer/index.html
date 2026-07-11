@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>邮箱地址规范化 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .email-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-2); margin-top: var(--space-3); }
+    .email-item { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); }
+    .email-item label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .email-item span { font-size: var(--font-size-sm); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>邮箱地址规范化</h1>
+    <p class="tool-desc">规范化邮箱地址：转小写、去除 Gmail 点号和 +tag 部分。</p>
+    <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <input id="emailInput" class="input js-focus-input" type="text" placeholder="输入邮箱地址，如 User.Name+spam@gmail.com" style="flex:1;min-width:250px;font-size:14px;">
+      <button id="normalizeBtn" class="btn btn-primary">规范化</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+    <div class="email-grid" id="emailGrid"></div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('emailInput');
+    var outputEl = document.getElementById('outputText');
+    var gridEl = document.getElementById('emailGrid');
+    var gmailDomains = ['gmail.com', 'googlemail.com', 'google.com'];
+    function normalize(email) {
+      if (!email) return null;
+      var parts = email.trim().split('@');
+      if (parts.length !== 2) return { original: email.trim(), normalized: null, error: '格式无效', domain: null, local: null };
+      var local = parts[0];
+      var domain = parts[1].toLowerCase();
+      var isGmail = false;
+      for (var i = 0; i < gmailDomains.length; i++) {
+        if (domain === gmailDomains[i]) { isGmail = true; break; }
+      }
+      if (isGmail) {
+        local = local.replace(/\./g, '');
+        var plusIdx = local.indexOf('+');
+        if (plusIdx !== -1) local = local.substr(0, plusIdx);
+      }
+      local = local.toLowerCase();
+      var normalized = local + '@' + domain;
+      return { original: email.trim(), normalized: normalized, domain: domain, local: local, isGmail: isGmail, error: null };
+    }
+    function render(d) {
+      if (!d) { outputEl.textContent = ''; gridEl.innerHTML = ''; return; }
+      if (d.error) {
+        outputEl.textContent = d.original + ' - ' + d.error;
+        outputEl.style.color = 'var(--color-error)';
+        gridEl.innerHTML = '';
+        return;
+      }
+      if (d.normalized !== d.original) {
+        outputEl.textContent = d.original + ' → ' + d.normalized;
+      } else {
+        outputEl.textContent = d.normalized + ' (无需更改)';
+      }
+      outputEl.style.color = 'var(--color-success)';
+      var items = [
+        { label: '原始地址', val: d.original },
+        { label: '规范化后', val: d.normalized },
+        { label: '本地部分', val: d.local },
+        { label: '域名', val: d.domain },
+        { label: 'Gmail 别名', val: d.isGmail ? '是（已去除 . 和 +tag）' : '否' },
+        { label: '变化', val: d.normalized === d.original ? '无变化' : '已规范化' }
+      ];
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        html += '<div class="email-item"><label>' + items[i].label + '</label><span>' + items[i].val + '</span></div>';
+      }
+      gridEl.innerHTML = html;
+    }
+    function doNormalize() {
+      var email = inputEl.value.trim();
+      if (!email) { setStatus('请输入邮箱地址', 'error'); render(null); return; }
+      var result = normalize(email);
+      render(result);
+      if (result.error) { setStatus(result.error, 'error'); } else { setStatus(result.normalized === result.original ? '无需更改' : '已规范化'); }
+    }
+    document.getElementById('normalizeBtn').addEventListener('click', doNormalize);
+    inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doNormalize(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = outputEl.textContent;
+      if (text) {
+        var m = text.match(/→ (.+)$/);
+        copyToClipboard(m ? m[1] : text, this);
+        setStatus('已复制');
+      }
+    });
+  })();</script>
+</body>
+</html>

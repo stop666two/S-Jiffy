@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时间戳转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>时间戳转换</h1>
+    <p class="tool-desc">Unix 时间戳与日期时间互相转换，支持毫秒/秒。</p>
+
+    <div class="card">
+      <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;">时间戳 (秒)</label>
+      <input id="tsInput" class="input js-focus-input" placeholder="e.g. 1760000000" style="margin-bottom:12px;">
+      <button id="tsToDateBtn" class="btn btn-primary">→ 转日期</button>
+    </div>
+
+    <div class="card">
+      <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;">日期时间</label>
+      <input id="dateInput" class="input" type="datetime-local" style="margin-bottom:12px;">
+      <button id="dateToTsBtn" class="btn btn-secondary">→ 转时间戳</button>
+    </div>
+
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var tsInput = document.getElementById('tsInput'), dateInput = document.getElementById('dateInput'), o = document.getElementById('outputText');
+      var now = new Date();
+      dateInput.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + 'T' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+      document.getElementById('tsToDateBtn').addEventListener('click', function () {
+        var v = parseInt(tsInput.value);
+        if (isNaN(v)) { setStatus('请输入有效数字', 'error'); return; }
+        var d = new Date(v > 1e11 ? v : v * 1000);
+        o.textContent = d.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + ' (UTC+8)';
+        setStatus('');
+      });
+      document.getElementById('dateToTsBtn').addEventListener('click', function () {
+        if (!dateInput.value) { setStatus('请选择日期时间', 'error'); return; }
+        var ts = new Date(dateInput.value).getTime();
+        o.textContent = Math.floor(ts / 1000) + ' (秒)  /  ' + ts + ' (毫秒)';
+        setStatus('');
+      });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

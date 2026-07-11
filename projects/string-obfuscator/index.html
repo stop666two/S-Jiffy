@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符串混淆器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .obf-config { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>字符串混淆器</h1>
+    <p class="tool-desc">在字符串的每个字符之间插入随机字符，实现简单混淆效果。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要混淆的文本..." style="min-height:100px;"></textarea>
+    </div>
+    <div class="card obf-config">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">干扰字符集</label>
+      <select id="charSetSelect" class="input" style="width:auto;min-width:120px;">
+        <option value="all">全部符号</option>
+        <option value="special">特殊符号 !@#$%</option>
+        <option value="hex">十六进制 0-9a-f</option>
+        <option value="cjk">CJK 汉字</option>
+      </select>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">干扰密度</label>
+      <select id="densitySelect" class="input" style="width:auto;min-width:90px;">
+        <option value="1">低 (1x)</option>
+        <option value="2" selected>中 (2x)</option>
+        <option value="3">高 (3x)</option>
+      </select>
+      <button id="obfuscateBtn" class="btn btn-primary">混淆</button>
+      <button id="deobfuscateBtn" class="btn btn-secondary">还原</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputText');
+    var outputEl = document.getElementById('outputText');
+    var charSetEl = document.getElementById('charSetSelect');
+    var densityEl = document.getElementById('densitySelect');
+    var charSets = {
+      all: '!@#$%^&*()_+-=[]{}|;:,.<>?/~`' + String.fromCharCode(241, 231, 224, 232, 233, 232, 234, 239, 238, 244, 246, 249, 251, 252),
+      special: '!@#$%^&*_+-=[]{}|;:,.<>?/~',
+      hex: '0123456789abcdef',
+      cjk: String.fromCharCode(30340, 19968, 26159, 19981, 20102, 20154, 25105, 22312, 26377, 20182, 36825, 20026, 20043, 22823, 26469, 20197, 20010, 20013, 19978, 20204)
+    };
+    function getNoiseChars() {
+      return charSets[charSetEl.value] || charSets.all;
+    }
+    function randomChar(set) {
+      return set[Math.floor(Math.random() * set.length)];
+    }
+    function obfuscate() {
+      var text = inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var density = parseInt(densityEl.value);
+      var noiseSet = getNoiseChars();
+      var result = '';
+      for (var i = 0; i < text.length; i++) {
+        result += text[i];
+        for (var j = 0; j < density; j++) {
+          result += randomChar(noiseSet);
+        }
+      }
+      outputEl.textContent = result;
+      setStatus('混淆完成 (' + text.length + ' -> ' + result.length + ' 字符)');
+    }
+    function deobfuscate() {
+      var text = outputEl.textContent || inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var density = parseInt(densityEl.value);
+      var result = '';
+      for (var i = 0; i < text.length; i += density + 1) {
+        result += text[i];
+      }
+      outputEl.textContent = result;
+      setStatus('还原完成');
+    }
+    document.getElementById('obfuscateBtn').addEventListener('click', obfuscate);
+    document.getElementById('deobfuscateBtn').addEventListener('click', deobfuscate);
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

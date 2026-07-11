@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>掷骰子 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dice-area { display:flex; gap:var(--space-2); flex-wrap:wrap; justify-content:center; margin:var(--space-3) 0; min-height:80px; }
+    .die { width:64px;height:64px;border:2px solid var(--color-text-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;background:var(--color-bg);transition:transform 0.05s; }
+    .die.rolling { animation:diceRoll 0.3s ease-out; }
+    @keyframes diceRoll { 0%{transform:rotate(0deg) scale(1);} 25%{transform:rotate(90deg) scale(1.2);} 50%{transform:rotate(180deg) scale(1);} 75%{transform:rotate(270deg) scale(1.2);} 100%{transform:rotate(360deg) scale(1);} }
+    .dr-row { display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3); }
+    .dr-row .field { flex:1;min-width:100px; }
+    .dr-row label { display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>掷骰子</h1>
+    <p class="tool-desc">1-6 面骰子，可设置骰子数量。</p>
+    <div class="card">
+      <div class="dr-row">
+        <div class="field"><label for="diceCount">骰子数量</label><input id="diceCount" class="input" type="number" value="2" min="1" max="100"></div>
+        <div class="field"><label for="diceSides">面数</label><input id="diceSides" class="input" type="number" value="6" min="2" max="100"></div>
+        <div><button id="rollBtn" class="btn btn-primary">掷骰子</button></div>
+      </div>
+    </div>
+    <div class="dice-area" id="diceArea"></div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var diceCount = document.getElementById('diceCount');
+      var diceSides = document.getElementById('diceSides');
+      var rollBtn = document.getElementById('rollBtn');
+      var diceArea = document.getElementById('diceArea');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function roll() {
+        var count = parseInt(diceCount.value, 10) || 2;
+        var sides = parseInt(diceSides.value, 10) || 6;
+        if (count < 1) count = 1;
+        if (count > 100) count = 100;
+        if (sides < 2) sides = 2;
+        if (sides > 100) sides = 100;
+
+        var results = [];
+        var sum = 0;
+        for (var i = 0; i < count; i++) {
+          var val = Math.floor(Math.random() * sides) + 1;
+          results.push(val);
+          sum += val;
+        }
+
+        diceArea.innerHTML = '';
+        for (var i = 0; i < results.length; i++) {
+          var die = document.createElement('div');
+          die.className = 'die rolling';
+          die.textContent = results[i];
+          diceArea.appendChild(die);
+          setTimeout(function(el) {
+            el.classList.remove('rolling');
+          }.bind(null, die), 300);
+        }
+
+        outputEl.textContent = results.join(', ') + '  |  总和: ' + sum + '  |  平均: ' + (sum / count).toFixed(1);
+        setStatus('掷骰子完成');
+      }
+
+      rollBtn.addEventListener('click', roll);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电话号码解析 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .phone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-2); margin-top: var(--space-3); }
+    .phone-item { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); }
+    .phone-item label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .phone-item span { font-size: var(--font-size-sm); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>电话号码解析</h1>
+    <p class="tool-desc">解析和验证电话号码，检测国家代码与格式。</p>
+    <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <input id="phoneInput" class="input js-focus-input" type="text" placeholder="输入电话号码，如 +86 13800138000" style="flex:1;min-width:200px;">
+      <button id="parseBtn" class="btn btn-primary">解析</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="resultBox">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+    <div class="phone-grid" id="phoneGrid"></div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('phoneInput');
+    var outputEl = document.getElementById('outputText');
+    var gridEl = document.getElementById('phoneGrid');
+    var countryCodes = [
+      { code: '1', name: '美国/加拿大', mask: '###-###-####' },
+      { code: '7', name: '俄罗斯', mask: '###-###-##-##' },
+      { code: '20', name: '埃及', mask: '###-###-####' },
+      { code: '27', name: '南非', mask: '##-###-####' },
+      { code: '30', name: '希腊', mask: '##-###-####' },
+      { code: '31', name: '荷兰', mask: '##-###-####' },
+      { code: '32', name: '比利时', mask: '##-###-####' },
+      { code: '33', name: '法国', mask: '#-##-##-##-##' },
+      { code: '34', name: '西班牙', mask: '##-###-##-##' },
+      { code: '36', name: '匈牙利', mask: '##-###-####' },
+      { code: '39', name: '意大利', mask: '##-####-####' },
+      { code: '40', name: '罗马尼亚', mask: '##-###-####' },
+      { code: '41', name: '瑞士', mask: '##-###-####' },
+      { code: '43', name: '奥地利', mask: '##-###-####' },
+      { code: '44', name: '英国', mask: '##-####-####' },
+      { code: '45', name: '丹麦', mask: '##-##-##-##' },
+      { code: '46', name: '瑞典', mask: '##-###-###' },
+      { code: '47', name: '挪威', mask: '##-###-###' },
+      { code: '48', name: '波兰', mask: '##-###-####' },
+      { code: '49', name: '德国', mask: '##-###-####' },
+      { code: '51', name: '秘鲁', mask: '##-###-####' },
+      { code: '52', name: '墨西哥', mask: '##-###-####' },
+      { code: '53', name: '古巴', mask: '##-###-####' },
+      { code: '54', name: '阿根廷', mask: '##-###-####' },
+      { code: '55', name: '巴西', mask: '##-####-####' },
+      { code: '56', name: '智利', mask: '##-####-####' },
+      { code: '57', name: '哥伦比亚', mask: '##-###-####' },
+      { code: '58', name: '委内瑞拉', mask: '##-###-####' },
+      { code: '60', name: '马来西亚', mask: '##-###-####' },
+      { code: '61', name: '澳大利亚', mask: '#-####-####' },
+      { code: '62', name: '印度尼西亚', mask: '##-###-####' },
+      { code: '63', name: '菲律宾', mask: '##-###-####' },
+      { code: '64', name: '新西兰', mask: '##-###-####' },
+      { code: '65', name: '新加坡', mask: '####-####' },
+      { code: '66', name: '泰国', mask: '##-###-####' },
+      { code: '81', name: '日本', mask: '##-####-####' },
+      { code: '82', name: '韩国', mask: '##-####-####' },
+      { code: '84', name: '越南', mask: '##-####-###' },
+      { code: '86', name: '中国', mask: '###-####-####' },
+      { code: '90', name: '土耳其', mask: '##-###-####' },
+      { code: '91', name: '印度', mask: '##-####-####' },
+      { code: '92', name: '巴基斯坦', mask: '##-###-####' },
+      { code: '93', name: '阿富汗', mask: '##-###-####' },
+      { code: '94', name: '斯里兰卡', mask: '##-###-####' },
+      { code: '95', name: '缅甸', mask: '##-###-####' },
+      { code: '98', name: '伊朗', mask: '##-###-####' },
+      { code: '212', name: '摩洛哥', mask: '##-####-###' },
+      { code: '213', name: '阿尔及利亚', mask: '##-###-####' },
+      { code: '216', name: '突尼斯', mask: '##-###-###' },
+      { code: '218', name: '利比亚', mask: '##-###-###' },
+      { code: '220', name: '冈比亚', mask: '###-####' },
+      { code: '221', name: '塞内加尔', mask: '##-###-####' },
+      { code: '233', name: '加纳', mask: '##-###-####' },
+      { code: '234', name: '尼日利亚', mask: '##-###-####' },
+      { code: '254', name: '肯尼亚', mask: '##-###-####' },
+      { code: '255', name: '坦桑尼亚', mask: '##-###-####' },
+      { code: '256', name: '乌干达', mask: '##-###-####' },
+      { code: '260', name: '赞比亚', mask: '##-###-####' },
+      { code: '261', name: '马达加斯加', mask: '##-###-####' },
+      { code: '263', name: '津巴布韦', mask: '##-###-####' },
+      { code: '265', name: '马拉维', mask: '##-###-####' },
+      { code: '267', name: '博茨瓦纳', mask: '##-###-####' },
+      { code: '351', name: '葡萄牙', mask: '##-###-####' },
+      { code: '352', name: '卢森堡', mask: '##-###-####' },
+      { code: '353', name: '爱尔兰', mask: '##-###-####' },
+      { code: '354', name: '冰岛', mask: '##-###-####' },
+      { code: '355', name: '阿尔巴尼亚', mask: '##-###-####' },
+      { code: '356', name: '马耳他', mask: '##-####' },
+      { code: '357', name: '塞浦路斯', mask: '##-###-####' },
+      { code: '358', name: '芬兰', mask: '##-###-##-##' },
+      { code: '359', name: '保加利亚', mask: '##-###-####' },
+      { code: '370', name: '立陶宛', mask: '##-###-####' },
+      { code: '371', name: '拉脱维亚', mask: '##-###-####' },
+      { code: '372', name: '爱沙尼亚', mask: '##-###-####' },
+      { code: '373', name: '摩尔多瓦', mask: '##-###-####' },
+      { code: '374', name: '亚美尼亚', mask: '##-###-####' },
+      { code: '375', name: '白俄罗斯', mask: '##-###-####' },
+      { code: '376', name: '安道尔', mask: '##-###-###' },
+      { code: '377', name: '摩纳哥', mask: '##-###-###' },
+      { code: '378', name: '圣马力诺', mask: '##-###-###' },
+      { code: '380', name: '乌克兰', mask: '##-###-####' },
+      { code: '381', name: '塞尔维亚', mask: '##-###-####' },
+      { code: '382', name: '黑山', mask: '##-###-####' },
+      { code: '385', name: '克罗地亚', mask: '##-###-####' },
+      { code: '386', name: '斯洛文尼亚', mask: '##-###-####' },
+      { code: '387', name: '波黑', mask: '##-###-####' },
+      { code: '389', name: '北马其顿', mask: '##-###-####' },
+      { code: '420', name: '捷克', mask: '##-###-####' },
+      { code: '421', name: '斯洛伐克', mask: '##-###-####' },
+      { code: '423', name: '列支敦士登', mask: '##-###-###' },
+      { code: '501', name: '伯利兹', mask: '##-####' },
+      { code: '502', name: '危地马拉', mask: '##-####-####' },
+      { code: '503', name: '萨尔瓦多', mask: '##-####-####' },
+      { code: '504', name: '洪都拉斯', mask: '##-####-####' },
+      { code: '505', name: '尼加拉瓜', mask: '##-####-####' },
+      { code: '506', name: '哥斯达黎加', mask: '##-####-####' },
+      { code: '507', name: '巴拿马', mask: '##-###-####' },
+      { code: '509', name: '海地', mask: '##-####-####' },
+      { code: '590', name: '瓜德罗普', mask: '##-###-####' },
+      { code: '591', name: '玻利维亚', mask: '##-###-####' },
+      { code: '592', name: '圭亚那', mask: '##-###-####' },
+      { code: '593', name: '厄瓜多尔', mask: '##-###-####' },
+      { code: '594', name: '法属圭亚那', mask: '##-###-####' },
+      { code: '595', name: '巴拉圭', mask: '##-###-####' },
+      { code: '596', name: '马提尼克', mask: '##-###-####' },
+      { code: '597', name: '苏里南', mask: '##-###-###' },
+      { code: '598', name: '乌拉圭', mask: '##-###-###' },
+      { code: '599', name: '荷属安的列斯', mask: '##-###-####' },
+      { code: '670', name: '东帝汶', mask: '##-###-####' },
+      { code: '672', name: '南极洲', mask: '##-###-###' },
+      { code: '673', name: '文莱', mask: '##-###-###' },
+      { code: '674', name: '瑙鲁', mask: '##-###-####' },
+      { code: '675', name: '巴布亚新几内亚', mask: '##-###-####' },
+      { code: '676', name: '汤加', mask: '##-###-####' },
+      { code: '677', name: '所罗门群岛', mask: '##-###-####' },
+      { code: '678', name: '瓦努阿图', mask: '##-###-####' },
+      { code: '679', name: '斐济', mask: '##-###-####' },
+      { code: '680', name: '帕劳', mask: '##-###-####' },
+      { code: '681', name: '瓦利斯和富图纳', mask: '##-###-###' },
+      { code: '682', name: '库克群岛', mask: '##-###-###' },
+      { code: '683', name: '纽埃', mask: '##-###-####' },
+      { code: '685', name: '萨摩亚', mask: '##-###-####' },
+      { code: '686', name: '基里巴斯', mask: '##-###-####' },
+      { code: '687', name: '新喀里多尼亚', mask: '##-###-###' },
+      { code: '688', name: '图瓦卢', mask: '##-###-####' },
+      { code: '689', name: '法属波利尼西亚', mask: '##-###-###' },
+      { code: '690', name: '托克劳', mask: '##-###-####' },
+      { code: '691', name: '密克罗尼西亚', mask: '##-###-####' },
+      { code: '692', name: '马绍尔群岛', mask: '##-###-####' },
+      { code: '850', name: '朝鲜', mask: '##-###-####' },
+      { code: '852', name: '中国香港', mask: '####-####' },
+      { code: '853', name: '中国澳门', mask: '####-####' },
+      { code: '855', name: '柬埔寨', mask: '##-###-####' },
+      { code: '856', name: '老挝', mask: '##-###-####' },
+      { code: '880', name: '孟加拉国', mask: '##-###-####' },
+      { code: '886', name: '中国台湾', mask: '##-####-####' },
+      { code: '960', name: '马尔代夫', mask: '##-###-####' },
+      { code: '961', name: '黎巴嫩', mask: '##-###-####' },
+      { code: '962', name: '约旦', mask: '##-####-####' },
+      { code: '963', name: '叙利亚', mask: '##-####-####' },
+      { code: '964', name: '伊拉克', mask: '##-###-####' },
+      { code: '965', name: '科威特', mask: '##-###-####' },
+      { code: '966', name: '沙特阿拉伯', mask: '##-###-####' },
+      { code: '967', name: '也门', mask: '##-###-####' },
+      { code: '968', name: '阿曼', mask: '##-###-####' },
+      { code: '970', name: '巴勒斯坦', mask: '##-###-####' },
+      { code: '971', name: '阿联酋', mask: '##-###-####' },
+      { code: '972', name: '以色列', mask: '##-###-####' },
+      { code: '973', name: '巴林', mask: '##-###-####' },
+      { code: '974', name: '卡塔尔', mask: '##-###-####' },
+      { code: '975', name: '不丹', mask: '##-###-####' },
+      { code: '976', name: '蒙古', mask: '##-###-####' },
+      { code: '977', name: '尼泊尔', mask: '##-###-####' },
+      { code: '992', name: '塔吉克斯坦', mask: '##-###-####' },
+      { code: '993', name: '土库曼斯坦', mask: '##-###-####' },
+      { code: '994', name: '阿塞拜疆', mask: '##-###-####' },
+      { code: '995', name: '格鲁吉亚', mask: '##-###-####' },
+      { code: '996', name: '吉尔吉斯斯坦', mask: '##-###-####' },
+      { code: '998', name: '乌兹别克斯坦', mask: '##-###-####' }
+    ];
+    function detectCountry(raw) {
+      var digits = raw.replace(/[^\d]/g, '');
+      var best = null;
+      for (var i = 0; i < countryCodes.length; i++) {
+        var cc = countryCodes[i];
+        if (digits.indexOf(cc.code) === 0) {
+          if (!best || cc.code.length > best.code.length) { best = cc; }
+        }
+      }
+      return best;
+    }
+    function parsePhone(raw) {
+      var cleaned = raw.trim();
+      var country = detectCountry(cleaned);
+      var digits = cleaned.replace(/[^\d]/g, '');
+      var hasPlus = cleaned.indexOf('+') !== -1;
+      var nationalNumber = country ? digits.substr(country.code.length) : digits;
+      return { raw: cleaned, digits: digits, hasPlus: hasPlus, country: country, nationalNumber: nationalNumber, isValid: hasPlus && country && nationalNumber.length >= 6 };
+    }
+    function render(d) {
+      if (!d || !d.raw) { outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; return; }
+      outputEl.textContent = d.raw + (d.isValid ? ' ✓' : ' ✗');
+      outputEl.style.color = d.isValid ? 'var(--color-success)' : 'var(--color-error)';
+      var items = [
+        { label: '原始输入', val: d.raw },
+        { label: '有效性', val: d.isValid ? '有效' : (d.hasPlus ? '号码格式可能不完整' : '缺少国际前缀 +') },
+        { label: '国家代码', val: d.country ? '+' + d.country.code : '未识别' },
+        { label: '国家或地区', val: d.country ? d.country.name : '-' },
+        { label: '国内号码', val: d.nationalNumber || '-' },
+        { label: '数字长度', val: d.digits.length + ' 位' }
+      ];
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        html += '<div class="phone-item"><label>' + items[i].label + '</label><span>' + items[i].val + '</span></div>';
+      }
+      gridEl.innerHTML = html;
+    }
+    function doParse() {
+      var raw = inputEl.value.trim();
+      if (!raw) { setStatus('请输入电话号码', 'error'); render(null); return; }
+      var result = parsePhone(raw);
+      render(result);
+      setStatus(result.isValid ? '解析完成' : '号码格式可能不完整');
+    }
+    document.getElementById('parseBtn').addEventListener('click', doParse);
+    inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doParse(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent.replace(/ [✓✗]$/, ''), this); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

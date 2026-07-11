@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAC 地址生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>MAC 地址生成器</h1>
+    <p class="tool-desc">生成随机 MAC 地址，支持自定义前缀、大小写和分隔符。</p>
+    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">前缀</label>
+      <input id="prefixInput" class="input" type="text" value="" placeholder="留空随机" style="width:130px;">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">分隔符</label>
+      <select id="sepSelect" class="input" style="width:auto;min-width:70px;">
+        <option value=":">:</option>
+        <option value="-">-</option>
+        <option value="">无</option>
+      </select>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">大小写</label>
+      <select id="caseSelect" class="input" style="width:auto;min-width:70px;">
+        <option value="lower">小写</option>
+        <option value="upper">大写</option>
+      </select>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">数量</label>
+      <input id="countInput" class="input" type="number" value="1" min="1" max="100" style="width:70px;">
+      <button id="generateBtn" class="btn btn-primary">生成</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var prefixEl = document.getElementById('prefixInput');
+    var sepEl = document.getElementById('sepSelect');
+    var caseEl = document.getElementById('caseSelect');
+    var countEl = document.getElementById('countInput');
+    var outputEl = document.getElementById('outputText');
+    function randomByte() { return Math.floor(Math.random() * 256); }
+    function toHex(n) { var h = n.toString(16); return h.length === 1 ? '0' + h : h; }
+    function generateMac() {
+      var prefix = prefixEl.value.trim();
+      var sep = sepEl.value;
+      var useUpper = caseEl.value === 'upper';
+      var bytes = [];
+      if (prefix) {
+        var parts = prefix.replace(/[:\-]/g, '').match(/.{1,2}/g) || [];
+        for (var i = 0; i < parts.length; i++) { bytes.push(parseInt(parts[i], 16)); }
+      }
+      while (bytes.length < 6) { bytes.push(randomByte()); }
+      var hex = bytes.map(function(b) { return toHex(b); }).join(sep);
+      return useUpper ? hex.toUpperCase() : hex;
+    }
+    document.getElementById('generateBtn').addEventListener('click', function() {
+      var n = parseInt(countEl.value) || 1;
+      if (n < 1) n = 1; if (n > 100) n = 100;
+      var arr = [];
+      for (var i = 0; i < n; i++) arr.push(generateMac());
+      outputEl.textContent = arr.join('\n');
+      setStatus('已生成 ' + n + ' 个 MAC 地址');
+    });
+    document.getElementById('clearBtn').addEventListener('click', function() { outputEl.textContent = ''; setStatus(''); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则测试器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>正则测试器</h1>
+    <p class="tool-desc">编写正则表达式，实时测试匹配结果。</p>
+
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">/</label>
+      <input id="patternInput" class="input js-focus-input" placeholder="正则表达式" style="width:280px;">
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">/</label>
+      <input id="flagsInput" class="input" placeholder="gim" style="width:60px;">
+      <button id="testBtn" class="btn btn-primary">测试</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+
+    <div class="card" style="margin-top:var(--space-3);">
+      <textarea id="testText" class="input textarea" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
+    </div>
+
+    <div class="output-box" id="outputContainer" style="min-height:100px;">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), text = document.getElementById('testText'), o = document.getElementById('outputText');
+      document.getElementById('testBtn').addEventListener('click', function () {
+        var p = pat.value.trim(), t = text.value;
+        if (!p) { setStatus('请输入正则表达式', 'error'); return; }
+        if (!t) { setStatus('请输入测试文本', 'error'); return; }
+        try {
+          var re = new RegExp(p, flags.value);
+          var matches = [];
+          var m;
+          while ((m = re.exec(t)) !== null) {
+            var info = '[' + m.index + '-' + (m.index + m[0].length) + '] "' + m[0] + '"';
+            if (m.length > 1) {
+              var groups = [];
+              for (var i = 1; i < m.length; i++) groups.push('$' + i + '="' + (m[i] || '') + '"');
+              info += ' ' + groups.join(' ');
+            }
+            matches.push(info);
+            if (!re.global) break;
+          }
+          if (matches.length === 0) {
+            o.textContent = '无匹配结果';
+          } else {
+            o.textContent = '共 ' + matches.length + ' 处匹配:\n' + matches.join('\n');
+          }
+          setStatus('');
+        } catch (e) {
+          o.textContent = '';
+          setStatus('正则语法错误: ' + e.message, 'error');
+        }
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () { pat.value = ''; flags.value = ''; text.value = ''; o.textContent = ''; setStatus(''); pat.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+      // realtime test on Ctrl+Enter
+      text.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') { document.getElementById('testBtn').click(); } });
+    })();
+  </script>
+</body>
+</html>

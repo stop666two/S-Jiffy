@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>条码生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .barcode-wrap { display:flex; flex-direction:column; align-items:center; gap:var(--space-3); margin:var(--space-3) 0; }
+    .barcode-wrap svg { max-width:100%; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>条码生成器</h1>
+    <p class="tool-desc">生成 CODE128 条形码 SVG。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <label for="barcodeInput" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">输入内容</label>
+          <input id="barcodeInput" class="input js-focus-input" placeholder="输入条码内容" value="S-JIFFY-123">
+        </div>
+        <div><button id="generateBtn" class="btn btn-primary">生成条码</button></div>
+      </div>
+    </div>
+    <div class="barcode-wrap" id="barcodeWrap" style="display:none;"></div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var barcodeInput = document.getElementById('barcodeInput');
+      var generateBtn = document.getElementById('generateBtn');
+      var barcodeWrap = document.getElementById('barcodeWrap');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var CODE128_START_B = 104;
+      var CODE128_STOP = 106;
+
+      var CODE128_PATTERNS = [
+        '11011001100','11001101100','11001100110','10010011000','10010001100','10001001100','10011001000','10011000100','10001100100','11001001000',
+        '11001000100','11000100100','10110011100','10011011100','10011001110','10111001100','10011101100','10011100110','11001110010','11001011100',
+        '11001001110','11011100100','11001110100','11101101110','11101001100','11100101100','11100100110','11101100100','11100110100','11100110010',
+        '11011011000','11011000110','11000110110','10100011000','10001011000','10001000110','10110001000','10001101000','10001100010','11010001000',
+        '11000101000','11000100010','10110111000','10110001110','10001101110','10111011000','10111000110','10001110110','11101110110','11010001110',
+        '11000101110','11011101000','11011100010','11011101110','11101011000','11101000110','11100010110','11101101000','11101100010','11100011010',
+        '11101111010','11001000010','11110001010','10100110000','10100001100','10010110000','10010000110','10000101100','10000100110','10110010000',
+        '10110000100','10011010000','10011000010','10000110100','10000110010','11000010010','11001010000','11110111010','11000010100','10001111010',
+        '10100111100','10010111100','10010011110','10111100100','10011110100','10011110010','11110100100','11110010100','11110010010','11011011110',
+        '11011110110','11110110110','10101111000','10100011110','10001011110','10111101000','10111100010','11110101000','11110100010','10111011110',
+        '10111101110','11101011110','11110101110','11010000100','11010010000','11010011100','1100011101011'
+      ];
+
+      function encode128(text) {
+        var codes = [CODE128_START_B];
+        for (var i = 0; i < text.length; i++) {
+          var code = text.charCodeAt(i) - 32;
+          if (code < 0 || code > 94) {
+            throw new Error('字符 "' + text.charAt(i) + '" 不支持 CODE128 编码');
+          }
+          codes.push(code);
+        }
+        var checksum = codes[0];
+        for (var i = 1; i < codes.length; i++) {
+          checksum += codes[i] * i;
+        }
+        codes.push(checksum % 103);
+        codes.push(CODE128_STOP);
+        return codes;
+      }
+
+      function generateSVG(text) {
+        if (!text) { setStatus('请输入内容', 'error'); return; }
+        try {
+          var codes = encode128(text.toUpperCase());
+          var barParts = [];
+          for (var i = 0; i < codes.length; i++) {
+            barParts.push(CODE128_PATTERNS[codes[i]]);
+          }
+          var pattern = barParts.join('');
+          var barWidth = 2;
+          var height = 80;
+          var totalWidth = pattern.length * barWidth;
+          var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalWidth + ' ' + (height + 30) + '" style="background:#fff;">';
+          svg += '<text x="' + (totalWidth / 2) + '" y="' + (height + 22) + '" text-anchor="middle" font-family="monospace" font-size="14">' + escapeXml(text) + '</text>';
+          var x = 0;
+          for (var i = 0; i < pattern.length; i++) {
+            if (pattern.charAt(i) === '1') {
+              svg += '<rect x="' + x + '" y="0" width="' + barWidth + '" height="' + height + '" fill="#000"/>';
+            }
+            x += barWidth;
+          }
+          svg += '</svg>';
+          return svg;
+        } catch (e) {
+          setStatus(e.message, 'error');
+          return null;
+        }
+      }
+
+      function escapeXml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function generate() {
+        var text = barcodeInput.value.trim();
+        if (!text) { setStatus('请输入内容', 'error'); return; }
+        var svg = generateSVG(text);
+        if (!svg) return;
+        barcodeWrap.innerHTML = svg;
+        barcodeWrap.style.display = 'flex';
+        outputEl.textContent = '条码已生成: ' + text + ' (CODE128)';
+        setStatus('条码生成成功');
+      }
+
+      generateBtn.addEventListener('click', generate);
+      barcodeInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') generate(); });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      generate();
+    })();
+  </script>
+</body>
+</html>

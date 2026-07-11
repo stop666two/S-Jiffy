@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年龄计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>年龄计算器</h1>
+    <p class="tool-desc">输入出生日期，精确计算年龄（年/月/日）。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <label for="birthDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">出生日期</label>
+        <input id="birthDate" class="input" type="date">
+      </div>
+      <div>
+        <label for="targetDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">目标日期（默认今天）</label>
+        <input id="targetDate" class="input" type="date">
+      </div>
+      <div><button id="calcBtn" class="btn btn-primary">计算年龄</button></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var birthEl = document.getElementById('birthDate');
+      var targetEl = document.getElementById('targetDate');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      targetEl.value = todayStr();
+
+      function calcAge() {
+        var birthStr = birthEl.value;
+        var targetStr = targetEl.value;
+        if (!birthStr) { setStatus('请选择出生日期', 'error'); return; }
+        if (!targetStr) { setStatus('请选择目标日期', 'error'); return; }
+
+        var birth = new Date(birthStr);
+        var target = new Date(targetStr);
+
+        if (birth >= target) { setStatus('出生日期应早于目标日期', 'error'); return; }
+
+        var y = target.getFullYear() - birth.getFullYear();
+        var m = target.getMonth() - birth.getMonth();
+        var d = target.getDate() - birth.getDate();
+
+        if (d < 0) {
+          m--;
+          var prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+          d += prevMonth.getDate();
+        }
+        if (m < 0) {
+          y--;
+          m += 12;
+        }
+
+        var totalMonths = y * 12 + m;
+        var totalDays = Math.round((target - birth) / (1000 * 60 * 60 * 24));
+        var totalWeeks = (totalDays / 7).toFixed(1);
+
+        outputEl.textContent = y + ' 年 ' + m + ' 个月 ' + d + ' 天'
+          + '  |  共 ' + totalMonths + ' 个月'
+          + '  |  共 ' + totalWeeks + ' 周'
+          + '  |  共 ' + totalDays + ' 天';
+        setStatus('计算完成');
+      }
+
+      calcBtn.addEventListener('click', calcAge);
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) {
+          copyToClipboard(text, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

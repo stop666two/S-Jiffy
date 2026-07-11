@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPv4 Subnet Calculator - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .subnet-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
+    .subnet-item { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); }
+    .subnet-item .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:2px; }
+    .subnet-item .value { font-size:var(--font-size-base); font-family:var(--font-mono); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>IPv4 Subnet Calculator</h1>
+    <p class="tool-desc">输入 CIDR 地址（如 192.168.1.0/24），计算网络详情。</p>
+    <div class="card">
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px;">
+          <label for="cidrInput" style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px;">CIDR 地址</label>
+          <input id="cidrInput" class="input js-focus-input" type="text" placeholder="192.168.1.0/24" value="192.168.1.0/24">
+        </div>
+        <button id="calcBtn" class="btn btn-primary">计算</button>
+      </div>
+    </div>
+    <div class="card" id="resultCard">
+      <div class="subnet-grid" id="subnetGrid"></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var cidrInput = document.getElementById('cidrInput');
+      var calcBtn = document.getElementById('calcBtn');
+      var subnetGrid = document.getElementById('subnetGrid');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function ipToNum(ip) {
+        var parts = ip.split('.');
+        return ((parseInt(parts[0], 10) || 0) << 24) +
+               ((parseInt(parts[1], 10) || 0) << 16) +
+               ((parseInt(parts[2], 10) || 0) << 8) +
+               (parseInt(parts[3], 10) || 0) >>> 0;
+      }
+
+      function numToIp(num) {
+        return ((num >>> 24) & 0xFF) + '.' +
+               ((num >>> 16) & 0xFF) + '.' +
+               ((num >>> 8) & 0xFF) + '.' +
+               (num & 0xFF);
+      }
+
+      function calculate() {
+        var input = cidrInput.value.trim();
+        var parts = input.split('/');
+        if (parts.length !== 2) {
+          outputEl.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
+          setStatus('', 'error');
+          return;
+        }
+        var ipStr = parts[0];
+        var prefix = parseInt(parts[1], 10);
+        if (isNaN(prefix) || prefix < 0 || prefix > 32) {
+          outputEl.textContent = '子网掩码位数必须在 0 — 32 之间';
+          setStatus('', 'error');
+          return;
+        }
+
+        var ipNum = ipToNum(ipStr);
+        if (isNaN(ipNum) || ipNum === 0) {
+          outputEl.textContent = '无效的 IP 地址';
+          setStatus('', 'error');
+          return;
+        }
+
+        var mask = ~0 << (32 - prefix) >>> 0;
+        var network = ipNum & mask;
+        var broadcast = network | ~mask >>> 0;
+        var wildcard = ~mask >>> 0;
+        var firstHost = prefix < 32 ? network + 1 : network;
+        var lastHost = prefix < 31 ? broadcast - 1 : broadcast;
+        var hosts = prefix > 30 ? 0 : (prefix === 31 ? 2 : Math.pow(2, 32 - prefix) - 2);
+
+        function fillItem(label, value) {
+          var div = document.createElement('div');
+          div.className = 'subnet-item';
+          div.innerHTML = '<div class="label">' + label + '</div><div class="value">' + value + '</div>';
+          return div;
+        }
+
+        subnetGrid.innerHTML = '';
+        subnetGrid.appendChild(fillItem('IP 地址', ipStr));
+        subnetGrid.appendChild(fillItem('子网掩码', numToIp(mask)));
+        subnetGrid.appendChild(fillItem('网络地址', numToIp(network)));
+        subnetGrid.appendChild(fillItem('广播地址', numToIp(broadcast)));
+        subnetGrid.appendChild(fillItem('通配符掩码', numToIp(wildcard)));
+        subnetGrid.appendChild(fillItem('前缀长度', '/' + prefix));
+        subnetGrid.appendChild(fillItem('可用主机数', hosts.toLocaleString()));
+        subnetGrid.appendChild(fillItem('主机范围', (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
+
+        outputEl.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
+        setStatus('');
+      }
+
+      calcBtn.addEventListener('click', calculate);
+      cidrInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') calculate(); });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      calculate();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时区转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .tz-grid { display:grid; grid-template-columns:1fr auto 1fr; gap:var(--space-2); align-items:center; margin-bottom:var(--space-3); }
+    .tz-result { margin-top:var(--space-2); }
+    .tz-result table { width:100%; border-collapse:collapse; font-size:var(--font-size-sm); }
+    .tz-result td { padding:8px 12px; border-bottom:1px solid var(--color-border); }
+    .tz-result td:first-child { color:var(--color-text-secondary); width:40%; }
+    .tz-result td:last-child { font-family:var(--font-mono); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>时区转换</h1>
+    <p class="tool-desc">全球时区时间转换。</p>
+
+    <div class="card">
+      <div class="tz-grid">
+        <div>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">源时区</label>
+          <select id="sourceTz" class="input" style="width:100%;">
+            <option value="Asia/Shanghai">亚洲/上海 (UTC+8)</option>
+            <option value="Asia/Tokyo">亚洲/东京 (UTC+9)</option>
+            <option value="Asia/Singapore">亚洲/新加坡 (UTC+8)</option>
+            <option value="Asia/Hong_Kong">亚洲/香港 (UTC+8)</option>
+            <option value="Asia/Seoul">亚洲/首尔 (UTC+9)</option>
+            <option value="Asia/Dubai">亚洲/迪拜 (UTC+4)</option>
+            <option value="Asia/Kolkata">亚洲/加尔各答 (UTC+5:30)</option>
+            <option value="Asia/Bangkok">亚洲/曼谷 (UTC+7)</option>
+            <option value="Europe/London">欧洲/伦敦 (UTC+0)</option>
+            <option value="Europe/Paris">欧洲/巴黎 (UTC+1)</option>
+            <option value="Europe/Berlin">欧洲/柏林 (UTC+1)</option>
+            <option value="Europe/Moscow">欧洲/莫斯科 (UTC+3)</option>
+            <option value="America/New_York">美洲/纽约 (UTC-5)</option>
+            <option value="America/Chicago">美洲/芝加哥 (UTC-6)</option>
+            <option value="America/Denver">美洲/丹佛 (UTC-7)</option>
+            <option value="America/Los_Angeles">美洲/洛杉矶 (UTC-8)</option>
+            <option value="America/Sao_Paulo">美洲/圣保罗 (UTC-3)</option>
+            <option value="Pacific/Auckland">太平洋/奥克兰 (UTC+12)</option>
+            <option value="Australia/Sydney">澳洲/悉尼 (UTC+10)</option>
+            <option value="Africa/Cairo">非洲/开罗 (UTC+2)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+        <span style="font-size:24px;text-align:center;color:var(--color-text-secondary);">→</span>
+        <div>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">目标时区</label>
+          <select id="targetTz" class="input" style="width:100%;">
+            <option value="America/New_York">美洲/纽约 (UTC-5)</option>
+            <option value="Asia/Shanghai">亚洲/上海 (UTC+8)</option>
+            <option value="Asia/Tokyo">亚洲/东京 (UTC+9)</option>
+            <option value="Asia/Singapore">亚洲/新加坡 (UTC+8)</option>
+            <option value="Asia/Hong_Kong">亚洲/香港 (UTC+8)</option>
+            <option value="Asia/Seoul">亚洲/首尔 (UTC+9)</option>
+            <option value="Asia/Dubai">亚洲/迪拜 (UTC+4)</option>
+            <option value="Asia/Kolkata">亚洲/加尔各答 (UTC+5:30)</option>
+            <option value="Asia/Bangkok">亚洲/曼谷 (UTC+7)</option>
+            <option value="Europe/London">欧洲/伦敦 (UTC+0)</option>
+            <option value="Europe/Paris">欧洲/巴黎 (UTC+1)</option>
+            <option value="Europe/Berlin">欧洲/柏林 (UTC+1)</option>
+            <option value="Europe/Moscow">欧洲/莫斯科 (UTC+3)</option>
+            <option value="America/Chicago">美洲/芝加哥 (UTC-6)</option>
+            <option value="America/Denver">美洲/丹佛 (UTC-7)</option>
+            <option value="America/Los_Angeles">美洲/洛杉矶 (UTC-8)</option>
+            <option value="America/Sao_Paulo">美洲/圣保罗 (UTC-3)</option>
+            <option value="Pacific/Auckland">太平洋/奥克兰 (UTC+12)</option>
+            <option value="Australia/Sydney">澳洲/悉尼 (UTC+10)</option>
+            <option value="Africa/Cairo">非洲/开罗 (UTC+2)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">时间</label>
+        <input id="sourceTime" class="input js-focus-input" type="datetime-local" style="width:auto;">
+        <button id="convertBtn" class="btn btn-primary">转换</button>
+        <button id="nowBtn" class="btn btn-secondary">当前时间</button>
+      </div>
+      <div id="resultBox" class="tz-result"></div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var src = document.getElementById('sourceTz'), tgt = document.getElementById('targetTz');
+      var timeInput = document.getElementById('sourceTime');
+      var o = document.getElementById('resultBox');
+
+      function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+      function toLocalISO(d) {
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      }
+
+      function convert() {
+        var srcTz = src.value, tgtTz = tgt.value;
+        var timeVal = timeInput.value;
+        var d;
+        if (timeVal) {
+          d = new Date(timeVal);
+          if (isNaN(d.getTime())) { setStatus('无效时间', 'error'); return; }
+          var parts = timeVal.split('T');
+          var dateParts = parts[0].split('-');
+          var timeParts = parts[1].split(':');
+          d = new Date(Date.UTC(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]), parseInt(timeParts[0]), parseInt(timeParts[1])));
+          var offsetSrc = getOffset(srcTz, d);
+          var offsetUtc = d.getTimezoneOffset();
+          d = new Date(d.getTime() + (offsetSrc + offsetUtc) * 60000);
+        } else {
+          d = new Date();
+        }
+
+        var srcTime = d.toLocaleString('zh-CN', { timeZone: srcTz, hour12: false });
+        var tgtTime = d.toLocaleString('zh-CN', { timeZone: tgtTz, hour12: false });
+        var utcTime = d.toLocaleString('zh-CN', { timeZone: 'UTC', hour12: false });
+        var srcOff = getOffsetStr(srcTz, d);
+        var tgtOff = getOffsetStr(tgtTz, d);
+
+        var html = '<table>';
+        html += '<tr><td>源时区 (' + srcTz + ')</td><td>' + srcTime + ' (UTC' + srcOff + ')</td></tr>';
+        html += '<tr><td>目标时区 (' + tgtTz + ')</td><td>' + tgtTime + ' (UTC' + tgtOff + ')</td></tr>';
+        html += '<tr><td>UTC</td><td>' + utcTime + '</td></tr>';
+        html += '<tr><td>时差</td><td>UTC' + srcOff + ' → UTC' + tgtOff + '</td></tr>';
+        html += '</table>';
+        o.innerHTML = html;
+        setStatus('');
+      }
+
+      function getOffset(tz, d) {
+        var parts = d.toLocaleString('zh-CN', { timeZone: tz, timeZoneName: 'short' }).split(' ');
+        var name = parts[parts.length - 1];
+        var offset = 0;
+        if (name.indexOf('UTC') !== -1 || name.indexOf('GMT') !== -1) {
+          var m = name.match(/[+-]\d+/);
+          if (m) offset = parseInt(m[0]);
+        }
+        return offset;
+      }
+
+      function getOffsetStr(tz, d) {
+        var parts = d.toLocaleString('zh-CN', { timeZone: tz, timeZoneName: 'short' }).split(' ');
+        return parts[parts.length - 1].replace('GMT', 'UTC');
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', convert);
+      document.getElementById('nowBtn').addEventListener('click', function () {
+        timeInput.value = '';
+        convert();
+      });
+    })();
+  </script>
+</body>
+</html>

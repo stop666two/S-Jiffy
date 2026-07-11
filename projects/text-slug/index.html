@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Slug 生成 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .slug-options { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-top:var(--space-2); }
+    .slug-options label { font-size:var(--font-size-xs); color:var(--color-text-secondary); display:flex; align-items:center; gap:6px; }
+    .slug-options input[type="number"] { width:70px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>URL Slug 生成</h1>
+    <p class="tool-desc">将文本转换为 URL 友好的 slug。</p>
+    <div class="card">
+      <input id="inputText" class="input js-focus-input" type="text" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
+      <div class="slug-options">
+        <label><input id="optLower" type="checkbox" checked> 转小写</label>
+        <label>分隔符 <input id="optSep" class="input" value="-" style="width:40px;height:32px;padding:0 6px;"></label>
+        <label><input id="optRemoveSpecial" type="checkbox" checked> 移除特殊字符</label>
+        <label>最大长度 <input id="optMaxLen" type="number" class="input" value="0" min="0" max="200" style="width:70px;height:32px;padding:0 6px;"> (0=不限)</label>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
+      <button id="slugBtn" class="btn btn-primary">生成 Slug</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var el = document.getElementById('inputText'), o = document.getElementById('outputText');
+      var optLower = document.getElementById('optLower'), optSep = document.getElementById('optSep'), optRemoveSpecial = document.getElementById('optRemoveSpecial'), optMaxLen = document.getElementById('optMaxLen');
+
+      function generate(text) {
+        var s = text.trim();
+        if (optLower.checked) s = s.toLowerCase();
+        if (optRemoveSpecial.checked) s = s.replace(/[^\w\s-]/g, '');
+        s = s.replace(/[\s_]+/g, optSep.value || '-');
+        s = s.replace(new RegExp(optSep.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '+', 'g'), optSep.value || '-');
+        s = s.replace(new RegExp('^' + (optSep.value ? optSep.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '\\-') + '+'), '');
+        s = s.replace(new RegExp((optSep.value ? optSep.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '\\-') + '+$'), '');
+        var max = parseInt(optMaxLen.value, 10);
+        if (max > 0 && s.length > max) s = s.substring(0, max).replace(new RegExp((optSep.value ? optSep.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '\\-') + '+$'), '');
+        return s;
+      }
+
+      document.getElementById('slugBtn').addEventListener('click', function () {
+        var text = el.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        o.textContent = generate(text);
+        setStatus('');
+      });
+      el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { o.textContent = generate(el.value); setStatus(''); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { el.value = ''; o.textContent = ''; setStatus(''); el.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

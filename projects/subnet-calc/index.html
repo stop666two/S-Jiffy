@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>子网计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .bit-row { display:flex; gap:2px; flex-wrap:wrap; margin:4px 0; font-family:var(--font-mono); font-size:12px; }
+    .bit-row span { display:inline-block; width:28px; text-align:center; padding:2px 0; border-radius:2px; }
+    .bit-1 { background:#111; color:#fff; }
+    .bit-0 { background:#eee; color:#999; }
+    .net-bits { background:#346538; color:#fff; border-radius:2px; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-top:var(--space-2); }
+    .info-item { padding:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .info-item label { font-size:var(--font-size-xs); color:var(--color-text-disabled); display:block; }
+    .info-item span { font-size:var(--font-size-sm); font-family:var(--font-mono); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>子网计算器</h1>
+    <p class="tool-desc">CIDR 格式 IPv4 子网计算，含二进制可视化。</p>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <input id="cidrInput" class="input js-focus-input" placeholder="192.168.1.0/24" style="width:220px;">
+      <button id="calcBtn" class="btn btn-primary">计算</button>
+    </div>
+    <div id="resultBox" class="output-box" style="min-height:200px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var cidrEl = document.getElementById('cidrInput');
+      var outputEl = document.getElementById('outputText');
+      var calcBtn = document.getElementById('calcBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function toBinStr(octets) {
+        var parts = [];
+        for (var i = 0; i < 4; i++) {
+          parts.push(octets[i].toString(2).padStart(8, '0'));
+        }
+        return parts.join('.');
+      }
+
+      function toOctetStr(octets) {
+        return octets.join('.');
+      }
+
+      function compute(ip, prefix) {
+        var mask = 0xFFFFFFFF << (32 - prefix) >>> 0;
+        var ipNum = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
+        var networkNum = ipNum & mask;
+        var broadcastNum = networkNum | (~mask >>> 0);
+        var hostCount = Math.pow(2, 32 - prefix) - 2;
+        if (hostCount < 0) hostCount = 0;
+
+        function numToOctets(n) {
+          return [(n >>> 24) & 0xFF, (n >>> 16) & 0xFF, (n >>> 8) & 0xFF, n & 0xFF];
+        }
+
+        var network = numToOctets(networkNum);
+        var broadcast = numToOctets(broadcastNum);
+        var firstHost = network.slice();
+        if (hostCount > 0) { firstHost[3]++; }
+        var lastHost = broadcast.slice();
+        if (hostCount > 0) { lastHost[3]--; }
+
+        var maskOctets = numToOctets(mask);
+        var wildcard = numToOctets(~mask >>> 0);
+
+        return {
+          ip: ip, prefix: prefix,
+          mask: maskOctets, wildcard: wildcard,
+          network: network, broadcast: broadcast,
+          firstHost: firstHost, lastHost: lastHost,
+          hostCount: hostCount, ipNum: ipNum
+        };
+      }
+
+      function renderBits(label, octets, prefix, type) {
+        var bin = toBinStr(octets);
+        var bits = bin.replace(/\./g, '').split('');
+        var html = '<div style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:6px;">' + label + '</div><div class="bit-row">';
+        for (var i = 0; i < 32; i++) {
+          var cls = bits[i] === '1' ? 'bit-1' : 'bit-0';
+          if (type === 'ip') {
+            cls += i < prefix ? ' net-bits' : '';
+          }
+          html += '<span class="' + cls + '">' + bits[i] + '</span>';
+          if (i === 7 || i === 15 || i === 23) html += '<span style="width:4px;"></span>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function update() {
+        var raw = cidrEl.value.trim();
+        if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
+        var parts = raw.split('/');
+        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus('格式错误', 'error'); return; }
+        var octets = parts[0].split('.').map(Number);
+        if (octets.length !== 4 || octets.some(function (n) { return isNaN(n) || n < 0 || n > 255; })) {
+          outputEl.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus('IP 无效', 'error'); return;
+        }
+        var prefix = parseInt(parts[1], 10);
+        if (isNaN(prefix) || prefix < 0 || prefix > 32) {
+          outputEl.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus('前缀无效', 'error'); return;
+        }
+        var r = compute(octets, prefix);
+
+        var html = '<div class="info-grid">';
+        html += '<div class="info-item"><label>网络地址</label><span>' + toOctetStr(r.network) + '</span></div>';
+        html += '<div class="info-item"><label>广播地址</label><span>' + toOctetStr(r.broadcast) + '</span></div>';
+        html += '<div class="info-item"><label>子网掩码</label><span>' + toOctetStr(r.mask) + '</span></div>';
+        html += '<div class="info-item"><label>通配符掩码</label><span>' + toOctetStr(r.wildcard) + '</span></div>';
+        html += '<div class="info-item"><label>首可用 IP</label><span>' + toOctetStr(r.firstHost) + '</span></div>';
+        html += '<div class="info-item"><label>末可用 IP</label><span>' + toOctetStr(r.lastHost) + '</span></div>';
+        html += '<div class="info-item"><label>可用主机数</label><span>' + r.hostCount + '</span></div>';
+        html += '<div class="info-item"><label>CIDR</label><span>' + parts[0] + '/' + r.prefix + '</span></div>';
+        html += '</div>';
+
+        html += renderBits('IP 地址二进制', r.ip, r.prefix, 'ip');
+        html += renderBits('子网掩码二进制', r.mask, 32, 'mask');
+
+        outputEl.innerHTML = html;
+        setStatus('');
+      }
+
+      calcBtn.addEventListener('click', update);
+      cidrEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

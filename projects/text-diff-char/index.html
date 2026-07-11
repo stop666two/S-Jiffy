@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符级文本对比 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .diff-container { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
+    .diff-panel textarea { width:100%; min-height:160px; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .diff-panel textarea:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+    .diff-panel label { display:block; font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:var(--space-1); }
+    .char-diff-output { font-family:var(--font-mono); font-size:14px; line-height:2; word-break:break-all; }
+    .char-add { background:#e6ffec; color:#1a7f37; border-radius:2px; }
+    .char-del { background:#ffebe9; color:#cf222e; border-radius:2px; text-decoration:line-through; }
+    .char-eq { color:var(--color-text-primary); }
+    .char-summary { font-size:var(--font-size-sm); margin-bottom:var(--space-2); }
+    @media (max-width:700px) { .diff-container { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>字符级文本对比</h1>
+    <p class="tool-desc">逐字符对比两段文本的差异，高亮显示新增、删除和相同的字符。</p>
+    <div class="diff-container">
+      <div class="diff-panel">
+        <label>原始文本 (A)</label>
+        <textarea id="textA" class="js-focus-input" placeholder="第一段文本..."></textarea>
+      </div>
+      <div class="diff-panel">
+        <label>新文本 (B)</label>
+        <textarea id="textB" placeholder="第二段文本..."></textarea>
+      </div>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin:var(--space-2) 0;">
+      <button id="diffBtn" class="btn btn-primary">对比</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <div id="outputText" class="char-diff-output" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var textA = document.getElementById('textA');
+      var textB = document.getElementById('textB');
+      var outputEl = document.getElementById('outputText');
+      var diffBtn = document.getElementById('diffBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function charDiff(a, b) {
+        var m = a.length, n = b.length;
+        var dp = [];
+        for (var i = 0; i <= m; i++) { dp[i] = []; for (var j = 0; j <= n; j++) dp[i][j] = 0; }
+        for (var i2 = 1; i2 <= m; i2++) {
+          for (var j2 = 1; j2 <= n; j2++) {
+            if (a[i2 - 1] === b[j2 - 1]) dp[i2][j2] = dp[i2 - 1][j2 - 1] + 1;
+            else dp[i2][j2] = Math.max(dp[i2 - 1][j2], dp[i2][j2 - 1]);
+          }
+        }
+        var ops = [];
+        function backtrack(i, j) {
+          if (i === 0 && j === 0) return;
+          if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
+            backtrack(i - 1, j - 1);
+            ops.push({ type: 'eq', ch: a[i - 1] });
+          } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+            backtrack(i, j - 1);
+            ops.push({ type: 'add', ch: b[j - 1] });
+          } else if (i > 0) {
+            backtrack(i - 1, j);
+            ops.push({ type: 'del', ch: a[i - 1] });
+          }
+        }
+        backtrack(m, n);
+
+        var html = '';
+        var added = 0, deleted = 0;
+        for (var k = 0; k < ops.length; k++) {
+          var op = ops[k];
+          var cls = op.type === 'add' ? 'char-add' : op.type === 'del' ? 'char-del' : 'char-eq';
+          var ch = op.ch === ' ' ? ' ' : op.ch === '\n' ? '\u00B6' : op.ch;
+          if (op.type === 'add') added++;
+          if (op.type === 'del') deleted++;
+          html += '<span class="' + cls + '">' + escapeHtml(ch) + '</span>';
+        }
+        return { html: html, added: added, deleted: deleted, total: ops.length };
+      }
+
+      diffBtn.addEventListener('click', function () {
+        var a = textA.value;
+        var b = textB.value;
+        if (!a && !b) { setStatus('请输入至少一段文本', 'error'); return; }
+        var result = charDiff(a, b);
+        var summary = '总计 ' + result.total + ' 字符';
+        if (result.added) summary += '，新增 <span style="color:#1a7f37;">+' + result.added + '</span>';
+        if (result.deleted) summary += '，删除 <span style="color:#cf222e;">-' + result.deleted + '</span>';
+        outputEl.innerHTML = '<div class="char-summary">' + summary + '</div>' + result.html;
+        setStatus(result.added + ' 新增  ' + result.deleted + ' 删除');
+      });
+
+      clearBtn.addEventListener('click', function () { textA.value = ''; textB.value = ''; outputEl.innerHTML = ''; setStatus(''); textA.focus(); });
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+      });
+    })();
+  </script>
+</body>
+</html>

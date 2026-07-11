@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cron 表达式验证 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cron-fields { display:grid; grid-template-columns:repeat(5,1fr); gap:var(--space-1); margin-bottom:var(--space-2); }
+    .cron-field { text-align:center; }
+    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform:uppercase; }
+    .cron-field input { width:100%; text-align:center; font-family:var(--font-mono); font-size:14px; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px 4px; outline:none; }
+    .next-times { font-size:var(--font-size-xs); margin-top:var(--space-2); }
+    .next-times div { padding:4px 0; border-bottom:1px solid var(--color-border); }
+    .next-times div:last-child { border-bottom:none; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Cron 表达式验证</h1>
+    <p class="tool-desc">验证和解释 Cron 定时表达式。</p>
+
+    <div class="card">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:var(--space-2);">
+        <input id="cronInput" class="input js-focus-input" placeholder="*/5 * * * *" style="width:200px;font-family:var(--font-mono);">
+        <button id="parseBtn" class="btn btn-primary">验证</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div class="cron-fields">
+        <div class="cron-field"><label>分钟<br>0-59</label><input id="fMin" readonly></div>
+        <div class="cron-field"><label>小时<br>0-23</label><input id="fHour" readonly></div>
+        <div class="cron-field"><label>日<br>1-31</label><input id="fDay" readonly></div>
+        <div class="cron-field"><label>月<br>1-12</label><input id="fMonth" readonly></div>
+        <div class="cron-field"><label>星期<br>0-7(日=0/7)</label><input id="fWeek" readonly></div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var cronInput = document.getElementById('cronInput');
+      var outputEl = document.getElementById('outputText');
+      var parseBtn = document.getElementById('parseBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+      var fields = { min: document.getElementById('fMin'), hour: document.getElementById('fHour'), day: document.getElementById('fDay'), month: document.getElementById('fMonth'), week: document.getElementById('fWeek') };
+
+      var weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
+      var monthNames = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+      function describeField(val, type) {
+        if (val === '*') return '每' + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '周');
+        if (val.indexOf('/') !== -1) {
+          var parts = val.split('/');
+          return '每 ' + parts[1] + ' ' + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '天') + (parts[0] !== '*' ? '，从 ' + parts[0] + ' 开始' : '');
+        }
+        if (val.indexOf('-') !== -1) {
+          var r = val.split('-');
+          if (type === 'week') return r[0] + ' (' + weekdayNames[parseInt(r[0])] + ') 到 ' + r[1] + ' (' + weekdayNames[parseInt(r[1])] + ')';
+          if (type === 'month') return monthNames[parseInt(r[0])] + ' 到 ' + monthNames[parseInt(r[1])];
+          return r[0] + ' 到 ' + r[1];
+        }
+        if (val.indexOf(',') !== -1) {
+          var items = val.split(',');
+          if (type === 'week') return items.map(function (v) { return weekdayNames[parseInt(v)]; }).join('、');
+          if (type === 'month') return items.map(function (v) { return monthNames[parseInt(v)]; }).join('、');
+          return items.join('、');
+        }
+        if (type === 'week') return weekdayNames[parseInt(val)] || val;
+        if (type === 'month') return monthNames[parseInt(val)] || val;
+        return val;
+      }
+
+      function parseCron(expr) {
+        var parts = expr.trim().split(/\s+/);
+        if (parts.length !== 5) return { error: 'cron 表达式需包含 5 个字段' };
+        return { min: parts[0], hour: parts[1], day: parts[2], month: parts[3], week: parts[4] };
+      }
+
+      function getNextTimes(parsed, count) {
+        var times = [];
+        var now = new Date();
+        var cur = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
+        var maxAttempts = 525600, attempts = 0;
+
+        function matches(val, num) {
+          if (val === '*') return true;
+          if (val.indexOf('/') !== -1) {
+            var parts = val.split('/');
+            var step = parseInt(parts[1]), start = parts[0] === '*' ? 0 : parseInt(parts[0]);
+            return num >= start && (num - start) % step === 0;
+          }
+          if (val.indexOf('-') !== -1) { var r = val.split('-'); return num >= parseInt(r[0]) && num <= parseInt(r[1]); }
+          if (val.indexOf(',') !== -1) { return val.split(',').map(Number).indexOf(num) !== -1; }
+          return parseInt(val) === num;
+        }
+
+        function dayOfWeekMatches(val, d) {
+          var dow = d.getDay();
+          if (val.indexOf('/') !== -1) { var parts = val.split('/'); var step = parseInt(parts[1]), start = parts[0] === '*' ? 0 : parseInt(parts[0]); return dow >= start && (dow - start) % step === 0; }
+          if (val.indexOf('-') !== -1) { var r = val.split('-'); return dow >= parseInt(r[0]) && dow <= parseInt(r[1]); }
+          if (val.indexOf(',') !== -1) { return val.split(',').map(Number).indexOf(dow) !== -1; }
+          return parseInt(val) === dow;
+        }
+
+        while (times.length < count && attempts < maxAttempts) {
+          if (matches(parsed.min, cur.getMinutes()) && matches(parsed.hour, cur.getHours()) &&
+              matches(parsed.day, cur.getDate()) && matches(parsed.month, cur.getMonth() + 1) &&
+              dayOfWeekMatches(parsed.week, cur)) {
+            times.push(new Date(cur));
+          }
+          cur.setMinutes(cur.getMinutes() + 1);
+          attempts++;
+        }
+        return times;
+      }
+
+      function update() {
+        var raw = cronInput.value.trim();
+        if (!raw) { outputEl.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
+        var parsed = parseCron(raw);
+        if (parsed.error) { outputEl.textContent = parsed.error; setStatus('格式错误', 'error'); return; }
+        fields.min.value = parsed.min; fields.hour.value = parsed.hour; fields.day.value = parsed.day; fields.month.value = parsed.month; fields.week.value = parsed.week;
+
+        var desc = '';
+        desc += '分钟: ' + describeField(parsed.min, 'min') + '\n';
+        desc += '小时: ' + describeField(parsed.hour, 'hour') + '\n';
+        desc += '日期: ' + describeField(parsed.day, 'day') + '\n';
+        desc += '月份: ' + describeField(parsed.month, 'month') + '\n';
+        desc += '星期: ' + describeField(parsed.week, 'week') + '\n';
+
+        var valid = true;
+        try { new Function('return ' + JSON.stringify(parsed)); } catch(e) { valid = false; }
+        desc += '\n表达式: ' + (valid ? '✓ 有效' : '✗ 无效') + '\n';
+
+        var nexts = getNextTimes(parsed, 5);
+        if (nexts.length) {
+          desc += '\n未来 5 次执行时间:\n';
+          for (var i = 0; i < nexts.length; i++) {
+            var d = nexts[i];
+            desc += '  ' + (i + 1) + '. ' + d.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\n';
+          }
+        } else {
+          desc += '\n未找到未来执行时间\n';
+        }
+        outputEl.textContent = desc;
+        setStatus('');
+      }
+
+      parseBtn.addEventListener('click', update);
+      clearBtn.addEventListener('click', function () { cronInput.value = ''; for (var k in fields) fields[k].value = ''; outputEl.textContent = ''; setStatus(''); cronInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      cronInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
+    })();
+  </script>
+</body>
+</html>

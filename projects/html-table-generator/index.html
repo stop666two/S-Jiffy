@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML 表格生成 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .table-options { display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:var(--space-2); }
+    .table-preview { overflow-x:auto; margin-top:var(--space-2); }
+    .table-preview table { border-collapse:collapse; font-size:var(--font-size-sm); }
+    .table-preview th, .table-preview td { padding:6px 12px; border:1px solid #ccc; text-align:left; }
+    .table-preview th { background:#f5f5f5; font-weight:600; }
+    .output-box textarea { width:100%; min-height:120px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>HTML 表格生成</h1>
+    <p class="tool-desc">从 CSV 数据生成 HTML 表格代码。</p>
+
+    <div class="card">
+      <textarea id="csvInput" class="input textarea" placeholder="粘贴 CSV/TSV 数据...&#10;&#10;name,age,city&#10;Alice,30,New York&#10;Bob,25,London&#10;Charlie,35,Beijing" style="min-height:160px;"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="table-options">
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;"><input id="optHeader" type="checkbox" checked> 首行为表头</label>
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;">分隔符
+          <select id="optSep" class="input" style="width:auto;min-width:60px;height:32px;padding:0 6px;">
+            <option value=",">逗号 (,)</option>
+            <option value="\t">制表符 (\t)</option>
+            <option value=";">分号 (;)</option>
+            <option value="|">竖线 (|)</option>
+          </select>
+        </label>
+        <button id="generateBtn" class="btn btn-primary">生成表格</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div id="previewArea" class="table-preview"></div>
+    </div>
+
+    <div class="output-box">
+      <textarea id="htmlOutput" readonly placeholder="HTML 代码将显示在这里..."></textarea>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var csvInput = document.getElementById('csvInput');
+      var optHeader = document.getElementById('optHeader');
+      var optSep = document.getElementById('optSep');
+      var htmlOutput = document.getElementById('htmlOutput');
+      var previewArea = document.getElementById('previewArea');
+      var generateBtn = document.getElementById('generateBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function generate() {
+        var raw = csvInput.value;
+        if (!raw.trim()) { setStatus('请输入 CSV 数据', 'error'); return; }
+
+        var sep = optSep.value;
+        if (sep === '\\t') sep = '\t';
+        var lines = raw.split('\n').filter(function (l) { return l.trim(); });
+        if (!lines.length) { setStatus('数据为空', 'error'); return; }
+
+        var rows = lines.map(function (l) {
+          var cells = [], current = '', inQuote = false;
+          for (var i = 0; i < l.length; i++) {
+            var ch = l[i];
+            if (ch === '"') { inQuote = !inQuote; }
+            else if (ch === sep && !inQuote) { cells.push(current); current = ''; }
+            else { current += ch; }
+          }
+          cells.push(current);
+          return cells;
+        });
+
+        var hasHeader = optHeader.checked;
+        var headerRow = hasHeader ? rows[0] : null;
+        var dataRows = hasHeader ? rows.slice(1) : rows;
+        var colCount = headerRow ? headerRow.length : (dataRows.length ? dataRows[0].length : 0);
+
+        if (!colCount) { setStatus('无法解析列数', 'error'); return; }
+
+        var html = '<table>\n';
+        if (headerRow) {
+          html += '  <thead>\n    <tr>\n';
+          for (var i = 0; i < headerRow.length; i++) {
+            html += '      <th>' + escapeHtml(headerRow[i]) + '</th>\n';
+          }
+          html += '    </tr>\n  </thead>\n';
+        }
+        html += '  <tbody>\n';
+        for (var r = 0; r < dataRows.length; r++) {
+          html += '    <tr>\n';
+          for (var c = 0; c < colCount; c++) {
+            var val = dataRows[r][c] || '';
+            html += '      <td>' + escapeHtml(val) + '</td>\n';
+          }
+          html += '    </tr>\n';
+        }
+        html += '  </tbody>\n</table>';
+
+        htmlOutput.value = html;
+
+        var previewHtml = '<table>\n';
+        if (headerRow) {
+          previewHtml += '  <thead>\n    <tr>\n';
+          for (var i = 0; i < headerRow.length; i++) {
+            previewHtml += '      <th>' + escapeHtml(headerRow[i]) + '</th>\n';
+          }
+          previewHtml += '    </tr>\n  </thead>\n';
+        }
+        previewHtml += '  <tbody>\n';
+        for (var r = 0; r < dataRows.length; r++) {
+          previewHtml += '    <tr>\n';
+          for (var c = 0; c < colCount; c++) {
+            var val = dataRows[r][c] || '';
+            previewHtml += '      <td>' + escapeHtml(val) + '</td>\n';
+          }
+          previewHtml += '    </tr>\n';
+        }
+        previewHtml += '  </tbody>\n</table>';
+        previewArea.innerHTML = previewHtml;
+        setStatus('生成 ' + dataRows.length + ' 行 ' + colCount + ' 列表格');
+      }
+
+      generateBtn.addEventListener('click', generate);
+      clearBtn.addEventListener('click', function () { csvInput.value = ''; htmlOutput.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (htmlOutput.value) { copyToClipboard(htmlOutput.value, copyBtn); setStatus('已复制'); } });
+      csvInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generate(); });
+    })();
+  </script>
+</body>
+</html>

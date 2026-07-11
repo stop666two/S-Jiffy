@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML to JSON - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>YAML → JSON</h1>
+    <p class="tool-desc">将 YAML 格式转换为 JSON。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="name: test
+version: 1
+list:
+  - 1
+  - 2
+  - 3
+nested:
+  key: value" style="min-height:200px;"></textarea>
+    </div>
+    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button id="convertBtn" class="btn btn-primary">转换到 JSON</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+
+      function parseYaml(src) {
+        var lines = src.split('\n');
+        var root = {};
+        var stack = [];
+
+        function getCurrent() {
+          for (var i = stack.length - 1; i >= 0; i--) {
+            if (stack[i].obj) return stack[i].obj;
+          }
+          return root;
+        }
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var trimmed = line.trim();
+          if (trimmed === '' || trimmed.charAt(0) === '#') continue;
+
+          var indent = 0;
+          for (var j = 0; j < line.length; j++) {
+            if (line.charAt(j) === ' ') indent++;
+            else break;
+          }
+
+          while (stack.length > 0 && indent <= stack[stack.length - 1].indent) {
+            stack.pop();
+          }
+
+          // Array item
+          if (trimmed.indexOf('- ') === 0 || trimmed === '-') {
+            var content = trimmed.charAt(0) === '-' ? trimmed.substring(1).trim() : '';
+            var parent = getCurrent();
+            var arrKey = null;
+            // find the last key that holds an array
+            for (var s = stack.length - 1; s >= 0; s--) {
+              if (stack[s].arrayKey) { arrKey = stack[s].arrayKey; break; }
+            }
+            if (!arrKey) {
+              // create anonymous array in parent
+              if (!parent.__arr) parent.__arr = [];
+              var arr = parent.__arr;
+            } else {
+              var arr = parent[arrKey];
+              if (!arr) { arr = []; parent[arrKey] = arr; }
+            }
+
+            if (content === '') {
+              var newObj = {};
+              arr.push(newObj);
+              stack.push({ indent: indent, obj: newObj });
+            } else if (content.indexOf(':') > 0) {
+              var newObj = {};
+              arr.push(newObj);
+              var colonIdx = content.indexOf(':');
+              var k = content.substring(0, colonIdx).trim();
+              var v = content.substring(colonIdx + 1).trim();
+              if (v === '') {
+                newObj[k] = {};
+                stack.push({ indent: indent, obj: newObj[k] });
+              } else {
+                newObj[k] = parseYamlScalar(v);
+              }
+              stack.push({ indent: indent, obj: newObj });
+            } else {
+              arr.push(parseYamlScalar(content));
+            }
+            continue;
+          }
+
+          var colonIdx = trimmed.indexOf(':');
+          if (colonIdx === -1) continue;
+          var key = trimmed.substring(0, colonIdx).trim();
+          var rest = trimmed.substring(colonIdx + 1).trim();
+
+          var current = getCurrent();
+          if (rest === '') {
+            var newObj = {};
+            current[key] = newObj;
+            stack.push({ indent: indent, obj: newObj });
+          } else {
+            current[key] = parseYamlScalar(rest);
+          }
+        }
+
+        // Clean __arr temp keys
+        function clean(o) {
+          if (o && typeof o === 'object' && !Array.isArray(o)) {
+            if (o.__arr !== undefined) {
+              var arr = o.__arr;
+              delete o.__arr;
+              var keys = Object.keys(o);
+              if (keys.length > 0) {
+                o.__val = arr;
+              } else {
+                return arr;
+              }
+            }
+            var allKeys = Object.keys(o);
+            for (var i = 0; i < allKeys.length; i++) {
+              o[allKeys[i]] = clean(o[allKeys[i]]);
+            }
+          }
+          return o;
+        }
+
+        function parseYamlScalar(s) {
+          if (s === 'null' || s === '~') return null;
+          if (s === 'true') return true;
+          if (s === 'false') return false;
+          if (s.charAt(0) === "'" && s.charAt(s.length - 1) === "'") return s.substring(1, s.length - 1).replace(/''/g, "'");
+          if (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') return s.substring(1, s.length - 1);
+          var n = Number(s);
+          if (!isNaN(n) && s !== '') return n;
+          return s;
+        }
+
+        return clean(root);
+      }
+
+      document.getElementById('convertBtn').addEventListener('click', function () {
+        var text = inputEl.value.trim();
+        if (!text) { setStatus('请输入 YAML', 'error'); return; }
+        try {
+          var parsed = parseYaml(text);
+          outputEl.textContent = JSON.stringify(parsed, null, 2);
+          setStatus('');
+        } catch (e) {
+          outputEl.textContent = '';
+          setStatus('YAML 解析错误', 'error');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+    })();
+  </script>
+</body>
+</html>

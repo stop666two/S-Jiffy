@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体积单位转换 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .vl-grid { display:grid; gap:var(--space-3); }
+    .vl-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .vl-row .field { flex:1; min-width:120px; }
+    .vl-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>体积单位转换</h1>
+    <p class="tool-desc">L / mL / gal / qt / pt / cup 互转。</p>
+    <div class="card">
+      <div class="vl-grid">
+        <div class="vl-row">
+          <div class="field"><label for="inputL">升 (L)</label><input id="inputL" class="input" type="number" value="10"></div>
+          <div class="field"><label for="inputMl">毫升 (mL)</label><input id="inputMl" class="input" type="number" value="10000"></div>
+        </div>
+        <div class="vl-row">
+          <div class="field"><label for="inputGal">加仑 (gal)</label><input id="inputGal" class="input" type="number" value="2.64"></div>
+          <div class="field"><label for="inputQt">夸脱 (qt)</label><input id="inputQt" class="input" type="number" value="10.57"></div>
+        </div>
+        <div class="vl-row">
+          <div class="field"><label for="inputPt">品脱 (pt)</label><input id="inputPt" class="input" type="number" value="21.13"></div>
+          <div class="field"><label for="inputCup">杯 (cup)</label><input id="inputCup" class="input" type="number" value="42.27"></div>
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var inputL = document.getElementById('inputL');
+      var inputMl = document.getElementById('inputMl');
+      var inputGal = document.getElementById('inputGal');
+      var inputQt = document.getElementById('inputQt');
+      var inputPt = document.getElementById('inputPt');
+      var inputCup = document.getElementById('inputCup');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var updating = false;
+
+      function r(v) { return Math.round(v * 1e4) / 1e4; }
+
+      function fromLiters(l) {
+        if (updating) return;
+        updating = true;
+        inputL.value = l;
+        inputMl.value = r(l * 1000);
+        inputGal.value = r(l * 0.264172);
+        inputQt.value = r(l * 1.05669);
+        inputPt.value = r(l * 2.11338);
+        inputCup.value = r(l * 4.22675);
+        outputEl.textContent = l + ' L = ' + inputGal.value + ' gal = ' + inputQt.value + ' qt = ' + inputCup.value + ' cup';
+        updating = false;
+      }
+
+      inputL.addEventListener('input', function() { fromLiters(parseFloat(this.value) || 0); });
+      inputMl.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 1000); });
+      inputGal.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 0.264172); });
+      inputQt.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 1.05669); });
+      inputPt.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 2.11338); });
+      inputCup.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 4.22675); });
+
+      copyBtn.addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+      });
+
+      fromLiters(10);
+    })();
+  </script>
+</body>
+</html>

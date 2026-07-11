@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roman Numeral Converter - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .inline-group { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .inline-group>div { flex:1; min-width:200px; }
+    .inline-group label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Roman Numeral Converter</h1>
+    <p class="tool-desc">阿拉伯数字与罗马数字双向转换（1 — 3999）。</p>
+    <div class="card">
+      <div class="inline-group">
+        <div>
+          <label for="arabicInput">阿拉伯数字</label>
+          <input id="arabicInput" class="input" type="number" min="1" max="3999" value="2024">
+        </div>
+        <div>
+          <label for="romanInput">罗马数字</label>
+          <input id="romanInput" class="input" type="text" value="MMXXIV">
+        </div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function() {
+      var arabicInput = document.getElementById('arabicInput');
+      var romanInput = document.getElementById('romanInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function toRoman(num) {
+        if (num < 1 || num > 3999) return '';
+        var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+        var chars = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+        var result = '';
+        for (var i = 0; i < vals.length; i++) {
+          while (num >= vals[i]) {
+            result += chars[i];
+            num -= vals[i];
+          }
+        }
+        return result;
+      }
+
+      function fromRoman(str) {
+        var map = {'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000};
+        var total = 0;
+        var prev = 0;
+        for (var i = str.length - 1; i >= 0; i--) {
+          var cur = map[str[i]];
+          if (!cur) return -1;
+          if (cur < prev) total -= cur;
+          else total += cur;
+          prev = cur;
+        }
+        return total;
+      }
+
+      function syncArabic() {
+        var val = parseInt(arabicInput.value, 10);
+        if (isNaN(val) || val < 1 || val > 3999) {
+          outputEl.textContent = '请输入 1 — 3999 之间的整数';
+          return;
+        }
+        var roman = toRoman(val);
+        romanInput.value = roman;
+        outputEl.textContent = val + ' = ' + roman;
+        setStatus('');
+      }
+
+      function syncRoman() {
+        var str = romanInput.value.toUpperCase().trim();
+        if (!str) {
+          outputEl.textContent = '';
+          return;
+        }
+        var num = fromRoman(str);
+        if (num < 1 || num > 3999) {
+          outputEl.textContent = '无效的罗马数字';
+          setStatus('请输入有效的罗马数字（I, V, X, L, C, D, M）', 'error');
+          return;
+        }
+        arabicInput.value = num;
+        outputEl.textContent = str + ' = ' + num;
+        setStatus('');
+      }
+
+      arabicInput.addEventListener('input', syncArabic);
+      romanInput.addEventListener('input', syncRoman);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (text && text.indexOf('=') > 0) {
+          var parts = text.split(' = ');
+          copyToClipboard(parts[1] || parts[0], copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      syncArabic();
+    })();
+  </script>
+</body>
+</html>

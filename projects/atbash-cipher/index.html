@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atbash 密码 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Atbash 密码</h1>
+    <p class="tool-desc">Atbash 字母替换加密解密（A\u2194Z, B\u2194Y, ...）。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="encryptBtn" class="btn btn-primary">加密</button>
+      <button id="decryptBtn" class="btn btn-secondary">解密</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var encryptBtn = document.getElementById('encryptBtn');
+      var decryptBtn = document.getElementById('decryptBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function atbash(text) {
+        var result = '';
+        for (var i = 0; i < text.length; i++) {
+          var code = text.charCodeAt(i);
+          if (code >= 65 && code <= 90) {
+            result += String.fromCharCode(90 - (code - 65));
+          } else if (code >= 97 && code <= 122) {
+            result += String.fromCharCode(122 - (code - 97));
+          } else {
+            result += text[i];
+          }
+        }
+        return result;
+      }
+
+      function process(mode) {
+        var text = inputEl.value;
+        if (!text) { setStatus('请输入文本', 'error'); return; }
+        outputEl.textContent = atbash(text);
+        setStatus('');
+      }
+
+      encryptBtn.addEventListener('click', process);
+      decryptBtn.addEventListener('click', process);
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    })();
+  </script>
+</body>
+</html>

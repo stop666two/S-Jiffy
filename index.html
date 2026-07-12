@@ -88,6 +88,12 @@
   <main class="tool-workspace">
     <h1>即用即走工具集</h1>
     <p class="tool-desc">轻量、瞬时的生产力工具，打开即用，用完即走。所有操作均在浏览器本地完成，极少情况下可能出现问题，请自行校验结果，如有问题请提交 <a href="https://github.com/stop666two/S-Jiffy/issues" target="_blank" style="color:var(--color-text-primary);text-decoration:underline;">Issues</a>。</p>
+    <div class="section-tabs" id="sectionTabs" style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap;">
+      <button class="sec-tab active" data-section="all">全部工具</button>
+      <button class="sec-tab" data-section="freq">常用 <span id="freqBadge" style="font-size:11px;color:var(--color-text-disabled);"></span></button>
+      <button class="sec-tab" data-section="recent">最近使用</button>
+      <button class="sec-tab" data-section="popular">热门工具</button>
+    </div>
     <div class="category-bar" id="categoryBar"></div>
     <div class="tool-grid" id="toolGrid"></div>
   </main>
@@ -333,23 +339,74 @@
         });
       }
 
+      var currentSection = 'all';
+
+      function getToolByName(name) {
+        for (var i = 0; i < tools.length; i++) {
+          if (tools[i].name === name) return tools[i];
+        }
+        return null;
+      }
+
       function renderTools() {
         var grid = document.getElementById('toolGrid');
         grid.innerHTML = '';
-        var filtered = activeCategory
-          ? tools.filter(function (t) { return t.cats.indexOf(activeCategory) !== -1; })
-          : tools;
+        var list = [];
 
-        filtered.forEach(function (tool) {
+        if (currentSection === 'freq') {
+          var freq = getFrequentlyUsed(12);
+          freq.forEach(function (t) {
+            var tool = getToolByName(t.name);
+            if (tool) list.push(tool);
+          });
+          if (list.length === 0) { grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无使用记录，点击工具后会自动记录。</p>'; return; }
+        } else if (currentSection === 'recent') {
+          var recent = getRecentUsed(8);
+          recent.forEach(function (t) {
+            var tool = getToolByName(t.name);
+            if (tool) list.push(tool);
+          });
+          if (list.length === 0) { grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无使用记录。</p>'; return; }
+        } else if (currentSection === 'popular') {
+          POPULAR_TOOLS.forEach(function (name) {
+            var tool = getToolByName(name);
+            if (tool) list.push(tool);
+          });
+        } else {
+          list = activeCategory ? tools.filter(function (t) { return t.cats.indexOf(activeCategory) !== -1; }) : tools;
+        }
+
+        list.forEach(function (tool) {
           var card = document.createElement('a');
           card.href = tool.link;
           card.className = 'tool-card';
+          card.addEventListener('click', function () { recordUse(tool.name); });
           var tagsHtml = tool.cats.map(function (c) { return '<span>#' + c + '</span>'; }).join('');
           card.innerHTML = '<h2>' + tool.name + '</h2><p>' + tool.desc + '</p><div class="tags">' + tagsHtml + '</div>';
           grid.appendChild(card);
         });
       }
 
+      function renderSectionTabs() {
+        var tabs = document.querySelectorAll('.sec-tab');
+        tabs.forEach(function (tab) {
+          tab.addEventListener('click', function () {
+            tabs.forEach(function (t) { t.className = 'sec-tab'; });
+            this.className = 'sec-tab active';
+            currentSection = this.dataset.section;
+            activeCategory = null;
+            renderCategories();
+            renderTools();
+          });
+        });
+      }
+
+      // style for section tabs
+      var secStyle = document.createElement('style');
+      secStyle.textContent = '.sec-tab{font-family:var(--font-mono);font-size:var(--font-size-sm);padding:6px 14px;border:1px solid var(--color-border);border-radius:9999px;background:transparent;cursor:pointer;color:var(--color-text-secondary);transition:all 0.15s;letter-spacing:0.02em;}.sec-tab:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}.sec-tab.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}';
+      document.head.appendChild(secStyle);
+
+      renderSectionTabs();
       renderCategories();
       renderTools();
     })();

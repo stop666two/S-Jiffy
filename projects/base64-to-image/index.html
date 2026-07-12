@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -23,8 +23,8 @@
     <div id="imagePreview" style="display:none;margin-bottom:24px;">
       <img id="previewImg" style="max-width:100%;max-height:400px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -40,7 +40,7 @@
       var downloadLink = document.getElementById('downloadLink');
       var previewImg = document.getElementById('previewImg');
       var imagePreview = document.getElementById('imagePreview');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function process() {
@@ -59,14 +59,14 @@
         var mime = dataUrl.split(';')[0].split(':')[1];
         var ext = mime.split('/')[1] || 'png';
         downloadLink.download = 'image.' + ext;
-        outputEl.textContent = '格式: ' + mime + ' | 大小: ' + Math.round(dataUrl.length * 3 / 4 / 1024) + ' KB';
+        输出El.textContent = '格式: ' + mime + ' | 大小: ' + Math.round(dataUrl.length * 3 / 4 / 1024) + ' KB';
         setStatus('预览成功');
       }
 
       previewBtn.addEventListener('click', process);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

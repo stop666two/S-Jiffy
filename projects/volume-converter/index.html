@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -35,8 +35,8 @@
         </div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -53,7 +53,7 @@
       var inputQt = document.getElementById('inputQt');
       var inputPt = document.getElementById('inputPt');
       var inputCup = document.getElementById('inputCup');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -68,7 +68,7 @@
         inputQt.value = r(l * 1.05669);
         inputPt.value = r(l * 2.11338);
         inputCup.value = r(l * 4.22675);
-        outputEl.textContent = l + ' L = ' + inputGal.value + ' gal = ' + inputQt.value + ' qt = ' + inputCup.value + ' cup';
+        输出El.textContent = l + ' L = ' + inputGal.value + ' gal = ' + inputQt.value + ' qt = ' + inputCup.value + ' cup';
         updating = false;
       }
 
@@ -80,7 +80,7 @@
       inputCup.addEventListener('input', function() { fromLiters((parseFloat(this.value) || 0) / 4.22675); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

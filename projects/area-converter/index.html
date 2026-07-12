@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -35,8 +35,8 @@
         </div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -53,7 +53,7 @@
       var inputAcre = document.getElementById('inputAcre');
       var inputFt2 = document.getElementById('inputFt2');
       var inputIn2 = document.getElementById('inputIn2');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -68,7 +68,7 @@
         inputAcre.value = r(m2 / 4046.86);
         inputFt2.value = r(m2 * 10.7639);
         inputIn2.value = r(m2 * 1550.0031);
-        outputEl.textContent = m2 + ' m² = ' + inputKm2.value + ' km² = ' + inputHa.value + ' ha = ' + inputAcre.value + ' acre';
+        输出El.textContent = m2 + ' m² = ' + inputKm2.value + ' km² = ' + inputHa.value + ' ha = ' + inputAcre.value + ' acre';
         updating = false;
       }
 
@@ -80,7 +80,7 @@
       inputIn2.addEventListener('input', function() { fromSqMeters((parseFloat(this.value) || 0) / 1550.0031); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

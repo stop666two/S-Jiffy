@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Autokey 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Autokey 密码</h1><p class="tool-desc">使用关键词的 Autokey 密码加密/解密，并显示加密步骤。</p>
+<div class="card">
+<div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">关键词</label><input id="keyInput" class="input" value="KEY" style="width:200px;"></div>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encryptBtn" class="btn btn-primary">加密</button>
+<button id="decryptBtn" class="btn btn-secondary">解密</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="card" id="stepsCard" style="display:none;margin-top:var(--space-2);"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);">加密步骤</h3><pre id="steps输出" style="font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;max-height:200px;overflow-y:auto;"></pre></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var keyInput=document.getElementById('keyInput');
+var encryptBtn=document.getElementById('encryptBtn');
+var decryptBtn=document.getElementById('decryptBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var stepsCard=document.getElementById('stepsCard');
+var steps输出=document.getElementById('steps输出');
+function clean(text){return text.to大写().replace(/[^A-Z]/g,'');}
+function encrypt(text,key){
+var t=clean(text);
+var k=clean(key);
+if(!t||!k){setStatus('请输入文本和关键词','error');return null;}
+var steps='明文: '+t+'\n关键词: '+k+'\n\n';
+var stream=k+t;
+var r='';
+for(var i=0;i<t.length;i++){
+var p=t.charCodeAt(i)-65;
+var s=stream.charCodeAt(i)-65;
+var c=(p+s)%26;
+var ch=String.fromCharCode(c+65);
+r+=ch;
+steps+='步骤 '+(i+1)+': '+t[i]+'('+p+') + '+stream[i]+'('+s+') = '+ch+'('+c+')\n';
+}
+stepsCard.style.display='block';
+steps输出.textContent=steps;
+return r;
+}
+function decrypt(text,key){
+var t=clean(text);
+var k=clean(key);
+if(!t||!k){setStatus('请输入密文和关键词','error');return null;}
+var steps='密文: '+t+'\n关键词: '+k+'\n\n';
+var r='';
+var stream=k;
+for(var i=0;i<t.length;i++){
+var c=t.charCodeAt(i)-65;
+var s=stream.charCodeAt(i)-65;
+var p=(c-s+26)%26;
+var ch=String.fromCharCode(p+65);
+r+=ch;
+stream+=ch;
+steps+='步骤 '+(i+1)+': '+t[i]+'('+c+') - '+stream[i]+'('+s+') = '+ch+'('+p+')\n';
+}
+stepsCard.style.display='block';
+steps输出.textContent=steps;
+return r;
+}
+encryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var k=keyInput.value;
+if(!t||!k){setStatus('请输入文本和关键词','error');return;}
+var r=encrypt(t,k);
+if(r){输出El.textContent=r;setStatus('');}
+});
+decryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var k=keyInput.value;
+if(!t||!k){setStatus('请输入密文和关键词','error');return;}
+var r=decrypt(t,k);
+if(r){输出El.textContent=r;setStatus('');}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';stepsCard.style.display='none';steps输出.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

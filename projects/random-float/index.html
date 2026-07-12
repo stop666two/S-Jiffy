@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机浮点数生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rf-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rf-row .field { flex:1; min-width:100px; }
+    .rf-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机浮点数生成器</h1>
+    <p class="tool-desc">在指定范围内生成随机浮点数，可设置精度和数量。使用密码学安全随机数。</p>
+    <div class="card">
+      <div class="rf-row">
+        <div class="field"><label for="minVal">最小值</label><input id="minVal" class="input" type="number" value="0" step="any"></div>
+        <div class="field"><label for="maxVal">最大值</label><input id="maxVal" class="input" type="number" value="1" step="any"></div>
+        <div class="field"><label for="precVal">小数位数</label><input id="precVal" class="input" type="number" value="4" min="0" max="15"></div>
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var minEl = document.getElementById('minVal');
+    var maxEl = document.getElementById('maxVal');
+    var precEl = document.getElementById('precVal');
+    var countEl = document.getElementById('countVal');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoFloat() {
+      var bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return bytes[0] / 4294967296;
+    }
+
+    function generate() {
+      var min = parseFloat(minEl.value) || 0;
+      var max = parseFloat(maxEl.value) || 1;
+      var prec = parseInt(precEl.value, 10);
+      if (isNaN(prec) || prec < 0) prec = 4;
+      if (prec > 15) prec = 15;
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+
+      if (min >= max) { setStatus('最大值必须大于最小值', 'error'); return; }
+
+      var range = max - min;
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var val = min + cryptoFloat() * range;
+        结果.push(val.toFixed(prec));
+      }
+      输出El.textContent = 结果.join(', ');
+      setStatus('已生成 ' + count + ' 个随机浮点数');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

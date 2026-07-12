@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机姓名生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rn-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rn-row .field { flex:1; min-width:100px; }
+    .rn-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机姓名生成器</h1>
+    <p class="tool-desc">生成随机人名，支持性别和国家选择（英文/中文/日文）。</p>
+    <div class="card">
+      <div class="rn-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="genderSel">性别</label>
+          <select id="genderSel" class="input" style="width:auto;min-width:80px;">
+            <option value="any">全部</option>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </div>
+        <div class="field"><label for="nationalitySel">国家</label>
+          <select id="nationalitySel" class="input" style="width:auto;min-width:80px;">
+            <option value="en">英文</option>
+            <option value="cn">中文</option>
+            <option value="jp">日文</option>
+          </select>
+        </div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var genderEl = document.getElementById('genderSel');
+    var natEl = document.getElementById('nationalitySel');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var cnSurnames = ['王','李','张','刘','陈','杨','黄','赵','周','吴','徐','孙','马','朱','胡','郭','何','高','林','罗'];
+    var cnMale = ['伟','强','磊','军','勇','杰','涛','明','超','辉','鹏','飞','斌','俊','志','建','平','刚','龙','华'];
+    var cnFemale = ['芳','娜','敏','静','丽','娟','艳','玲','婷','雪','琳','霞','萍','红','梅','燕','晶','颖','茜','倩'];
+    var enMaleFirst = ['James','John','Robert','Michael','William','David','Richard','Joseph','Thomas','Charles','Daniel','Matthew','Anthony','Mark','Steven','Andrew','Paul','Joshua','Kenneth','Kevin'];
+    var enFemaleFirst = ['Mary','Patricia','Jennifer','Linda','Barbara','Elizabeth','Susan','Jessica','Sarah','Karen','Lisa','Nancy','Betty','Margaret','Sandra','Ashley','Dorothy','Kimberly','Emily','Donna'];
+    var enLast = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Rodriguez','Martinez','Hernandez','Lopez','Gonzalez','Wilson','Anderson','Thomas','Taylor','Moore','Jackson','Martin'];
+    var jpSurnames = ['佐藤','铃木','高桥','田中','渡边','伊藤','山本','中村','小林','加藤','吉田','山田','佐々木','山口','松下','松本','井上','木村','林','清水'];
+    var jpMale = ['大辅','健太','翔太','拓也','直树','瑛太','亮太','龙也','和也','正人','一辉','隼人','海斗','优斗','奏太','大和','凑','莲','阳斗','苍'];
+    var jpFemale = ['美咲','葵','爱美','优香','花子','千寻','理恵','真由美','薰','麻衣','智子','由美','晶','裕美','纪子','由纪','直美','清香','明美','久美子'];
+
+    function pick(arr) {
+      var b = new Uint8Array(1);
+      crypto.getRandomValues(b);
+      return arr[b[0] % arr.length];
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var gender = genderEl.value;
+      var nat = natEl.value;
+      var 结果 = [];
+
+      for (var i = 0; i < count; i++) {
+        var g = gender;
+        if (g === 'any') {
+          var gb = new Uint8Array(1);
+          crypto.getRandomValues(gb);
+          g = gb[0] < 128 ? 'male' : 'female';
+        }
+        if (nat === 'cn') {
+          var surname = pick(cnSurnames);
+          var given = g === 'male' ? pick(cnMale) : pick(cnFemale);
+          结果.push(surname + given);
+        } else if (nat === 'jp') {
+          var surname = pick(jpSurnames);
+          var given = g === 'male' ? pick(jpMale) : pick(jpFemale);
+          结果.push(surname + ' ' + given);
+        } else {
+          var first = g === 'male' ? pick(enMaleFirst) : pick(enFemaleFirst);
+          var last = pick(enLast);
+          结果.push(first + ' ' + last);
+        }
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个姓名');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

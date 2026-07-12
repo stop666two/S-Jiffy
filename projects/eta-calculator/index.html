@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -17,7 +17,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>ETA Calculator</h1>
+    <h1>ETA 预计时间</h1>
     <p class="tool-desc">基于总量和速率计算预计完成时间（amount / rate × time）。</p>
     <div class="card">
       <div class="eta-grid">
@@ -36,8 +36,8 @@
         <div><button id="calcBtn" class="btn btn-primary">计算 ETA</button></div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -52,14 +52,14 @@
       var etaRate = document.getElementById('etaRate');
       var etaUnit = document.getElementById('etaUnit');
       var calcBtn = document.getElementById('calcBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       calcBtn.addEventListener('click', function () {
         var amount = parseFloat(etaAmount.value);
         var rate = parseFloat(etaRate.value);
         if (isNaN(amount) || isNaN(rate) || rate <= 0) {
-          outputEl.textContent = '请输入有效的正数';
+          输出El.textContent = '请输入有效的正数';
           setStatus('', 'error');
           return;
         }
@@ -85,21 +85,21 @@
           unitLabel = '天';
         }
 
-        var result = (raw).toFixed(2);
+        var 结果 = (raw).toFixed(2);
         var human = '';
         if (raw >= 86400 && unit === 'seconds') human = (raw / 86400).toFixed(2) + ' 天';
         else if (raw >= 3600 && unit === 'seconds') human = (raw / 3600).toFixed(2) + ' 小时';
         else if (raw >= 3600 && unit === 'minutes') human = (raw / 60).toFixed(2) + ' 小时';
         else if (raw >= 1440 && unit === 'minutes') human = (raw / 1440).toFixed(2) + ' 天';
         else if (raw >= 24 && unit === 'hours') human = (raw / 24).toFixed(2) + ' 天';
-        else human = result + ' ' + unitLabel;
+        else human = 结果 + ' ' + unitLabel;
 
-        outputEl.textContent = amount + ' ÷ ' + rate + ' = ' + human;
+        输出El.textContent = amount + ' ÷ ' + rate + ' = ' + human;
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

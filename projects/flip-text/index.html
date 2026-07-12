@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>翻转文本 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>翻转文本</h1><p class="tool-desc">将文本翻转、镜像或反转，生成 upside-down / mirror / reverse 效果。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">模式</label>
+<label><input type="radio" name="mode" value="flip" checked> 上下翻转</label>
+<label><input type="radio" name="mode" value="mirror"> 镜像</label>
+<label><input type="radio" name="mode" value="reverse"> 反转顺序</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var flipMap={
+'A':'\u0250','B':'q','C':'\u0254','D':'p','E':'\u01DD','F':'\u025F','G':'\u0253','H':'\u0265','I':'\u0131','J':'\u027E','K':'\u029E','L':'\u006C','M':'\u026F','N':'u','O':'o','P':'d','Q':'b','R':'\u0279','S':'s','T':'\u0287','U':'n','V':'\u028C','W':'\u028D','X':'x','Y':'\u028E','Z':'z',
+'a':'\u0250','b':'q','c':'\u0254','d':'p','e':'\u01DD','f':'\u025F','g':'\u0253','h':'\u0265','i':'\u0131','j':'\u027E','k':'\u029E','l':'\u006C','m':'\u026F','n':'u','o':'o','p':'d','q':'b','r':'\u0279','s':'s','t':'\u0287','u':'n','v':'\u028C','w':'\u028D','x':'x','y':'\u028E','z':'z',
+'0':'0','1':'\u0196','2':'\u05E9','3':'3','4':'\u152D','5':'\u1E25','6':'9','7':'\u1E19','8':'8','9':'6',
+','':'\u2018','.':'\u02D9','!':'\u00A1','?':'\u00BF',"'":',','"':'\u201E','<':'>','>':'<','[':']',']':'[','{':'}','}':'{','(':')',')':'(','&':'&','_':'\u203E'
+};
+function flip(text){
+var r='';
+for(var i=text.length-1;i>=0;i--){
+var ch=text[i];
+r+=flipMap[ch]!==undefined?flipMap[ch]:ch;
+}
+return r;
+}
+function mirror(text){
+var r='';
+for(var i=0;i<text.length;i++){
+var ch=text[i];
+var m=flipMap[ch];
+r+=m!==undefined?m:ch;
+}
+return r;
+}
+function reverse(text){
+return text.split('').reverse().join('');
+}
+function getMode(){
+var radios=document.getElementsByName('mode');
+for(var i=0;i<radios.length;i++){if(radios[i].checked)return radios[i].value;}
+return'flip';
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var mode=getMode();
+if(mode==='flip')输出El.textContent=flip(t);
+else if(mode==='mirror')输出El.textContent=mirror(t);
+else 输出El.textContent=reverse(t);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

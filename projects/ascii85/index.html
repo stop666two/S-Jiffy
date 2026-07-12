@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Ascii85 编解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Ascii85 编解码</h1><p class="tool-desc">Ascii85（Adobe 85）编码/解码，支持 ~&lt;~ ~&gt;~ 包裹格式。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="useWrap" checked> 使用 ~&lt;~ ~&gt;~ 包裹</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码的文本或 Ascii85 字符串..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encodeBtn" class="btn btn-primary">编码</button>
+<button id="decodeBtn" class="btn btn-secondary">解码</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var encodeBtn=document.getElementById('encodeBtn');
+var decodeBtn=document.getElementById('decodeBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var useWrap=document.getElementById('useWrap');
+function encode(text,wrap){
+var bytes=[];
+for(var i=0;i<text.length;i++)bytes.push(text.charCodeAt(i));
+var r=wrap?'~<':'';
+for(var i=0;i<bytes.length;i+=4){
+if(i+3<bytes.length&&bytes[i]===0&&bytes[i+1]===0&&bytes[i+2]===0&&bytes[i+3]===0){r+='z';continue;}
+var val=((bytes[i]||0)<<24)|((bytes[i+1]||0)<<16)|((bytes[i+2]||0)<<8)|(bytes[i+3]||0);
+if(val===0){r+='z';continue;}
+var parts='';
+for(var j=0;j<5;j++){parts=String.fromCharCode(33+(val%85))+parts;val=Math.floor(val/85);}
+r+=parts;
+}
+if(wrap)r+='~>';
+return r;
+}
+function decode(b85,wrap){
+var t=b85.trim();
+if(wrap){
+t=t.replace(/^~</,'').replace(/~>$/,'');
+}
+t=t.replace(/\s/g,'');
+var bytes=[];
+for(var i=0;i<t.length;){
+if(t[i]==='z'){bytes.push(0,0,0,0);i++;continue;}
+if(i+4>=t.length)break;
+var val=0;
+for(var j=0;j<5&&i<t.length;j++,i++){
+var c=t.charCodeAt(i)-33;
+if(c<0||c>84)throw new Error('无效字符');
+val=val*85+c;
+}
+bytes.push((val>>24)&255,(val>>16)&255,(val>>8)&255,val&255);
+}
+var r='';
+for(var i=0;i<bytes.length;i++)r+=String.fromCharCode(bytes[i]);
+return r;
+}
+encodeBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+try{输出El.textContent=encode(t,useWrap.checked);setStatus('');}catch(e){setStatus('编码错误','error');}
+});
+decodeBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 Ascii85','error');return;}
+try{输出El.textContent=decode(t,useWrap.checked);setStatus('');}catch(e){setStatus('解码错误: '+e.message,'error');}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,7 +21,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>MIME Types</h1>
+    <h1>MIME 类型大全</h1>
     <p class="tool-desc">MIME 类型与文件扩展名查询对照表。</p>
     <div class="card">
       <div class="mime-search">
@@ -35,8 +35,8 @@
         </table>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -50,7 +50,7 @@
       var mimeSearch = document.getElementById('mimeSearch');
       var clearSearchBtn = document.getElementById('clearSearchBtn');
       var mimeTbody = document.getElementById('mimeTbody');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       var mimeData = [
@@ -78,7 +78,7 @@
 
       function render(filter) {
         mimeTbody.innerHTML = '';
-        var match = filter ? filter.toLowerCase() : '';
+        var match = filter ? filter.to小写() : '';
         var count = 0;
         for (var i = 0; i < mimeData.length; i++) {
           var row = mimeData[i];
@@ -88,7 +88,7 @@
           mimeTbody.appendChild(tr);
           count++;
         }
-        outputEl.textContent = '共 ' + count + ' 条记录' + (match ? '（匹配 "' + filter + '"）' : '');
+        输出El.textContent = '共 ' + count + ' 条记录' + (match ? '（匹配 "' + filter + '"）' : '');
       }
 
       mimeSearch.addEventListener('input', function () { render(this.value); });
@@ -100,7 +100,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

@@ -1,108 +1,68 @@
-<!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>RGBA ↔ HEX Alpha - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
-.color-preview{width:100%;height:60px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s;position:relative;overflow:hidden}.color-preview::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc);background-size:16px 16px;background-position:0 0,8px 8px;opacity:.4}.color-preview .fill{position:absolute;top:0;left:0;right:0;bottom:0}.dual-mode{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:700px){.dual-mode{grid-template-columns:1fr}}.slider-row{display:flex;align-items:center;gap:8px;margin:6px 0}.slider-row label{width:20px;font-weight:600;font-size:12px}.slider-row input[type=range]{flex:1;accent-color:var(--color-text-primary)}.slider-row input[type=number]{width:60px;text-align:center;font-family:var(--font-mono);font-size:13px;padding:3px;border:1px solid var(--color-border);border-radius:var(--radius-sm)}.result{font-family:var(--font-mono);font-size:16px;margin-top:10px;word-break:break-all}
+﻿<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Alpha Hex 转换 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.color-preview{width:100%;height:60px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s;position:relative;overflow:hidden}.color-preview::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%,#ccc);background-size:16px 16px;background-position:0 0,8px 8px;opacity:.4}.color-preview .fill{position:absolute;top:0;left:0;right:0;bottom:0}.dual-mode{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:700px){.dual-mode{grid-template-columns:1fr}}.slider-row{display:flex;align-items:center;gap:8px;margin:6px 0}.slider-row label{width:20px;font-weight:600;font-size:12px}.slider-row input[type=range]{flex:1}.slider-row input[type=number]{width:60px;text-align:center;font-family:var(--font-mono);font-size:13px;padding:3px;border:1px solid var(--color-border);border-radius:var(--radius-sm)}.result{font-family:var(--font-mono);font-size:16px;margin-top:10px;word-break:break-all}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>RGBA ↔ HEX Alpha</h1><p class="tool-desc">RGBA 与含 Alpha 通道的 HEX (#RRGGBBAA) 双向转换。</p>
+<main class="tool-workspace"><h1>Alpha Hex 转换</h1><p class="tool-desc">RGBA 与含 Alpha 通道的 HEX (#RRGGBBAA) 双向转换，滑块实时更新。</p>
 <div class="card">
 <div class="color-preview" id="colorPreview"><div class="fill" id="colorFill"></div></div>
 <div class="dual-mode">
-<div>
-<h3 style="font-size:14px;margin-bottom:8px;">RGBA → HEX</h3>
+<div><h3 style="font-size:14px;margin-bottom:8px;">RGBA → HEX</h3>
 <div class="slider-row"><label style="color:#e74c3c">R</label><input type="range" id="rSlider" min="0" max="255" value="231"><input type="number" id="rNum" min="0" max="255" value="231"></div>
 <div class="slider-row"><label style="color:#2ecc71">G</label><input type="range" id="gSlider" min="0" max="255" value="76"><input type="number" id="gNum" min="0" max="255" value="76"></div>
 <div class="slider-row"><label style="color:#3498db">B</label><input type="range" id="bSlider" min="0" max="255" value="60"><input type="number" id="bNum" min="0" max="255" value="60"></div>
 <div class="slider-row"><label style="color:var(--color-text-secondary)">A</label><input type="range" id="aSlider" min="0" max="100" value="80"><input type="number" id="aNum" min="0" max="100" value="80"></div>
 <div class="result" id="rgbaToHexResult">#E74C3CCC</div>
 </div>
-<div>
-<h3 style="font-size:14px;margin-bottom:8px;">HEX → RGBA</h3>
+<div><h3 style="font-size:14px;margin-bottom:8px;">HEX → RGBA</h3>
 <div style="display:flex;gap:8px;margin-bottom:12px;"><input id="hexInput" class="input" placeholder="#RRGGBBAA" value="#E74C3CCC" style="width:160px;font-family:var(--font-mono);"><button id="hexToRgbaBtn" class="btn btn-secondary" style="height:48px;">转换</button></div>
 <div class="result" id="hexToRgbaResult">rgba(231, 76, 60, 0.8)</div>
-</div>
-</div>
-</div>
+</div></div></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
-var rSlider=document.getElementById('rSlider'),gSlider=document.getElementById('gSlider'),bSlider=document.getElementById('bSlider'),aSlider=document.getElementById('aSlider');
-var rNum=document.getElementById('rNum'),gNum=document.getElementById('gNum'),bNum=document.getElementById('bNum'),aNum=document.getElementById('aNum');
-var hexInput=document.getElementById('hexInput'),hexToRgbaBtn=document.getElementById('hexToRgbaBtn');
-var colorFill=document.getElementById('colorFill');
-var rgbaToHexResult=document.getElementById('rgbaToHexResult');
-var hexToRgbaResult=document.getElementById('hexToRgbaResult');
-var outputEl=document.getElementById('outputText');
-var copyBtn=document.getElementById('copyBtn');
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var rS=document.getElementById('rSlider'),gS=document.getElementById('gSlider'),bS=document.getElementById('bSlider'),aS=document.getElementById('aSlider');
+var rN=document.getElementById('rNum'),gN=document.getElementById('gNum'),bN=document.getElementById('bNum'),aN=document.getElementById('aNum');
+var hexIn=document.getElementById('hexInput'),h2rBtn=document.getElementById('hexToRgbaBtn');
+var cf=document.getElementById('colorFill'),r2h=document.getElementById('rgbaToHexResult'),h2r=document.getElementById('hexToRgbaResult');
+var o=document.getElementById('outputText');
 
-function toHex2(v){
-var h=parseInt(v).toString(16).toUpperCase();
-return h.length===1?'0'+h:h;
-}
-
-function updateRGBA(src){
-var r,g,b,a;
-if(src==='r'||src===''){r=parseInt(rSlider.value);rNum.value=r;}
-else if(src==='g'){g=parseInt(gSlider.value);gNum.value=g;}
-else if(src==='b'){b=parseInt(bSlider.value);bNum.value=b;}
-else if(src==='a'){a=parseInt(aSlider.value);aNum.value=a;}
-if(src==='rn'){var rv=parseInt(rNum.value);if(rv<0)rv=0;if(rv>255)rv=255;rSlider.value=rv;r=rv;}
-if(src==='gn'){var gv=parseInt(gNum.value);if(gv<0)gv=0;if(gv>255)gv=255;gSlider.value=gv;g=gv;}
-if(src==='bn'){var bv=parseInt(bNum.value);if(bv<0)bv=0;if(bv>255)bv=255;bSlider.value=bv;b=bv;}
-if(src==='an'){var av=parseInt(aNum.value);if(av<0)av=0;if(av>100)av=100;aSlider.value=av;a=av;}
-if(r===undefined)r=parseInt(rSlider.value);
-if(g===undefined)g=parseInt(gSlider.value);
-if(b===undefined)b=parseInt(bSlider.value);
-if(a===undefined)a=parseInt(aSlider.value);
-var alphaHex=toHex2(Math.round(a*255/100));
-var hex='#'+toHex2(r)+toHex2(g)+toHex2(b)+alphaHex;
-rgbaToHexResult.textContent=hex;
-var rgba='rgba('+r+', '+g+', '+b+', '+(a/100)+')';
-colorFill.style.background=rgba;
-outputEl.textContent='RGBA = '+hex;
+function h2(v){var h=parseInt(v).toString(16).toUpperCase();return h.length===1?'0'+h:h;}
+function update(){
+  var r=parseInt(rS.value),g=parseInt(gS.value),b=parseInt(bS.value),a=parseInt(aS.value);
+  rN.value=r;gN.value=g;bN.value=b;aN.value=a;
+  var ah=h2(Math.round(a*255/100));
+  var hex='#'+h2(r)+h2(g)+h2(b)+ah;
+  r2h.textContent=hex;
+  var rgba='rgba('+r+', '+g+', '+b+', '+(a/100)+')';
+  h2r.textContent=rgba;
+  cf.style.background='rgba('+r+','+g+','+b+','+(a/100)+')';
+  o.textContent=hex+' | '+rgba;
 }
 
-function hexToRgba(){
-var hex=hexInput.value.trim();
-if(hex.startsWith('#'))hex=hex.slice(1);
-if(hex.length===3||hex.length===4){
-var tmp='';
-for(var i=0;i<hex.length;i++)tmp+=hex[i]+hex[i];
-hex=tmp;
-}
-if(!/^[0-9a-fA-F]{6,8}$/.test(hex)){
-hexToRgbaResult.textContent='无效的 HEX 值';
-setStatus('输入错误','error');
-return;
-}
-var r=parseInt(hex.slice(0,2),16);
-var g=parseInt(hex.slice(2,4),16);
-var b=parseInt(hex.slice(4,6),16);
-var a=hex.length>=8?Math.round((parseInt(hex.slice(6,8),16)/255)*100):100;
-rSlider.value=r;rNum.value=r;
-gSlider.value=g;gNum.value=g;
-bSlider.value=b;bNum.value=b;
-aSlider.value=a;aNum.value=a;
-var rgbaStr='rgba('+r+', '+g+', '+b+', '+(a/100)+')';
-hexToRgbaResult.textContent=rgbaStr;
-colorFill.style.background=rgbaStr;
-var alphaHex=toHex2(Math.round(a*255/100));
-var fullHex='#'+toHex2(r)+toHex2(g)+toHex2(b)+alphaHex;
-rgbaToHexResult.textContent=fullHex;
-outputEl.textContent=rgbaStr;
-setStatus('');
-}
+function syncSlider(id,v,m){var el=document.getElementById(id);if(v<0)v=0;if(v>m)v=m;el.value=v;update();}
 
-rSlider.addEventListener('input',function(){updateRGBA('r');});
-gSlider.addEventListener('input',function(){updateRGBA('g');});
-bSlider.addEventListener('input',function(){updateRGBA('b');});
-aSlider.addEventListener('input',function(){updateRGBA('a');});
-rNum.addEventListener('input',function(){updateRGBA('rn');});
-gNum.addEventListener('input',function(){updateRGBA('gn');});
-bNum.addEventListener('input',function(){updateRGBA('bn');});
-aNum.addEventListener('input',function(){updateRGBA('an');});
-hexToRgbaBtn.addEventListener('click',hexToRgba);
-hexInput.addEventListener('keydown',function(e){if(e.key==='Enter')hexToRgba();});
-copyBtn.addEventListener('click',function(){var t=rgbaToHexResult.textContent;if(t&&t!==''){copyToClipboard(t,copyBtn);setStatus('已复制');}});
-updateRGBA('r');
-})();</script></body></html>
+rS.addEventListener('input',update);
+gS.addEventListener('input',update);
+bS.addEventListener('input',update);
+aS.addEventListener('input',update);
+rN.addEventListener('input',function(){syncSlider('rSlider',parseInt(this.value)||0,255);});
+gN.addEventListener('input',function(){syncSlider('gSlider',parseInt(this.value)||0,255);});
+bN.addEventListener('input',function(){syncSlider('bSlider',parseInt(this.value)||0,255);});
+aN.addEventListener('input',function(){syncSlider('aSlider',parseInt(this.value)||0,100);});
+
+h2rBtn.addEventListener('click',function(){
+  var v=hexIn.value.trim().replace('#','');
+  if(v.length!==8&&v.length!==6){setStatus('请输入 6 或 8 位 HEX','error');return;}
+  if(v.length===6)v+='FF';
+  var r=parseInt(v.substr(0,2),16),g=parseInt(v.substr(2,2),16),b=parseInt(v.substr(4,2),16),a=Math.round(parseInt(v.substr(6,2),16)/255*100);
+  rS.value=r;gS.value=g;bS.value=b;aS.value=a;update();
+  setStatus('');
+});
+
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+update();
+})();
+</script></body></html>

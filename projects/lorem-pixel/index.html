@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Pixel - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.pixel-preview{text-align:center;padding:var(--space-3);}
+.pixel-preview svg{max-width:100%;border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.dim-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-3);}
+.dim-row .field{min-width:80px;}
+.dim-row label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;}
+.col-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-3);}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>占位图生成</h1><p class="tool-desc">Generate placeholder image dimensions with colored rectangle SVGs.</p>
+<div class="card">
+<div class="dim-row">
+<div class="field"><label>Width (px)</label><input id="widthInput" class="input" type="number" value="400" min="10" max="2000"></div>
+<div class="field"><label>Height (px)</label><input id="heightInput" class="input" type="number" value="300" min="10" max="2000"></div>
+<button id="generateBtn" class="btn btn-primary">生成</button>
+</div>
+<div class="col-row">
+<label style="font-size:var(--font-size-sm);">背景色</label><input id="bgColor" type="color" value="#3498db">
+<label style="font-size:var(--font-size-sm);">Text</label><input id="textColor" type="color" value="#ffffff">
+<label style="font-size:var(--font-size-sm);">Text</label><input id="textInput" class="input" value="400 × 300" style="width:120px;">
+</div>
+</div>
+<div class="card"><div class="pixel-preview" id="previewArea"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">Copy SVG</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var wi=document.getElementById('widthInput'),hi=document.getElementById('heightInput'),bg=document.getElementById('bgColor'),tc=document.getElementById('textColor');
+var tx=document.getElementById('textInput'),pa=document.getElementById('previewArea'),o=document.getElementById('输出Text');
+
+function generate(){var w=parseInt(wi.value)||400,h=parseInt(hi.value)||300;var bgc=bg.value,txc=tc.value;var txt=tx.value||(w+' × '+h);
+var fontSize=Math.max(12,Math.min(60,Math.floor(Math.min(w,h)/8)));
+var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">';
+svg+='<rect width="'+w+'" height="'+h+'" fill="'+bgc+'"/>';
+svg+='<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="'+fontSize+'" fill="'+txc+'">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>';
+svg+='<rect width="'+w+'" height="'+h+'" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>';
+svg+='</svg>';
+pa.innerHTML=svg;o.textContent=svg;setStatus(w+'×'+h+' placeholder generated');}
+
+document.getElementById('generateBtn').addEventListener('click',generate);
+bg.addEventListener('input',generate);tc.addEventListener('input',generate);
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('SVG copied');}});
+generate();})();
+</script></body></html>

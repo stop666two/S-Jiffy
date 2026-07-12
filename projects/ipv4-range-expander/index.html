@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
     <div id="statsArea" class="range-stats" style="display:none;"></div>
-    <div class="output-box" id="outputContainer" style="min-height:200px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container" style="min-height:200px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -37,7 +37,7 @@
   <script>
     (function() {
       var cidrEl = document.getElementById('cidrInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var statsArea = document.getElementById('statsArea');
       var clearBtn = document.getElementById('clearBtn');
@@ -72,25 +72,25 @@
       document.getElementById('expandBtn').addEventListener('click', function() {
         var cidr = cidrEl.value.trim();
         if (!cidr) { setStatus('请输入 CIDR 网段', 'error'); return; }
-        var result = expandCIDR(cidr);
-        if (!result) { setStatus('无效的 CIDR 格式', 'error'); return; }
-        if (result.list.length > 65536) {
+        var 结果 = expandCIDR(cidr);
+        if (!结果) { setStatus('无效的 CIDR 格式', 'error'); return; }
+        if (结果.list.length > 65536) {
           setStatus('范围过大（超过 65536 个 IP），请输入更小的前缀（如 /24）', 'error');
           return;
         }
-        outputEl.textContent = result.list.join('\n');
+        输出El.textContent = 结果.list.join('\n');
         statsArea.style.display = 'flex';
-        statsArea.innerHTML = '<span class="range-stat">前缀: <strong>/' + result.prefix + '</strong></span>'
-          + '<span class="range-stat">总 IP 数: <strong>' + result.count + '</strong></span>'
-          + '<span class="range-stat">可用 IP: <strong>' + result.list.length + '</strong></span>'
-          + '<span class="range-stat">网络地址: <strong>' + ((result.network>>>24)&255)+'.'+((result.network>>>16)&255)+'.'+((result.network>>>8)&255)+'.'+(result.network&255) + '</strong></span>'
-          + '<span class="range-stat">广播地址: <strong>' + ((result.broadcast>>>24)&255)+'.'+((result.broadcast>>>16)&255)+'.'+((result.broadcast>>>8)&255)+'.'+(result.broadcast&255) + '</strong></span>';
-        setStatus('已展开 ' + result.list.length + ' 个 IP');
+        statsArea.innerHTML = '<span class="range-stat">前缀: <strong>/' + 结果.prefix + '</strong></span>'
+          + '<span class="range-stat">总 IP 数: <strong>' + 结果.count + '</strong></span>'
+          + '<span class="range-stat">可用 IP: <strong>' + 结果.list.length + '</strong></span>'
+          + '<span class="range-stat">网络地址: <strong>' + ((结果.network>>>24)&255)+'.'+((结果.network>>>16)&255)+'.'+((结果.network>>>8)&255)+'.'+(结果.network&255) + '</strong></span>'
+          + '<span class="range-stat">广播地址: <strong>' + ((结果.broadcast>>>24)&255)+'.'+((结果.broadcast>>>16)&255)+'.'+((结果.broadcast>>>8)&255)+'.'+(结果.broadcast&255) + '</strong></span>';
+        setStatus('已展开 ' + 结果.list.length + ' 个 IP');
       });
 
       clearBtn.addEventListener('click', function() {
         cidrEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         statsArea.style.display = 'none';
         statsArea.innerHTML = '';
         setStatus('');
@@ -98,7 +98,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
 
       cidrEl.addEventListener('keydown', function(e) {

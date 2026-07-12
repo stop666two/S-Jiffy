@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分数转换器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .fc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .fc-row .field { flex:1; min-width:100px; }
+    .fc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>分数转换器</h1>
+    <p class="tool-desc">小数与分数互转，支持化简、带分数显示和计算步骤。</p>
+    <div class="card">
+      <div class="fc-row">
+        <div class="field"><label for="inputVal">数值</label><input id="inputVal" class="input" type="text" value="0.75" placeholder="输入小数或分数如 3/4"></div>
+      </div>
+      <div class="fc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="mixedChk" type="checkbox" checked> 允许带分数</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="showStepsChk" type="checkbox" checked> 显示步骤</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">转换</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputVal');
+    var mixedChk = document.getElementById('mixedChk');
+    var stepsChk = document.getElementById('showStepsChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) { var t = b; b = a % b; a = t; }
+      return a;
+    }
+
+    function decimalToFraction(n, steps) {
+      if (Number.isInteger(n)) {
+        steps.push(n + ' = ' + n + '/1');
+        return { num: n, den: 1, whole: 0 };
+      }
+      var s = n.toString();
+      var decimalPlaces = (s.split('.')[1] || '').length;
+      var denom = Math.pow(10, decimalPlaces);
+      var num = Math.round(n * denom);
+      steps.push(n + ' = ' + num + '/' + denom);
+      var g = gcd(num, denom);
+      if (g > 1) {
+        steps.push('化简: ÷' + g + ' → ' + (num/g) + '/' + (denom/g));
+        num = num / g;
+        denom = denom / g;
+      }
+      var whole = 0;
+      if (num >= denom) {
+        whole = Math.floor(num / denom);
+        num = num % denom;
+        steps.push('带分数: ' + whole + ' ' + num + '/' + denom);
+      }
+      return { num: num, den: denom, whole: whole };
+    }
+
+    function fractionToDecimal(s) {
+      var parts = s.split('/');
+      if (parts.length === 2) {
+        var num = parseFloat(parts[0]);
+        var den = parseFloat(parts[1]);
+        if (!isNaN(num) && !isNaN(den) && den !== 0) return num / den;
+      }
+      return null;
+    }
+
+    function generate() {
+      var input = inputEl.value.trim();
+      var showMixed = mixedChk.checked;
+      var showSteps = stepsChk.checked;
+      if (!input) { setStatus('请输入数值', 'error'); return; }
+
+      var steps = [];
+      var 结果 = '';
+
+      if (input.indexOf('/') !== -1) {
+        var decimal = fractionToDecimal(input);
+        if (decimal === null) { setStatus('无效的分数格式', 'error'); return; }
+        steps.push('分数 → 小数:');
+        steps.push(input + ' = ' + decimal);
+        var fr = decimalToFraction(decimal, []);
+        结果 = '小数: ' + decimal + '\n分数: ' + input;
+        if (showMixed && fr.whole > 0) {
+          var rem = parseInt(input.split('/')[0]) % parseInt(input.split('/')[1]);
+          var den = parseInt(input.split('/')[1]);
+          结果 += '\n带分数: ' + fr.whole + ' ' + rem + '/' + den;
+        }
+      } else {
+        var val = parseFloat(input);
+        if (isNaN(val)) { setStatus('请输入有效数值', 'error'); return; }
+        steps.push('小数 → 分数:');
+        var fr = decimalToFraction(val, steps);
+        结果 = '小数: ' + val;
+        if (showMixed && fr.whole > 0 && fr.num > 0) {
+          结果 += '\n带分数: ' + fr.whole + ' ' + fr.num + '/' + fr.den;
+          结果 += '\n假分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+        } else {
+          结果 += '\n分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+        }
+        if (fr.den === 1) 结果 += '\n（整数）';
+      }
+
+      if (showSteps) {
+        输出El.textContent = steps.join('\n') + '\n\n' + 结果;
+      } else {
+        输出El.textContent = 结果;
+      }
+      setStatus('转换完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

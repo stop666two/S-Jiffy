@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Enigma 模拟器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.enigma-grid{font-family:var(--font-mono);font-size:var(--font-size-xs);margin-top:var(--space-2)}.enigma-grid label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:var(--space-1)}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Enigma 模拟器</h1><p class="tool-desc">简化版 Enigma 密码机模拟：3 转子、反射器、插线板。</p>
+<div class="card">
+<div class="enigma-grid">
+<label>转子 1（左侧）</label><select id="rotor1" class="input" style="width:80px;">
+<option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
+<option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
+<option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
+</select>
+<label>转子 2（中间）</label><select id="rotor2" class="input" style="width:80px;">
+<option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
+<option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
+<option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
+</select>
+<label>转子 3（右侧）</label><select id="rotor3" class="input" style="width:80px;">
+<option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
+<option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
+<option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
+</select>
+<label>转子位置（3 字母）</label><input id="positions" class="input" value="AAA" style="width:60px;" maxlength="3">
+<label>插线板（如 AB CD）</label><input id="plugboard" class="input" placeholder="AB CD EF" style="width:200px;">
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要加密/解密的文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="processBtn" class="btn btn-primary">加密/解密</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var rotor1=document.getElementById('rotor1');
+var rotor2=document.getElementById('rotor2');
+var rotor3=document.getElementById('rotor3');
+var positions=document.getElementById('positions');
+var plugboard=document.getElementById('plugboard');
+var processBtn=document.getElementById('processBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var reflector='YRUHQSLDPXNGOKMIEBFZCWVJAT';
+var alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function buildPlugMap(pb){
+var map={};
+if(!pb)return map;
+var pairs=pb.to大写().split(/\s+/);
+for(var i=0;i<pairs.length;i++){
+if(pairs[i].length===2){
+map[pairs[i][0]]=pairs[i][1];
+map[pairs[i][1]]=pairs[i][0];
+}
+}
+return map;
+}
+function enigma(text,r1,r2,r3,pos,pb){
+var t=text.to大写().replace(/[^A-Z]/g,'');
+var plug=buildPlugMap(pb);
+var posArr=[pos.charCodeAt(0)-65,pos.charCodeAt(1)-65,pos.charCodeAt(2)-65];
+var rotors=[r1,r2,r3];
+var r='';
+for(var i=0;i<t.length;i++){
+posArr[2]=(posArr[2]+1)%26;
+if(posArr[2]===0){posArr[1]=(posArr[1]+1)%26;
+if(posArr[1]===0)posArr[0]=(posArr[0]+1)%26;
+}
+var ch=t[i];
+if(plug[ch])ch=plug[ch];
+var idx=alpha.indexOf(ch);
+for(var rIdx=2;rIdx>=0;rIdx--){
+var rotor=rotors[rIdx];
+var offset=posArr[rIdx];
+var contact=(idx+offset+26)%26;
+var mapped=rotor[contact];
+idx=(alpha.indexOf(mapped)-offset+26)%26;
+}
+idx=(idx+alpha.indexOf(reflector[idx]))%26;
+for(var rIdx=0;rIdx<=2;rIdx++){
+var rotor=rotors[rIdx];
+var offset=posArr[rIdx];
+var contact=(idx+offset+26)%26;
+var mapped=alpha[rotor.indexOf(alpha[contact])];
+idx=(alpha.indexOf(mapped)-offset+26)%26;
+}
+ch=alpha[idx];
+if(plug[ch])ch=plug[ch];
+r+=ch;
+}
+return r;
+}
+processBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var pos=positions.value.to大写();
+if(pos.length!==3){setStatus('转子位置需要 3 个字母','error');return;}
+var r=enigma(t,rotor1.value,rotor2.value,rotor3.value,pos,plugboard.value);
+输出El.textContent=r;
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

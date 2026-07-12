@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -27,8 +27,8 @@
       </div>
     </div>
     <div class="barcode-wrap" id="barcodeWrap" style="display:none;"></div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -42,7 +42,7 @@
       var barcodeInput = document.getElementById('barcodeInput');
       var generateBtn = document.getElementById('generateBtn');
       var barcodeWrap = document.getElementById('barcodeWrap');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       var CODE128_START_B = 104;
@@ -83,7 +83,7 @@
       function generateSVG(text) {
         if (!text) { setStatus('请输入内容', 'error'); return; }
         try {
-          var codes = encode128(text.toUpperCase());
+          var codes = encode128(text.to大写());
           var barParts = [];
           for (var i = 0; i < codes.length; i++) {
             barParts.push(CODE128_PATTERNS[codes[i]]);
@@ -120,7 +120,7 @@
         if (!svg) return;
         barcodeWrap.innerHTML = svg;
         barcodeWrap.style.display = 'flex';
-        outputEl.textContent = '条码已生成: ' + text + ' (CODE128)';
+        输出El.textContent = '条码已生成: ' + text + ' (CODE128)';
         setStatus('条码生成成功');
       }
 
@@ -128,7 +128,7 @@
       barcodeInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') generate(); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

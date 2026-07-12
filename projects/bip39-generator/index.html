@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -23,8 +23,8 @@
       <button id="generateBtn" class="btn btn-primary">生成</button>
       <button id="randomBtn" class="btn btn-secondary">随机熵</button>
     </div>
-    <div class="output-box" style="min-height:80px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="min-height:80px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <div class="word-grid" id="wordGrid"></div>
@@ -36,7 +36,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var entropyEl = document.getElementById('entropyInput');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     var gridEl = document.getElementById('wordGrid');
     var wordlist = [
       'abandon','ability','able','about','above','absent','absorb','abstract','absurd','abuse',
@@ -77,7 +77,7 @@
       'cloth','cloud','clown','club','clump','cluster','clutch','coach','coast','coconut',
       'code','coffee','coil','coin','collect','color','column','combine','come','comfort',
       'comic','common','company','concert','conduct','confirm','congress','connect','consider','control',
-      'convince','cook','cool','copper','copy','coral','core','corn','correct','cost',
+      'convince','cook','cool','copper','复制','coral','core','corn','correct','cost',
       'cotton','couch','country','couple','course','cousin','cover','coyote','crack','cradle',
       'craft','cram','crane','crash','crater','crawl','crazy','cream','credit','creek',
       'crew','cricket','crime','crisp','critic','crop','cross','crouch','crowd','crucial',
@@ -164,7 +164,7 @@
       'obtain','obvious','occur','ocean','october','odor','off','offer','office','often',
       'oil','okay','old','olive','olympic','omit','once','one','onion','online',
       'only','open','opera','opinion','oppose','option','orange','orbit','orchard','order',
-      'ordinary','organ','orient','original','orphan','ostrich','other','outdoor','outer','output',
+      'ordinary','organ','orient','original','orphan','ostrich','other','outdoor','outer','输出',
       'outside','oval','oven','over','own','owner','oxygen','oyster','ozone','pact',
       'paddle','page','pair','palace','palm','panda','panel','panic','panther','paper',
       'parade','parent','park','parrot','party','pass','patch','path','patient','patrol',
@@ -186,7 +186,7 @@
       'reduce','reflect','reform','refuse','region','regret','regular','reject','relax','release',
       'relief','rely','remain','remember','remind','remove','render','renew','rent','reopen',
       'repair','repeat','replace','report','require','rescue','resemble','resist','resource','response',
-      'result','retire','retreat','return','reunion','reveal','review','reward','rhythm','rib',
+      '结果','retire','retreat','return','reunion','reveal','review','reward','rhythm','rib',
       'ribbon','rice','rich','ride','ridge','rifle','right','rigid','ring','riot',
       'ripple','risk','ritual','rival','river','road','roast','robot','robust','rocket',
       'romance','roof','rookie','room','rose','rotate','rough','round','route','royal',
@@ -334,8 +334,8 @@
       if (!hex) { setStatus('请先输入熵值或点击"随机熵"', 'error'); return; }
       if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) { setStatus('熵值格式无效，请输入十六进制', 'error'); return; }
       if (hex.length < 32) { setStatus('熵值过短，至少 16 字节 (32 hex)', 'error'); return; }
-      var words = entropyToMnemonic(hex.toLowerCase());
-      outputEl.textContent = words.join(' ');
+      var words = entropyToMnemonic(hex.to小写());
+      输出El.textContent = words.join(' ');
       var chips = '';
       for (var i = 0; i < words.length; i++) { chips += '<span class="word-chip">' + (i + 1) + '. ' + words[i] + '</span>'; }
       gridEl.innerHTML = chips;
@@ -346,7 +346,7 @@
       entropyEl.value = hex;
       setStatus('已生成随机熵值 (32 字节)');
     });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

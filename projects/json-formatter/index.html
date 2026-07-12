@@ -1,268 +1,102 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON Formatter - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .json-tree { font-family:var(--font-mono); font-size:13px; line-height:1.6; }
-    .json-tree .toggle { cursor:pointer; user-select:none; color:var(--color-text-disabled); margin-right:4px; display:inline-block; width:12px; text-align:center; }
-    .json-tree .toggle:hover { color:var(--color-text-primary); }
-    .json-tree .key { color:#881280; }
-    .json-tree .string { color:#0451A5; }
-    .json-tree .number { color:#098658; }
-    .json-tree .bool { color:#0000FF; }
-    .json-tree .null { color:#808080; }
-    .json-tree .collapsed > .children { display:none; }
-    .json-tree .children { padding-left:20px; }
-    .json-tree .entry { }
-    .json-line-nums { font-family:var(--font-mono); font-size:13px; line-height:1.6; color:var(--color-text-disabled); text-align:right; padding-right:12px; border-right:1px solid var(--color-border); user-select:none; min-width:40px; }
-    .json-line-nums span { display:block; }
-    .json-line-content { font-family:var(--font-mono); font-size:13px; line-height:1.6; padding-left:12px; }
-    .json-line-content span { display:block; }
-    .json-split { display:flex; gap:0; }
-    .json-path-result { font-family:var(--font-mono); font-size:13px; padding:8px; background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-sm); margin-top:8px; max-height:200px; overflow:auto; }
-    .json-path-highlight { background:#FFF3CD; }
-    .json-error-detail { font-size:var(--font-size-sm); padding:8px; background:#FFF0F0; border:1px solid var(--color-error); border-radius:var(--radius-sm); margin-top:8px; }
-    .json-error-detail .pos { font-family:var(--font-mono); }
-    .tree-wrap { max-height:400px; overflow:auto; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-2); background:var(--color-bg); }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JSON Formatter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.json-tree{font-family:var(--font-mono);font-size:13px;line-height:1.6;}
+.json-tree .toggle{cursor:pointer;user-select:none;color:var(--color-text-disabled);margin-right:4px;display:inline-block;width:12px;text-align:center;}
+.json-tree .key{color:#881280;}.json-tree .string{color:#0451A5;}.json-tree .number{color:#098658;}.json-tree .bool{color:#0000FF;}.json-tree .null{color:#808080;}
+.json-tree .collapsed>.children{display:none;}.json-tree .children{padding-left:20px;}
+.json-split{display:flex;gap:0;}
+.json-line-nums{font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-text-disabled);text-align:right;padding-right:12px;border-right:1px solid var(--color-border);user-select:none;min-width:40px;}
+.json-path-结果{font-family:var(--font-mono);font-size:13px;padding:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:8px;max-height:200px;overflow:auto;}
+.diff-view{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:var(--font-mono);font-size:12px;}
+.diff-view pre{margin:0;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);overflow:auto;max-height:400px;}
+.tree-wrap{max-height:400px;overflow:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-2);background:var(--color-bg);}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>JSON Formatter</h1>
-    <p class="tool-desc">格式化、压缩、树形浏览、JSONPath 查询与错误定位。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>JSON 格式化</h1>
+<p class="tool-desc">Format, minify, tree view, JSONPath query, diff view, JSON to TypeScript types.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","list":[1,2,3]}' style="min-height:150px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+<button id="formatBtn" class="btn btn-primary">格式化</button>
+<button id="minifyBtn" class="btn btn-secondary">压缩</button>
+<button id="treeBtn" class="btn btn-secondary">Tree View</button>
+<button id="toTsBtn" class="btn btn-secondary">→ TS Type</button>
+</div>
+<div class="card" style="margin-bottom:12px;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSON Diff (paste second JSON)</label><textarea id="jsonBText" class="input textarea" placeholder='{"name":"test2","list":[1,2,3,4]}' style="min-height:60px;"></textarea>
+<button id="diffBtn" class="btn btn-secondary" style="margin-top:8px;">Compare Diff</button><div id="diff结果" class="diff-view" style="margin-top:8px;"></div></div>
+<div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSONPath</label><input id="jsonPathInput" class="input" placeholder="$.store.book[0].title" style="flex:1;min-width:160px;"><button id="jsonPathBtn" class="btn btn-secondary">查询</button></div>
+<div id="jsonPath结果"></div>
+<div id="errorDetail" style="display:none;"></div>
+<div class="输出-box" id="输出Container" style="min-height:80px;"><div id="输出Content"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var inputEl=document.getElementById('inputText'),输出Content=document.getElementById('输出Content'),copyBtn=document.getElementById('copyBtn');
+  var jpInput=document.getElementById('jsonPathInput'),jp结果=document.getElementById('jsonPath结果'),errorDetail=document.getElementById('errorDetail');
+  var jsonB=document.getElementById('jsonBText'),diff结果=document.getElementById('diff结果');
+  var currentParsed=null;
 
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","list":[1,2,3]}' style="min-height:180px;"></textarea>
-    </div>
+  function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="formatBtn" class="btn btn-primary">格式化</button>
-      <button id="minifyBtn" class="btn btn-secondary">压缩</button>
-      <button id="treeBtn" class="btn btn-secondary">树形视图</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
-    </div>
+  function tryParse(v){try{return{ok:true,data:JSON.parse(v)};}
+  catch(e){var msg=e.message,posMatch=msg.match(/position\s*(\d+)/i)||msg.match(/at\s+position\s+(\d+)/i);
+    errorDetail.style.display='block';
+    if(posMatch){var pos=parseInt(posMatch[1]),before=v.substr(0,pos),lines=before.split('\n'),line=lines.length,col=(lines[lines.length-1]||'').length+1;
+    errorDetail.innerHTML='<div style="padding:8px;background:#fff0f0;border:1px solid var(--color-error);border-radius:var(--radius-sm);font-size:var(--font-size-sm);"><strong>Syntax Error</strong> at pos '+pos+' (line '+line+', col '+col+')<br>'+escapeHtml(msg)+'</div>';}
+    else errorDetail.innerHTML='<div style="padding:8px;background:#fff0f0;border:1px solid var(--color-error);border-radius:var(--radius-sm);font-size:var(--font-size-sm);">'+escapeHtml(msg)+'</div>';
+    return{ok:false};}}
 
-    <div class="card" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSONPath</label>
-      <input id="jsonPathInput" class="input" placeholder="$.store.book[0].title" style="flex:1;min-width:160px;">
-      <button id="jsonPathBtn" class="btn btn-secondary">查询</button>
-    </div>
-    <div id="jsonPathResult"></div>
+  function jsonToTs(obj,name){name=name||'Root';if(obj===null)return'type '+name+' = null;';if(typeof obj==='boolean')return'type '+name+' = boolean;';if(typeof obj==='number')return'type '+name+' = number;';if(typeof obj==='string')return'type '+name+' = string;';if(Array.isArray(obj)){if(obj.length===0)return'type '+name+' = any[];';var types={};for(var i=0;i<obj.length;i++){var t=jsonToTs(obj[i],'Item');types[t.replace('type Item = ','')]=true;}return'type '+name+' = ('+Object.keys(types).join(' | ')+')[];';}
+    if(typeof obj==='object'){var props=[];for(var k in obj){if(obj.hasOwnProperty(k)){var val=obj[k];var prop='  '+k+': '+jsonToTs(val,'').replace(/^type \w+ = /,'')+';';props.push(prop);}}return'type '+name+' = {\n'+props.join('\n')+'\n};';}
+    return'type '+name+' = any;';}
 
-    <div id="errorDetail" style="display:none;"></div>
+  function buildTree(value,key){var div=document.createElement('div');div.className='entry';
+    var prefix=key!==undefined?'<span class="key">'+escapeHtml(JSON.stringify(key))+'</span>: ':'';
+    if(value===null)div.innerHTML=prefix+'<span class="null">null</span>';
+    else if(typeof value==='boolean')div.innerHTML=prefix+'<span class="bool">'+value+'</span>';
+    else if(typeof value==='number')div.innerHTML=prefix+'<span class="number">'+value+'</span>';
+    else if(typeof value==='string')div.innerHTML=prefix+'<span class="string">'+escapeHtml(JSON.stringify(value))+'</span>';
+    else if(Array.isArray(value)){if(value.length===0){div.innerHTML=prefix+'[]';return div;}
+      var toggle=document.createElement('span');toggle.className='toggle';toggle.textContent='▼';div.appendChild(toggle);
+      div.appendChild(document.createTextNode(prefix+'['));var children=document.createElement('div');children.className='children';
+      for(var i=0;i<value.length;i++){var child=buildTree(value[i],i);var comma=i<value.length-1?',':'';child.appendChild(document.createTextNode(comma));children.appendChild(child);}
+      div.appendChild(children);div.appendChild(document.createTextNode(']'));
+      toggle.addEventListener('click',function(){div.classList.toggle('collapsed');this.textContent=div.classList.contains('collapsed')?'▶':'▼';});}
+    else if(typeof value==='object'){var keys=Object.keys(value);if(keys.length===0){div.innerHTML=prefix+'{}';return div;}
+      var toggle2=document.createElement('span');toggle2.className='toggle';toggle2.textContent='▼';div.appendChild(toggle2);
+      div.appendChild(document.createTextNode(prefix+'{'));var children2=document.createElement('div');children2.className='children';
+      for(var j=0;j<keys.length;j++){var child2=buildTree(value[keys[j]],keys[j]);var comma2=j<keys.length-1?',':'';child2.appendChild(document.createTextNode(comma2));children2.appendChild(child2);}
+      div.appendChild(children2);div.appendChild(document.createTextNode('}'));
+      toggle2.addEventListener('click',function(){div.classList.toggle('collapsed');this.textContent=div.classList.contains('collapsed')?'▶':'▼';});}
+    return div;}
 
-    <div class="output-box" id="outputContainer" style="min-height:80px;">
-      <div id="outputContent"></div>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function () {
-      var inputEl = document.getElementById('inputText');
-      var outputContent = document.getElementById('outputContent');
-      var copyBtn = document.getElementById('copyBtn');
-      var jpInput = document.getElementById('jsonPathInput');
-      var jpResult = document.getElementById('jsonPathResult');
-      var errorDetail = document.getElementById('errorDetail');
-      var currentParsed = null;
+  function format(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
+    if(!v){输出Content.innerHTML='';setStatus('Enter JSON','error');return;}var 结果=tryParse(v);if(!结果.ok){输出Content.innerHTML='';setStatus('JSON error','error');return;}
+    currentParsed=结果.data;输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(JSON.stringify(结果.data,null,2))+'</pre>';setStatus('');}
 
-      function escapeHtml(s) {
-        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      }
-
-      function tryParse(v) {
-        try { return { ok: true, data: JSON.parse(v) }; }
-        catch (e) {
-          var msg = e.message;
-          var posMatch = msg.match(/position\s*(\d+)/i) || msg.match(/at\s+position\s+(\d+)/i);
-          var lineCol = '';
-          if (posMatch) {
-            var pos = parseInt(posMatch[1]);
-            var before = v.substr(0, pos);
-            var lines = before.split('\n');
-            var line = lines.length;
-            var col = (lines[lines.length - 1] || '').length + 1;
-            lineCol = ' (第 ' + line + ' 行, 第 ' + col + ' 列)';
-            errorDetail.style.display = 'block';
-            errorDetail.innerHTML = '<div class="json-error-detail"><strong>JSON 语法错误</strong><br><span class="pos">位置: ' + pos + lineCol + '</span><br><span>错误信息: ' + escapeHtml(msg) + '</span></div>';
-          } else {
-            errorDetail.style.display = 'block';
-            errorDetail.innerHTML = '<div class="json-error-detail"><strong>JSON 语法错误</strong><br><span>' + escapeHtml(msg) + '</span></div>';
-          }
-          return { ok: false, error: msg };
-        }
-      }
-
-      function buildTree(value, key) {
-        var div = document.createElement('div');
-        div.className = 'entry';
-        var prefix = key !== undefined ? '<span class="key">' + escapeHtml(JSON.stringify(key)) + '</span>: ' : '';
-        if (value === null) {
-          div.innerHTML = prefix + '<span class="null">null</span>';
-        } else if (typeof value === 'boolean') {
-          div.innerHTML = prefix + '<span class="bool">' + value + '</span>';
-        } else if (typeof value === 'number') {
-          div.innerHTML = prefix + '<span class="number">' + value + '</span>';
-        } else if (typeof value === 'string') {
-          div.innerHTML = prefix + '<span class="string">' + escapeHtml(JSON.stringify(value)) + '</span>';
-        } else if (Array.isArray(value)) {
-          if (value.length === 0) { div.innerHTML = prefix + '[]'; return div; }
-          var toggle = document.createElement('span');
-          toggle.className = 'toggle';
-          toggle.textContent = '▼';
-          div.appendChild(toggle);
-          div.appendChild(document.createTextNode(prefix + '['));
-          var children = document.createElement('div');
-          children.className = 'children';
-          for (var i = 0; i < value.length; i++) {
-            var child = buildTree(value[i], i);
-            var comma = i < value.length - 1 ? ',' : '';
-            child.appendChild(document.createTextNode(comma));
-            children.appendChild(child);
-          }
-          div.appendChild(children);
-          div.appendChild(document.createTextNode(']'));
-          toggle.addEventListener('click', function () { div.classList.toggle('collapsed'); this.textContent = div.classList.contains('collapsed') ? '▶' : '▼'; });
-        } else if (typeof value === 'object') {
-          var keys = Object.keys(value);
-          if (keys.length === 0) { div.innerHTML = prefix + '{}'; return div; }
-          var toggle2 = document.createElement('span');
-          toggle2.className = 'toggle';
-          toggle2.textContent = '▼';
-          div.appendChild(toggle2);
-          div.appendChild(document.createTextNode(prefix + '{'));
-          var children2 = document.createElement('div');
-          children2.className = 'children';
-          for (var j = 0; j < keys.length; j++) {
-            var child2 = buildTree(value[keys[j]], keys[j]);
-            var comma2 = j < keys.length - 1 ? ',' : '';
-            child2.appendChild(document.createTextNode(comma2));
-            children2.appendChild(child2);
-          }
-          div.appendChild(children2);
-          div.appendChild(document.createTextNode('}'));
-          toggle2.addEventListener('click', function () { div.classList.toggle('collapsed'); this.textContent = div.classList.contains('collapsed') ? '▶' : '▼'; });
-        }
-        return div;
-      }
-
-      function resolveJsonPath(obj, path) {
-        if (!path || path === '$') return [obj];
-        var parts = path.replace(/^\$\.?/, '').split(/\.|\[|\]\.|'|"/).filter(function (p) { return p !== ''; });
-        var results = [obj];
-        for (var i = 0; i < parts.length; i++) {
-          var part = parts[i];
-          var next = [];
-          for (var j = 0; j < results.length; j++) {
-            var item = results[j];
-            if (item && typeof item === 'object') {
-              if (Array.isArray(item)) {
-                if (part === '*') { for (var k = 0; k < item.length; k++) next.push(item[k]); }
-                else if (!isNaN(part)) { if (item[+part] !== undefined) next.push(item[+part]); }
-              } else {
-                if (part === '*') { for (var key in item) next.push(item[key]); }
-                else if (item[part] !== undefined) next.push(item[part]);
-              }
-            }
-          }
-          results = next;
-        }
-        return results;
-      }
-
-      function renderFormatted(data) {
-        var formatted = JSON.stringify(data, null, 2);
-        var lines = formatted.split('\n');
-        var numLines = document.createElement('div');
-        numLines.className = 'json-line-nums';
-        var contentLines = document.createElement('div');
-        contentLines.className = 'json-line-content';
-        for (var i = 0; i < lines.length; i++) {
-          var ns = document.createElement('span');
-          ns.textContent = i + 1;
-          numLines.appendChild(ns);
-          var cs = document.createElement('span');
-          cs.textContent = lines[i];
-          contentLines.appendChild(cs);
-        }
-        var wrap = document.createElement('div');
-        wrap.style.display = 'flex';
-        wrap.appendChild(numLines);
-        wrap.appendChild(contentLines);
-        return wrap;
-      }
-
-      function format() {
-        var v = inputEl.value.trim();
-        errorDetail.style.display = 'none';
-        jpResult.innerHTML = '';
-        currentParsed = null;
-        if (!v) { outputContent.innerHTML = ''; setStatus('请输入 JSON', 'error'); return; }
-        var result = tryParse(v);
-        if (!result.ok) { outputContent.innerHTML = ''; setStatus('JSON 格式错误', 'error'); return; }
-        currentParsed = result.data;
-        outputContent.innerHTML = '';
-        outputContent.appendChild(renderFormatted(result.data));
-        setStatus('');
-      }
-
-      document.getElementById('formatBtn').addEventListener('click', format);
-      document.getElementById('minifyBtn').addEventListener('click', function () {
-        var v = inputEl.value.trim();
-        errorDetail.style.display = 'none';
-        jpResult.innerHTML = '';
-        currentParsed = null;
-        if (!v) { setStatus('请输入 JSON', 'error'); return; }
-        var result = tryParse(v);
-        if (!result.ok) { outputContent.innerHTML = ''; setStatus('JSON 格式错误', 'error'); return; }
-        currentParsed = result.data;
-        outputContent.innerHTML = '<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">' + escapeHtml(JSON.stringify(result.data)) + '</pre>';
-        setStatus('');
-      });
-      document.getElementById('treeBtn').addEventListener('click', function () {
-        var v = inputEl.value.trim();
-        errorDetail.style.display = 'none';
-        jpResult.innerHTML = '';
-        currentParsed = null;
-        if (!v) { setStatus('请输入 JSON', 'error'); return; }
-        var result = tryParse(v);
-        if (!result.ok) { outputContent.innerHTML = ''; setStatus('JSON 格式错误', 'error'); return; }
-        currentParsed = result.data;
-        outputContent.innerHTML = '';
-        var treeWrap = document.createElement('div');
-        treeWrap.className = 'tree-wrap json-tree';
-        treeWrap.appendChild(buildTree(result.data));
-        outputContent.appendChild(treeWrap);
-        setStatus('');
-      });
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputContent.innerHTML = ''; errorDetail.style.display = 'none'; jpResult.innerHTML = ''; currentParsed = null; setStatus(''); inputEl.focus(); });
-      document.getElementById('jsonPathBtn').addEventListener('click', function () {
-        if (!currentParsed) { jpResult.innerHTML = '<div class="json-path-result" style="color:var(--color-error);">请先格式化或解析 JSON</div>'; return; }
-        var path = jpInput.value.trim();
-        if (!path) { jpResult.innerHTML = ''; return; }
-        try {
-          var matches = resolveJsonPath(currentParsed, path);
-          jpResult.innerHTML = '<div class="json-path-result"><strong>匹配结果 (' + matches.length + ' 个)</strong><br>' + escapeHtml(JSON.stringify(matches, null, 2)) + '</div>';
-          setStatus('');
-        } catch (e) { jpResult.innerHTML = '<div class="json-path-result" style="color:var(--color-error);">JSONPath 查询错误: ' + escapeHtml(e.message) + '</div>'; }
-      });
-      jpInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('jsonPathBtn').click(); });
-      copyBtn.addEventListener('click', function () {
-        var text = outputContent.textContent;
-        if (text) { copyToClipboard(text, this); setStatus('已复制到剪贴板'); }
-      });
-    })();
-  </script>
-</body>
-</html>
+  document.getElementById('formatBtn').addEventListener('click',format);
+  document.getElementById('minifyBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;if(!v){setStatus('Enter JSON','error');return;}
+    var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}currentParsed=结果.data;输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(结果.data))+'</pre>';setStatus('');});
+  document.getElementById('treeBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
+    if(!v){setStatus('Enter JSON','error');return;}var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}currentParsed=结果.data;
+    输出Content.innerHTML='';var tw=document.createElement('div');tw.className='tree-wrap json-tree';tw.appendChild(buildTree(结果.data));输出Content.appendChild(tw);setStatus('');});
+  document.getElementById('toTsBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';if(!v){setStatus('Enter JSON','error');return;}
+    var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}var ts=jsonToTs(结果.data);输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS type generated');});
+  document.getElementById('diffBtn').addEventListener('click',function(){var a=inputEl.value.trim(),b=jsonB.value.trim();if(!a||!b){setStatus('Enter both JSONs','error');return;}
+    var ra=tryParse(a),rb=tryParse(b);if(!ra.ok||!rb.ok){setStatus('Invalid JSON','error');return;}
+    diff结果.innerHTML='<pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">A: '+escapeHtml(JSON.stringify(ra.data,null,2))+'</pre><pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">B: '+escapeHtml(JSON.stringify(rb.data,null,2))+'</pre>';setStatus('Diff shown');});
+  document.getElementById('clearBtn')&&document.getElementById('clearBtn').addEventListener('click',function(){inputEl.value='';输出Content.innerHTML='';errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;setStatus('');inputEl.focus();});
+  document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Format JSON first</div>';return;}
+    var path=jpInput.value.trim();if(!path){jp结果.innerHTML='';return;}
+    try{var parts=path.replace(/^\$\.?/,'').split(/\.|\[|\]\.|'|"/).filter(function(p){return p!=='';});var 结果s=[currentParsed];
+      for(var i=0;i<parts.length;i++){var part=parts[i],next=[];for(var j=0;j<结果s.length;j++){var item=结果s[j];if(item&&typeof item==='object'){if(Array.isArray(item)){if(part==='*'){for(var k=0;k<item.length;k++)next.push(item[k]);}else if(!isNaN(part)){if(item[+part]!==undefined)next.push(item[+part]);}}else{if(part==='*'){for(var key in item)next.push(item[key]);}else if(item[part]!==undefined)next.push(item[part]);}}}
+      结果s=next;}
+    jp结果.innerHTML='<div class="json-path-结果"><strong>Matches ('+结果s.length+')</strong><br>'+escapeHtml(JSON.stringify(结果s,null,2))+'</div>';setStatus('');}catch(e){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Query error: '+escapeHtml(e.message)+'</div>';}});
+  jpInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('jsonPathBtn').click();});
+  copyBtn.addEventListener('click',function(){var text=输出Content.textContent;if(text){copyToClipboard(text,this);setStatus('Copied');}});
+})();
+</script></body></html>

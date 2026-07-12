@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -25,8 +25,8 @@ level = "debug"' style="min-height:200px;"></textarea>
       <button id="convertBtn" class="btn btn-primary">转换到 YAML</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -38,11 +38,11 @@ level = "debug"' style="min-height:200px;"></textarea>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
 
       function parseToml(src) {
-        var result = {};
-        var currentSection = result;
+        var 结果 = {};
+        var currentSection = 结果;
         var sectionPath = [];
         var lines = src.split('\n');
         for (var i = 0; i < lines.length; i++) {
@@ -54,7 +54,7 @@ level = "debug"' style="min-height:200px;"></textarea>
             if (close === -1) continue;
             var raw = trimmed.substring(1, close);
             sectionPath = raw.trim().split('.');
-            currentSection = result;
+            currentSection = 结果;
             for (var s = 0; s < sectionPath.length; s++) {
               var part = sectionPath[s].trim();
               if (!currentSection[part]) currentSection[part] = {};
@@ -90,7 +90,7 @@ level = "debug"' style="min-height:200px;"></textarea>
             currentSection[key] = isNaN(num) ? valStr : num;
           }
         }
-        return result;
+        return 结果;
       }
 
       function toYaml(val, indent) {
@@ -148,16 +148,16 @@ level = "debug"' style="min-height:200px;"></textarea>
         if (!text) { setStatus('请输入 TOML', 'error'); return; }
         try {
           var parsed = parseToml(text);
-          outputEl.textContent = toYaml(parsed, 0);
+          输出El.textContent = toYaml(parsed, 0);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('转换错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

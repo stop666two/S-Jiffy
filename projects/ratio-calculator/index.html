@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>比例计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rc-row .field { flex:1; min-width:80px; }
+    .rc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .ratio-formula { font-size:var(--font-size-lg); text-align:center; margin:var(--space-3) 0; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>比例计算器</h1>
+    <p class="tool-desc">解比例 A:B = C:D，求解未知项，或对比例进行化简。</p>
+    <div class="card">
+      <div class="ratio-formula">
+        <input id="aVal" class="input" style="width:70px;text-align:center;" placeholder="A"> : <input id="bVal" class="input" style="width:70px;text-align:center;" placeholder="B"> = <input id="cVal" class="input" style="width:70px;text-align:center;" placeholder="C"> : <input id="dVal" class="input" style="width:70px;text-align:center;" placeholder="D">
+      </div>
+      <p style="text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-3);">留空要计算的项，其余三项填数字</p>
+      <div class="rc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="simplifyChk" type="checkbox"> 也化简比例</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var aEl = document.getElementById('aVal');
+    var bEl = document.getElementById('bVal');
+    var cEl = document.getElementById('cVal');
+    var dEl = document.getElementById('dVal');
+    var simplifyChk = document.getElementById('simplifyChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) { var t = b; b = a % b; a = t; }
+      return a;
+    }
+
+    function generate() {
+      var a = aEl.value.trim();
+      var b = bEl.value.trim();
+      var c = cEl.value.trim();
+      var d = dEl.value.trim();
+
+      var nums = [parseFloat(a), parseFloat(b), parseFloat(c), parseFloat(d)];
+      var emptyCount = 0;
+      var emptyIdx = -1;
+      for (var i = 0; i < 4; i++) {
+        if (aEl.value.trim() === '' && i === 0) { emptyCount++; emptyIdx = i; }
+        else if (bEl.value.trim() === '' && i === 1) { emptyCount++; emptyIdx = i; }
+        else if (cEl.value.trim() === '' && i === 2) { emptyCount++; emptyIdx = i; }
+        else if (dEl.value.trim() === '' && i === 3) { emptyCount++; emptyIdx = i; }
+      }
+
+      if (emptyCount !== 1) { setStatus('请恰好留空一项', 'error'); return; }
+
+      var vals = [parseFloat(a), parseFloat(b), parseFloat(c), parseFloat(d)];
+      for (var i = 0; i < vals.length; i++) {
+        if (isNaN(vals[i]) && i !== emptyIdx) { setStatus('请填写有效的数字', 'error'); return; }
+      }
+
+      var 结果;
+      if (emptyIdx === 0) {
+        结果 = (vals[1] * vals[2]) / vals[3];
+      } else if (emptyIdx === 1) {
+        结果 = (vals[0] * vals[3]) / vals[2];
+      } else if (emptyIdx === 2) {
+        结果 = (vals[0] * vals[3]) / vals[1];
+      } else {
+        结果 = (vals[1] * vals[2]) / vals[0];
+      }
+
+      if (!isFinite(结果) || isNaN(结果)) { setStatus('计算错误，请检查输入', 'error'); return; }
+
+      var labels = ['A', 'B', 'C', 'D'];
+      var 输出 = '';
+      var full = [aEl.value.trim(), bEl.value.trim(), cEl.value.trim(), dEl.value.trim()];
+      full[emptyIdx] = '' + parseFloat(结果.toFixed(6));
+      输出 = 'A : B = C : D\n';
+      输出 += full[0] + ' : ' + full[1] + ' = ' + full[2] + ' : ' + full[3] + '\n';
+      输出 += '\n' + labels[emptyIdx] + ' = ' + parseFloat(结果.toFixed(6));
+
+      if (simplifyChk.checked) {
+        var allVals = full.map(function(v) { return Math.round(parseFloat(v)); });
+        if (allVals.every(function(v) { return v > 0; })) {
+          var g = gcd(allVals[0], gcd(allVals[1], gcd(allVals[2], allVals[3])));
+          if (g > 1) {
+            输出 += '\n\n化简比例:\n' + allVals.map(function(v){return v/g;}).join(' : ');
+          }
+        }
+      }
+
+      输出El.textContent = 输出;
+      setStatus('计算完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 标签去除 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>HTML 标签去除</h1><p class="tool-desc">移除 HTML 标签，仅保留纯文本内容，支持保留指定标签。</p>
+<div class="card"><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;margin-bottom:4px;">保留标签（逗号分隔，如 a,b,br）</label><input id="keepTags" class="input" placeholder="可选，留空则移除所有标签" style="width:300px;">
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 HTML 内容..." style="min-height:120px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="stripBtn" class="btn btn-primary">去除标签</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var keepTags=document.getElementById('keepTags');
+var stripBtn=document.getElementById('stripBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+function strip(html,keep){
+var keepSet={};
+if(keep){
+keep.split(',').forEach(function(t){var tt=t.trim().to小写();if(tt)keepSet[tt]=true;});
+}
+var r=html.replace(/<!--[\s\S]*?-->/g,'');
+if(Object.keys(keepSet).length>0){
+var tags=Object.keys(keepSet).join('|');
+var pat=new RegExp('</?(?!('+tags+')\\b)[a-zA-Z][^>]*>','gi');
+r=r.replace(pat,'');
+}else{
+r=r.replace(/<[^>]*>/g,'');
+}
+r=r.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+return r;
+}
+stripBtn.addEventListener('click',function(){
+var html=inputEl.value;
+if(!html){setStatus('请输入 HTML','error');return;}
+输出El.textContent=strip(html,keepTags.value);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

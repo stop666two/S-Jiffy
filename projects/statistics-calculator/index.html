@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统计计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .sc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .sc-row .field { flex:1; min-width:100px; }
+    .sc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .stat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:var(--space-2); }
+    .stat-item { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); text-align:center; }
+    .stat-item .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+    .stat-item .value { font-size:var(--font-size-lg); font-weight:600; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>统计计算器</h1>
+    <p class="tool-desc">对一组数字计算总和、计数、均值、中位数、众数、最值、极差、方差和标准差。</p>
+    <div class="card">
+      <div class="sc-row">
+        <div class="field" style="flex:2;"><label for="inputVal">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 15, 18, 20, 22, 25, 30" placeholder="例如 1, 2, 3, 4, 5"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-item"><div class="label">总和 (Sum)</div><div class="value" id="sumVal">-</div></div>
+        <div class="stat-item"><div class="label">计数 (Count)</div><div class="value" id="countVal">-</div></div>
+        <div class="stat-item"><div class="label">均值 (Mean)</div><div class="value" id="meanVal">-</div></div>
+        <div class="stat-item"><div class="label">中位数 (Median)</div><div class="value" id="medianVal">-</div></div>
+        <div class="stat-item"><div class="label">众数 (Mode)</div><div class="value" id="modeVal">-</div></div>
+        <div class="stat-item"><div class="label">最小值</div><div class="value" id="minVal">-</div></div>
+        <div class="stat-item"><div class="label">最大值</div><div class="value" id="maxVal">-</div></div>
+        <div class="stat-item"><div class="label">极差 (Range)</div><div class="value" id="rangeVal">-</div></div>
+        <div class="stat-item"><div class="label">方差 (Variance)</div><div class="value" id="varVal">-</div></div>
+        <div class="stat-item"><div class="label">标准差 (StdDev)</div><div class="value" id="stdVal">-</div></div>
+      </div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputVal');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function generate() {
+      var raw = inputEl.value.trim();
+      if (!raw) { setStatus('请输入数字', 'error'); return; }
+      var parts = raw.split(/[,，\s]+/).filter(function(s) { return s !== ''; });
+      var nums = [];
+      for (var i = 0; i < parts.length; i++) {
+        var n = parseFloat(parts[i]);
+        if (isNaN(n)) { setStatus('"' + parts[i] + '" 不是有效数字', 'error'); return; }
+        nums.push(n);
+      }
+      if (nums.length === 0) { setStatus('请输入至少一个数字', 'error'); return; }
+
+      var sorted = nums.slice().sort(function(a,b){return a-b;});
+      var sum = 0;
+      for (var i = 0; i < nums.length; i++) sum += nums[i];
+      var count = nums.length;
+      var mean = sum / count;
+
+      var median;
+      if (count % 2 === 0) {
+        median = (sorted[count/2 - 1] + sorted[count/2]) / 2;
+      } else {
+        median = sorted[Math.floor(count/2)];
+      }
+
+      var freq = {};
+      for (var i = 0; i < nums.length; i++) {
+        freq[nums[i]] = (freq[nums[i]] || 0) + 1;
+      }
+      var maxFreq = 0;
+      var modeVals = [];
+      var keys = Object.keys(freq);
+      for (var i = 0; i < keys.length; i++) {
+        if (freq[keys[i]] > maxFreq) { maxFreq = freq[keys[i]]; modeVals = [keys[i]]; }
+        else if (freq[keys[i]] === maxFreq) modeVals.push(keys[i]);
+      }
+      var mode = modeVals.length === keys.length ? '无' : modeVals.join(', ');
+
+      var min = sorted[0];
+      var max = sorted[count-1];
+      var range = max - min;
+
+      var sumSq = 0;
+      for (var i = 0; i < nums.length; i++) sumSq += (nums[i] - mean) * (nums[i] - mean);
+      var variance = sumSq / count;
+      var stddev = Math.sqrt(variance);
+
+      document.getElementById('sumVal').textContent = sum.toFixed(4);
+      document.getElementById('countVal').textContent = count;
+      document.getElementById('meanVal').textContent = mean.toFixed(4);
+      document.getElementById('medianVal').textContent = median.toFixed(4);
+      document.getElementById('modeVal').textContent = mode;
+      document.getElementById('minVal').textContent = min;
+      document.getElementById('maxVal').textContent = max;
+      document.getElementById('rangeVal').textContent = range.toFixed(4);
+      document.getElementById('varVal').textContent = variance.toFixed(4);
+      document.getElementById('stdVal').textContent = stddev.toFixed(4);
+
+      输出El.textContent = 'Sum=' + sum.toFixed(4) + ', Count=' + count + ', Mean=' + mean.toFixed(4) + ', Median=' + median.toFixed(4) + ', Mode=' + mode + ', Min=' + min + ', Max=' + max + ', Range=' + range.toFixed(4) + ', Var=' + variance.toFixed(4) + ', StdDev=' + stddev.toFixed(4);
+      setStatus('统计完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

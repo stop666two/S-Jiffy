@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>删除线生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>删除线生成</h1><p class="tool-desc">生成删除线、斜线、下划线、上划线和波浪线文本效果。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">样式</label>
+<select id="styleSelect" class="input" style="width:140px;">
+<option value="strike">删除线 ~~text~~</option>
+<option value="slash">斜线 /text/</option>
+<option value="underline">下划线 _text_</option>
+<option value="overline">上划线 ‾text‾</option>
+<option value="wavy">波浪线 ∼text∼</option>
+</select>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var styleSelect=document.getElementById('styleSelect');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var combiners={
+'strike':'\u0336',
+'slash':'\u0337',
+'underline':'\u0332',
+'overline':'\u0305',
+'wavy':'\u0330'
+};
+function convert(text,style){
+var comb=combiners[style];
+if(!comb)return text;
+var r='';
+for(var i=0;i<text.length;i++){
+r+=text[i];
+if(text[i]!==' ')r+=comb;
+}
+return r;
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+输出El.textContent=convert(t,styleSelect.value);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

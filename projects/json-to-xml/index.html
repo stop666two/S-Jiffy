@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +20,8 @@
       <button id="convertBtn" class="btn btn-primary">转换到 XML</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -33,29 +33,29 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
 
       function jsonToXml(obj, nodeName, indent) {
         if (indent === undefined) indent = 0;
         var pad = '  ';
         var padStr = pad.repeat(indent);
-        var result = '';
+        var 结果 = '';
 
         if (obj === null || obj === undefined) {
-          result += padStr + '<' + nodeName + '/>\n';
-          return result;
+          结果 += padStr + '<' + nodeName + '/>\n';
+          return 结果;
         }
 
         if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
-          result += padStr + '<' + nodeName + '>' + escapeXml(String(obj)) + '</' + nodeName + '>\n';
-          return result;
+          结果 += padStr + '<' + nodeName + '>' + escapeXml(String(obj)) + '</' + nodeName + '>\n';
+          return 结果;
         }
 
         if (Array.isArray(obj)) {
           for (var i = 0; i < obj.length; i++) {
-            result += jsonToXml(obj[i], nodeName, indent);
+            结果 += jsonToXml(obj[i], nodeName, indent);
           }
-          return result;
+          return 结果;
         }
 
         if (typeof obj === 'object') {
@@ -81,23 +81,23 @@
           var childKeys = Object.keys(children);
           if (childKeys.length === 0) {
             if (hasText) {
-              result += padStr + '<' + nodeName + attrs + '>' + textVal + '</' + nodeName + '>\n';
+              结果 += padStr + '<' + nodeName + attrs + '>' + textVal + '</' + nodeName + '>\n';
             } else {
-              result += padStr + '<' + nodeName + attrs + '/>\n';
+              结果 += padStr + '<' + nodeName + attrs + '/>\n';
             }
           } else {
-            result += padStr + '<' + nodeName + attrs + '>\n';
+            结果 += padStr + '<' + nodeName + attrs + '>\n';
             if (hasText) {
-              result += padStr + pad + textVal + '\n';
+              结果 += padStr + pad + textVal + '\n';
             }
             for (var i = 0; i < childKeys.length; i++) {
-              result += jsonToXml(children[childKeys[i]], childKeys[i], indent + 1);
+              结果 += jsonToXml(children[childKeys[i]], childKeys[i], indent + 1);
             }
-            result += padStr + '</' + nodeName + '>\n';
+            结果 += padStr + '</' + nodeName + '>\n';
           }
-          return result;
+          return 结果;
         }
-        return result;
+        return 结果;
       }
 
       function escapeXml(s) {
@@ -110,20 +110,20 @@
         try {
           var parsed = JSON.parse(text);
           var keys = Object.keys(parsed);
-          if (keys.length === 0) { outputEl.textContent = ''; setStatus('空对象', 'error'); return; }
+          if (keys.length === 0) { 输出El.textContent = ''; setStatus('空对象', 'error'); return; }
           var rootName = keys[0];
-          var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
-          result += jsonToXml(parsed[rootName], rootName, 0);
-          outputEl.textContent = result;
+          var 结果 = '<?xml version="1.0" encoding="UTF-8"?>\n';
+          结果 += jsonToXml(parsed[rootName], rootName, 0);
+          输出El.textContent = 结果;
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('JSON 格式错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

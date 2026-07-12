@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sunrise/Sunset - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.ss-grid{display:grid;gap:var(--space-2);}
+.ss-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);text-align:center;}
+.ss-card .big{font-size:28px;font-weight:600;font-family:var(--font-mono);}
+.ss-card .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.loc-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.loc-row .field{min-width:100px;}
+.loc-row label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>日出日落时间</h1><p class="tool-desc">Approximate sunrise/sunset times based on latitude, longitude, and date.</p>
+<div class="card">
+<div class="loc-row">
+<div class="field"><label>Latitude</label><input id="latInput" class="input" type="number" value="40.7128" step="0.01" style="width:120px;"></div>
+<div class="field"><label>Longitude</label><input id="lngInput" class="input" type="number" value="-74.0060" step="0.01" style="width:120px;"></div>
+<div class="field"><label>日期</label><input id="dateInput" class="input" type="date"></div>
+<button id="calcBtn" class="btn btn-primary">计算</button>
+</div>
+</div>
+<div class="card"><div class="ss-grid"><div class="ss-card"><div class="lbl">Sunrise</div><div id="sunrise" class="big">—</div></div><div class="ss-card"><div class="lbl">Sunset</div><div id="sunset" class="big">—</div></div><div class="ss-card"><div class="lbl">Day Length</div><div id="dayLength" class="big">—</div></div><div class="ss-card"><div class="lbl">Solar Noon</div><div id="solarNoon" class="big">—</div></div><div class="ss-card"><div class="lbl">Civil Twilight Start</div><div id="civilStart" class="big">—</div></div><div class="ss-card"><div class="lbl">Civil Twilight End</div><div id="civilEnd" class="big">—</div></div></div></div>
+<div class="day-visual" id="dayVisual" style="height:24px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:var(--space-3);display:flex;"></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var la=document.getElementById('latInput'),ln=document.getElementById('lngInput'),da=document.getElementById('dateInput');
+da.value=new Date().toISOString().slice(0,10);
+
+function calcSun(lat,lng,date){var d=new Date(date);if(isNaN(d.getTime()))return null;
+var day=d.getDate(),month=d.getMonth()+1,year=d.getFullYear();
+var N=Math.floor(275*month/9)-2*Math.floor((month+9)/12)+day-30;
+if(month<3)N+=2;
+N=N-1;
+var lngHour=lng/15;
+var t=N+(6-lngHour)/24;var M=0.9856*t-3.289;
+var L=M+1.916*Math.sin(M*Math.PI/180)+0.020*Math.sin(2*M*Math.PI/180)+282.634;
+L=L%360;if(L<0)L+=360;
+var RA=Math.atan(0.91764*Math.tan(L*Math.PI/180))*180/Math.PI;RA=RA%360;if(RA<0)RA+=360;
+var Lquad=Math.floor(L/90)*90;var RAquad=Math.floor(RA/90)*90;RA=RA+(Lquad-RAquad);RA=RA/15;
+var sinDec=0.39782*Math.sin(L*Math.PI/180);var cosDec=Math.sqrt(1-sinDec*sinDec);
+var zenith=90.833;var cosHA=(Math.cos(zenith*Math.PI/180)-sinDec*Math.sin(lat*Math.PI/180))/(cosDec*Math.cos(lat*Math.PI/180));
+if(cosHA>1||cosHA<-1)return null;
+var HA=Math.acos(cosHA)*180/Math.PI/15;
+
+function fmtH(h){var h2=Math.floor(h);var m=Math.round((h-h2)*60);if(m>=60){h2++;m=0;}
+return String(h2).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+
+var sunrise=t-HA+lngHour/24;if(sunrise<0)sunrise+=24;if(sunrise>=24)sunrise-=24;
+var sunset=t+HA+lngHour/24;if(sunset<0)sunset+=24;if(sunset>=24)sunset-=24;
+var noon=(sunrise+sunset)/2;var dayLen=sunset-sunrise;
+var civStart=sunrise-(90-96)/15;var civEnd=sunset+(90-96)/15;
+
+return{sunrise:sunrise,sunset:sunset,day长度：dayLen,solarNoon:noon,civilStart:civStart,civilEnd:civEnd};}
+
+function calc(){var lat=parseFloat(la.value)||0,lng=parseFloat(ln.value)||0;var date=da.value;
+var r=calcSun(lat,lng,date);if(!r){setStatus('Sun never rises/sets at this location','error');return;}
+
+function fmtH(h){var h2=Math.floor(h);var m=Math.round((h-h2)*60);if(m>=60){h2++;m=0;}
+return String(h2).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+function fmtDL(h){var h2=Math.floor(h);var m=Math.round((h-h2)*60);return h2+'h '+m+'m';}
+
+document.getElementById('sunrise').textContent=fmtH(r.sunrise)+' UTC';
+document.getElementById('sunset').textContent=fmtH(r.sunset)+' UTC';
+document.getElementById('dayLength').textContent=fmtDL(r.dayLength);
+document.getElementById('solarNoon').textContent=fmtH(r.solarNoon)+' UTC';
+document.getElementById('civilStart').textContent=fmtH(r.civilStart)+' UTC';
+document.getElementById('civilEnd').textContent=fmtH(r.civilEnd)+' UTC';
+
+var dv=document.getElementById('dayVisual');var total=24;var dayFrac=r.dayLength/total;var nightFrac=1-dayFrac;
+dv.innerHTML='<div style="background:#1a1a2e;height:100%;width:'+(r.sunrise/total*100)+'%"></div><div style="background:#fdb813;height:100%;width:'+(dayFrac*100)+'%"></div><div style="background:#1a1a2e;height:100%;width:'+((total-r.sunset)/total*100)+'%"></div>';
+setStatus('Calculated for lat='+lat+', lng='+lng);}
+
+document.getElementById('calcBtn').addEventListener('click',calc);
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+calc();})();
+</script></body></html>

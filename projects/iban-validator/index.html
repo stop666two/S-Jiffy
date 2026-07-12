@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -26,8 +26,8 @@
       <button id="validateBtn" class="btn btn-primary">验证</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="resultBox">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="结果Box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <div class="iban-grid" id="ibanGrid"></div>
@@ -39,7 +39,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('ibanInput');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     var gridEl = document.getElementById('ibanGrid');
     var countryInfo = {
       'AL': '阿尔巴尼亚', 'AD': '安道尔', 'AT': '奥地利', 'AZ': '阿塞拜疆', 'BH': '巴林',
@@ -72,7 +72,7 @@
       'VA': 22, 'VG': 24
     };
     function validateIBAN(iban) {
-      var clean = iban.replace(/\s/g, '').toUpperCase();
+      var clean = iban.replace(/\s/g, '').to大写();
       if (!clean) return null;
       if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: '格式无效', clean: clean }; }
       var cc = clean.substr(0, 2);
@@ -94,9 +94,9 @@
       return { valid: valid, reason: valid ? '校验通过' : '校验位无效', clean: clean, country: cc, countryName: countryInfo[cc] };
     }
     function render(d) {
-      if (!d) { outputEl.textContent = ''; gridEl.innerHTML = ''; return; }
-      outputEl.textContent = d.clean + (d.valid ? ' ✓' : ' ✗');
-      outputEl.style.color = d.valid ? 'var(--color-success)' : 'var(--color-error)';
+      if (!d) { 输出El.textContent = ''; gridEl.innerHTML = ''; return; }
+      输出El.textContent = d.clean + (d.valid ? ' ✓' : ' ✗');
+      输出El.style.color = d.valid ? 'var(--color-success)' : 'var(--color-error)';
       var items = [
         { label: 'IBAN', val: d.clean },
         { label: '状态', val: d.valid ? '有效' : '无效' },
@@ -114,14 +114,14 @@
     function doValidate() {
       var iban = inputEl.value.trim();
       if (!iban) { setStatus('请输入 IBAN', 'error'); render(null); return; }
-      var result = validateIBAN(iban);
-      render(result);
-      setStatus(result ? (result.valid ? 'IBAN 验证通过' : result.reason) : '无效');
+      var 结果 = validateIBAN(iban);
+      render(结果);
+      setStatus(结果 ? (结果.valid ? 'IBAN 验证通过' : 结果.reason) : '无效');
     }
     document.getElementById('validateBtn').addEventListener('click', doValidate);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doValidate(); });
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent.replace(/ [✓✗]$/, ''), this); setStatus('已复制'); } });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.textContent = ''; 输出El.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent.replace(/ [✓✗]$/, ''), this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

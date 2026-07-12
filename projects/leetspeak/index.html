@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Leet 语转换 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Leet 语转换</h1><p class="tool-desc">文本与 Leet（1337）语互转，支持基础/进阶/极限三种强度。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">强度</label>
+<label><input type="radio" name="level" value="basic" checked> 基础</label>
+<label><input type="radio" name="level" value="advanced"> 进阶</label>
+<label><input type="radio" name="level" value="extreme"> 极限</label>
+<label style="margin-left:12px;"><input type="checkbox" id="reverseMode"> 反转换（Leet → 文本）</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var reverseMode=document.getElementById('reverseMode');
+var maps={
+basic:{'a':'4','e':'3','l':'1','o':'0','s':'5','t':'7','A':'4','E':'3','L':'1','O':'0','S':'5','T':'7'},
+advanced:{'a':'@','b':'8','c':'<','e':'3','g':'9','i':'1','l':'1','o':'0','s':'$','t':'+','z':'2','A':'@','B':'8','C':'<','E':'3','G':'9','I':'1','L':'1','O':'0','S':'$','T':'+','Z':'2'},
+extreme:{'a':'4','b':'|3','c':'[','d':'|)','e':'3','f':'|=','g':'9','h':'|-|','i':'1','j':']','k':'|<','l':'1','m':'|Y|','n':'|\\|','o':'0','p':'|>','q':'0,','r':'|2','s':'5','t':'7','u':'|_|','v':'\\/','w':'\\/\\/','x':'><','y':'`/','z':'2','A':'4','B':'|3','C':'[','D':'|)','E':'3','F':'|=','G':'9','H':'|-|','I':'1','J':']','K':'|<','L':'1','M':'|Y|','N':'|\\|','O':'0','P':'|>','Q':'0,','R':'|2','S':'5','T':'7','U':'|_|','V':'\\/','W':'\\/\\/','X':'><','Y':'`/','Z':'2'}
+};
+function getLevel(){
+var radios=document.getElementsByName('level');
+for(var i=0;i<radios.length;i++){if(radios[i].checked)return radios[i].value;}
+return'basic';
+}
+function toLeet(text,level){
+var map=maps[level];
+var r='';
+for(var i=0;i<text.length;i++){
+var ch=text[i];
+r+=map[ch]!==undefined?map[ch]:ch;
+}
+return r;
+}
+function fromLeet(text,level){
+var map=maps[level];
+var rev={};
+for(var k in map){if(map.hasOwnProperty(k)){var v=map[k];if(!rev[v])rev[v]=k;}}
+var r=text;
+for(var pat in rev){
+if(rev.hasOwnProperty(pat)){
+var re=new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
+r=r.replace(re,rev[pat]);
+}
+}
+return r;
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var level=getLevel();
+if(reverseMode.checked){
+输出El.textContent=fromLeet(t,level);
+}else{
+输出El.textContent=toLeet(t,level);
+}
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

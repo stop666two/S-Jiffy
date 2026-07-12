@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -27,8 +27,8 @@
       <button id="parseBtn" class="btn btn-primary">解析</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -40,7 +40,7 @@
   <script>
     (function() {
       var pemEl = document.getElementById('pemInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -74,7 +74,7 @@
           }
           var value = buf.slice(offset, offset + length);
           offset += length;
-          return { tag: tag, length: length, value: value };
+          return { tag: tag, 长度： length, value: value };
         }
         var root = readTag();
         if (!root || root.tag !== 0x30) return null;
@@ -96,7 +96,7 @@
             len = lenByte;
           }
           var val = root.value.slice(innerOffset - 2 - (lenByte & 0x80 ? (lenByte & 0x7F) : 0), innerOffset + len);
-          items.push({ tag: tag, length: len });
+          items.push({ tag: tag, 长度： len });
           innerOffset += len;
         }
         return items;
@@ -158,7 +158,7 @@
               crypto.subtle.exportKey('spki', key).then(function(exported) {
                 var view = new Uint8Array(exported);
                 var size = view.length;
-                outputEl.textContent = '类型: ' + label + '\n'
+                输出El.textContent = '类型: ' + label + '\n'
                   + '算法: ' + key.algorithm.name + '\n'
                   + '密钥长度: ' + (size * 8) + ' bits (' + size + ' bytes)\n'
                   + (key.algorithm.modulusLength ? '模数长度: ' + key.algorithm.modulusLength + ' bits\n' : '')
@@ -172,7 +172,7 @@
             } else {
               // Fallback: show PEM structure info
               var raw = new Uint8Array(ab);
-              outputEl.textContent = '类型: ' + label + '\n'
+              输出El.textContent = '类型: ' + label + '\n'
                 + '原始字节数: ' + raw.length + '\n'
                 + '前 16 字节 Hex: ' + Array.from(raw.slice(0, 16)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '\n'
                 + '算法: 无法自动识别（可能不是 RSA/EC 密钥）\n'
@@ -180,27 +180,27 @@
               setStatus('已解析（部分信息）');
             }
           }).catch(function(err) {
-            outputEl.textContent = '类型: ' + label + '\n'
+            输出El.textContent = '类型: ' + label + '\n'
               + '原始字节数: ' + (new Uint8Array(ab)).length + '\n'
               + '解析失败: ' + err.message + '\n'
               + '\n--- 格式化 PEM ---\n' + (formatted || pem);
             setStatus('解析出错', 'error');
           });
         } catch (e) {
-          outputEl.textContent = '解析失败: ' + e.message;
+          输出El.textContent = '解析失败: ' + e.message;
           setStatus('解析失败', 'error');
         }
       });
 
       clearBtn.addEventListener('click', function() {
         pemEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         pemEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

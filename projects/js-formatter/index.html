@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="minifyBtn" class="btn btn-secondary">压缩</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var formatBtn = document.getElementById('formatBtn');
       var minifyBtn = document.getElementById('minifyBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -42,34 +42,34 @@
 
       function formatJS(code) {
         var indent = 0;
-        var result = '';
+        var 结果 = '';
         var inStr = null;
         var escape = false;
 
         for (var i = 0; i < code.length; i++) {
           var ch = code[i];
 
-          if (escape) { result += ch; escape = false; continue; }
+          if (escape) { 结果 += ch; escape = false; continue; }
           if (inStr) {
-            if (ch === '\\') { escape = true; result += ch; }
-            else if (ch === inStr) { inStr = null; result += ch; }
-            else { result += ch; }
+            if (ch === '\\') { escape = true; 结果 += ch; }
+            else if (ch === inStr) { inStr = null; 结果 += ch; }
+            else { 结果 += ch; }
             continue;
           }
-          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; 结果 += ch; continue; }
           if (ch === '/' && i + 1 < code.length) {
             if (code[i + 1] === '/') {
-              while (i < code.length && code[i] !== '\n') { result += code[i]; i++; }
-              result += '\n';
+              while (i < code.length && code[i] !== '\n') { 结果 += code[i]; i++; }
+              结果 += '\n';
               continue;
             }
             if (code[i + 1] === '*') {
-              result += '/*';
+              结果 += '/*';
               i += 2;
               while (i < code.length) {
-                result += code[i];
+                结果 += code[i];
                 if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') {
-                  result += '/'; i++; break;
+                  结果 += '/'; i++; break;
                 }
                 i++;
               }
@@ -77,63 +77,63 @@
             }
           }
 
-          if (ch === '{') { result += ' {\n'; indent++; result += '  '.repeat(indent); }
-          else if (ch === '}') { result += '\n'; indent = Math.max(0, indent - 1); result += '  '.repeat(indent) + '}'; }
-          else if (ch === ';') { result += ';\n'; result += '  '.repeat(indent); }
+          if (ch === '{') { 结果 += ' {\n'; indent++; 结果 += '  '.repeat(indent); }
+          else if (ch === '}') { 结果 += '\n'; indent = Math.max(0, indent - 1); 结果 += '  '.repeat(indent) + '}'; }
+          else if (ch === ';') { 结果 += ';\n'; 结果 += '  '.repeat(indent); }
           else if (ch === '\n' || ch === '\r') { }
-          else if (ch === '(') { result += '('; }
-          else if (ch === ')') { result += ')'; }
-          else { result += ch; }
+          else if (ch === '(') { 结果 += '('; }
+          else if (ch === ')') { 结果 += ')'; }
+          else { 结果 += ch; }
         }
-        return result.replace(/\n\s*\n/g, '\n').trim();
+        return 结果.replace(/\n\s*\n/g, '\n').trim();
       }
 
       function minifyJS(code) {
-        var result = '';
+        var 结果 = '';
         var inStr = null;
         var escape = false;
 
         for (var i = 0; i < code.length; i++) {
           var ch = code[i];
-          if (escape) { result += ch; escape = false; continue; }
+          if (escape) { 结果 += ch; escape = false; continue; }
           if (inStr) {
-            if (ch === '\\') { escape = true; result += ch; }
-            else if (ch === inStr) { inStr = null; result += ch; }
-            else { result += ch; }
+            if (ch === '\\') { escape = true; 结果 += ch; }
+            else if (ch === inStr) { inStr = null; 结果 += ch; }
+            else { 结果 += ch; }
             continue;
           }
-          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; 结果 += ch; continue; }
           if (ch === '/' && i + 1 < code.length) {
             if (code[i + 1] === '/') { while (i < code.length && code[i] !== '\n') i++; continue; }
             if (code[i + 1] === '*') { i += 2; while (i < code.length) { if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') { i++; break; } i++; } continue; }
           }
           if (/\s/.test(ch)) {
             var next = i + 1 < code.length ? code[i + 1] : '';
-            var prev = result.length ? result[result.length - 1] : '';
-            if (prev && next && /\w/.test(prev) && /\w/.test(next)) { result += ' '; }
+            var prev = 结果.length ? 结果[结果.length - 1] : '';
+            if (prev && next && /\w/.test(prev) && /\w/.test(next)) { 结果 += ' '; }
             continue;
           }
-          result += ch;
+          结果 += ch;
         }
-        return result;
+        return 结果;
       }
 
       formatBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
-        outputEl.textContent = formatJS(text);
+        输出El.textContent = formatJS(text);
         setStatus('');
       });
 
       minifyBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
-        outputEl.textContent = minifyJS(text);
+        输出El.textContent = minifyJS(text);
         setStatus('');
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

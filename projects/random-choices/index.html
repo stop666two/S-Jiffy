@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机选择器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rc-row .field { flex:1; min-width:100px; }
+    .rc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机选择器</h1>
+    <p class="tool-desc">从列表中随机选取指定数量的项目，支持允许重复。</p>
+    <div class="card">
+      <div class="rc-row">
+        <div class="field" style="flex:2;"><label for="inputArea">选项列表（每行一个）</label><textarea id="inputArea" class="input textarea" style="min-height:120px;">选项A&#10;选项B&#10;选项C&#10;选项D&#10;选项E</textarea></div>
+      </div>
+      <div class="rc-row">
+        <div class="field"><label for="pickCount">选取数量</label><input id="pickCount" class="input" type="number" value="1" min="1" max="1000"></div>
+      </div>
+      <div class="rc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="dupChk" type="checkbox" checked> 允许重复</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">选取</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputArea');
+    var pickEl = document.getElementById('pickCount');
+    var dupChk = document.getElementById('dupChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoIndex(len) {
+      var bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return bytes[0] % len;
+    }
+
+    function generate() {
+      var lines = inputEl.value.split('\n').filter(function(s) { return s.trim() !== ''; });
+      if (lines.length === 0) { setStatus('请输入至少一个选项', 'error'); return; }
+      var pick = parseInt(pickEl.value, 10) || 1;
+      if (pick < 1) pick = 1;
+      if (pick > 10000) pick = 10000;
+      var allowDup = dupChk.checked;
+
+      if (!allowDup && pick > lines.length) {
+        setStatus('不允许重复时选取数量不能超过选项数 (' + lines.length + ')', 'error');
+        return;
+      }
+
+      var 结果 = [];
+      if (allowDup) {
+        for (var i = 0; i < pick; i++) 结果.push(lines[cryptoIndex(lines.length)]);
+      } else {
+        var shuffled = lines.slice();
+        for (var i = shuffled.length - 1; i > 0; i--) {
+          var j = cryptoIndex(i + 1);
+          var tmp = shuffled[i];
+          shuffled[i] = shuffled[j];
+          shuffled[j] = tmp;
+        }
+        结果 = shuffled.slice(0, pick);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已选取 ' + 结果.length + ' 项');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

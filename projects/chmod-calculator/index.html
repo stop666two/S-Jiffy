@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +19,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>Chmod Calculator</h1>
+    <h1>Chmod 权限计算</h1>
     <p class="tool-desc">通过勾选权限位实时查看八进制与符号权限表示。</p>
     <div class="card">
       <table class="chmod-table">
@@ -28,19 +28,19 @@
         </thead>
         <tbody>
           <tr>
-            <td><strong>Owner</strong></td>
+            <td><strong>所有者</strong></td>
             <td><label><input type="checkbox" id="ur" checked> 4</label></td>
             <td><label><input type="checkbox" id="uw" checked> 2</label></td>
             <td><label><input type="checkbox" id="ux" checked> 1</label></td>
           </tr>
           <tr>
-            <td><strong>Group</strong></td>
+            <td><strong>组</strong></td>
             <td><label><input type="checkbox" id="gr" checked> 4</label></td>
             <td><label><input type="checkbox" id="gw"> 2</label></td>
             <td><label><input type="checkbox" id="gx"> 1</label></td>
           </tr>
           <tr>
-            <td><strong>Public</strong></td>
+            <td><strong>公共</strong></td>
             <td><label><input type="checkbox" id="or" checked> 4</label></td>
             <td><label><input type="checkbox" id="ow"> 2</label></td>
             <td><label><input type="checkbox" id="ox"> 1</label></td>
@@ -48,8 +48,8 @@
         </tbody>
       </table>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -71,7 +71,7 @@
         ow: document.getElementById('ow'),
         ox: document.getElementById('ox')
       };
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function update() {
@@ -90,7 +90,7 @@
         }
 
         var sym = toSymbol(u) + toSymbol(g) + toSymbol(o);
-        outputEl.textContent = octal + ' (' + sym + ')';
+        输出El.textContent = octal + ' (' + sym + ')';
         setStatus('chmod ' + octal + ' ' + sym);
       }
 
@@ -101,7 +101,7 @@
       }
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

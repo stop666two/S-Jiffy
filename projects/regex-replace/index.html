@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,8 +31,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
 
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -43,7 +43,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), rep = document.getElementById('replaceInput'), inp = document.getElementById('inputText'), o = document.getElementById('outputText');
+      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), rep = document.getElementById('replaceInput'), inp = document.getElementById('inputText'), o = document.getElementById('输出Text');
       document.getElementById('replaceBtn').addEventListener('click', function () {
         var p = pat.value.trim(), t = inp.value;
         if (!p) { setStatus('请输入正则表达式', 'error'); return; }
@@ -52,8 +52,8 @@
           var re = new RegExp(p, flags.value);
           var matches = (t.match(re) || []).length;
           if (!re.global && matches > 0) matches = 1;
-          var result = t.replace(re, rep.value);
-          o.textContent = result + '\n\n--- 匹配 ' + matches + ' 处 ---';
+          var 结果 = t.replace(re, rep.value);
+          o.textContent = 结果 + '\n\n--- 匹配 ' + matches + ' 处 ---';
           setStatus('');
         } catch (e) {
           o.textContent = '';

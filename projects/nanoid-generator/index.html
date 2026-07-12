@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,8 +31,8 @@
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">字符集（可选留空使用默认）</label>
       <input id="alphabetInput" class="input" placeholder="默认: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-">
     </div>
-    <div class="output-box">
-      <div id="outputText" class="nanoid-batch" style="display:block;padding-right:60px;"></div>
+    <div class="输出-box">
+      <div id="输出Text" class="nanoid-batch" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -46,7 +46,7 @@
       var lengthEl = document.getElementById('idLength');
       var countEl = document.getElementById('idCount');
       var alphabetEl = document.getElementById('alphabetInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var generateBtn = document.getElementById('generateBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -54,12 +54,12 @@
       var DEFAULT_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-';
 
       function nanoid(len, alphabet) {
-        var result = '';
+        var 结果 = '';
         var alphaLen = alphabet.length;
         for (var i = 0; i < len; i++) {
-          result += alphabet[Math.floor(Math.random() * alphaLen)];
+          结果 += alphabet[Math.floor(Math.random() * alphaLen)];
         }
-        return result;
+        return 结果;
       }
 
       function generate() {
@@ -74,14 +74,14 @@
         for (var i = 0; i < count; i++) {
           html += '<span>' + nanoid(len, alpha) + '</span>';
         }
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
         setStatus('生成了 ' + count + ' 个 ID（长度 ' + len + '，字符集 ' + alpha.length + ' 种）');
       }
 
       generateBtn.addEventListener('click', generate);
-      clearBtn.addEventListener('click', function () { outputEl.innerHTML = ''; setStatus(''); });
+      clearBtn.addEventListener('click', function () { 输出El.innerHTML = ''; setStatus(''); });
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent.replace(/\s+/g, '\n').trim();
+        var text = 输出El.textContent.replace(/\s+/g, '\n').trim();
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

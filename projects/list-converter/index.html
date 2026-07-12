@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -32,7 +32,7 @@
         </select>
       </label>
       <label>输出格式:
-        <select id="outputFormat">
+        <select id="输出Format">
           <option value="comma">逗号分隔</option>
           <option value="newline" selected>换行分隔</option>
           <option value="numbered">编号列表 (1. )</option>
@@ -43,8 +43,8 @@
       <button id="convertBtn" class="btn btn-primary">转换</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -56,9 +56,9 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var inFmt = document.getElementById('inputFormat');
-      var outFmt = document.getElementById('outputFormat');
+      var outFmt = document.getElementById('输出Format');
 
       function parseItems(text, format) {
         var items = [];
@@ -116,13 +116,13 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入内容', 'error'); return; }
         var parsed = parseItems(text, inFmt.value);
-        if (parsed.length === 0) { outputEl.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
-        outputEl.textContent = formatItems(parsed, outFmt.value);
+        if (parsed.length === 0) { 输出El.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
+        输出El.textContent = formatItems(parsed, outFmt.value);
         setStatus('共 ' + parsed.length + ' 项');
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

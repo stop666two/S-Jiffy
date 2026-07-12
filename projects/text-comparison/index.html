@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Text Comparison - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.comp-pane label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
+.结果-grid{display:grid;gap:var(--space-2);margin-top:var(--space-3);}
+.结果-item{display:flex;justify-content:space-between;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.结果-item .key{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.结果-item .val{font-weight:600;font-family:var(--font-mono);font-size:var(--font-size-sm);}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>文本相似度</h1><p class="tool-desc">Compare two texts: similarity %, character overlap, edit distance (Levenshtein).</p>
+<div class="comp-grid"><div class="comp-pane"><label for="textA">Text A</label><textarea id="textA" class="input textarea js-focus-input" placeholder="First text..." style="min-height:120px;"></textarea></div>
+<div class="comp-pane"><label for="textB">Text B</label><textarea id="textB" class="input textarea" placeholder="Second text..." style="min-height:120px;"></textarea></div></div>
+<div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);">
+<button id="compareBtn" class="btn btn-primary">对比</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="card"><div class="结果-grid" id="结果Grid"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var tA=document.getElementById('textA'),tB=document.getElementById('textB'),rg=document.getElementById('结果Grid'),o=document.getElementById('输出Text');
+
+function levenshtein(a,b){var m=a.length,n=b.length;var dp=[];for(var i=0;i<=m;i++){dp[i]=[i];}
+for(var j=0;j<=n;j++){dp[0][j]=j;}
+for(var i2=1;i2<=m;i2++){for(var j2=1;j2<=n;j2++){var cost=a[i2-1]===b[j2-1]?0:1;dp[i2][j2]=Math.min(dp[i2-1][j2]+1,dp[i2][j2-1]+1,dp[i2-1][j2-1]+cost);}}
+return dp[m][n];}
+
+function charOverlap(a,b){var setA={},setB={};for(var i=0;i<a.length;i++)setA[a[i]]=true;
+for(var j=0;j<b.length;j++)setB[b[j]]=true;
+var intersection=0;for(var k in setA){if(setB[k])intersection++;}
+var union=Object.keys(setA).length+Object.keys(setB).length-intersection;
+return{intersection:intersection,union:union,jaccard:union>0?intersection/union:0};}
+
+function compare(){var a=tA.value,b=tB.value;if(!a&&!b){setStatus('Enter text in at least one field','error');return;}
+var lenA=a.length,lenB=b.length;var wordsA=a.trim()?a.trim().split(/\s+/):[];var wordsB=b.trim()?b.trim().split(/\s+/):[];
+var wcA=wordsA.length,wcB=wordsB.length;
+var editDist=levenshtein(a,b);var maxLen=Math.max(lenA,lenB,1);var sim=Math.round((1-editDist/maxLen)*10000)/100;
+var overlap=charOverlap(a,b);
+var items=[{密钥：'Length A',val:lenA+' chars'},{密钥：'Length B',val:lenB+' chars'},{密钥：'Words A',val:wcA+' words'},{密钥：'Words B',val:wcB+' words'},{密钥：'Edit Distance',val:editDist+' edits'},{密钥：'Similarity',val:sim+'%'},{密钥：'Unique Chars A',val:Object.keys(charOverlap(a,'')).length},{密钥：'Unique Chars B',val:Object.keys(charOverlap(b,'')).length},{密钥：'Char Overlap (Jaccard)',val:Math.round(overlap.jaccard*10000)/100+'%'},{密钥：'Length Difference',val:(lenA-lenB)+(lenA>=lenB?' (A longer)':' (B longer)')}];
+rg.innerHTML=items.map(function(it){return'<div class="结果-item"><span class="key">'+it.key+'</span><span class="val">'+it.val+'</span></div>';}).join('');
+o.textContent='Similarity: '+sim+'% | Edit: '+editDist+' | Overlap: '+Math.round(overlap.jaccard*100)+'%';}
+
+document.getElementById('compareBtn').addEventListener('click',compare);
+document.getElementById('clearBtn').addEventListener('click',function(){tA.value='';tB.value='';rg.innerHTML='';o.textContent='';setStatus('');tA.focus();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+})();
+</script></body></html>

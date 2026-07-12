@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="toTextBtn" class="btn btn-secondary">二进制 → 文本</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,19 +34,19 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       document.getElementById('toBinaryBtn').addEventListener('click', function() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        var result = [];
+        var 结果 = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
-          result.push(code.toString(2).padStart(8, '0'));
+          结果.push(code.toString(2).padStart(8, '0'));
         }
-        outputEl.textContent = result.join(' ');
+        输出El.textContent = 结果.join(' ');
         setStatus('已转换 ' + text.length + ' 个字符');
       });
 
@@ -59,7 +59,7 @@
           setStatus('二进制位数不是 8 的倍数', 'error');
           return;
         }
-        var result = '';
+        var 结果 = '';
         for (var i = 0; i < clean.length; i += 8) {
           var byteStr = clean.substring(i, i + 8);
           var code = parseInt(byteStr, 2);
@@ -67,21 +67,21 @@
             setStatus('包含无效的二进制字符（只能含 0 和 1）', 'error');
             return;
           }
-          result += String.fromCharCode(code);
+          结果 += String.fromCharCode(code);
         }
-        outputEl.textContent = result;
+        输出El.textContent = 结果;
         setStatus('已转换 ' + (clean.length / 8) + ' 字节');
       });
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

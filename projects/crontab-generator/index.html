@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -18,7 +18,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>Crontab Generator</h1>
+    <h1>Crontab 生成器</h1>
     <p class="tool-desc">通过人类可读的选择生成 cron 表达式。</p>
     <div class="card">
       <div class="cron-grid">
@@ -30,8 +30,8 @@
       </div>
       <div class="cron-preview" id="cronPreview">* * * * *</div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -48,7 +48,7 @@
       var cronMonth = document.getElementById('cronMonth');
       var cronWeekday = document.getElementById('cronWeekday');
       var cronPreview = document.getElementById('cronPreview');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       var presets = [
@@ -72,7 +72,7 @@
         ];
         var expr = parts.join(' ');
         cronPreview.textContent = expr;
-        outputEl.textContent = expr;
+        输出El.textContent = expr;
         setStatus('');
       }
 
@@ -82,7 +82,7 @@
       }
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text && text !== '* * * * *') {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

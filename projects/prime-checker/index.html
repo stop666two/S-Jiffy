@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,10 +6,10 @@
   <title>质数检测器 - S-Jiffy</title>
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-top:var(--space-2); }
-    .result-item { padding:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
-    .result-item label { font-size:var(--font-size-xs); color:var(--color-text-disabled); display:block; }
-    .result-item span { font-size:var(--font-size-sm); font-family:var(--font-mono); word-break:break-all; }
+    .结果-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-top:var(--space-2); }
+    .结果-item { padding:var(--space-2); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .结果-item label { font-size:var(--font-size-xs); color:var(--color-text-disabled); display:block; }
+    .结果-item span { font-size:var(--font-size-sm); font-family:var(--font-mono); word-break:break-all; }
   </style>
 </head>
 <body>
@@ -24,8 +24,8 @@
       <button id="checkBtn" class="btn btn-primary">检测</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div id="resultBox" class="output-box" style="min-height:200px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div id="结果Box" class="输出-box" style="min-height:200px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -36,7 +36,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var input = document.getElementById('numInput'), o = document.getElementById('outputText');
+      var input = document.getElementById('numInput'), o = document.getElementById('输出Text');
       var checkBtn = document.getElementById('checkBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
       function isPrime(n) {
@@ -84,13 +84,13 @@
         var nearest = nearestPrimes(num);
         var factorStr = factors.length ? factors.join(' × ') : '（无）';
 
-        var html = '<div class="result-grid">';
-        html += '<div class="result-item"><label>检测结果</label><span style="font-size:var(--font-size-base);font-weight:600;color:' + (prime ? 'var(--color-success)' : 'var(--color-error)') + '">' + (prime ? '是质数' : '不是质数') + '</span></div>';
-        html += '<div class="result-item"><label>质因数分解</label><span>' + raw + ' = ' + factorStr + '</span></div>';
-        html += '<div class="result-item"><label>因数数量</label><span>' + allFactors.length + ' 个</span></div>';
-        html += '<div class="result-item"><label>所有因数</label><span>' + allFactors.join(', ') + '</span></div>';
-        html += '<div class="result-item"><label>前一个质数</label><span>' + (nearest.prev !== null ? nearest.prev : '无') + '</span></div>';
-        html += '<div class="result-item"><label>后一个质数</label><span>' + nearest.next + '</span></div>';
+        var html = '<div class="结果-grid">';
+        html += '<div class="结果-item"><label>检测结果</label><span style="font-size:var(--font-size-base);font-weight:600;color:' + (prime ? 'var(--color-success)' : 'var(--color-error)') + '">' + (prime ? '是质数' : '不是质数') + '</span></div>';
+        html += '<div class="结果-item"><label>质因数分解</label><span>' + raw + ' = ' + factorStr + '</span></div>';
+        html += '<div class="结果-item"><label>因数数量</label><span>' + allFactors.length + ' 个</span></div>';
+        html += '<div class="结果-item"><label>所有因数</label><span>' + allFactors.join(', ') + '</span></div>';
+        html += '<div class="结果-item"><label>前一个质数</label><span>' + (nearest.prev !== null ? nearest.prev : '无') + '</span></div>';
+        html += '<div class="结果-item"><label>后一个质数</label><span>' + nearest.next + '</span></div>';
         html += '</div>';
         o.innerHTML = html;
         setStatus('');

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     .json-pane { }
     .json-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
     .json-pane textarea { min-height:200px; font-family:var(--font-mono); font-size:12px; }
-    .diff-result { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
+    .diff-结果 { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
     .diff-added { background:#e6ffe6; color:#1a7d1a; }
     .diff-removed { background:#ffe6e6; color:#cc3333; }
     .diff-changed { background:#fffbe6; color:#b8860b; }
@@ -40,8 +40,8 @@
       <button id="swapBtn" class="btn btn-secondary">交换</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;line-height:1.6;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;font-size:12px;line-height:1.6;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -54,7 +54,7 @@
     (function() {
       var jsonA = document.getElementById('jsonA');
       var jsonB = document.getElementById('jsonB');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -109,7 +109,7 @@
 
         var diffs = deepDiff(objA, objB, '');
         if (diffs.length === 0) {
-          outputEl.innerHTML = '<span style="color:#27ae60;">✅ 两个 JSON 完全一致</span>';
+          输出El.innerHTML = '<span style="color:#27ae60;">✅ 两个 JSON 完全一致</span>';
           setStatus('完全一致');
           return;
         }
@@ -130,7 +130,7 @@
           }
         }
         html = '<div style="margin-bottom:8px;font-size:var(--font-size-sm);">发现 ' + diffs.length + ' 处差异：新增 ' + added + '，删除 ' + removed + '，修改 ' + changed + '</div>' + html;
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
         setStatus('发现 ' + diffs.length + ' 处差异');
       });
 
@@ -143,13 +143,13 @@
       clearBtn.addEventListener('click', function() {
         jsonA.value = '';
         jsonB.value = '';
-        outputEl.innerHTML = '';
+        输出El.innerHTML = '';
         setStatus('');
         jsonA.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent || outputEl.innerText;
+        var text = 输出El.textContent || 输出El.innerText;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

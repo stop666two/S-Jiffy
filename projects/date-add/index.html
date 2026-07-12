@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initialisable-scale=1.0"><title>Date Arithmetic - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.date-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.date-row label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;}
+.date-row .field{min-width:120px;}
+.date-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.date-presets button{padding:4px 12px;font-size:var(--font-size-xs);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;}
+.date-presets button:hover{background:var(--color-bg-soft);}
+.结果-grid{display:grid;gap:var(--space-2);}
+.结果-row{display:flex;justify-content:space-between;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.结果-row .key{color:var(--color-text-secondary);font-size:var(--font-size-sm);}
+.结果-row .val{font-weight:500;font-family:var(--font-mono);font-size:var(--font-size-sm);}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>日期加减计算</h1><p class="tool-desc">Add or subtract days, weeks, months, years from a date.</p>
+<div class="card">
+<div class="date-row"><div class="field"><label>Start Date</label><input id="startDate" class="input" type="date"></div>
+<div class="field"><label>Operation</label><select id="opSelect" class="input" style="width:auto;"><option value="add">增加</option><option value="subtract">减少</option></select></div>
+<div class="field"><label>数量</label><input id="amountInput" class="input" type="number" value="7" min="1" style="width:80px;"></div>
+<div class="field"><label>单位</label><select id="unitSelect" class="input" style="width:auto;"><option value="days">天</option><option value="weeks">周</option><option value="months">月</option><option value="years">年</option></select></div>
+<button id="calcBtn" class="btn btn-primary">计算</button>
+</div>
+<div class="date-presets"><button class="preset-btn" data-days="7">+1 week</button><button class="preset-btn" data-days="14">+2 weeks</button><button class="preset-btn" data-days="30">+1 month</button><button class="preset-btn" data-days="90">+3 months</button><button class="preset-btn" data-days="180">+6 months</button><button class="preset-btn" data-days="365">+1 year</button><button class="preset-btn" data-days="-7">-1 week</button><button class="preset-btn" data-days="-30">-1 month</button></div>
+</div>
+<div class="card"><div class="结果-grid" id="结果Grid"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var sd=document.getElementById('startDate'),op=document.getElementById('opSelect'),am=document.getElementById('amountInput'),un=document.getElementById('unitSelect'),rg=document.getElementById('结果Grid'),o=document.getElementById('输出Text');
+sd.value=new Date().toISOString().slice(0,10);
+
+function calc(){var d=new Date(sd.value);if(isNaN(d.getTime())){setStatus('Invalid date','error');return;}
+var n=parseInt(am.value)||0;if(op.value==='subtract')n=-n;var u=un.value;
+var 结果=new Date(d);if(u==='days')结果.setDate(结果.getDate()+n);
+else if(u==='weeks')结果.setDate(结果.getDate()+n*7);
+else if(u==='months')结果.setMonth(结果.getMonth()+n);
+else if(u==='years')结果.setFullYear(结果.getFullYear()+n);
+
+var diff=Math.abs(结果-d);
+var items=[{密钥：'Start Date',val:d.toDateString()+' '+d.toLocaleDateString('zh-CN')},
+{密钥：'Operation',val:(op.value==='add'?'+':'-')+n+' '+u},
+{密钥：'结果 Date',val:结果.toDateString()+' '+结果.toLocaleDateString('zh-CN')},
+{密钥：'ISO 8601',val:结果.toISOString()},
+{密钥：'Difference',val:Math.floor(diff/86400000)+' days'},
+{密钥：'Weekday',val:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][结果.getDay()]},
+{密钥：'Week of Year',val:function(){var t=new Date(结果);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-(t.getDay()+6)%7);var w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/86400000-3+(w1.getDay()+6)%7)/7);}()}];
+rg.innerHTML=items.map(function(it){return'<div class="结果-row"><span class="key">'+it.key+'</span><span class="val">'+it.val+'</span></div>';}).join('');
+o.textContent=结果.toISOString().slice(0,10);}
+
+document.getElementById('calcBtn').addEventListener('click',calc);
+var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){var d=parseInt(this.dataset.days);am.value=Math.abs(d);op.value=d>0?'add':'subtract';un.value='days';calc();});}
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+calc();})();
+</script></body></html>

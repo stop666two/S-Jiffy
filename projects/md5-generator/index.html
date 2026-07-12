@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -29,15 +29,15 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
     <div class="card">
-      <div class="md5-res" id="resultArea">
+      <div class="md5-res" id="结果Area">
         <div class="row"><span class="lbl">32位小写</span><span class="val" id="res32l"></span><button class="copy-btn" style="position:static;display:inline;" id="copy32l">复制</button></div>
         <div class="row"><span class="lbl">32位大写</span><span class="val" id="res32u"></span><button class="copy-btn" style="position:static;display:inline;" id="copy32u">复制</button></div>
         <div class="row"><span class="lbl">16位小写</span><span class="val" id="res16l"></span><button class="copy-btn" style="position:static;display:inline;" id="copy16l">复制</button></div>
         <div class="row"><span class="lbl">16位大写</span><span class="val" id="res16u"></span><button class="copy-btn" style="position:static;display:inline;" id="copy16u">复制</button></div>
       </div>
     </div>
-    <div class="output-box" style="min-height:40px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="min-height:40px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制全部</button>
     </div>
   </main>
@@ -48,16 +48,16 @@
       var i=document.getElementById('inputText'), fi=document.getElementById('fileInput');
       var r32l=document.getElementById('res32l'),r32u=document.getElementById('res32u');
       var r16l=document.getElementById('res16l'),r16u=document.getElementById('res16u');
-      var o=document.getElementById('outputText');
+      var o=document.getElementById('输出Text');
       var lastHash='';
 
       function show(h){
         if(!h){r32l.textContent=r32u.textContent=r16l.textContent=r16u.textContent='';o.textContent='';return;}
         lastHash=h;
         r32l.textContent=h;
-        r32u.textContent=h.toUpperCase();
+        r32u.textContent=h.to大写();
         r16l.textContent=h.substr(8,16);
-        r16u.textContent=h.substr(8,16).toUpperCase();
+        r16u.textContent=h.substr(8,16).to大写();
         o.textContent='MD5: '+h;
       }
 
@@ -66,7 +66,7 @@
       function readFile(file){
         var reader=new FileReader();
         reader.onload=function(e){
-          var words=e.target.result;
+          var words=e.target.结果;
           var hex=md5(words);
           show(hex);
           setStatus('文件 MD5 计算完成');

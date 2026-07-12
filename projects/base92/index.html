@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Base92 编解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Base92 编解码</h1><p class="tool-desc">Base92 编码/解码，比 Base91 更高效的二进制到文本编码。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码的文本或 Base92 字符串..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encodeBtn" class="btn btn-primary">编码</button>
+<button id="decodeBtn" class="btn btn-secondary">解码</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var encodeBtn=document.getElementById('encodeBtn');
+var decodeBtn=document.getElementById('decodeBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"\\';
+var base=alphabet.length;
+function encode(text){
+var bytes=[];
+for(var i=0;i<text.length;i++){
+var code=text.charCodeAt(i);
+bytes.push(code);
+}
+var r='';
+var b=0,n=0;
+for(var i=0;i<bytes.length;i++){
+b|=bytes[i]<<n;
+n+=8;
+if(n>13){
+var v=b&8191;
+if(v>88){b>>=13;n-=13;}else{v=b&16383;b>>=14;n-=14;}
+r+=alphabet[v%base];
+r+=alphabet[Math.floor(v/base)];
+}
+}
+if(n){
+r+=alphabet[b%base];
+if(n>7||b>90)r+=alphabet[Math.floor(b/base)];
+}
+return r;
+}
+function decode(b92){
+var v=-1,b=0,n=0,out=[];
+for(var i=0;i<b92.length;i++){
+var c=alphabet.indexOf(b92[i]);
+if(c===-1)continue;
+if(v===-1){v=c;}else{
+v+=c*base;
+b|=v<<n;
+n+=13;
+if((v&8191)>88){n+=1;}else{n+=2;}
+while(n>7){
+out.push(b&255);
+b>>=8;
+n-=8;
+}
+v=-1;
+}
+}
+if(v!==-1){out.push((b|v<<n)&255);}
+var r='';
+for(var i=0;i<out.length;i++)r+=String.fromCharCode(out[i]);
+return r;
+}
+encodeBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+try{输出El.textContent=encode(t);setStatus('');}catch(e){setStatus('编码错误','error');}
+});
+decodeBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 Base92','error');return;}
+try{输出El.textContent=decode(t);setStatus('');}catch(e){setStatus('解码错误: '+e.message,'error');}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

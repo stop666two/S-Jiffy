@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,127 +6,131 @@
   <title>Text Statistics - S-Jiffy</title>
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .stat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
     .stat-item { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); text-align:center; }
-    .stat-item .num { font-size:26px; font-weight:600; }
+    .stat-item .num { font-size:22px; font-weight:600; }
     .stat-item .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
     .word-freq { margin-top:var(--space-2); }
     .word-freq table { width:100%; border-collapse:collapse; font-size:var(--font-size-sm); }
     .word-freq th, .word-freq td { padding:4px 8px; text-align:left; border-bottom:1px solid var(--color-border); }
-    .word-freq th { color:var(--color-text-secondary); font-weight:500; }
     .word-freq .bar { height:16px; background:var(--color-text-primary); border-radius:2px; min-width:2px; }
   </style>
 </head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
   <main class="tool-workspace">
-    <h1>Text Statistics</h1>
-    <p class="tool-desc">实时统计文本的各项指标，含高频词、平均词长、预估阅读时间。</p>
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入或粘贴文本..." style="min-height:200px;"></textarea>
-    </div>
+    <h1>文本统计</h1>
+    <p class="tool-desc">Real-time stats: syllables, Flesch-Kincaid grade level, reading ease, word frequency.</p>
+    <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste or type text..." style="min-height:200px;"></textarea></div>
     <div class="stat-grid" id="statGrid">
-      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label">字符（含空格）</div></div>
-      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label">字符（不含空格）</div></div>
-      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label">中文字数</div></div>
-      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label">单词数</div></div>
-      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label">句子数</div></div>
-      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label">行数</div></div>
-      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label">段落数</div></div>
-      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label">平均词长</div></div>
-      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label">阅读时间 (min)</div></div>
+      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label">Chars (with space)</div></div>
+      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label">Chars (no space)</div></div>
+      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label">Chinese chars</div></div>
+      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label">Words</div></div>
+      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label">Sentences</div></div>
+      <div class="stat-item"><div class="num" id="syllableCount">0</div><div class="label">Syllables</div></div>
+      <div class="stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch RE</div></div>
+      <div class="stat-item"><div class="num" id="gradeLevel">0</div><div class="label">Grade Level</div></div>
+      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label">Lines</div></div>
+      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label">Paragraphs</div></div>
+      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label">Avg Word Len</div></div>
+      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label">Read Time (min)</div></div>
     </div>
     <div class="card">
-      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">高频词 Top 10</h2>
-      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本后显示高频词</p></div>
+      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">Word Frequency Top 10</h2>
+      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var charCount = document.getElementById('charCount');
-      var charNoSpaceCount = document.getElementById('charNoSpaceCount');
-      var charCnCount = document.getElementById('charCnCount');
-      var wordCount = document.getElementById('wordCount');
-      var sentenceCount = document.getElementById('sentenceCount');
-      var lineCount = document.getElementById('lineCount');
-      var paraCount = document.getElementById('paraCount');
-      var avgWordLen = document.getElementById('avgWordLen');
-      var readingTime = document.getElementById('readingTime');
+      var el = {
+        cc: document.getElementById('charCount'), cns: document.getElementById('charNoSpaceCount'),
+        cnc: document.getElementById('charCnCount'), wc: document.getElementById('wordCount'),
+        sc: document.getElementById('sentenceCount'), sy: document.getElementById('syllableCount'),
+        fr: document.getElementById('fleschScore'), gl: document.getElementById('gradeLevel'),
+        lc: document.getElementById('lineCount'), pc: document.getElementById('paraCount'),
+        aw: document.getElementById('avgWordLen'), rt: document.getElementById('readingTime')
+      };
       var freqContainer = document.getElementById('freqContainer');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
+      var 输出El = document.getElementById('输出Text');
+
+      function countSyllables(word) {
+        word = word.to小写().replace(/[^a-z]/g, '');
+        if (!word || word.length <= 3) return 1;
+        word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+        word = word.replace(/^y/, '');
+        var m = word.match(/[aeiouy]{1,2}/g);
+        return m ? m.length : 1;
+      }
 
       function updateStats() {
         var text = inputEl.value;
-        var chars = text.length;
-        var charsNoSpace = text.replace(/\s/g, '').length;
-        var cnChars = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g) || []).length;
+        el.cc.textContent = text.length;
+        el.cns.textContent = text.replace(/\s/g, '').length;
+        el.cnc.textContent = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g) || []).length;
         var wordsArr = text.trim() ? text.trim().split(/\s+/) : [];
         var words = wordsArr.length;
+        el.wc.textContent = words;
         var sentences = text ? text.split(/[.!?。！？\n]+/).filter(function(s) { return s.trim().length > 0; }).length : 0;
-        var lines = text ? text.split('\n').length : 0;
+        el.sc.textContent = sentences;
+        el.lc.textContent = text ? text.split('\n').length : 0;
         var paras = text ? text.split(/\n\s*\n/).filter(function(p) { return p.trim().length > 0; }).length : 0;
         if (!text.trim()) paras = 0;
+        el.pc.textContent = paras;
+
+        if (words > 0 && sentences > 0) {
+          var syl = 0, cw = 0;
+          for (var w = 0; w < wordsArr.length; w++) {
+            var cs = countSyllables(wordsArr[w]);
+            syl += cs;
+            if (cs >= 3) cw++;
+          }
+          el.sy.textContent = syl;
+          var flesch = 206.835 - 1.015 * (words / sentences) - 84.6 * (syl / words);
+          el.fr.textContent = flesch > 100 ? '100' : flesch < 0 ? '0' : Math.round(flesch * 10) / 10;
+          var grade = 0.39 * (words / sentences) + 11.8 * (syl / words) - 15.59;
+          el.gl.textContent = grade > 18 ? '18+' : grade < 0 ? '0' : Math.round(grade * 10) / 10;
+        } else {
+          el.sy.textContent = '0';
+          el.fr.textContent = '0';
+          el.gl.textContent = '0';
+        }
 
         var avgLen = words > 0 ? (wordsArr.reduce(function(sum, w) { return sum + w.length; }, 0) / words) : 0;
-        var readTime = words > 0 ? (words / 200).toFixed(1) : '0';
+        el.aw.textContent = avgLen.toFixed(1);
+        el.rt.textContent = words > 0 ? (words / 200).toFixed(1) : '0';
 
-        charCount.textContent = chars;
-        charNoSpaceCount.textContent = charsNoSpace;
-        charCnCount.textContent = cnChars;
-        wordCount.textContent = words;
-        sentenceCount.textContent = sentences;
-        lineCount.textContent = lines;
-        paraCount.textContent = paras;
-        avgWordLen.textContent = avgLen.toFixed(1);
-        readingTime.textContent = readTime;
-
-        showFreq(wordsArr);
-
-        outputEl.textContent = '字符：' + chars + '（不含空格 ' + charsNoSpace + '）| 单词：' + words + ' | 阅读：' + readTime + 'min';
-      }
-
-      function showFreq(wordsArr) {
+        // Word frequency
         if (wordsArr.length === 0) {
-          freqContainer.innerHTML = '<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本后显示高频词</p>';
-          return;
+          freqContainer.innerHTML = '<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p>';
+        } else {
+          var freq = {};
+          for (var i = 0; i < wordsArr.length; i++) {
+            var wd = wordsArr[i].to小写().replace(/[^a-z\u4e00-\u9fff]/g, '');
+            if (wd) freq[wd] = (freq[wd] || 0) + 1;
+          }
+          var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; });
+          var top = sorted.slice(0, 10);
+          var maxFreq = top.length > 0 ? freq[top[0]] : 1;
+          var html = '<table><thead><tr><th style="width:40px">#</th><th>Word</th><th style="width:60px">计数</th><th>Dist</th></tr></thead><tbody>';
+          for (var i = 0; i < top.length; i++) {
+            var pct = (freq[top[i]] / maxFreq * 100).toFixed(0);
+            html += '<tr><td>' + (i + 1) + '</td><td>' + top[i] + '</td><td>' + freq[top[i]] + '</td><td><div class="bar" style="width:' + pct + '%"></div></td></tr>';
+          }
+          html += '</tbody></table>';
+          freqContainer.innerHTML = html;
         }
-        var freq = {};
-        for (var i = 0; i < wordsArr.length; i++) {
-          var w = wordsArr[i].toLowerCase().replace(/[^a-z\u4e00-\u9fff]/g, '');
-          if (w) freq[w] = (freq[w] || 0) + 1;
-        }
-        var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; });
-        var top = sorted.slice(0, 10);
-        var maxFreq = top.length > 0 ? freq[top[0]] : 1;
-        var html = '<table><thead><tr><th style="width:40px">#</th><th>单词</th><th style="width:60px">次数</th><th>分布</th></tr></thead><tbody>';
-        for (var i = 0; i < top.length; i++) {
-          var pct = (freq[top[i]] / maxFreq * 100).toFixed(0);
-          html += '<tr><td>' + (i + 1) + '</td><td>' + top[i] + '</td><td>' + freq[top[i]] + '</td><td><div class="bar" style="width:' + pct + '%"></div></td></tr>';
-        }
-        html += '</tbody></table>';
-        freqContainer.innerHTML = html;
+
+        var fleschVal = el.fr.textContent;
+        输出El.textContent = 'Chars: ' + text.length + ' | Words: ' + words + ' | Flesch: ' + fleschVal + ' | Grade: ' + el.gl.textContent;
       }
 
       inputEl.addEventListener('input', updateStats);
-
-      copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
-      });
-
+      document.getElementById('copyBtn').addEventListener('click', function () { var text = 输出El.textContent; if (text) { copyToClipboard(text, this); setStatus('Copied'); } });
       updateStats();
     })();
   </script>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -36,8 +36,8 @@
         <button id="clearBtn" class="btn btn-secondary">清空</button>
       </div>
     </div>
-    <div class="output-box" style="min-height:200px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="min-height:200px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -61,7 +61,7 @@
       ogUrl: document.getElementById('fieldOgUrl'),
       lang: document.getElementById('fieldLang')
     };
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     function escapeAttr(v) { return v.replace(/"/g, '&quot;'); }
     function generate() {
       var lines = [];
@@ -98,7 +98,7 @@
       lines.push('');
       lines.push('</body>');
       lines.push('</html>');
-      outputEl.textContent = lines.join('\n');
+      输出El.textContent = lines.join('\n');
       setStatus('Meta 标签已生成');
     }
     document.getElementById('generateBtn').addEventListener('click', generate);
@@ -108,10 +108,10 @@
       fields.viewport.value = 'width=device-width, initial-scale=1.0';
       fields.robots.value = 'index, follow';
       fields.lang.value = 'zh-CN';
-      outputEl.textContent = '';
+      输出El.textContent = '';
       setStatus('');
     });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

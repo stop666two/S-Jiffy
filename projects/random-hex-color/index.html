@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机 Hex 颜色生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .hc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .hc-row .field { flex:1; min-width:100px; }
+    .hc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .color-swatch { display:inline-block; width:24px; height:24px; border-radius:4px; border:1px solid var(--color-border); vertical-align:middle; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机 Hex 颜色生成器</h1>
+    <p class="tool-desc">生成随机十六进制颜色代码，支持带/不带 # 前缀和亮度模式。</p>
+    <div class="card">
+      <div class="hc-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div class="hc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="hashChk" type="checkbox" checked> 带 # 前缀</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-left:16px;">模式
+          <select id="modeSel" class="input" style="width:auto;min-width:80px;">
+            <option value="all">全部</option>
+            <option value="bright">亮色</option>
+            <option value="dark">暗色</option>
+            <option value="pastel">淡彩</option>
+          </select>
+        </label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var hashChk = document.getElementById('hashChk');
+    var modeEl = document.getElementById('modeSel');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoByte() {
+      var bytes = new Uint8Array(1);
+      crypto.getRandomValues(bytes);
+      return bytes[0];
+    }
+
+    function randByteRange(min, max) {
+      var bytes = new Uint8Array(1);
+      crypto.getRandomValues(bytes);
+      return min + (bytes[0] % (max - min + 1));
+    }
+
+    function toHex(n) {
+      var s = n.toString(16);
+      return s.length === 1 ? '0' + s : s;
+    }
+
+    function generateColor(mode) {
+      var r, g, b;
+      if (mode === 'bright') {
+        r = randByteRange(180, 255);
+        g = randByteRange(180, 255);
+        b = randByteRange(180, 255);
+      } else if (mode === 'dark') {
+        r = randByteRange(0, 80);
+        g = randByteRange(0, 80);
+        b = randByteRange(0, 80);
+      } else if (mode === 'pastel') {
+        r = randByteRange(180, 255);
+        g = randByteRange(140, 220);
+        b = randByteRange(180, 255);
+      } else {
+        r = cryptoByte();
+        g = cryptoByte();
+        b = cryptoByte();
+      }
+      return '#' + toHex(r) + toHex(g) + toHex(b);
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 100) count = 100;
+      var useHash = hashChk.checked;
+      var mode = modeEl.value;
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var c = generateColor(mode);
+        结果.push(useHash ? c : c.substring(1));
+      }
+      var html = '';
+      for (var i = 0; i < 结果.length; i++) {
+        var c = useHash ? 结果[i] : '#' + 结果[i];
+        html += '<span class="color-swatch" style="background:' + c + ';"></span>' + 结果[i] + '\n';
+      }
+      输出El.innerHTML = html;
+      setStatus('已生成 ' + count + ' 个颜色');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() {
+      var text = 输出El.textContent;
+      if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+    });
+  })();</script>
+</body>
+</html>

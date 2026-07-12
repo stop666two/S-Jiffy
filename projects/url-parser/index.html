@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,9 +6,9 @@
   <title>URL 解析器 - S-Jiffy</title>
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .url-result { margin-top: var(--space-2); }
-    .url-result dt { font-size: var(--font-size-xs); color: var(--color-text-disabled); text-transform: uppercase; letter-spacing: 0.05em; margin-top: var(--space-2); }
-    .url-result dd { font-size: var(--font-size-sm); font-family: var(--font-mono); word-break: break-all; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; margin-top: 4px; }
+    .url-结果 { margin-top: var(--space-2); }
+    .url-结果 dt { font-size: var(--font-size-xs); color: var(--color-text-disabled); text-transform: 大写; letter-spacing: 0.05em; margin-top: var(--space-2); }
+    .url-结果 dd { font-size: var(--font-size-sm); font-family: var(--font-mono); word-break: break-all; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -21,8 +21,8 @@
     <div class="card">
       <input id="urlInput" class="input js-focus-input" placeholder="输入 URL，如 https://example.com/path?q=1#hash">
     </div>
-    <div id="resultBox" class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div id="结果Box" class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,33 +34,33 @@
   <script>
     (function () {
       var inputEl = document.getElementById('urlInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function parseURL(url) {
-        var result = { raw: url, protocol: '', host: '', hostname: '', port: '', path: '', query: '', hash: '', params: [] };
+        var 结果 = { raw: url, protocol: '', host: '', hostname: '', port: '', path: '', query: '', hash: '', params: [] };
         try {
           var u = new URL(url);
-          result.protocol = u.protocol;
-          result.host = u.host;
-          result.hostname = u.hostname;
-          result.port = u.port || '(default)';
-          result.path = u.pathname;
-          result.query = u.search || '(none)';
-          result.hash = u.hash || '(none)';
-          u.searchParams.forEach(function (v, k) { result.params.push({ key: k, value: v }); });
+          结果.protocol = u.protocol;
+          结果.host = u.host;
+          结果.hostname = u.hostname;
+          结果.port = u.port || '(default)';
+          结果.path = u.pathname;
+          结果.query = u.search || '(none)';
+          结果.hash = u.hash || '(none)';
+          u.searchParams.forEach(function (v, k) { 结果.params.push({ 密钥： k, value: v }); });
         } catch (e) {
           return null;
         }
-        return result;
+        return 结果;
       }
 
       function update() {
         var raw = inputEl.value.trim();
-        if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
+        if (!raw) { 输出El.innerHTML = ''; setStatus(''); return; }
         var r = parseURL(raw);
-        if (!r) { outputEl.innerHTML = '<span style="color:var(--color-error)">无效 URL</span>'; setStatus('URL 格式错误', 'error'); return; }
-        var html = '<dl class="url-result">';
+        if (!r) { 输出El.innerHTML = '<span style="color:var(--color-error)">无效 URL</span>'; setStatus('URL 格式错误', 'error'); return; }
+        var html = '<dl class="url-结果">';
         html += '<dt>协议 (Protocol)</dt><dd>' + r.protocol + '</dd>';
         html += '<dt>主机 (Host)</dt><dd>' + r.host + '</dd>';
         html += '<dt>主机名 (Hostname)</dt><dd>' + r.hostname + '</dd>';
@@ -75,13 +75,13 @@
           }
         }
         html += '</dl>';
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
         setStatus('');
       }
 
       inputEl.addEventListener('input', update);
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

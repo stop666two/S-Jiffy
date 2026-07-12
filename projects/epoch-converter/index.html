@@ -1,194 +1,85 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>时间戳转换 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .conv-section { margin-bottom:var(--space-3); }
-    .conv-section h2 { font-size:var(--font-size-base); font-weight:600; margin-bottom:var(--space-2); }
-    .result-line { font-size:var(--font-size-sm); margin-top:var(--space-1); font-family:var(--font-mono); word-break:break-all; }
-    .epoch-clock { font-size:36px; font-weight:600; font-family:var(--font-mono); text-align:center; padding:var(--space-3); background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); margin-bottom:var(--space-2); }
-    .epoch-clock .sub { font-size:var(--font-size-sm); font-weight:400; color:var(--color-text-secondary); }
-    .tz-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:var(--space-2); margin-top:var(--space-2); }
-    .tz-card { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); }
-    .tz-card .tz-name { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
-    .tz-card .tz-time { font-size:var(--font-size-base); font-weight:500; }
-    .tz-card .tz-date { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
-    .format-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:var(--space-2); }
-    .format-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); min-width:80px; }
-    .format-row .val { font-family:var(--font-mono); font-size:var(--font-size-sm); }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Epoch Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.conv-section{margin-bottom:var(--space-3);}
+.conv-section h2{font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);}
+.结果-line{font-size:var(--font-size-sm);margin-top:var(--space-1);font-family:var(--font-mono);word-break:break-all;}
+.epoch-clock{font-size:36px;font-weight:600;font-family:var(--font-mono);text-align:center;padding:var(--space-3);background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-2);}
+.epoch-clock .sub{font-size:var(--font-size-sm);font-weight:400;color:var(--color-text-secondary);}
+.tz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-2);margin-top:var(--space-2);}
+.tz-card{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);}
+.tz-card .tz-name{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.tz-card .tz-time{font-size:var(--font-size-base);font-weight:500;}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>时间戳转换</h1>
-    <p class="tool-desc">Unix 纪元时间戳与人类可读日期互转，实时时钟，多时区，多种日期格式。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>Epoch 时间戳</h1>
+<p class="tool-desc">Unix timestamp ↔ date, real-time clock, week of year, quarter, day of year.</p>
+<div class="card">
+<h2>⏱ Real-time Epoch Clock</h2>
+<div class="epoch-clock"><div id="currentEpoch">0</div><div class="sub" id="currentMs">ms: 0</div></div>
+<div class="tz-grid" id="tzGrid"></div>
+</div>
+<div class="card conv-section">
+<h2>Timestamp → Date</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+<input id="tsInput" class="input js-focus-input" placeholder="Enter timestamp e.g. 1712345678" style="width:260px;">
+<select id="tsUnit" class="input" style="width:auto;"><option value="auto">Auto-detect</option><option value="seconds">Seconds</option><option value="milliseconds">Milliseconds</option></select>
+<button id="tsToDateBtn" class="btn btn-primary">转换</button></div>
+<div id="ts结果" class="结果-line"></div>
+<div id="extraDateInfo" style="display:none;margin-top:var(--space-2);">
+<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name">Week of Year</span><div id="weekOfYear" style="font-weight:600;">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name">Quarter</span><div id="quarter" style="font-weight:600;">—</div></div>
+<div class="tz-card" style="display:inline-block;"><span class="tz-name">Day of Year</span><div id="dayOfYear" style="font-weight:600;">—</div></div>
+</div>
+</div>
+<div class="card conv-section">
+<h2>Date → Timestamp</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+<input id="dateInput" type="datetime-local" class="input" style="width:260px;"><button id="dateToTsBtn" class="btn btn-primary">转换</button></div>
+<div id="date结果" class="结果-line"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var tsInput=document.getElementById('tsInput'),ts结果=document.getElementById('ts结果'),date结果=document.getElementById('date结果');
+  var currentEpoch=document.getElementById('currentEpoch'),currentMs=document.getElementById('currentMs'),tzGrid=document.getElementById('tzGrid');
+  var weekEl=document.getElementById('weekOfYear'),quarterEl=document.getElementById('quarter'),doyEl=document.getElementById('dayOfYear'),extraInfo=document.getElementById('extraDateInfo');
+  var tzList=[{name:'UTC',zone:'UTC'},{name:'Local',zone:null},{name:'New York (EST)',zone:'America/New_York'},{name:'London (GMT)',zone:'Europe/London'},{name:'Tokyo (JST)',zone:'Asia/Tokyo'},{name:'Shanghai (CST)',zone:'Asia/Shanghai'}];
 
-    <div class="card">
-      <h2>⏱ 当前 Epoch 实时时钟</h2>
-      <div class="epoch-clock">
-        <div id="currentEpoch">0</div>
-        <div class="sub" id="currentMs">毫秒: 0</div>
-      </div>
-      <div class="tz-grid" id="tzGrid"></div>
-    </div>
+  function formatDate(d,tz){var opts={timeZone:tz||undefined,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false};return d.toLocaleString('zh-CN',opts);}
 
-    <div class="card conv-section">
-      <h2>时间戳 → 日期</h2>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-        <input id="tsInput" class="input js-focus-input" placeholder="输入时间戳，如 1712345678" style="width:260px;">
-        <select id="tsUnit" class="input" style="width:auto;">
-          <option value="auto">自动检测</option>
-          <option value="seconds">秒</option>
-          <option value="milliseconds">毫秒</option>
-        </select>
-        <button id="tsToDateBtn" class="btn btn-primary">转换</button>
-      </div>
-      <div id="tsResult" class="result-line" style="color:var(--color-text-secondary);"></div>
-      <div class="format-row" id="tsFormats" style="display:none;">
-        <label>ISO 8601:</label><span class="val" id="fmtIso">-</span><br>
-        <label>RFC 2822:</label><span class="val" id="fmtRfc">-</span><br>
-        <label>本地格式:</label><span class="val" id="fmtLocale">-</span>
-      </div>
-    </div>
+  function getWeekOfYear(d){var t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-(t.getDay()+6)%7);var w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/86400000-3+(w1.getDay()+6)%7)/7);}
+  function getQuarter(d){return Math.floor(d.getMonth()/3)+1;}
+  function getDayOfYear(d){var start=new Date(d.getFullYear(),0,0);return Math.floor((d-start)/86400000);}
 
-    <div class="card conv-section">
-      <h2>日期 → 时间戳</h2>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-        <input id="dateInput" type="datetime-local" class="input" style="width:260px;">
-        <button id="dateToTsBtn" class="btn btn-primary">转换</button>
-      </div>
-      <div id="dateResult" class="result-line" style="color:var(--color-text-secondary);"></div>
-    </div>
+  function updateClock(){
+    var now=Date.now();currentEpoch.textContent=Math.floor(now/1000);currentMs.textContent='ms: '+now;
+    var d=new Date(now);var html='';
+    for(var i=0;i<tzList.length;i++){html+='<div class="tz-card"><div class="tz-name">'+tzList[i].name+'</div><div class="tz-time">'+formatDate(d,tzList[i].zone)+'</div><div class="tz-name">sec: '+Math.floor(d.getTime()/1000)+'</div></div>';}
+    tzGrid.innerHTML=html;}
 
-    <div class="card conv-section">
-      <h2>自定义时区偏移</h2>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-        <input id="customTzInput" class="input" placeholder="如 UTC+8, UTC-5, Asia/Shanghai" style="width:260px;">
-        <input id="customTsInput" class="input" placeholder="时间戳（留空用当前时间）" style="width:200px;">
-        <button id="customTzBtn" class="btn btn-primary">显示</button>
-      </div>
-      <div id="customTzResult" class="result-line" style="color:var(--color-text-secondary);"></div>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function () {
-      var tsInput = document.getElementById('tsInput');
-      var tsUnit = document.getElementById('tsUnit');
-      var dateInput = document.getElementById('dateInput');
-      var tsResult = document.getElementById('tsResult');
-      var dateResult = document.getElementById('dateResult');
-      var tsFormats = document.getElementById('tsFormats');
-      var fmtIso = document.getElementById('fmtIso');
-      var fmtRfc = document.getElementById('fmtRfc');
-      var fmtLocale = document.getElementById('fmtLocale');
-      var currentEpoch = document.getElementById('currentEpoch');
-      var currentMs = document.getElementById('currentMs');
-      var tzGrid = document.getElementById('tzGrid');
-      var customTzInput = document.getElementById('customTzInput');
-      var customTsInput = document.getElementById('customTsInput');
-      var customTzResult = document.getElementById('customTzResult');
+  function getDateFromTs(val,unit){var num=parseFloat(val);if(isNaN(num))return null;return unit==='auto'?(num>1e12?new Date(num):new Date(num*1000)):(unit==='milliseconds'?new Date(num):new Date(num*1000));}
 
-      var tzList = [
-        { name: 'UTC', zone: 'UTC' },
-        { name: '本地时间', zone: null },
-        { name: '纽约 (EST)', zone: 'America/New_York' },
-        { name: '伦敦 (GMT)', zone: 'Europe/London' },
-        { name: '东京 (JST)', zone: 'Asia/Tokyo' },
-        { name: '上海 (CST)', zone: 'Asia/Shanghai' },
-        { name: '悉尼 (AEDT)', zone: 'Australia/Sydney' }
-      ];
+  document.getElementById('tsToDateBtn').addEventListener('click',function(){
+    var raw=tsInput.value.trim();if(!raw){ts结果.textContent='Enter timestamp';extraInfo.style.display='none';return;}
+    var d=getDateFromTs(raw,tsUnit.value);if(!d||isNaN(d.getTime())){ts结果.textContent='Invalid timestamp';extraInfo.style.display='none';return;}
+    ts结果.textContent=formatDate(d,'Asia/Shanghai')+' (CST) | '+d.toISOString()+' (UTC)';
+    weekEl.textContent=getWeekOfYear(d);quarterEl.textContent='Q'+getQuarter(d);doyEl.textContent=getDayOfYear(d);extraInfo.style.display='block';
+    setStatus('Converted');});
 
-      function formatDate(d, tz) {
-        var opts = { timeZone: tz || undefined, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        return d.toLocaleString('zh-CN', opts);
-      }
+  document.getElementById('dateToTsBtn').addEventListener('click',function(){
+    var val=dateInput.value;if(!val){date结果.textContent='Select date/time';return;}
+    var d=new Date(val);if(isNaN(d.getTime())){date结果.textContent='Invalid date';return;}
+    date结果.textContent='Seconds: '+Math.floor(d.getTime()/1000)+' | Milliseconds: '+d.getTime()+' | Week: '+getWeekOfYear(d)+' | Q'+getQuarter(d)+' | DOY: '+getDayOfYear(d);});
 
-      function updateClock() {
-        var now = Date.now();
-        currentEpoch.textContent = Math.floor(now / 1000);
-        currentMs.textContent = '毫秒: ' + now;
-
-        var d = new Date(now);
-        var html = '';
-        for (var i = 0; i < tzList.length; i++) {
-          html += '<div class="tz-card"><div class="tz-name">' + tzList[i].name + '</div>';
-          html += '<div class="tz-time">' + formatDate(d, tzList[i].zone) + '</div>';
-          html += '<div class="tz-date">秒: ' + Math.floor(d.getTime() / 1000) + '</div></div>';
-        }
-        tzGrid.innerHTML = html;
-      }
-
-      function getDateFromTs(val, unit) {
-        var num = parseFloat(val);
-        if (isNaN(num)) return null;
-        if (unit === 'auto') {
-          return num > 1e12 ? new Date(num) : new Date(num * 1000);
-        }
-        return unit === 'milliseconds' ? new Date(num) : new Date(num * 1000);
-      }
-
-      document.getElementById('tsToDateBtn').addEventListener('click', function () {
-        var raw = tsInput.value.trim();
-        if (!raw) { tsResult.textContent = '请输入时间戳'; tsFormats.style.display = 'none'; return; }
-        var d = getDateFromTs(raw, tsUnit.value);
-        if (!d || isNaN(d.getTime())) { tsResult.textContent = '无效时间戳'; tsFormats.style.display = 'none'; return; }
-        tsResult.textContent = formatDate(d, 'Asia/Shanghai') + ' (CST) | ' + d.toISOString() + ' (UTC)';
-        tsFormats.style.display = 'block';
-        fmtIso.textContent = d.toISOString();
-        fmtRfc.textContent = d.toUTCString().replace('GMT', 'UTC') + ' (' + d.toDateString() + ' ' + d.toTimeString().slice(0,8) + ')';
-        fmtLocale.textContent = d.toLocaleString('zh-CN');
-        setStatus('转换完成');
-      });
-
-      document.getElementById('dateToTsBtn').addEventListener('click', function () {
-        var val = dateInput.value;
-        if (!val) { dateResult.textContent = '请选择日期时间'; return; }
-        var d = new Date(val);
-        if (isNaN(d.getTime())) { dateResult.textContent = '无效日期'; return; }
-        dateResult.textContent = '秒: ' + Math.floor(d.getTime() / 1000) + ' | 毫秒: ' + d.getTime();
-        setStatus('转换完成');
-      });
-
-      document.getElementById('customTzBtn').addEventListener('click', function () {
-        var tz = customTzInput.value.trim();
-        var tsVal = customTsInput.value.trim();
-        if (!tz) { customTzResult.textContent = '请输入时区'; return; }
-        var d = tsVal ? getDateFromTs(tsVal, 'auto') : new Date();
-        if (!d || isNaN(d.getTime())) { customTzResult.textContent = '无效时间戳'; return; }
-
-        var resolvedTz = tz;
-        if (/^UTC[+-]/.test(tz)) {
-          var offset = parseInt(tz.replace('UTC', ''), 10);
-          if (!isNaN(offset)) {
-            var utc = d.getTime() + d.getTimezoneOffset() * 60000;
-            var local = new Date(utc + offset * 3600000);
-            customTzResult.textContent = tz + ': ' + local.toISOString().replace('Z', '') + ' | 秒: ' + Math.floor(local.getTime() / 1000);
-            return;
-          }
-        }
-        try {
-          customTzResult.textContent = tz + ': ' + formatDate(d, resolvedTz) + ' | 秒: ' + Math.floor(d.getTime() / 1000);
-        } catch(e) {
-          customTzResult.textContent = '无效时区: ' + tz;
-        }
-      });
-
-      tsInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('tsToDateBtn').click(); });
-
-      updateClock();
-      setInterval(updateClock, 1000);
-    })();
-  </script>
-</body>
-</html>
+  tsInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('tsToDateBtn').click();});
+  updateClock();setInterval(updateClock,1000);
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+  var o=document.getElementById('输出Text');
+  setInterval(function(){var now=Date.now();o.textContent=Math.floor(now/1000);},1000);
+})();
+</script></body></html>

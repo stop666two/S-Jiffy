@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIN 码生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .pp-row .field { flex:1; min-width:100px; }
+    .pp-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>PIN 码生成器</h1>
+    <p class="tool-desc">生成数字 PIN 码，支持长度设置、禁止重复和连续数字选项。</p>
+    <div class="card">
+      <div class="pp-row">
+        <div class="field"><label for="lenVal">长度</label><input id="lenVal" class="input" type="number" value="6" min="4" max="12"></div>
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div class="pp-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="noRepeatChk" type="checkbox"> 禁止重复数字</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="noSeqChk" type="checkbox"> 禁止连续数字</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var lenEl = document.getElementById('lenVal');
+    var countEl = document.getElementById('countVal');
+    var noRepeatChk = document.getElementById('noRepeatChk');
+    var noSeqChk = document.getElementById('noSeqChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoDigit() {
+      var b = new Uint8Array(1);
+      crypto.getRandomValues(b);
+      return b[0] % 10;
+    }
+
+    function hasConsecutive(s) {
+      for (var i = 1; i < s.length; i++) {
+        if (parseInt(s[i]) === parseInt(s[i-1]) + 1 || parseInt(s[i]) === parseInt(s[i-1]) - 1) return true;
+      }
+      return false;
+    }
+
+    function generatePIN(len, noRepeat, noSeq) {
+      var attempts = 0;
+      while (attempts < 1000) {
+        var digits = [];
+        for (var i = 0; i < len; i++) digits.push(cryptoDigit());
+        var pin = digits.join('');
+        if (noRepeat) {
+          var seen = {};
+          var dup = false;
+          for (var i = 0; i < digits.length; i++) {
+            if (seen[digits[i]]) { dup = true; break; }
+            seen[digits[i]] = true;
+          }
+          if (dup) { attempts++; continue; }
+        }
+        if (noSeq && hasConsecutive(pin)) { attempts++; continue; }
+        return pin;
+      }
+      return null;
+    }
+
+    function generate() {
+      var len = parseInt(lenEl.value, 10) || 6;
+      if (len < 4) len = 4;
+      if (len > 12) len = 12;
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var noRepeat = noRepeatChk.checked;
+      var noSeq = noSeqChk.checked;
+
+      if (noRepeat && len > 10) { setStatus('禁止重复时长度不能超过 10', 'error'); return; }
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var pin = generatePIN(len, noRepeat, noSeq);
+        if (pin === null) { 结果.push('生成失败'); break; }
+        结果.push(pin);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + 结果.length + ' 个 PIN 码');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

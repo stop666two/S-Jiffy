@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SQL 语法检查 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .sql-input{min-height:200px;resize:vertical;font-family:var(--font-mono);font-size:14px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.sql-input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.issue{font-size:13px;padding:6px 10px;border-radius:var(--radius-sm);margin:4px 0}.issue.warn{background:#fff8e6;color:#8a6d00}.issue.err{background:#fce8e6;color:#9f2f2d}.issue.ok{background:#e6f4ea;color:#346538}
 </style></head><body>
@@ -13,31 +13,31 @@
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
 <textarea id="sqlInput" class="sql-input js-focus-input" placeholder="输入 SQL 语句...">SELECT * FORM users WHERE id = 1</textarea>
-<div id="results" style="margin-top:12px;"></div>
+<div id="结果s" style="margin-top:12px;"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>(function(){
 var sqlInput=document.getElementById('sqlInput');
-var results=document.getElementById('results');
+var 结果s=document.getElementById('结果s');
 var checkBtn=document.getElementById('checkBtn');
 var clearBtn=document.getElementById('clearBtn');
 var dialectSelect=document.getElementById('dialectSelect');
-var outputEl=document.getElementById('outputText');
+var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 var keywords=['SELECT','FROM','WHERE','INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE','DROP','ALTER','ADD','COLUMN','INDEX','VIEW','JOIN','LEFT','RIGHT','INNER','OUTER','FULL','CROSS','ON','AND','OR','NOT','IN','EXISTS','BETWEEN','LIKE','IS','NULL','AS','ORDER','BY','GROUP','HAVING','LIMIT','OFFSET','DISTINCT','COUNT','SUM','AVG','MIN','MAX','UNION','ALL','CASE','WHEN','THEN','ELSE','END','CAST','CONVERT','COALESCE','NULLIF','TRUE','FALSE','PRIMARY','KEY','FOREIGN','REFERENCES','CONSTRAINT','DEFAULT','CHECK','UNIQUE','AUTO_INCREMENT','SERIAL','INTEGER','INT','VARCHAR','TEXT','BOOLEAN','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','BLOB'];
 
 function check(){
 var sql=sqlInput.value;
 var issues=[];
-if(!sql.trim()){issues.push({type:'warn',msg:'SQL 语句为空'});renderResults(issues);return;}
-var upper=sql.toUpperCase();
+if(!sql.trim()){issues.push({type:'warn',msg:'SQL 语句为空'});render结果s(issues);return;}
+var upper=sql.to大写();
 var tokens=sql.match(/"([^"]*)"|'([^']*)'|`([^`]*)`|\S+/g)||[];
 var lastWord='';
 for(var i=0;i<tokens.length;i++){
 var t=tokens[i];
-var up=t.toUpperCase();
+var up=t.to大写();
 if(t.startsWith("'")||t.startsWith('"')||t.startsWith('`'))continue;
 if(keywords.indexOf(up)!==-1){
 var typos={'UDPATE':'UPDATE','SELEC':'SELECT','DELTE':'DELETE','ISNERT':'INSERT','WHRER':'WHERE','FORM':'FROM','WAHERE':'WHERE','GRPOU':'GROUP','ODERR':'ORDER','HAVIG':'HAVING','DINSTINCT':'DISTINCT','UNOIN':'UNION','HTEN':'THEN','WHEEN':'WHEN','ELSEL':'ELSE','ND':'AND','OT':'NOT','TABEL':'TABLE','CLOUmn':'COLUMN','VAKUES':'VALUES','INT':'INTO'};
@@ -72,27 +72,27 @@ if(paren>0)issues.push({type:'err',msg:'括号未闭合：缺少 ' + paren + ' �
 if(paren<0)issues.push({type:'err',msg:'括号多余：多了 ' + (-paren) + ' 个 )'});
 var startsWithKeyword=false;
 var firstToken=tokens[0];
-if(firstToken&&['SELECT','INSERT','UPDATE','DELETE','CREATE','DROP','ALTER','WITH'].indexOf(firstToken.toUpperCase())!==-1){
+if(firstToken&&['SELECT','INSERT','UPDATE','DELETE','CREATE','DROP','ALTER','WITH'].indexOf(firstToken.to大写())!==-1){
 startsWithKeyword=true;
 }
 if(!startsWithKeyword&&tokens.length>0)issues.push({type:'warn',msg:'语句应以 SQL 关键字开头（SELECT/INSERT/UPDATE/DELETE 等）'});
 if(issues.length===0)issues.push({type:'ok',msg:'语法检查通过，未发现明显错误'});
-renderResults(issues);
-outputEl.textContent='发现 '+(issues.filter(function(i){return i.type!=='ok';}).length)+' 个问题';
+render结果s(issues);
+输出El.textContent='发现 '+(issues.filter(function(i){return i.type!=='ok';}).length)+' 个问题';
 }
 
-function renderResults(issues){
+function render结果s(issues){
 var html='';
 for(var i=0;i<issues.length;i++){
 var cls=issues[i].type==='err'?'err':issues[i].type==='warn'?'warn':'ok';
 var label=issues[i].type==='err'?'错误':issues[i].type==='warn'?'警告':'通过';
 html+='<div class="issue '+cls+'">['+label+'] '+issues[i].msg+'</div>';
 }
-results.innerHTML=html;
+结果s.innerHTML=html;
 }
 
 checkBtn.addEventListener('click',check);
-clearBtn.addEventListener('click',function(){sqlInput.value='';results.innerHTML='';outputEl.textContent='';setStatus('');sqlInput.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){sqlInput.value='';结果s.innerHTML='';输出El.textContent='';setStatus('');sqlInput.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
 sqlInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')check();});
 })();</script></body></html>

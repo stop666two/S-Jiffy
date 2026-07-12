@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HEX 转 RGB - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
-.color-preview{width:100%;height:60px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s}.input-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.input-row input{width:180px;font-family:var(--font-mono);font-size:18px}.result-group{display:flex;gap:24px;font-family:var(--font-mono);font-size:16px;flex-wrap:wrap}.result-item{display:flex;align-items:center;gap:8px}.result-item .val{font-weight:600;font-size:20px}.chip{display:inline-block;width:20px;height:20px;border-radius:3px;border:1px solid var(--color-border);vertical-align:middle}
+.color-preview{width:100%;height:60px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-bottom:16px;transition:background .2s}.input-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.input-row input{width:180px;font-family:var(--font-mono);font-size:18px}.结果-group{display:flex;gap:24px;font-family:var(--font-mono);font-size:16px;flex-wrap:wrap}.结果-item{display:flex;align-items:center;gap:8px}.结果-item .val{font-weight:600;font-size:20px}.chip{display:inline-block;width:20px;height:20px;border-radius:3px;border:1px solid var(--color-border);vertical-align:middle}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
 <main class="tool-workspace"><h1>HEX 转 RGB</h1><p class="tool-desc">将十六进制颜色值转换为 RGB 格式，带颜色预览。</p>
@@ -10,25 +10,25 @@
 <input id="hexInput" class="input js-focus-input" placeholder="#RRGGBB or #RGB" value="#3498DB">
 <button id="convertBtn" class="btn btn-primary">转换</button>
 </div>
-<div class="result-group">
-<div class="result-item"><span class="chip" style="background:rgb(52,152,219)"></span>RGB: <span class="val" id="rgbResult">52, 152, 219</span></div>
-<div class="result-item">R: <b id="rVal">52</b></div>
-<div class="result-item">G: <b id="gVal">152</b></div>
-<div class="result-item">B: <b id="bVal">219</b></div>
+<div class="结果-group">
+<div class="结果-item"><span class="chip" style="background:rgb(52,152,219)"></span>RGB: <span class="val" id="rgb结果">52, 152, 219</span></div>
+<div class="结果-item">R: <b id="rVal">52</b></div>
+<div class="结果-item">G: <b id="gVal">152</b></div>
+<div class="结果-item">B: <b id="bVal">219</b></div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>(function(){
 var hexInput=document.getElementById('hexInput');
 var convertBtn=document.getElementById('convertBtn');
 var colorPreview=document.getElementById('colorPreview');
-var rgbResult=document.getElementById('rgbResult');
+var rgb结果=document.getElementById('rgb结果');
 var rVal=document.getElementById('rVal');
 var gVal=document.getElementById('gVal');
 var bVal=document.getElementById('bVal');
-var outputEl=document.getElementById('outputText');
+var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 
 function convert(){
@@ -38,7 +38,7 @@ if(hex.length===3){
 hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
 }
 if(!/^[0-9a-fA-F]{6}$/.test(hex)){
-outputEl.textContent='无效的 HEX 颜色值';
+输出El.textContent='无效的 HEX 颜色值';
 setStatus('输入错误','error');
 return;
 }
@@ -50,8 +50,8 @@ colorPreview.style.background=rgb;
 rVal.textContent=r;
 gVal.textContent=g;
 bVal.textContent=b;
-rgbResult.textContent=r+', '+g+', '+b;
-outputEl.textContent='#'+hex+' = '+rgb;
+rgb结果.textContent=r+', '+g+', '+b;
+输出El.textContent='#'+hex+' = '+rgb;
 setStatus('');
 }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       </div>
       <div><button id="calcBtn" class="btn btn-primary">计算年龄</button></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -39,7 +39,7 @@
       var birthEl = document.getElementById('birthDate');
       var targetEl = document.getElementById('targetDate');
       var calcBtn = document.getElementById('calcBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function todayStr() {
@@ -78,7 +78,7 @@
         var totalDays = Math.round((target - birth) / (1000 * 60 * 60 * 24));
         var totalWeeks = (totalDays / 7).toFixed(1);
 
-        outputEl.textContent = y + ' 年 ' + m + ' 个月 ' + d + ' 天'
+        输出El.textContent = y + ' 年 ' + m + ' 个月 ' + d + ' 天'
           + '  |  共 ' + totalMonths + ' 个月'
           + '  |  共 ' + totalWeeks + ' 周'
           + '  |  共 ' + totalDays + ' 天';
@@ -88,7 +88,7 @@
       calcBtn.addEventListener('click', calcAge);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

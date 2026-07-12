@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     .bf-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
     .bf-row .field { flex:1; min-width:160px; }
     .bf-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .bf-results { display:grid; gap:var(--space-2); }
+    .bf-结果s { display:grid; gap:var(--space-2); }
     .bf-item { display:flex; justify-content:space-between; padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); }
     .bf-item .key { color:var(--color-text-secondary); font-size:var(--font-size-sm); }
     .bf-item .val { font-weight:500; }
@@ -33,14 +33,14 @@
           <button id="formatSiBtn" class="btn btn-secondary">SI (1000)</button>
         </div>
       </div>
-      <div class="bf-results">
-        <div class="bf-item"><span class="key">IEC 格式 (1024)</span><span class="val" id="iecResult">-</span></div>
-        <div class="bf-item"><span class="key">SI 格式 (1000)</span><span class="val" id="siResult">-</span></div>
-        <div class="bf-item"><span class="key">二进制 (bits)</span><span class="val" id="bitResult">-</span></div>
+      <div class="bf-结果s">
+        <div class="bf-item"><span class="key">IEC 格式 (1024)</span><span class="val" id="iec结果">-</span></div>
+        <div class="bf-item"><span class="key">SI 格式 (1000)</span><span class="val" id="si结果">-</span></div>
+        <div class="bf-item"><span class="key">二进制 (bits)</span><span class="val" id="bit结果">-</span></div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -54,10 +54,10 @@
       var bytesInput = document.getElementById('bytesInput');
       var formatIecBtn = document.getElementById('formatIecBtn');
       var formatSiBtn = document.getElementById('formatSiBtn');
-      var iecResult = document.getElementById('iecResult');
-      var siResult = document.getElementById('siResult');
-      var bitResult = document.getElementById('bitResult');
-      var outputEl = document.getElementById('outputText');
+      var iec结果 = document.getElementById('iec结果');
+      var si结果 = document.getElementById('si结果');
+      var bit结果 = document.getElementById('bit结果');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function formatBytes(bytes, useSi) {
@@ -75,10 +75,10 @@
       function formatAll() {
         var bytes = parseInt(bytesInput.value, 10);
         if (isNaN(bytes) || bytes < 0) { setStatus('请输入非负整数', 'error'); return; }
-        iecResult.textContent = formatBytes(bytes, false);
-        siResult.textContent = formatBytes(bytes, true);
-        bitResult.textContent = (bytes * 8).toLocaleString() + ' bits';
-        outputEl.textContent = bytes + ' B = ' + iecResult.textContent + ' = ' + siResult.textContent;
+        iec结果.textContent = formatBytes(bytes, false);
+        si结果.textContent = formatBytes(bytes, true);
+        bit结果.textContent = (bytes * 8).toLocaleString() + ' bits';
+        输出El.textContent = bytes + ' B = ' + iec结果.textContent + ' = ' + si结果.textContent;
         setStatus('格式化完成');
       }
 
@@ -87,7 +87,7 @@
       bytesInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') formatAll(); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

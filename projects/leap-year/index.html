@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>闰年检测 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ly-list{font-family:var(--font-mono);font-size:var(--font-size-sm);color:var(--color-text-secondary)}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>闰年检测</h1><p class="tool-desc">检测任意年份是否为闰年，显示前后最近的闰年。</p>
+<div class="card"><input id="yearInput" type="number" class="input" placeholder="输入年份..." value="2024" style="width:200px;">
+<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="checkBtn" class="btn btn-primary">检测</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+</div>
+<div class="card" id="结果Card" style="display:none;"><h3 id="结果Title" style="margin-bottom:var(--space-2);"></h3>
+<p id="结果Detail" style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);"></p>
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">前一个闰年: <span id="prevLeap">-</span></p>
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">后一个闰年: <span id="nextLeap">-</span></p>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var yearInput=document.getElementById('yearInput');
+var checkBtn=document.getElementById('checkBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var 结果Card=document.getElementById('结果Card');
+var 结果Title=document.getElementById('结果Title');
+var 结果Detail=document.getElementById('结果Detail');
+var prevLeap=document.getElementById('prevLeap');
+var nextLeap=document.getElementById('nextLeap');
+var 输出El=document.getElementById('输出Text');
+function isLeap(y){return(y%4===0&&y%100!==0)||y%400===0;}
+function findPrev(y){for(var i=y-1;i>0;i--){if(isLeap(i))return i;}return null;}
+function findNext(y){for(var i=y+1;i<=9999;i++){if(isLeap(i))return i;}return null;}
+function check(){
+var y=parseInt(yearInput.value);
+if(isNaN(y)||y<1||y>9999){setStatus('请输入有效年份(1-9999)','error');结果Card.style.display='none';return;}
+结果Card.style.display='block';
+var leap=isLeap(y);
+结果Title.textContent=y+' 年'+(leap?' ✓ 是闰年':' ✗ 不是闰年');
+结果Title.style.color=leap?'var(--color-primary)':'var(--color-error)';
+var febDays=leap?29:28;
+结果Detail.textContent='2月有 '+febDays+' 天，全年 '+(leap?366:365)+' 天。';
+var p=findPrev(y);
+var n=findNext(y);
+prevLeap.textContent=p!==null?p:'-';
+nextLeap.textContent=n!==null?n:'-';
+输出El.textContent=y+' 年'+(leap?' 是':' 不是')+'闰年';
+setStatus('');
+}
+yearInput.addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+checkBtn.addEventListener('click',check);
+clearBtn.addEventListener('click',function(){yearInput.value='';结果Card.style.display='none';输出El.textContent='';setStatus('');yearInput.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

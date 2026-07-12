@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="toTextBtn" class="btn btn-secondary">\\uXXXX → 文本</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,19 +34,19 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       document.getElementById('toUnicodeBtn').addEventListener('click', function() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        var result = [];
+        var 结果 = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
-          result.push('\\u' + code.toString(16).toUpperCase().padStart(4, '0'));
+          结果.push('\\u' + code.toString(16).to大写().padStart(4, '0'));
         }
-        outputEl.textContent = result.join('');
+        输出El.textContent = 结果.join('');
         setStatus('已转换 ' + text.length + ' 个字符');
       });
 
@@ -54,10 +54,10 @@
         var raw = inputEl.value;
         if (!raw) { setStatus('请输入 \\uXXXX 序列', 'error'); return; }
         try {
-          var result = raw.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
+          var 结果 = raw.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
             return String.fromCharCode(parseInt(hex, 16));
           });
-          outputEl.textContent = result;
+          输出El.textContent = 结果;
           setStatus('已还原为文本');
         } catch (e) {
           setStatus('解析失败：格式无效', 'error');
@@ -66,13 +66,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

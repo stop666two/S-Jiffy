@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机 RGB 颜色生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rc-row .field { flex:1; min-width:100px; }
+    .rc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .color-preview { display:inline-block; width:24px; height:24px; border-radius:4px; border:1px solid var(--color-border); vertical-align:middle; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机 RGB 颜色生成器</h1>
+    <p class="tool-desc">生成随机 RGB/RGBA 颜色代码，支持透明度选项和颜色预览。</p>
+    <div class="card">
+      <div class="rc-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div class="rc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="alphaChk" type="checkbox"> 包含 Alpha 通道</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var alphaChk = document.getElementById('alphaChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoByte() {
+      var bytes = new Uint8Array(1);
+      crypto.getRandomValues(bytes);
+      return bytes[0];
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 100) count = 100;
+      var useAlpha = alphaChk.checked;
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var r = cryptoByte();
+        var g = cryptoByte();
+        var b = cryptoByte();
+        var colorStr;
+        var cssColor;
+        if (useAlpha) {
+          var aBytes = new Uint8Array(1);
+          crypto.getRandomValues(aBytes);
+          var a = (aBytes[0] / 255).toFixed(2);
+          colorStr = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+          cssColor = colorStr;
+        } else {
+          colorStr = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+          cssColor = colorStr;
+        }
+        结果.push(colorStr);
+      }
+      var html = '';
+      for (var i = 0; i < 结果.length; i++) {
+        html += '<span class="color-preview" style="background:' + 结果[i] + ';"></span>' + 结果[i] + '\n';
+      }
+      输出El.innerHTML = html;
+      setStatus('已生成 ' + count + ' 个颜色');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() {
+      var text = 输出El.textContent;
+      if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+    });
+  })();</script>
+</body>
+</html>

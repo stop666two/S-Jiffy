@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -32,8 +32,8 @@
       <div><div class="num" id="tailsCount">0</div><div class="lbl">反面 (Tail)</div></div>
       <div><div class="num" id="totalCount">0</div><div class="lbl">总计</div></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +47,7 @@
       var coin = document.getElementById('coin');
       var flipBtn = document.getElementById('flipBtn');
       var flipManyBtn = document.getElementById('flipManyBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var headsCount = document.getElementById('headsCount');
       var tailsCount = document.getElementById('tailsCount');
@@ -58,14 +58,14 @@
 
       function flip(showAnimation) {
         if (flipping) return;
-        var result = Math.random() < 0.5 ? 'H' : 'T';
+        var 结果 = Math.random() < 0.5 ? 'H' : 'T';
         if (showAnimation) {
           flipping = true;
           coin.classList.add('flipping');
           coin.textContent = '?';
         }
         setTimeout(function() {
-          if (result === 'H') {
+          if (结果 === 'H') {
             coin.textContent = 'H';
             heads++;
           } else {
@@ -79,9 +79,9 @@
             coin.classList.remove('flipping');
             flipping = false;
           }
-          outputEl.textContent = '结果: ' + (result === 'H' ? '正面 (Head)' : '反面 (Tail)') + ' | 正:' + heads + ' 反:' + tails + ' 共:' + (heads + tails);
+          输出El.textContent = '结果: ' + (结果 === 'H' ? '正面 (Head)' : '反面 (Tail)') + ' | 正:' + heads + ' 反:' + tails + ' 共:' + (heads + tails);
         }, showAnimation ? 300 : 0);
-        return result;
+        return 结果;
       }
 
       flipBtn.addEventListener('click', function() { flip(true); });
@@ -91,7 +91,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

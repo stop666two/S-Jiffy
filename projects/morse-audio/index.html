@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>摩斯音频 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ma-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-bottom:var(--space-2)}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>摩斯音频</h1><p class="tool-desc">文本转摩斯码并通过 Web Audio API 播放音频，支持速度和音高调节。</p>
+<div class="card">
+<div class="ma-controls">
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">速度</label><input id="speedInput" type="range" min="2" max="20" value="10" style="width:120px;"><span id="speedVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">10</span></div>
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">音高(Hz)</label><input id="pitchInput" type="range" min="200" max="2000" value="700" style="width:120px;"><span id="pitchVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">700</span></div>
+</div>
+<textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换为摩斯码并播放的文本..." style="min-height:80px;"></textarea>
+</div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="playBtn" class="btn btn-secondary">▶ 播放</button><button id="stopBtn" class="btn btn-secondary">■ 停止</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var playBtn=document.getElementById('playBtn');
+var stopBtn=document.getElementById('stopBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var speedInput=document.getElementById('speedInput');
+var pitchInput=document.getElementById('pitchInput');
+var speedVal=document.getElementById('speedVal');
+var pitchVal=document.getElementById('pitchVal');
+var audioCtx=null;
+var currentOsc=null;
+var currentGain=null;
+var stopped=false;
+var morseMap={'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--',' ':'/'};
+speedInput.addEventListener('input',function(){speedVal.textContent=speedInput.value;});
+pitchInput.addEventListener('input',function(){pitchVal.textContent=pitchInput.value;});
+function textToMorse(text){
+var upper=text.to大写();
+var parts=[];
+for(var i=0;i<upper.length;i++){
+var ch=upper[i];
+if(morseMap[ch]!==undefined)parts.push(morseMap[ch]);
+}
+return parts.join(' ');
+}
+function stopPlayback(){
+stopped=true;
+try{
+if(audioCtx&&audioCtx.state!=='closed')audioCtx.close();
+}catch(e){}
+audioCtx=null;
+}
+function playMorse(morse){
+stopped=false;
+var speed=parseInt(speedInput.value);
+var pitch=parseInt(pitchInput.value);
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+var dotLen=0.06*(20/speed);
+var t=audioCtx.currentTime;
+for(var i=0;i<morse.length;i++){
+if(stopped)break;
+var sym=morse[i];
+if(sym==='.'){addTone(t,dotLen,pitch);t+=dotLen+dotLen;}
+else if(sym==='-'){addTone(t,dotLen*3,pitch);t+=dotLen*3+dotLen;}
+else if(sym===' '){t+=dotLen*2;}
+else if(sym==='/'){t+=dotLen*4;}
+}
+}
+function addTone(start,dur,freq){
+if(stopped)return;
+var osc=audioCtx.createOscillator();
+var gain=audioCtx.createGain();
+osc.type='sine';
+osc.frequency.value=freq;
+gain.gain.setValueAtTime(0.3,start);
+gain.gain.exponentialRampToValueAtTime(0.001,start+dur);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start(start);
+osc.stop(start+dur);
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var morse=textToMorse(t);
+输出El.textContent=morse;
+setStatus('');
+});
+playBtn.addEventListener('click',function(){
+var morse=输出El.textContent.trim();
+if(!morse||(morse.indexOf('.')===-1&&morse.indexOf('-')===-1)){
+setStatus('请先转换文本','error');return;}
+setStatus('播放中...');
+playMorse(morse);
+});
+stopBtn.addEventListener('click',function(){stopPlayback();setStatus('已停止');});
+clearBtn.addEventListener('click',function(){stopPlayback();inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

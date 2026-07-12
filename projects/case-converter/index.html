@@ -1,150 +1,77 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>命名风格转换 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .case-grid { display:grid; gap:var(--space-2); }
-    .case-row { display:flex; align-items:center; gap:12px; padding:8px 12px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); transition:border-color .15s; }
-    .case-row:hover { border-color:var(--color-text-primary); }
-    .case-label { font-size:var(--font-size-sm); color:var(--color-text-secondary); min-width:120px; font-family:var(--font-mono); }
-    .case-value { flex:1; font-family:var(--font-mono); font-size:var(--font-size-base); word-break:break-all; }
-    .wc-badge { font-size:var(--font-size-xs); color:var(--color-text-disabled); margin-left:8px; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Case Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.case-grid{display:grid;gap:var(--space-2);}
+.case-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);transition:border-color .15s;}
+.case-row:hover{border-color:var(--color-text-primary);}
+.case-label{font-size:var(--font-size-sm);color:var(--color-text-secondary);min-width:130px;font-family:var(--font-mono);}
+.case-value{flex:1;font-family:var(--font-mono);font-size:var(--font-size-base);word-break:break-all;}
+.wc-badge{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-left:8px;}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>命名风格转换</h1>
-    <p class="tool-desc">camelCase / snake_case / kebab-case / PascalCase / UPPER_CASE / Title Case / Sentence case / tOGGLE cASE 等互转。<span class="wc-badge" id="wordCount"></span></p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>命名风格转换</h1>
+<p class="tool-desc">Convert between camelCase / snake_case / kebab-case / PascalCase / Title Case (with exceptions) / URL slug etc.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="hello world or helloWorld or hello_world" style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+<button class="btn btn-primary case-btn" data-case="camel">camelCase</button>
+<button class="btn btn-secondary case-btn" data-case="pascal">PascalCase</button>
+<button class="btn btn-secondary case-btn" data-case="snake">snake_case</button>
+<button class="btn btn-secondary case-btn" data-case="kebab">kebab-case</button>
+<button class="btn btn-secondary case-btn" data-case="upper">UPPER_CASE</button>
+<button class="btn btn-secondary case-btn" data-case="slug">url-slug</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="card"><div class="case-grid" id="caseGrid"></div></div>
+<div class="输出-box" id="输出Container"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var i=document.getElementById('inputText'),o=document.getElementById('输出Text'),grid=document.getElementById('caseGrid');
+  var titleExceptions={'a':true,'an':true,'the':true,'and':true,'but':true,'or':true,'for':true,'nor':true,'on':true,'at':true,'to':true,'by':true,'with':true,'from':true,'in':true,'of':true,'is':true,'as':true,'it':true,'up':true,'so':true};
 
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="hello world 或 helloWorld 或 hello_world" style="min-height:100px;"></textarea>
-    </div>
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function words(str){var w=str.trim().match(/[a-zA-Z0-9]+/g);return w||[];}
 
-    <div class="action-bar" style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;">
-      <button class="btn btn-primary case-btn" data-case="camel">camelCase</button>
-      <button class="btn btn-secondary case-btn" data-case="pascal">PascalCase</button>
-      <button class="btn btn-secondary case-btn" data-case="snake">snake_case</button>
-      <button class="btn btn-secondary case-btn" data-case="kebab">kebab-case</button>
-      <button class="btn btn-secondary case-btn" data-case="upper">UPPER_CASE</button>
-      <button class="btn btn-secondary case-btn" data-case="lower">lowercase</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
-    </div>
+  var allCases=[
+    {id:'camel',label:'camelCase'},{id:'pascal',label:'PascalCase'},{id:'snake',label:'snake_case'},{id:'kebab',label:'kebab-case'},{id:'upper',label:'UPPER_CASE'},{id:'lower',label:'小写'},
+    {id:'title',label:'Title Case'},{id:'sentence',label:'Sentence case'},{id:'toggle',label:'tOGGLE cASE'},{id:'alternating',label:'AlTeRnAtInG'},{id:'dot',label:'dot.case'},{id:'path',label:'path/case'},
+    {id:'constant',label:'CONSTANT_CASE'},{id:'slug',label:'URL slug'}
+  ];
 
-    <div class="card">
-      <div class="case-grid" id="caseGrid"></div>
-    </div>
+  function convert(type,w,raw){
+    switch(type){
+      case'camel':return w.map(function(s,idx){return idx===0?s.to小写():s[0].to大写()+s.slice(1).to小写();}).join('');
+      case'pascal':return w.map(function(s){return s[0].to大写()+s.slice(1).to小写();}).join('');
+      case'snake':return w.map(function(s){return s.to小写();}).join('_');
+      case'kebab':return w.map(function(s){return s.to小写();}).join('-');
+      case'upper':return w.map(function(s){return s.to大写();}).join('_');
+      case'lower':return w.map(function(s){return s.to小写();}).join(' ');
+      case'title':return w.map(function(s,i){var lower=s.to小写();return i===0||!titleExceptions[lower]?s[0].to大写()+s.slice(1).to小写():lower;}).join(' ');
+      case'sentence':return w.map(function(s,i){return i===0?s[0].to大写()+s.slice(1).to小写():s.to小写();}).join(' ');
+      case'toggle':return raw.split('').map(function(c){return c===c.to大写()?c.to小写():c.to大写();}).join('');
+      case'alternating':var alt='';for(var i=0;i<raw.length;i++)alt+=i%2===0?raw[i].to小写():raw[i].to大写();return alt;
+      case'dot':return w.map(function(s){return s.to小写();}).join('.');
+      case'path':return w.map(function(s){return s.to小写();}).join('/');
+      case'constant':return w.map(function(s){return s.to大写();}).join('_');
+      case'slug':return w.map(function(s){return s.to小写();}).join('-').replace(/[^a-z0-9-]/g,'');
+    }return '';}
 
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function () {
-      var i = document.getElementById('inputText'), o = document.getElementById('outputText'), grid = document.getElementById('caseGrid'), wc = document.getElementById('wordCount');
-      var allCases = [
-        { id: 'camel', label: 'camelCase' },
-        { id: 'pascal', label: 'PascalCase' },
-        { id: 'snake', label: 'snake_case' },
-        { id: 'kebab', label: 'kebab-case' },
-        { id: 'upper', label: 'UPPER_CASE' },
-        { id: 'lower', label: 'lowercase' },
-        { id: 'title', label: 'Title Case' },
-        { id: 'sentence', label: 'Sentence case' },
-        { id: 'toggle', label: 'tOGGLE cASE' },
-        { id: 'alternating', label: 'AlTeRnAtInG' },
-        { id: 'dot', label: 'dot.case' },
-        { id: 'path', label: 'path/case' },
-        { id: 'constant', label: 'CONSTANT_CASE' }
-      ];
+  function updateAll(){
+    var w=words(i.value),raw=i.value;
+    if(w.length===0){grid.innerHTML=allCases.map(function(c){return'<div class="case-row"><span class="case-label">'+esc(c.label)+'</span><span class="case-value" style="color:var(--color-text-disabled);">—</span></div>';}).join('');o.textContent='';return;}
+    var 结果s={};allCases.forEach(function(c){结果s[c.id]=convert(c.id,w,raw);});
+    grid.innerHTML=allCases.map(function(c){return'<div class="case-row"><span class="case-label">'+esc(c.label)+'</span><span class="case-value">'+esc(结果s[c.id])+'</span></div>';}).join('');}
 
-      function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-      function words(str) {
-        var w = str.trim().match(/[a-zA-Z0-9]+/g);
-        return w || [];
-      }
-
-      function convertAll() {
-        var w = words(i.value);
-        var raw = i.value;
-        wc.textContent = '单词数: ' + w.length;
-        if (w.length === 0) {
-          grid.innerHTML = allCases.map(function (c) {
-            return '<div class="case-row"><span class="case-label">' + escapeHtml(c.label) + '</span><span class="case-value" style="color:var(--color-text-disabled);">—</span></div>';
-          }).join('');
-          o.textContent = '';
-          return;
-        }
-        var results = {};
-        allCases.forEach(function (c) { results[c.id] = convert(c.id, w, raw); });
-        grid.innerHTML = allCases.map(function (c) {
-          return '<div class="case-row"><span class="case-label">' + escapeHtml(c.label) + '</span><span class="case-value">' + escapeHtml(results[c.id]) + '</span></div>';
-        }).join('');
-        setStatus('');
-      }
-
-      function convert(type, w, raw) {
-        switch (type) {
-          case 'camel':
-            return w.map(function (s, idx) { return idx === 0 ? s.toLowerCase() : s[0].toUpperCase() + s.slice(1).toLowerCase(); }).join('');
-          case 'pascal':
-            return w.map(function (s) { return s[0].toUpperCase() + s.slice(1).toLowerCase(); }).join('');
-          case 'snake':
-            return w.map(function (s) { return s.toLowerCase(); }).join('_');
-          case 'kebab':
-            return w.map(function (s) { return s.toLowerCase(); }).join('-');
-          case 'upper':
-            return w.map(function (s) { return s.toUpperCase(); }).join('_');
-          case 'lower':
-            return w.map(function (s) { return s.toLowerCase(); }).join(' ');
-          case 'title':
-            return w.map(function (s) { return s[0].toUpperCase() + s.slice(1).toLowerCase(); }).join(' ');
-          case 'sentence':
-            return w.map(function (s, idx) { return idx === 0 ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s.toLowerCase(); }).join(' ');
-          case 'toggle':
-            return raw.split('').map(function (c) { return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase(); }).join('');
-          case 'alternating':
-            var alt = '';
-            for (var i = 0; i < raw.length; i++) { alt += i % 2 === 0 ? raw[i].toLowerCase() : raw[i].toUpperCase(); }
-            return alt;
-          case 'dot':
-            return w.map(function (s) { return s.toLowerCase(); }).join('.');
-          case 'path':
-            return w.map(function (s) { return s.toLowerCase(); }).join('/');
-          case 'constant':
-            return w.map(function (s) { return s.toUpperCase(); }).join('_');
-        }
-        return '';
-      }
-
-      i.addEventListener('input', convertAll);
-
-      var btns = document.querySelectorAll('.case-btn');
-      for (var j = 0; j < btns.length; j++) {
-        btns[j].addEventListener('click', function () {
-          var w2 = words(i.value);
-          if (w2.length === 0) { setStatus('请输入文本', 'error'); return; }
-          o.textContent = convert(this.dataset.case, w2, i.value);
-          setStatus('');
-        });
-      }
-
-      document.getElementById('clearBtn').addEventListener('click', function () { i.value = ''; grid.innerHTML = ''; o.textContent = ''; wc.textContent = ''; setStatus(''); i.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
-      convertAll();
-    })();
-  </script>
-</body>
-</html>
+  i.addEventListener('input',updateAll);
+  var btns=document.querySelectorAll('.case-btn');
+  for(var j=0;j<btns.length;j++){btns[j].addEventListener('click',function(){var w2=words(i.value);if(w2.length===0){setStatus('Enter text','error');return;}
+    o.textContent=convert(this.dataset.case,w2,i.value);setStatus('');});}
+  document.getElementById('clearBtn').addEventListener('click',function(){i.value='';grid.innerHTML='';o.textContent='';setStatus('');i.focus();});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+  updateAll();
+})();
+</script></body></html>

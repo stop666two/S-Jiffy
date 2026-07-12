@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +20,8 @@
       <button id="convertBtn" class="btn btn-primary">转换到 JSON</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -33,7 +33,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
 
       function xmlNodeToJson(node) {
         var obj = {};
@@ -100,18 +100,18 @@
           var parseError = doc.querySelector('parsererror');
           if (parseError) throw new Error(parseError.textContent);
           var root = doc.documentElement;
-          var result = {};
-          result[root.nodeName] = xmlNodeToJson(root);
-          outputEl.textContent = JSON.stringify(result, null, 2);
+          var 结果 = {};
+          结果[root.nodeName] = xmlNodeToJson(root);
+          输出El.textContent = JSON.stringify(结果, null, 2);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('XML 格式错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

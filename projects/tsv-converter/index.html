@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TSV · CSV · JSON - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.format-opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.format-opt label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.输出-format{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.输出-format label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>TSV ↔ CSV ↔ JSON</h1><p class="tool-desc">Convert between tab-separated, comma-separated and JSON formats.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste TSV, CSV or JSON data..." style="min-height:150px;"></textarea></div>
+<div class="format-opt">
+<label>Input format</label>
+<select id="inFormat" class="input" style="width:auto;"><option value="auto">Auto-detect</option><option value="tsv">TSV</option><option value="csv">CSV</option><option value="json">JSON</option></select>
+</div>
+<div class="输出-format"><label><input type="radio" name="outFmt" value="tsv" checked> TSV</label><label><input type="radio" name="outFmt" value="csv"> CSV</label><label><input type="radio" name="outFmt" value="json"> JSON</label><label><input type="radio" name="outFmt" value="markdown"> Markdown</label></div>
+<div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
+<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var i=document.getElementById('inputText'),o=document.getElementById('输出Text'),inf=document.getElementById('inFormat');
+
+function parseLine(l,delim){var parts=[],cur='',inq=false;for(var c=0;c<l.length;c++){var ch=l[c];
+if(ch==='"'){inq=!inq;}else if(ch===delim&&!inq){parts.push(cur.trim());cur='';}else{cur+=ch;}}
+parts.push(cur.trim());return parts;}
+
+function detectDelim(t){var tab=(t.match(/\t/g)||[]).length;var com=(t.match(/,/g)||[]).length;return tab>com?'\t':',';}
+
+function parseTable(t,delim){var lines=t.split('\n').filter(function(l){return l.trim();});
+var rows=[];for(var r=0;r<lines.length;r++)rows.push(parseLine(lines[r],delim));
+return rows;}
+
+function toTSV(rows){return rows.map(function(r){return r.map(function(c){return c.indexOf('\t')>=0?'"'+c+'"':c;}).join('\t');}).join('\n');}
+function toCSV(rows){return rows.map(function(r){return r.map(function(c){return c.indexOf(',')>=0?'"'+c+'"':c;}).join(',');}).join('\n');}
+function toJSON(rows){if(rows.length<1)return'[]';var headers=rows[0];var out=[];for(var r=1;r<rows.length;r++){var obj={};for(var c=0;c<headers.length&&c<rows[r].length;c++){var val=rows[r][c];var num=parseFloat(val);obj[headers[c]]=!isNaN(num)&&val.trim()!==''?num:val;}
+out.push(obj);}return JSON.stringify(out,null,2);}
+function toMarkdown(rows){if(rows.length<1)return'';var out='| '+rows[0].join(' | ')+' |\n| '+rows[0].map(function(){return'---';}).join(' | ')+' |\n';
+for(var r=1;r<rows.length;r++){out+='| '+rows[r].join(' | ')+' |\n';}return out;}
+
+function convert(){var t=i.value.trim();if(!t){setStatus('Enter data','error');return;}
+var delim;if(inf.value==='auto'){delim=detectDelim(t);}else{delim=inf.value==='tsv'?'\t':',';}
+var rows;if(inf.value==='json'||(inf.value==='auto'&&t.trim().startsWith('['))){try{var arr=JSON.parse(t.trim());if(!Array.isArray(arr)||arr.length===0){setStatus('JSON must be an array','error');return;}
+var headers=Object.keys(arr[0]);rows=[headers];for(var r=0;r<arr.length;r++){var rw=[];for(var h=0;h<headers.length;h++){rw.push(arr[r][headers[h]]!==undefined?String(arr[r][headers[h]]):'');}
+rows.push(rw);}}catch(e){setStatus('Invalid JSON','error');return;}}else{rows=parseTable(t,delim);}
+if(rows.length<2){setStatus('Need header + data rows','error');return;}
+var fmt=document.querySelector('input[name="outFmt"]:checked').value;
+var 结果='';switch(fmt){case'tsv':结果=toTSV(rows);break;case'csv':结果=toCSV(rows);break;case'json':结果=toJSON(rows);break;case'markdown':结果=toMarkdown(rows);break;}
+o.textContent=结果;setStatus('Converted '+(rows.length-1)+' rows');}
+
+document.getElementById('convertBtn').addEventListener('click',convert);
+document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+})();
+</script></body></html>

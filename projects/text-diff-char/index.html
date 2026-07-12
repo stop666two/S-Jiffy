@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     .diff-panel textarea { width:100%; min-height:160px; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
     .diff-panel textarea:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
     .diff-panel label { display:block; font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:var(--space-1); }
-    .char-diff-output { font-family:var(--font-mono); font-size:14px; line-height:2; word-break:break-all; }
+    .char-diff-输出 { font-family:var(--font-mono); font-size:14px; line-height:2; word-break:break-all; }
     .char-add { background:#e6ffec; color:#1a7f37; border-radius:2px; }
     .char-del { background:#ffebe9; color:#cf222e; border-radius:2px; text-decoration:line-through; }
     .char-eq { color:var(--color-text-primary); }
@@ -39,8 +39,8 @@
       <button id="diffBtn" class="btn btn-primary">对比</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <div id="outputText" class="char-diff-output" style="display:block;padding-right:60px;"></div>
+    <div class="输出-box">
+      <div id="输出Text" class="char-diff-输出" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -53,7 +53,7 @@
     (function () {
       var textA = document.getElementById('textA');
       var textB = document.getElementById('textB');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var diffBtn = document.getElementById('diffBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -105,17 +105,17 @@
         var a = textA.value;
         var b = textB.value;
         if (!a && !b) { setStatus('请输入至少一段文本', 'error'); return; }
-        var result = charDiff(a, b);
-        var summary = '总计 ' + result.total + ' 字符';
-        if (result.added) summary += '，新增 <span style="color:#1a7f37;">+' + result.added + '</span>';
-        if (result.deleted) summary += '，删除 <span style="color:#cf222e;">-' + result.deleted + '</span>';
-        outputEl.innerHTML = '<div class="char-summary">' + summary + '</div>' + result.html;
-        setStatus(result.added + ' 新增  ' + result.deleted + ' 删除');
+        var 结果 = charDiff(a, b);
+        var summary = '总计 ' + 结果.total + ' 字符';
+        if (结果.added) summary += '，新增 <span style="color:#1a7f37;">+' + 结果.added + '</span>';
+        if (结果.deleted) summary += '，删除 <span style="color:#cf222e;">-' + 结果.deleted + '</span>';
+        输出El.innerHTML = '<div class="char-summary">' + summary + '</div>' + 结果.html;
+        setStatus(结果.added + ' 新增  ' + 结果.deleted + ' 删除');
       });
 
-      clearBtn.addEventListener('click', function () { textA.value = ''; textB.value = ''; outputEl.innerHTML = ''; setStatus(''); textA.focus(); });
+      clearBtn.addEventListener('click', function () { textA.value = ''; textB.value = ''; 输出El.innerHTML = ''; setStatus(''); textA.focus(); });
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

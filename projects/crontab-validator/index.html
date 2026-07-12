@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <style>
     .cron-fields { display:grid; grid-template-columns:repeat(5,1fr); gap:var(--space-1); margin-bottom:var(--space-2); }
     .cron-field { text-align:center; }
-    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform:uppercase; }
+    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform:大写; }
     .cron-field input { width:100%; text-align:center; font-family:var(--font-mono); font-size:14px; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px 4px; outline:none; }
     .next-times { font-size:var(--font-size-xs); margin-top:var(--space-2); }
     .next-times div { padding:4px 0; border-bottom:1px solid var(--color-border); }
@@ -38,8 +38,8 @@
       </div>
     </div>
 
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -51,7 +51,7 @@
   <script>
     (function () {
       var cronInput = document.getElementById('cronInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var parseBtn = document.getElementById('parseBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
       var fields = { min: document.getElementById('fMin'), hour: document.getElementById('fHour'), day: document.getElementById('fDay'), month: document.getElementById('fMonth'), week: document.getElementById('fWeek') };
 
@@ -127,9 +127,9 @@
 
       function update() {
         var raw = cronInput.value.trim();
-        if (!raw) { outputEl.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
+        if (!raw) { 输出El.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
         var parsed = parseCron(raw);
-        if (parsed.error) { outputEl.textContent = parsed.error; setStatus('格式错误', 'error'); return; }
+        if (parsed.error) { 输出El.textContent = parsed.error; setStatus('格式错误', 'error'); return; }
         fields.min.value = parsed.min; fields.hour.value = parsed.hour; fields.day.value = parsed.day; fields.month.value = parsed.month; fields.week.value = parsed.week;
 
         var desc = '';
@@ -153,13 +153,13 @@
         } else {
           desc += '\n未找到未来执行时间\n';
         }
-        outputEl.textContent = desc;
+        输出El.textContent = desc;
         setStatus('');
       }
 
       parseBtn.addEventListener('click', update);
-      clearBtn.addEventListener('click', function () { cronInput.value = ''; for (var k in fields) fields[k].value = ''; outputEl.textContent = ''; setStatus(''); cronInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { cronInput.value = ''; for (var k in fields) fields[k].value = ''; 输出El.textContent = ''; setStatus(''); cronInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
       cronInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
     })();
   </script>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -29,8 +29,8 @@
       <button id="calcBtn" class="btn btn-primary">计算</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div id="resultBox" class="output-box" style="min-height:200px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div id="结果Box" class="输出-box" style="min-height:200px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -42,7 +42,7 @@
   <script>
     (function () {
       var cidrEl = document.getElementById('cidrInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var calcBtn = document.getElementById('calcBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
       function toBinStr(octets) {
@@ -94,16 +94,16 @@
 
       function update() {
         var raw = cidrEl.value.trim();
-        if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
+        if (!raw) { 输出El.innerHTML = ''; setStatus(''); return; }
         var parts = raw.split('/');
-        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus('格式错误', 'error'); return; }
+        if (parts.length !== 2) { 输出El.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus('格式错误', 'error'); return; }
         var octets = parts[0].split('.').map(Number);
         if (octets.length !== 4 || octets.some(function (n) { return isNaN(n) || n < 0 || n > 255; })) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus('IP 无效', 'error'); return;
+          输出El.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus('IP 无效', 'error'); return;
         }
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus('前缀无效', 'error'); return;
+          输出El.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus('前缀无效', 'error'); return;
         }
         var r = compute(octets, prefix);
 
@@ -120,13 +120,13 @@
         html += renderBits('IP 地址二进制', r.ip, r.prefix, 'ip');
         html += renderBits('子网掩码二进制', r.mask, 32, 'mask');
 
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
         setStatus('');
       }
 
       calcBtn.addEventListener('click', update);
-      clearBtn.addEventListener('click', function () { cidrEl.value = ''; outputEl.innerHTML = ''; setStatus(''); cidrEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { cidrEl.value = ''; 输出El.innerHTML = ''; setStatus(''); cidrEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
       cidrEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
     })();
   </script>

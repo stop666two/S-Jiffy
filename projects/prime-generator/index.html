@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>质数生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pg-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .pg-row .field { flex:1; min-width:100px; }
+    .pg-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>质数生成器</h1>
+    <p class="tool-desc">在指定范围内生成质数，支持筛选孪生素数和安全素数。</p>
+    <div class="card">
+      <div class="pg-row">
+        <div class="field"><label for="minVal">起始值</label><input id="minVal" class="input" type="number" value="1"></div>
+        <div class="field"><label for="maxVal">结束值</label><input id="maxVal" class="input" type="number" value="200"></div>
+      </div>
+      <div class="pg-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="twinChk" type="checkbox"> 仅显示孪生素数</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="safeChk" type="checkbox"> 仅显示安全素数</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var minEl = document.getElementById('minVal');
+    var maxEl = document.getElementById('maxVal');
+    var twinChk = document.getElementById('twinChk');
+    var safeChk = document.getElementById('safeChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function isPrime(n) {
+      if (n < 2) return false;
+      if (n === 2) return true;
+      if (n % 2 === 0) return false;
+      var limit = Math.floor(Math.sqrt(n));
+      for (var i = 3; i <= limit; i += 2) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    function generate() {
+      var min = parseInt(minEl.value, 10) || 1;
+      var max = parseInt(maxEl.value, 10) || 200;
+      if (min < 0) min = 0;
+      if (max > 10000000) max = 10000000;
+      if (min >= max) { setStatus('结束值必须大于起始值', 'error'); return; }
+
+      var onlyTwin = twinChk.checked;
+      var onlySafe = safeChk.checked;
+
+      var primes = [];
+      for (var i = min; i <= max; i++) {
+        if (isPrime(i)) primes.push(i);
+      }
+
+      if (onlyTwin) {
+        var twinSet = {};
+        for (var i = 0; i < primes.length; i++) {
+          if (primes[i + 1] && primes[i + 1] - primes[i] === 2) {
+            twinSet[primes[i]] = true;
+            twinSet[primes[i + 1]] = true;
+          }
+        }
+        primes = Object.keys(twinSet).map(function(k){return parseInt(k);}).sort(function(a,b){return a-b;});
+      }
+
+      if (onlySafe) {
+        primes = primes.filter(function(p) {
+          return p > 2 && isPrime((p - 1) / 2);
+        });
+      }
+
+      var display = primes.join(', ');
+      if (display.length === 0) display = '（无符合条件的质数）';
+      输出El.textContent = display;
+      setStatus('找到 ' + primes.length + ' 个质数');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

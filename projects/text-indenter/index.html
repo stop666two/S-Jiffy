@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本缩进器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ti-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .ti-row .field { flex:1; min-width:80px; }
+    .ti-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>文本缩进器</h1>
+    <p class="tool-desc">对文本添加或移除前导空格/制表符，支持计数预览。</p>
+    <div class="card">
+      <div class="ti-row">
+        <div class="field" style="flex:2;"><label for="inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:80px;">line one&#10;  line two&#10;    line three</textarea></div>
+      </div>
+      <div class="ti-row">
+        <div class="field"><label for="countVal">缩进数量</label><input id="countVal" class="input" type="number" value="2" min="-10" max="10"></div>
+        <div class="field"><label for="charSel">缩进字符</label>
+          <select id="charSel" class="input" style="width:auto;min-width:80px;">
+            <option value="space">空格</option>
+            <option value="tab">制表符</option>
+          </select>
+        </div>
+      </div>
+      <div class="ti-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="firstOnlyChk" type="checkbox"> 仅第一行</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">执行</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputText');
+    var countEl = document.getElementById('countVal');
+    var charEl = document.getElementById('charSel');
+    var firstOnlyChk = document.getElementById('firstOnlyChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function generate() {
+      var text = inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var count = parseInt(countEl.value, 10) || 0;
+      var useTab = charEl.value === 'tab';
+      var firstOnly = firstOnlyChk.checked;
+
+      var indentChar = useTab ? '\t' : ' ';
+      var lines = text.split('\n');
+
+      if (count >= 0) {
+        var indent = '';
+        for (var i = 0; i < count; i++) indent += indentChar;
+        if (firstOnly) {
+          lines[0] = indent + lines[0];
+        } else {
+          for (var i = 0; i < lines.length; i++) {
+            lines[i] = indent + lines[i];
+          }
+        }
+      } else {
+        var remove = -count;
+        if (firstOnly) {
+          for (var r = 0; r < remove; r++) {
+            if (lines[0].charAt(0) === indentChar) lines[0] = lines[0].substring(1);
+          }
+        } else {
+          for (var i = 0; i < lines.length; i++) {
+            for (var r = 0; r < remove; r++) {
+              if (lines[i].charAt(0) === indentChar) lines[i] = lines[i].substring(1);
+            }
+          }
+        }
+      }
+
+      输出El.textContent = lines.join('\n');
+      setStatus('缩进处理完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>Roman Numeral Converter</h1>
+    <h1>罗马数字转换</h1>
     <p class="tool-desc">阿拉伯数字与罗马数字双向转换（1 — 3999）。</p>
     <div class="card">
       <div class="inline-group">
@@ -30,8 +30,8 @@
         </div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -44,21 +44,21 @@
     (function() {
       var arabicInput = document.getElementById('arabicInput');
       var romanInput = document.getElementById('romanInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function toRoman(num) {
         if (num < 1 || num > 3999) return '';
         var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
         var chars = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
-        var result = '';
+        var 结果 = '';
         for (var i = 0; i < vals.length; i++) {
           while (num >= vals[i]) {
-            result += chars[i];
+            结果 += chars[i];
             num -= vals[i];
           }
         }
-        return result;
+        return 结果;
       }
 
       function fromRoman(str) {
@@ -78,29 +78,29 @@
       function syncArabic() {
         var val = parseInt(arabicInput.value, 10);
         if (isNaN(val) || val < 1 || val > 3999) {
-          outputEl.textContent = '请输入 1 — 3999 之间的整数';
+          输出El.textContent = '请输入 1 — 3999 之间的整数';
           return;
         }
         var roman = toRoman(val);
         romanInput.value = roman;
-        outputEl.textContent = val + ' = ' + roman;
+        输出El.textContent = val + ' = ' + roman;
         setStatus('');
       }
 
       function syncRoman() {
-        var str = romanInput.value.toUpperCase().trim();
+        var str = romanInput.value.to大写().trim();
         if (!str) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           return;
         }
         var num = fromRoman(str);
         if (num < 1 || num > 3999) {
-          outputEl.textContent = '无效的罗马数字';
+          输出El.textContent = '无效的罗马数字';
           setStatus('请输入有效的罗马数字（I, V, X, L, C, D, M）', 'error');
           return;
         }
         arabicInput.value = num;
-        outputEl.textContent = str + ' = ' + num;
+        输出El.textContent = str + ' = ' + num;
         setStatus('');
       }
 
@@ -108,7 +108,7 @@
       romanInput.addEventListener('input', syncRoman);
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text && text.indexOf('=') > 0) {
           var parts = text.split(' = ');
           copyToClipboard(parts[1] || parts[0], copyBtn);

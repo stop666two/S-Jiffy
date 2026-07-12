@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,8 +31,8 @@
         </div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +47,7 @@
       var mph = document.getElementById('mph');
       var knot = document.getElementById('knot');
       var ms = document.getElementById('ms');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -59,7 +59,7 @@
         mph.value = r(v * 0.621371);
         knot.value = r(v * 0.539957);
         ms.value = r(v / 3.6);
-        outputEl.textContent = v + ' km/h = ' + mph.value + ' mph = ' + knot.value + ' knot = ' + ms.value + ' m/s';
+        输出El.textContent = v + ' km/h = ' + mph.value + ' mph = ' + knot.value + ' knot = ' + ms.value + ' m/s';
         updating = false;
       }
 
@@ -73,7 +73,7 @@
       ms.addEventListener('input', function() { fromMs(parseFloat(this.value) || 0); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

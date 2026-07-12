@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS 压缩 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .code-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:300px}@media(max-width:700px){.code-pair{grid-template-columns:1fr}}.code-pair textarea{height:300px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.code-pair textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.stats{display:flex;gap:16px;font-size:12px;color:var(--color-text-secondary);margin-top:8px;flex-wrap:wrap}
 </style></head><body>
@@ -24,54 +24,54 @@ body {
   margin-right: auto;
 }
 </textarea>
-<textarea id="cssOutput" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="css输出" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 <div class="stats" id="stats"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>(function(){
 var cssInput=document.getElementById('cssInput');
-var cssOutput=document.getElementById('cssOutput');
+var css输出=document.getElementById('css输出');
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
-var outputEl=document.getElementById('outputText');
+var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 var stats=document.getElementById('stats');
 
 function minify(){
 var css=cssInput.value;
-if(!css.trim()){cssOutput.value='';stats.textContent='';outputEl.textContent='';setStatus('请输入 CSS','error');return;}
-var result=css;
-result=result.replace(/\/\*[\s\S]*?\*\//g,'');
-result=result.replace(/\s+/g,' ');
-result=result.replace(/\s*\/\s*/g,'/');
-result=result.replace(/\s*:\s*/g,':');
-result=result.replace(/\s*;\s*/g,';');
-result=result.replace(/\s*\{\s*/g,'{');
-result=result.replace(/\s*\}\s*/g,'}');
-result=result.replace(/\s*,\s*/g,',');
-result=result.replace(/\s*>\s*/g,'>');
-result=result.replace(/\s*\+\s*/g,'+');
-result=result.replace(/\s*~\s*/g,'~');
-result=result.replace(/;\}/g,'}');
-result=result.replace(/  +/g,' ');
-result=result.replace(/^\s+|\s+$/g,'');
-result=result.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3/gi,'#$1$2$3');
-result=result.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3([0-9a-f])\4/gi,'#$1$2$3$4');
-cssOutput.value=result;
+if(!css.trim()){css输出.value='';stats.textContent='';输出El.textContent='';setStatus('请输入 CSS','error');return;}
+var 结果=css;
+结果=结果.replace(/\/\*[\s\S]*?\*\//g,'');
+结果=结果.replace(/\s+/g,' ');
+结果=结果.replace(/\s*\/\s*/g,'/');
+结果=结果.replace(/\s*:\s*/g,':');
+结果=结果.replace(/\s*;\s*/g,';');
+结果=结果.replace(/\s*\{\s*/g,'{');
+结果=结果.replace(/\s*\}\s*/g,'}');
+结果=结果.replace(/\s*,\s*/g,',');
+结果=结果.replace(/\s*>\s*/g,'>');
+结果=结果.replace(/\s*\+\s*/g,'+');
+结果=结果.replace(/\s*~\s*/g,'~');
+结果=结果.replace(/;\}/g,'}');
+结果=结果.replace(/  +/g,' ');
+结果=结果.replace(/^\s+|\s+$/g,'');
+结果=结果.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3/gi,'#$1$2$3');
+结果=结果.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3([0-9a-f])\4/gi,'#$1$2$3$4');
+css输出.value=结果;
 var inputSize=css.length;
-var outputSize=result.length;
-var saved=inputSize-outputSize;
+var 输出Size=结果.length;
+var saved=inputSize-输出Size;
 var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
-stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
-outputEl.textContent='压缩完成';
+stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+输出Size+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
+输出El.textContent='压缩完成';
 setStatus('');
 }
 
-clearBtn.addEventListener('click',function(){cssInput.value='';cssOutput.value='';stats.textContent='';outputEl.textContent='';setStatus('');cssInput.focus();});
+clearBtn.addEventListener('click',function(){cssInput.value='';css输出.value='';stats.textContent='';输出El.textContent='';setStatus('');cssInput.focus();});
 minifyBtn.addEventListener('click',minify);
-copyBtn.addEventListener('click',function(){if(cssOutput.value){copyToClipboard(cssOutput.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(css输出.value){copyToClipboard(css输出.value,copyBtn);setStatus('已复制');}});
 cssInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minify();});
 })();</script></body></html>

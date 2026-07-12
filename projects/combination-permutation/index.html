@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>组合与排列 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .cp-row .field { flex:1; min-width:80px; }
+    .cp-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .cp-formula { font-family:var(--font-mono); font-size:16px; margin:var(--space-2) 0; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>组合与排列</h1>
+    <p class="tool-desc">计算排列数 nPr 和组合数 nCr，显示公式和计算步骤。</p>
+    <div class="card">
+      <div class="cp-row">
+        <div class="field"><label for="nVal">n（总数）</label><input id="nVal" class="input" type="number" value="10" min="0" max="500"></div>
+        <div class="field"><label for="rVal">r（选取数）</label><input id="rVal" class="input" type="number" value="3" min="0" max="500"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div class="cp-formula" id="nprFormula"></div>
+      <div class="cp-formula" id="ncrFormula"></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var nEl = document.getElementById('nVal');
+    var rEl = document.getElementById('rVal');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var nprEl = document.getElementById('nprFormula');
+    var ncrEl = document.getElementById('ncrFormula');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function factorial(n) {
+      if (n < 0) return 0;
+      if (n <= 1) return 1;
+      var r = 1;
+      for (var i = 2; i <= n; i++) r *= i;
+      return r;
+    }
+
+    function permutation(n, r) {
+      if (r > n || n < 0 || r < 0) return 0;
+      var 结果 = 1;
+      for (var i = n; i > n - r; i--) 结果 *= i;
+      return 结果;
+    }
+
+    function combination(n, r) {
+      if (r > n || n < 0 || r < 0) return 0;
+      if (r === 0 || r === n) return 1;
+      r = Math.min(r, n - r);
+      var 结果 = 1;
+      for (var i = 1; i <= r; i++) {
+        结果 = 结果 * (n - r + i) / i;
+      }
+      return Math.round(结果);
+    }
+
+    function generate() {
+      var n = parseInt(nEl.value, 10);
+      var r = parseInt(rEl.value, 10);
+      if (isNaN(n) || isNaN(r)) { setStatus('请输入有效数字', 'error'); return; }
+      if (n < 0 || r < 0) { setStatus('n 和 r 必须非负', 'error'); return; }
+      if (r > n) { setStatus('r 不能大于 n', 'error'); return; }
+      if (n > 500) { setStatus('n 不能大于 500', 'error'); return; }
+
+      var npr = permutation(n, r);
+      var ncr = combination(n, r);
+
+      nprEl.innerHTML = 'P(' + n + ', ' + r + ') = ' + n + '! / (' + n + ' - ' + r + ')! = ' + npr.toLocaleString();
+      ncrEl.innerHTML = 'C(' + n + ', ' + r + ') = ' + n + '! / (' + r + '! × (' + n + ' - ' + r + ')!) = ' + ncr.toLocaleString();
+
+      输出El.textContent = 'nPr = ' + npr.toLocaleString() + '\nnCr = ' + ncr.toLocaleString();
+      setStatus('计算完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

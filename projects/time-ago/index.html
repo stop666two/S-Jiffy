@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>时间推算 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ta-结果{font-size:var(--font-size-lg);padding:var(--space-3);text-align:center;background:var(--color-bg-secondary);border-radius:var(--radius-md);margin-top:var(--space-2)}.ta-结果 .big{font-size:var(--font-size-xxl);font-weight:700;color:var(--color-primary);display:block}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>时间推算</h1><p class="tool-desc">计算某个日期时间距现在过去了多久，显示具体时长描述。</p>
+<div class="card"><input id="dateInput" type="datetime-local" class="input" style="width:260px;">
+<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary">计算</button><button id="nowBtn" class="btn btn-secondary">当前时间</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+</div>
+<div class="ta-结果"><span class="big" id="结果Text">-</span><span id="结果Detail" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var dateInput=document.getElementById('dateInput');
+var calcBtn=document.getElementById('calcBtn');
+var nowBtn=document.getElementById('nowBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var 结果Text=document.getElementById('结果Text');
+var 结果Detail=document.getElementById('结果Detail');
+var 输出El=document.getElementById('输出Text');
+function setNow(){var d=new Date();var s=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+'T'+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');dateInput.value=s;}
+function timeAgo(d){
+var now=Date.now();
+var diff=now-d.getTime();
+if(diff<0)return{text:'未来时间',detail:'输入的时间还未到'};
+var abs=diff;
+var units=[
+{name:'年',ms:31536000000},
+{name:'月',ms:2592000000},
+{name:'周',ms:604800000},
+{name:'天',ms:86400000},
+{name:'小时',ms:3600000},
+{name:'分钟',ms:60000},
+{name:'秒',ms:1000}
+];
+for(var i=0;i<units.length;i++){
+var val=Math.floor(abs/units[i].ms);
+if(val>=1){
+var remaining=Math.floor((abs%units[i].ms)/1000);
+return{text:val+' '+units[i].name+'前',detail:'精确值: '+val+' '+units[i].name+(val>1?'':'')+' '+remaining+' 秒'};
+}
+}
+return{text:'刚刚',detail:'不到 1 秒'};
+}
+function calc(){
+var val=dateInput.value;
+if(!val){setStatus('请选择日期时间','error');return;}
+var d=new Date(val);
+if(isNaN(d.getTime())){setStatus('无效日期','error');return;}
+var r=timeAgo(d);
+结果Text.textContent=r.text;
+结果Detail.textContent=r.detail;
+输出El.textContent=r.text+(r.detail?' ('+r.detail+')':'');
+setStatus('');
+}
+dateInput.addEventListener('keydown',function(e){if(e.key==='Enter')calc();});
+calcBtn.addEventListener('click',calc);
+nowBtn.addEventListener('click',function(){setNow();calc();});
+clearBtn.addEventListener('click',function(){dateInput.value='';结果Text.textContent='-';结果Detail.textContent='';输出El.textContent='';setStatus('');});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+setNow();
+})();
+</script></body></html>

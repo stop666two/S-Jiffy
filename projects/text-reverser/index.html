@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -25,8 +25,8 @@
       <button id="reverseLinesBtn" class="btn btn-secondary">反转行</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -38,21 +38,21 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       function reverseChars() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        outputEl.textContent = text.split('').reverse().join('');
+        输出El.textContent = text.split('').reverse().join('');
         setStatus('字符反转完成');
       }
 
       function reverseWords() {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        outputEl.textContent = text.split(/\s+/).reverse().join(' ');
+        输出El.textContent = text.split(/\s+/).reverse().join(' ');
         setStatus('单词反转完成');
       }
 
@@ -60,7 +60,7 @@
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
         var lines = text.split('\n');
-        outputEl.textContent = lines.reverse().join('\n');
+        输出El.textContent = lines.reverse().join('\n');
         setStatus('行反转完成');
       }
 
@@ -70,13 +70,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

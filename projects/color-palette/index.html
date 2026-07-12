@@ -1,188 +1,90 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>调色板生成器 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .palette-section { margin-bottom:var(--space-3); }
-    .palette-section h3 { font-size:var(--font-size-sm); font-weight:600; margin-bottom:var(--space-2); color:var(--color-text-secondary); }
-    .palette-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
-    .swatch { border-radius:var(--radius-md); height:80px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:8px; font-size:11px; font-family:var(--font-mono); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.4); position:relative; cursor:pointer; transition:transform .15s; }
-    .swatch:hover { transform:scale(1.05); z-index:2; }
-    .swatch .hex { font-size:11px; }
-    .swatch .rgb { font-size:9px; opacity:.8; }
-    .swatch .lock-icon { position:absolute; top:4px; right:4px; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,.5); }
-    .scheme-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-2); }
-    .scheme-row label { font-size:var(--font-size-sm); display:flex; align-items:center; gap:4px; cursor:pointer; }
-    .base-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-2); }
-    .output-swatches { display:flex; gap:6px; flex-wrap:wrap; }
-    .output-swatches .mini-swatch { width:32px; height:32px; border-radius:var(--radius-sm); border:1px solid var(--color-border); cursor:pointer; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Color Palette Generator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.palette-section{margin-bottom:var(--space-3);}
+.palette-section h3{font-size:var(--font-size-sm);font-weight:600;margin-bottom:var(--space-2);color:var(--color-text-secondary);}
+.palette-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.swatch{border-radius:var(--radius-md);height:80px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:8px;font-size:11px;font-family:var(--font-mono);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);position:relative;cursor:pointer;transition:transform .15s;}
+.swatch:hover{transform:scale(1.05);z-index:2;}
+.swatch .hex{font-size:11px;}.swatch .rgb{font-size:9px;opacity:.8;}
+.scheme-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.base-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.export-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:var(--space-2);}
+</style></head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-  <main class="tool-workspace">
-    <h1>调色板生成器</h1>
-    <p class="tool-desc">从基准颜色生成 6 种配色方案，含 5 色展示，可锁定单个颜色。</p>
-    <div class="card">
-      <div class="base-row">
-        <label style="font-size:var(--font-size-sm)">基准颜色</label>
-        <input id="baseColor" type="color" value="#e74c3c">
-        <span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span>
-      </div>
-      <div class="scheme-row" id="schemeRow">
-        <label><input type="radio" name="scheme" value="monochromatic" checked> 单色</label>
-        <label><input type="radio" name="scheme" value="complementary"> 互补</label>
-        <label><input type="radio" name="scheme" value="analogous"> 类似</label>
-        <label><input type="radio" name="scheme" value="triadic"> 三等分</label>
-        <label><input type="radio" name="scheme" value="tetradic"> 四色</label>
-        <label><input type="radio" name="scheme" value="split-complementary"> 分裂互补</label>
-      </div>
-      <div id="paletteContainer"></div>
-    </div>
-    <div class="output-box">
-      <span id="outputText"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function() {
-      var baseInp = document.getElementById('baseColor');
-      var baseHex = document.getElementById('baseHex');
-      var container = document.getElementById('paletteContainer');
-      var out = document.getElementById('outputText');
-      var locked = {};
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>调色板生成器</h1>
+<p class="tool-desc">Generate 6 scheme types from a base color. Export as CSS variables, SCSS, LESS, JSON.</p>
+<div class="card">
+<div class="base-row"><label style="font-size:var(--font-size-sm)">Base color</label><input id="baseColor" type="color" value="#e74c3c"><span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span></div>
+<div class="scheme-row" id="schemeRow">
+<label><input type="radio" name="scheme" value="monochromatic" checked> Monochromatic</label>
+<label><input type="radio" name="scheme" value="complementary"> Complementary</label>
+<label><input type="radio" name="scheme" value="analogous"> Analogous</label>
+<label><input type="radio" name="scheme" value="triadic"> Triadic</label>
+<label><input type="radio" name="scheme" value="tetradic"> Tetradic</label>
+<label><input type="radio" name="scheme" value="split-complementary"> Split Complementary</label>
+</div>
+<div id="paletteContainer"></div>
+<div class="export-row">
+<button id="exportCssBtn" class="btn btn-secondary">CSS Variables</button>
+<button id="exportScssBtn" class="btn btn-secondary">SCSS</button>
+<button id="exportLessBtn" class="btn btn-secondary">LESS</button>
+</div>
+</div>
+<div class="输出-box"><span id="输出Text"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var baseInp=document.getElementById('baseColor'),baseHex=document.getElementById('baseHex'),container=document.getElementById('paletteContainer'),out=document.getElementById('输出Text');
+  function hexToRgb(h){return{r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)};}
+  function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return Math.round(v).toString(16).padStart(2,'0');}).join('');}
+  function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;if(mx===mn)return[0,0,Math.round(l*100)];
+    var d=mx-mn,s=l>.5?d/(2-mx-mn):d/(mx+mn);var hh;switch(mx){case r:hh=((g-b)/d+(g<b?6:0))*60;break;case g:hh=((b-r)/d+2)*60;break;case b:hh=((r-g)/d+4)*60;break;}
+    return[Math.round(hh),Math.round(s*100),Math.round(l*100)];}
+  function hslToRgb(h,s,l){s/=100;l/=100;var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;var r,g,b;
+    if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+    return{r:Math.round((r+m)*255),g:Math.round((g+m)*255),b:Math.round((b+m)*255)};}
+  function hslToHex(h,s,l){var r=hslToRgb(h,s,l);return rgbToHex(r.r,r.g,r.b);}
+  var currentColors=[];
 
-      function hexToRgb(hex) {
-        return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
-      }
+  function generatePalette(){
+    var hex=baseInp.value;baseHex.textContent=hex;var rgb=hexToRgb(hex),hsl=rgbToHsl(rgb.r,rgb.g,rgb.b),h=hsl[0],s=hsl[1],l=hsl[2];
+    var scheme=document.querySelector('input[name="scheme"]:checked').value;
+    var palettes=[];currentColors=[];
+    function addPalette(name,colors){palettes.push({name:name,colors:colors});for(var i=0;i<colors.length;i++)currentColors.push(colors[i]);}
+    switch(scheme){case'monochromatic':addPalette('Monochromatic',[hslToHex(h,s,10),hslToHex(h,s,25),hslToHex(h,s,40),hslToHex(h,s,55),hslToHex(h,s,70)]);break;
+    case'complementary':addPalette('Complementary',[hex,hslToHex((h+180)%360,s,l),hslToHex((h+15)%360,s,l),hslToHex((h+165)%360,s,l),hslToHex((h+180)%360,Math.min(100,s+20),Math.min(100,l-10))]);break;
+    case'analogous':addPalette('Analogous',[hslToHex((h-30+360)%360,s,l),hslToHex((h-15+360)%360,s,l),hex,hslToHex((h+15)%360,s,l),hslToHex((h+30)%360,s,l)]);break;
+    case'triadic':addPalette('Triadic',[hex,hslToHex((h+120)%360,s,l),hslToHex((h+240)%360,s,l),hslToHex((h+60)%360,s,Math.min(100,l+15)),hslToHex((h+180)%360,s,Math.min(100,l+15))]);break;
+    case'tetradic':addPalette('Tetradic',[hex,hslToHex((h+90)%360,s,l),hslToHex((h+180)%360,s,l),hslToHex((h+270)%360,s,l),hslToHex((h+45)%360,Math.min(100,s-10),Math.min(100,l+10))]);break;
+    case'split-complementary':addPalette('Split Complementary',[hex,hslToHex((h+150)%360,s,l),hslToHex((h+210)%360,s,l),hslToHex((h+150)%360,Math.min(100,s-15),Math.min(100,l+15)),hslToHex((h+210)%360,Math.min(100,s-15),Math.min(100,l+15))]);break;}
+    var html='';
+    for(var p=0;p<palettes.length;p++){html+='<div class="palette-section"><h3>'+palettes[p].name+'</h3><div class="palette-grid">';
+    for(var c=0;c<palettes[p].colors.length;c++){var col=palettes[p].colors[c],rgb2=hexToRgb(col);
+    html+='<div class="swatch" style="background:'+col+'" data-color="'+col+'"><span class="hex">'+col+'</span><span class="rgb">'+rgb2.r+','+rgb2.g+','+rgb2.b+'</span></div>';}
+    html+='</div></div>';}
+    container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus('Generated '+scheme+' palette');}
 
-      function rgbToHex(r,g,b) {
-        return '#'+[r,g,b].map(function(v){return Math.round(v).toString(16).padStart(2,'0')}).join('');
-      }
+  function exportFmt(type){if(currentColors.length===0){setStatus('Generate a palette first','error');return;}
+    var lines=[];
+    if(type==='css'){currentColors.forEach(function(c,i){lines.push('  --color-'+(i+1)+': '+c+';');});
+    out.textContent=':root {\n'+lines.join('\n')+'\n}';}
+    else if(type==='scss'){currentColors.forEach(function(c,i){lines.push('$color-'+(i+1)+': '+c+';');});
+    out.textContent=lines.join('\n');}
+    else if(type==='less'){currentColors.forEach(function(c,i){lines.push('@color-'+(i+1)+': '+c+';');});
+    out.textContent=lines.join('\n');}
+    setStatus('Exported as '+type.to大写());}
 
-      function rgbToHsl(r,g,b) {
-        r/=255; g/=255; b/=255;
-        var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;
-        if(mx===mn) return [0,0,Math.round(l*100)];
-        var d=mx-mn, s=l>.5?d/(2-mx-mn):d/(mx+mn);
-        var hh;
-        switch(mx) {
-          case r: hh=((g-b)/d+(g<b?6:0))*60; break;
-          case g: hh=((b-r)/d+2)*60; break;
-          case b: hh=((r-g)/d+4)*60; break;
-        }
-        return [Math.round(hh), Math.round(s*100), Math.round(l*100)];
-      }
-
-      function hslToRgb(h,s,l) {
-        s/=100; l/=100;
-        var c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
-        var r,g,b;
-        if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
-        return { r: Math.round((r+m)*255), g: Math.round((g+m)*255), b: Math.round((b+m)*255) };
-      }
-
-      function hslToHex(h,s,l) {
-        var rgb = hslToRgb(h,s,l);
-        return rgbToHex(rgb.r, rgb.g, rgb.b);
-      }
-
-      function generatePalette() {
-        var hex = baseInp.value;
-        baseHex.textContent = hex;
-        var rgb = hexToRgb(hex);
-        var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-        var h = hsl[0], s = hsl[1], l = hsl[2];
-        var scheme = document.querySelector('input[name="scheme"]:checked').value;
-
-        var palettes = [];
-        var allColors = [];
-
-        function addPalette(name, colors) {
-          palettes.push({ name: name, colors: colors });
-          for (var i = 0; i < colors.length; i++) allColors.push(colors[i]);
-        }
-
-        switch(scheme) {
-          case 'monochromatic':
-            addPalette('单色', [hslToHex(h,s,10), hslToHex(h,s,25), hslToHex(h,s,40), hslToHex(h,s,55), hslToHex(h,s,70)]);
-            break;
-          case 'complementary':
-            addPalette('互补', [hex, hslToHex((h+180)%360,s,l), hslToHex((h+15)%360,s,l), hslToHex((h+165)%360,s,l), hslToHex((h+180)%360,Math.min(100,s+20),Math.min(100,l-10))]);
-            break;
-          case 'analogous':
-            addPalette('类似', [hslToHex((h-30+360)%360,s,l), hslToHex((h-15+360)%360,s,l), hex, hslToHex((h+15)%360,s,l), hslToHex((h+30)%360,s,l)]);
-            break;
-          case 'triadic':
-            addPalette('三等分', [hex, hslToHex((h+120)%360,s,l), hslToHex((h+240)%360,s,l), hslToHex((h+60)%360,s,Math.min(100,l+15)), hslToHex((h+180)%360,s,Math.min(100,l+15))]);
-            break;
-          case 'tetradic':
-            addPalette('四色', [hex, hslToHex((h+90)%360,s,l), hslToHex((h+180)%360,s,l), hslToHex((h+270)%360,s,l), hslToHex((h+45)%360,Math.min(100,s-10),Math.min(100,l+10))]);
-            break;
-          case 'split-complementary':
-            addPalette('分裂互补', [hex, hslToHex((h+150)%360,s,l), hslToHex((h+210)%360,s,l), hslToHex((h+150)%360,Math.min(100,s-15),Math.min(100,l+15)), hslToHex((h+210)%360,Math.min(100,s-15),Math.min(100,l+15))]);
-            break;
-        }
-
-        var html = '';
-        for (var p = 0; p < palettes.length; p++) {
-          html += '<div class="palette-section"><h3>' + palettes[p].name + '</h3><div class="palette-grid">';
-          for (var c = 0; c < palettes[p].colors.length; c++) {
-            var col = palettes[p].colors[c];
-            var rgb2 = hexToRgb(col);
-            var lockKey = p + '-' + c;
-            var isLocked = locked[lockKey] || null;
-            if (isLocked) col = isLocked;
-            html += '<div class="swatch" style="background:' + col + '" data-color="' + col + '" data-key="' + lockKey + '">';
-            html += '<span class="hex">' + col + '</span>';
-            html += '<span class="rgb">' + rgb2.r + ',' + rgb2.g + ',' + rgb2.b + '</span>';
-            if (isLocked) html += '<span class="lock-icon">🔒</span>';
-            html += '</div>';
-          }
-          html += '</div></div>';
-        }
-        container.innerHTML = html;
-
-        var swatches = container.querySelectorAll('.swatch');
-        for (var i = 0; i < swatches.length; i++) {
-          swatches[i].addEventListener('click', function(e) {
-            var key = this.getAttribute('data-key');
-            var col = this.getAttribute('data-color');
-            if (locked[key]) {
-              delete locked[key];
-            } else {
-              locked[key] = col;
-            }
-            generatePalette();
-          });
-        }
-
-        var allHex = [];
-        container.querySelectorAll('.swatch').forEach(function(el) {
-          allHex.push(el.getAttribute('data-color'));
-        });
-        out.textContent = allHex.join(', ');
-        setStatus('已生成 ' + scheme + ' 调色板');
-      }
-
-      baseInp.addEventListener('input', generatePalette);
-      var radios = document.querySelectorAll('input[name="scheme"]');
-      for (var i = 0; i < radios.length; i++) {
-        radios[i].addEventListener('change', generatePalette);
-      }
-
-      document.getElementById('copyBtn').addEventListener('click', function() {
-        var text = out.textContent;
-        if (text) { copyToClipboard(text, this); setStatus('已复制到剪贴板'); }
-      });
-
-      generatePalette();
-    })();
-  </script>
-</body>
-</html>
+  baseInp.addEventListener('input',generatePalette);
+  var radios=document.querySelectorAll('input[name="scheme"]');for(var i=0;i<radios.length;i++)radios[i].addEventListener('change',generatePalette);
+  document.getElementById('exportCssBtn').addEventListener('click',function(){exportFmt('css');});
+  document.getElementById('exportScssBtn').addEventListener('click',function(){exportFmt('scss');});
+  document.getElementById('exportLessBtn').addEventListener('click',function(){exportFmt('less');});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=out.textContent;if(t){copyToClipboard(t,this);setStatus('Copied');}});
+  generatePalette();
+})();
+</script></body></html>

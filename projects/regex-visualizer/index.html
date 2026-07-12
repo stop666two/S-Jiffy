@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -40,8 +40,8 @@
 
     <div id="tokenBox" class="card" style="display:none;"></div>
 
-    <div class="output-box" style="min-height:100px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="min-height:100px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -52,7 +52,7 @@
       var patternInput = document.getElementById('patternInput');
       var flagsInput = document.getElementById('flagsInput');
       var testInput = document.getElementById('testInput');
-      var outputText = document.getElementById('outputText');
+      var 输出Text = document.getElementById('输出Text');
       var tokenBox = document.getElementById('tokenBox');
       var testBtn = document.getElementById('testBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -114,7 +114,7 @@
       testBtn.addEventListener('click', function () {
         var pat = patternInput.value.trim();
         var text = testInput.value;
-        outputText.textContent = '';
+        输出Text.textContent = '';
         tokenBox.style.display = 'none';
 
         if (!pat) { setStatus('请输入正则表达式', 'error'); return; }
@@ -141,13 +141,13 @@
             if (!re.global) break;
           }
           if (matches.length === 0) {
-            outputText.innerHTML = '无匹配结果';
+            输出Text.innerHTML = '无匹配结果';
           } else {
-            outputText.innerHTML = '共 <strong>' + matches.length + '</strong> 处匹配:<br><br>' + matches.join('<br>');
+            输出Text.innerHTML = '共 <strong>' + matches.length + '</strong> 处匹配:<br><br>' + matches.join('<br>');
           }
           setStatus('');
         } catch (e) {
-          outputText.innerHTML = '';
+          输出Text.innerHTML = '';
           setStatus('正则语法错误: ' + e.message, 'error');
         }
       });
@@ -156,14 +156,14 @@
         patternInput.value = '';
         flagsInput.value = '';
         testInput.value = '';
-        outputText.textContent = '';
+        输出Text.textContent = '';
         tokenBox.style.display = 'none';
         setStatus('');
         patternInput.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
       });
 
       testInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') testBtn.click(); });

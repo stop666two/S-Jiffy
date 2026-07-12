@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -44,7 +44,7 @@
       <div class="chk-type-name" id="sourceLabel">计算结果显示在此</div>
       <div class="checksum-grid" id="checksumGrid"></div>
     </div>
-    <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制全部</button></div>
+    <div class="输出-box"><span id="输出Text"></span><button class="copy-btn" id="copyBtn">复制全部</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -60,7 +60,7 @@
       var progFill=document.getElementById('progressFill');
       var grid=document.getElementById('checksumGrid');
       var sourceLabel=document.getElementById('sourceLabel');
-      var out=document.getElementById('outputText');
+      var out=document.getElementById('输出Text');
       var copyBtn=document.getElementById('copyBtn');
 
       var algos=[
@@ -143,10 +143,10 @@
           crypto.subtle.digest('SHA-384', data),
           crypto.subtle.digest('SHA-512', data)
         ];
-        Promise.all(digests).then(function(results) {
+        Promise.all(digests).then(function(结果s) {
           var names = ['MD5','SHA-1','SHA-256','SHA-384','SHA-512'];
-          for (var i = 0; i < results.length; i++) {
-            vals[names[i]] = Array.from(new Uint8Array(results[i])).map(function(b){
+          for (var i = 0; i < 结果s.length; i++) {
+            vals[names[i]] = Array.from(new Uint8Array(结果s[i])).map(function(b){
               return b.toString(16).padStart(2,'0');
             }).join('');
           }
@@ -170,7 +170,7 @@
           }
         };
         reader.onload = function(e) {
-          var data = new Uint8Array(e.target.result);
+          var data = new Uint8Array(e.target.结果);
           progFill.style.width = '35%';
 
           var text = '';
@@ -190,10 +190,10 @@
             crypto.subtle.digest('SHA-384', data),
             crypto.subtle.digest('SHA-512', data)
           ];
-          Promise.all(digests).then(function(results) {
+          Promise.all(digests).then(function(结果s) {
             var names = ['MD5','SHA-1','SHA-256','SHA-384','SHA-512'];
-            for (var i = 0; i < results.length; i++) {
-              vals[names[i]] = Array.from(new Uint8Array(results[i])).map(function(b){
+            for (var i = 0; i < 结果s.length; i++) {
+              vals[names[i]] = Array.from(new Uint8Array(结果s[i])).map(function(b){
                 return b.toString(16).padStart(2,'0');
               }).join('');
             }

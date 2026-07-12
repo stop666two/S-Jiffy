@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -22,8 +22,8 @@
       <button id="generateMultiBtn" class="btn btn-secondary">生成 5 个</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function() {
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function randomHex(len) {
@@ -60,25 +60,25 @@
       }
 
       document.getElementById('generateBtn').addEventListener('click', function() {
-        outputEl.textContent = generateULA();
+        输出El.textContent = generateULA();
         setStatus('已生成 ULA 地址');
       });
 
       document.getElementById('generateMultiBtn').addEventListener('click', function() {
         var arr = [];
         for (var i = 0; i < 5; i++) arr.push(generateULA());
-        outputEl.textContent = arr.join('\n\n');
+        输出El.textContent = arr.join('\n\n');
         setStatus('已生成 5 个 ULA 地址');
       });
 
       clearBtn = document.getElementById('clearBtn');
       clearBtn.addEventListener('click', function() {
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

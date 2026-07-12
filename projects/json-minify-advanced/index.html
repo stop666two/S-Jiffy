@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 高级压缩 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.jma-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>JSON 高级压缩</h1><p class="tool-desc">深度压缩 JSON：去除空格、缩短键名、替换值模式。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">选项</label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenKeys"> 缩短键名</label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenVals"> 缩短值（true→!0, false→!1）</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 JSON..." style="min-height:150px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="minifyBtn" class="btn btn-primary">压缩</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="jma-info"><span id="sizeInfo"></span></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var minifyBtn=document.getElementById('minifyBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var shortenKeys=document.getElementById('shortenKeys');
+var shortenVals=document.getElementById('shortenVals');
+var sizeInfo=document.getElementById('sizeInfo');
+var keyMap={};
+var keyIdx=0;
+function genShortKey(){var chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';var i=keyIdx++;if(i<52)return chars[i];return'k'+i;}
+function shorten(obj){
+if(Array.isArray(obj)){
+return obj.map(function(v){return shorten(v);});
+}
+if(obj===null||typeof obj!=='object')return obj;
+var 结果={};
+Object.keys(obj).forEach(function(k){
+var nk=k;
+if(shortenKeys.checked){
+if(!keyMap[k])keyMap[k]=genShortKey();
+nk=keyMap[k];
+}
+var v=obj[k];
+if(shortenVals.checked&&v===true){结果[nk]='!0';}
+else if(shortenVals.checked&&v===false){结果[nk]='!1';}
+else{结果[nk]=shorten(v);}
+});
+return 结果;
+}
+minifyBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 JSON','error');return;}
+try{
+var parsed=JSON.parse(t);
+keyMap={};keyIdx=0;
+var data=shortenKeys.checked||shortenVals.checked?shorten(parsed):parsed;
+var minified=JSON.stringify(data);
+输出El.textContent=minified;
+var origSize=t.length;
+var newSize=minified.length;
+var saved=origSize-newSize;
+var pct=origSize>0?((saved/origSize)*100).toFixed(1):0;
+sizeInfo.textContent='原始 '+origSize+' 字节 → 压缩后 '+newSize+' 字节，节省 '+saved+' 字节 ('+pct+'%)';
+setStatus('');
+}catch(e){
+setStatus('JSON 格式错误: '+e.message,'error');
+}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';sizeInfo.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

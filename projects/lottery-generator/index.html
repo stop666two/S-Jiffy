@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>彩票号码生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .lg-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .lg-row .field { flex:1; min-width:100px; }
+    .lg-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .lg-line { margin-bottom:6px; }
+    .lg-ball { display:inline-block; width:36px;height:36px;border-radius:50%;text-align:center;line-height:36px;font-weight:700;margin-right:4px;font-size:14px; }
+    .lg-main { background:#111;color:#fff; }
+    .lg-bonus { background:#e74c3c;color:#fff; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>彩票号码生成器</h1>
+    <p class="tool-desc">生成随机彩票号码，支持选号范围、选取数量和附加号码。</p>
+    <div class="card">
+      <div class="lg-row">
+        <div class="field"><label for="minNum">最小号码</label><input id="minNum" class="input" type="number" value="1"></div>
+        <div class="field"><label for="maxNum">最大号码</label><input id="maxNum" class="input" type="number" value="35"></div>
+        <div class="field"><label for="pickNum">主选数量</label><input id="pickNum" class="input" type="number" value="5" min="1" max="20"></div>
+        <div class="field"><label for="linesVal">注数</label><input id="linesVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div class="lg-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="bonusChk" type="checkbox" checked> 附加号码</label>
+        <div class="field" style="flex:0.5;"><label for="bonusCount">附加数量</label><input id="bonusCount" class="input" type="number" value="2" min="1" max="10"></div>
+        <div class="field" style="flex:0.5;"><label for="bonusMax">附加范围</label><input id="bonusMax" class="input" type="number" value="12"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var minEl = document.getElementById('minNum');
+    var maxEl = document.getElementById('maxNum');
+    var pickEl = document.getElementById('pickNum');
+    var linesEl = document.getElementById('linesVal');
+    var bonusChk = document.getElementById('bonusChk');
+    var bonusCntEl = document.getElementById('bonusCount');
+    var bonusMaxEl = document.getElementById('bonusMax');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoInt(min, max) {
+      var bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return min + (bytes[0] % (max - min + 1));
+    }
+
+    function pickUnique(min, max, count) {
+      var pool = [];
+      for (var i = min; i <= max; i++) pool.push(i);
+      for (var i = pool.length - 1; i > 0; i--) {
+        var j = cryptoInt(0, i);
+        var t = pool[i];
+        pool[i] = pool[j];
+        pool[j] = t;
+      }
+      return pool.slice(0, count).sort(function(a,b){return a-b;});
+    }
+
+    function generate() {
+      var minNum = parseInt(minEl.value, 10) || 1;
+      var maxNum = parseInt(maxEl.value, 10) || 35;
+      var pick = parseInt(pickEl.value, 10) || 5;
+      var lines = parseInt(linesEl.value, 10) || 1;
+      var hasBonus = bonusChk.checked;
+      var bonusCount = parseInt(bonusCntEl.value, 10) || 2;
+      var bonusMax = parseInt(bonusMaxEl.value, 10) || 12;
+
+      if (minNum >= maxNum) { setStatus('最大号码必须大于最小号码', 'error'); return; }
+      if (pick > (maxNum - minNum + 1)) { setStatus('主选数量超过可选范围', 'error'); return; }
+      if (lines < 1) lines = 1;
+      if (lines > 1000) lines = 1000;
+
+      var linesHtml = [];
+      for (var l = 0; l < lines; l++) {
+        var main = pickUnique(minNum, maxNum, pick);
+        var html = '<div class="lg-line">';
+        for (var i = 0; i < main.length; i++) {
+          html += '<span class="lg-ball lg-main">' + main[i] + '</span>';
+        }
+        if (hasBonus) {
+          var bonus = pickUnique(1, bonusMax, bonusCount);
+          html += ' + ';
+          for (var i = 0; i < bonus.length; i++) {
+            html += '<span class="lg-ball lg-bonus">' + bonus[i] + '</span>';
+          }
+        }
+        html += ' = ' + main.join(',');
+        if (hasBonus) html += ' + ' + bonus.join(',');
+        html += '</div>';
+        linesHtml.push(html);
+      }
+      输出El.innerHTML = linesHtml.join('');
+      setStatus('已生成 ' + lines + ' 注号码');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() {
+      var text = 输出El.textContent;
+      if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+    });
+  })();</script>
+</body>
+</html>

@@ -1,123 +1,79 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>拍照工具 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .camera-container { position:relative; background:#000; border-radius:var(--radius-md); overflow:hidden; margin-bottom:16px; min-height:360px; display:flex; align-items:center; justify-content:center; }
-    .camera-container video { width:100%; display:block; }
-    .camera-container .placeholder { color:#888; font-size:var(--font-size-sm); }
-    .camera-controls { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
-    .snapshot-preview { margin-top:16px; }
-    .snapshot-preview img { max-width:100%; border-radius:var(--radius-md); border:1px solid var(--color-border); }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>拍照工具 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+#wrap{position:relative;background:#000;border-radius:var(--radius-md);overflow:hidden;margin-bottom:16px;min-height:320px;display:flex;align-items:center;justify-content:center;}
+#wrap video{width:100%;display:block;max-height:480px;}
+.ctrl{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+#preview{margin-top:16px;}
+#preview img{max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>拍照工具</h1>
-    <p class="tool-desc">使用摄像头拍照并下载图片，所有数据在本地处理，不上传服务器。</p>
-    <div class="camera-container" id="cameraContainer">
-      <video id="video" autoplay playsinline style="display:none;"></video>
-      <span class="placeholder" id="placeholderText">点击「打开摄像头」开始</span>
-    </div>
-    <div class="camera-controls">
-      <button id="startBtn" class="btn btn-primary">打开摄像头</button>
-      <button id="captureBtn" class="btn btn-secondary" disabled>拍照</button>
-      <button id="stopBtn" class="btn btn-secondary" disabled>关闭摄像头</button>
-    </div>
-    <div class="snapshot-preview" id="snapshotArea" style="display:none;">
-      <h2 style="font-size:var(--font-size-lg); margin-bottom:8px;">📸 预览</h2>
-      <img id="snapshotImg" alt="snapshot">
-    </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function() {
-      var video = document.getElementById('video');
-      var placeholder = document.getElementById('placeholderText');
-      var startBtn = document.getElementById('startBtn');
-      var captureBtn = document.getElementById('captureBtn');
-      var stopBtn = document.getElementById('stopBtn');
-      var snapshotArea = document.getElementById('snapshotArea');
-      var snapshotImg = document.getElementById('snapshotImg');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>拍照工具</h1>
+<p class="tool-desc">使用摄像头拍照并下载，所有数据仅在本地处理。</p>
+<p style="font-size:var(--font-size-xs);color:var(--color-error);margin-bottom:var(--space-3);">⚠ 提示：请提前摆好姿势，因浏览器限制摄像头画面可能仅短暂可用。打开后请尽快拍照。</p>
+<div id="wrap">
+<video id="v" autoplay playsinline muted style="display:none;"></video>
+<canvas id="c" style="display:none;"></canvas>
+<span id="hint" style="color:#888;font-size:var(--font-size-sm);">点击「打开摄像头」开始</span>
+</div>
+<div class="ctrl">
+<button id="b0" class="btn btn-primary">打开摄像头</button>
+<button id="b1" class="btn btn-secondary" disabled>拍照</button>
+<button id="b2" class="btn btn-secondary" disabled>关闭</button>
+<button id="b3" class="btn btn-secondary" disabled>下载</button>
+</div>
+<div id="preview" style="display:none;">
+<h2 style="font-size:var(--font-size-lg);margin-bottom:8px;">照片预览</h2>
+<img id="img" alt="照片">
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var v=document.getElementById('v'),c=document.getElementById('c'),h=document.getElementById('hint');
+  var b0=document.getElementById('b0'),b1=document.getElementById('b1'),b2=document.getElementById('b2'),b3=document.getElementById('b3');
+  var p=document.getElementById('preview'),im=document.getElementById('img'),o=document.getElementById('outputText');
+  var st=null;
 
-      var stream = null;
+  function openCam(){
+    if(st)return;
+    navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}}}).then(function(s){
+      st=s;v.srcObject=s;v.style.display='block';h.style.display='none';
+      b0.disabled=true;b1.disabled=false;b2.disabled=false;
+      setStatus('摄像头已开启');
+    }).catch(function(e){setStatus('摄像头错误: '+e.message,'error');});
+  }
 
-      function startCamera() {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } })
-          .then(function(s) {
-            stream = s;
-            video.srcObject = s;
-            video.style.display = 'block';
-            placeholder.style.display = 'none';
-            startBtn.disabled = true;
-            captureBtn.disabled = false;
-            stopBtn.disabled = false;
-            setStatus('摄像头已开启');
-          })
-          .catch(function(err) {
-            setStatus('无法访问摄像头: ' + err.message, 'error');
-          });
-      }
+  function takePic(){
+    if(!st)return;
+    c.width=v.videoWidth||640;c.height=v.videoHeight||480;
+    c.getContext('2d').drawImage(v,0,0);
+    im.src=c.toDataURL('image/png');p.style.display='block';b3.disabled=false;
+    o.textContent='已拍照 '+(v.videoWidth||640)+'x'+(v.videoHeight||480);setStatus('已拍照');
+  }
 
-      function stopCamera() {
-        if (stream) {
-          stream.getTracks().forEach(function(t) { t.stop(); });
-          stream = null;
-        }
-        video.style.display = 'none';
-        placeholder.style.display = 'block';
-        startBtn.disabled = false;
-        captureBtn.disabled = true;
-        stopBtn.disabled = true;
-        setStatus('摄像头已关闭');
-      }
+  function closeCam(){
+    if(st){st.getTracks().forEach(function(t){t.stop();});st=null;}
+    v.srcObject=null;v.style.display='none';h.style.display='block';
+    b0.disabled=false;b1.disabled=true;b2.disabled=true;b3.disabled=true;
+    setStatus('摄像头已关闭');
+  }
 
-      function capturePhoto() {
-        if (!stream) { setStatus('摄像头未开启', 'error'); return; }
-        var canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        var dataUrl = canvas.toDataURL('image/png');
-        snapshotImg.src = dataUrl;
-        snapshotArea.style.display = 'block';
-        outputEl.textContent = '已拍照 (' + canvas.width + 'x' + canvas.height + ')';
-        // Trigger download
-        var link = document.createElement('a');
-        link.download = 'photo-' + Date.now() + '.png';
-        link.href = dataUrl;
-        link.click();
-        setStatus('照片已保存');
-      }
+  function dl(){
+    if(im.src){var a=document.createElement('a');a.href=im.src;a.download='photo_'+Date.now()+'.png';a.click();setStatus('已下载');}
+  }
 
-      startBtn.addEventListener('click', startCamera);
-      captureBtn.addEventListener('click', capturePhoto);
-      stopBtn.addEventListener('click', stopCamera);
+  b0.addEventListener('click',openCam);
+  b1.addEventListener('click',takePic);
+  b2.addEventListener('click',closeCam);
+  b3.addEventListener('click',dl);
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 
-      copyBtn.addEventListener('click', function() {
-        if (snapshotImg.src && snapshotImg.src.indexOf('base64') !== -1) {
-          copyToClipboard(snapshotImg.src, copyBtn);
-          setStatus('Base64 已复制');
-        }
-      });
-    })();
-  </script>
-</body>
-</html>
+  window.addEventListener('beforeunload',function(){if(st)st.getTracks().forEach(function(t){t.stop();});});
+})();
+</script></body></html>

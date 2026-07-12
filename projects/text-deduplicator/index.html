@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       <button id="dedupIgnoreCaseBtn" class="btn btn-secondary">去重（忽略大小写）</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -37,7 +37,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -46,19 +46,19 @@
         if (!text) { setStatus('请输入文本', 'error'); return; }
         var lines = text.split('\n');
         var seen = {};
-        var result = [];
+        var 结果 = [];
         var removed = 0;
         for (var i = 0; i < lines.length; i++) {
-          var key = ignoreCase ? lines[i].toLowerCase() : lines[i];
+          var key = ignoreCase ? lines[i].to小写() : lines[i];
           if (!seen[key]) {
             seen[key] = true;
-            result.push(lines[i]);
+            结果.push(lines[i]);
           } else {
             removed++;
           }
         }
-        outputEl.textContent = result.join('\n');
-        setStatus('去重完成，原始 ' + lines.length + ' 行，保留 ' + result.length + ' 行，移除 ' + removed + ' 行');
+        输出El.textContent = 结果.join('\n');
+        setStatus('去重完成，原始 ' + lines.length + ' 行，保留 ' + 结果.length + ' 行，移除 ' + removed + ' 行');
       }
 
       document.getElementById('dedupBtn').addEventListener('click', function() { deduplicate(false); });
@@ -66,13 +66,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

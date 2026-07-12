@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSV 表格美化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.cp-table{font-family:var(--font-mono);font-size:var(--font-size-xs);border-collapse:collapse;width:100%}.cp-table th,.cp-table td{border:1px solid var(--color-border);padding:4px 8px;text-align:left;white-space:pre}.cp-table th{background:var(--color-bg-secondary);font-weight:600}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>CSV 表格美化</h1><p class="tool-desc">将 CSV 格式化为对齐的表格，可选择空格/Tab 填充。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">填充方式</label>
+<select id="padSelect" class="input" style="width:120px;"><option value="space">空格填充</option><option value="tab">Tab 填充</option></select>
+<label style="font-size:var(--font-size-sm);cursor:pointer;margin-left:12px;"><input type="checkbox" id="headerLine" checked> 首行为表头</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 CSV..." style="min-height:120px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="formatBtn" class="btn btn-primary">格式化</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div id="tableArea" style="overflow-x:auto;margin-top:var(--space-2);"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var formatBtn=document.getElementById('formatBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var padSelect=document.getElementById('padSelect');
+var headerLine=document.getElementById('headerLine');
+var tableArea=document.getElementById('tableArea');
+function parseCSV(text){
+var lines=text.split('\n');
+var rows=[];
+for(var i=0;i<lines.length;i++){
+var line=lines[i].trim();
+if(!line)continue;
+var cols=[];
+var cur='';
+var inQuote=false;
+for(var j=0;j<line.length;j++){
+var c=line[j];
+if(inQuote){
+if(c==='"'){
+if(j+1<line.length&&line[j+1]==='"'){cur+='"';j++;}
+else{inQuote=false;}
+}else{cur+=c;}
+}else{
+if(c==='"'){inQuote=true;}
+else if(c===','){cols.push(cur);cur='';}
+else{cur+=c;}
+}
+}
+cols.push(cur);
+rows.push(cols);
+}
+return rows;
+}
+function formatCSV(rows,pad){
+var widths=[];
+for(var i=0;i<rows.length;i++){
+for(var j=0;j<rows[i].length;j++){
+widths[j]=Math.max(widths[j]||0,rows[i][j].length);
+}
+}
+var padChar=pad==='tab'?'\t':' ';
+var r='';
+for(var i=0;i<rows.length;i++){
+var parts=[];
+for(var j=0;j<rows[i].length;j++){
+var cell=rows[i][j];
+parts.push(cell+padChar.repeat(Math.max(0,widths[j]-cell.length)));
+}
+r+=parts.join(padChar===','?',':'  ')+'\n';
+}
+return r.trim();
+}
+function buildTable(rows,header){
+var html='<table class="cp-table"><tbody>';
+var start=0;
+if(header&&rows.length>0){
+html+='<thead><tr>';
+for(var j=0;j<rows[0].length;j++)html+='<th>'+escapeHtml(rows[0][j])+'</th>';
+html+='</tr></thead>';
+start=1;
+}
+for(var i=start;i<rows.length;i++){
+html+='<tr>';
+for(var j=0;j<rows[i].length;j++)html+='<td>'+escapeHtml(rows[i][j])+'</td>';
+html+='</tr>';
+}
+html+='</tbody></table>';
+return html;
+}
+function escapeHtml(s){
+return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+formatBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 CSV','error');return;}
+var rows=parseCSV(t);
+if(rows.length<2){setStatus('CSV 至少需要 2 行','error');return;}
+var formatted=formatCSV(rows,padSelect.value);
+输出El.textContent=formatted;
+tableArea.innerHTML=buildTable(rows,headerLine.checked);
+setStatus('共 '+rows.length+' 行，'+(rows[0]?rows[0].长度：0)+' 列');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';tableArea.innerHTML='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

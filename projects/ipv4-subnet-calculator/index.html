@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -17,7 +17,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>IPv4 Subnet Calculator</h1>
+    <h1>IPv4 子网计算</h1>
     <p class="tool-desc">输入 CIDR 地址（如 192.168.1.0/24），计算网络详情。</p>
     <div class="card">
       <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
@@ -28,11 +28,11 @@
         <button id="calcBtn" class="btn btn-primary">计算</button>
       </div>
     </div>
-    <div class="card" id="resultCard">
+    <div class="card" id="结果Card">
       <div class="subnet-grid" id="subnetGrid"></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -46,7 +46,7 @@
       var cidrInput = document.getElementById('cidrInput');
       var calcBtn = document.getElementById('calcBtn');
       var subnetGrid = document.getElementById('subnetGrid');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function ipToNum(ip) {
@@ -68,21 +68,21 @@
         var input = cidrInput.value.trim();
         var parts = input.split('/');
         if (parts.length !== 2) {
-          outputEl.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
+          输出El.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
           setStatus('', 'error');
           return;
         }
         var ipStr = parts[0];
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          outputEl.textContent = '子网掩码位数必须在 0 — 32 之间';
+          输出El.textContent = '子网掩码位数必须在 0 — 32 之间';
           setStatus('', 'error');
           return;
         }
 
         var ipNum = ipToNum(ipStr);
         if (isNaN(ipNum) || ipNum === 0) {
-          outputEl.textContent = '无效的 IP 地址';
+          输出El.textContent = '无效的 IP 地址';
           setStatus('', 'error');
           return;
         }
@@ -112,7 +112,7 @@
         subnetGrid.appendChild(fillItem('可用主机数', hosts.toLocaleString()));
         subnetGrid.appendChild(fillItem('主机范围', (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
 
-        outputEl.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
+        输出El.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
         setStatus('');
       }
 
@@ -120,7 +120,7 @@
       cidrInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') calculate(); });
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

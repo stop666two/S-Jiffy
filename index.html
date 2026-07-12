@@ -90,17 +90,27 @@
     <p class="tool-desc">轻量、瞬时的生产力工具，打开即用，用完即走。所有操作均在浏览器本地完成，极少情况下可能出现问题，请自行校验结果，如有问题请提交 <a href="https://github.com/stop666two/S-Jiffy/issues" target="_blank" style="color:var(--color-text-primary);text-decoration:underline;">Issues</a>。</p>
     <div class="section-tabs" id="sectionTabs" style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap;">
       <button class="sec-tab active" data-section="all">全部工具</button>
-      <button class="sec-tab" data-section="freq">常用 <span id="freqBadge" style="font-size:11px;color:var(--color-text-disabled);"></span></button>
-      <button class="sec-tab" data-section="recent">最近使用</button>
+      <button class="sec-tab" data-section="history">历史记录 <span id="historyBadge" style="font-size:11px;color:var(--color-text-disabled);"></span></button>
       <button class="sec-tab" data-section="popular">热门工具</button>
     </div>
+    <div class="search-bar" id="searchBar" style="margin-bottom:var(--space-3);">
+      <input id="searchInput" class="input" type="text" placeholder="搜索工具名称、描述或分类..." style="height:40px;font-size:14px;">
+    </div>
     <div class="category-bar" id="categoryBar"></div>
+    <div id="historyToolbar" style="display:none;margin-bottom:var(--space-3);padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);align-items:center;gap:8px;flex-wrap:wrap;">
+      <button id="selectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;">全选</button>
+      <button id="deselectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;">反选</button>
+      <button id="deleteSelectedBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);">删除所选</button>
+      <button id="clearHistoryBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);">清空全部记录</button>
+      <span id="historySelectInfo" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-left:auto;"></span>
+    </div>
     <div class="tool-grid" id="toolGrid"></div>
   </main>
   <footer class="global-footer">
     <div>S-Jiffy · 保持简单</div>
   </footer>
 
+  <script src="assets/js/global.js"></script>
   <script>
     (function () {
       var categories = [
@@ -112,212 +122,369 @@
       ];
 
       var tools = [
-        { name: '年龄计算器', desc: '精确计算年龄年月日', link: 'projects/age-calculator/', cats: ['日期时间', '数学计算'] },
-        { name: 'Alpha Hex 转换', desc: '十六进制颜色添加 Alpha 通道', link: 'projects/alpha-hex-converter/', cats: ['颜色工具', '格式转换'] },
-        { name: 'API 请求测试器', desc: '发送 HTTP 请求并查看响应', link: 'projects/api-tester/', cats: ['网络工具', '编程工具'] },
-        { name: 'CSS 选择器测试', desc: '测试 CSS 选择器在 HTML 中的匹配', link: 'projects/css-selector-tester/', cats: ['前端开发', '网页工具'] },
-        { name: 'Git 提交信息生成器', desc: '生成 Conventional Commits 规范提交信息', link: 'projects/git-commit-generator/', cats: ['编程工具', '文档工具'] },
-        { name: 'HTML 净化器', desc: '移除 HTML 中的危险标签和属性', link: 'projects/html-sanitizer/', cats: ['安全工具', '网页工具'] },
-        { name: 'JSON Schema 验证器', desc: '验证 JSON 数据是否符合 Schema 规范', link: 'projects/json-schema-validator/', cats: ['数据处理', '编程工具'] },
-        { name: 'SemVer 版本比较', desc: '语义化版本号比较与校验', link: 'projects/semver-compare/', cats: ['编程工具', '数学计算'] },
-        { name: '正则表达式可视化', desc: '可视化调试正则表达式匹配过程', link: 'projects/regex-visualizer/', cats: ['正则表达式', '编程工具'] },
-        { name: '面积单位转换', desc: 'm²/km²/ha/acre/ft²/in² 互转', link: 'projects/area-converter/', cats: ['单位换算', '格式转换'] },
-        { name: 'ASCII 码表', desc: 'ASCII 字符码对照查阅', link: 'projects/ascii-table/', cats: ['字符串', '文档工具'] },
-        { name: 'ASCII 文字画', desc: '将文本转换为 ASCII 艺术字', link: 'projects/ascii-text-drawer/', cats: ['文本处理', '数据生成'] },
-        { name: '条码生成器', desc: '生成 CODE128 条形码 SVG', link: 'projects/barcode-generator/', cats: ['数据生成', '网页工具'] },
-        { name: '进制转换', desc: '二八十六进制互转', link: 'projects/base-converter/', cats: ['进制转换', '数学计算'] },
-        { name: 'Base32 编解码', desc: 'Base32 格式编码与解码', link: 'projects/base32-converter/', cats: ['编解码', '格式转换'] },
-        { name: 'Base58 编解码', desc: 'Base58 格式编码与解码', link: 'projects/base58-converter/', cats: ['编解码', '格式转换'] },
-        { name: 'Base64 编解码', desc: '文本与 Base64 格式互转', link: 'projects/base64/', cats: ['编解码', '格式转换'] },
-        { name: 'Base64 转图片', desc: 'Base64 数据 URL 还原为图片', link: 'projects/base64-to-image/', cats: ['编解码', '数据处理'] },
-        { name: 'Base85 编解码', desc: 'Base85 (Ascii85) 格式编码与解码', link: 'projects/base85-converter/', cats: ['编解码', '格式转换'] },
-        { name: 'Basic Auth 生成', desc: 'HTTP Basic Authentication 头生成', link: 'projects/basic-auth-generator/', cats: ['安全工具', '网络工具'] },
-        { name: '性能测试', desc: '浏览器 JS 引擎循环计算基准', link: 'projects/benchmark-builder/', cats: ['编程工具', '数学计算'] },
-        { name: 'Bencode 编解码', desc: 'BitTorrent Bencode 格式互转', link: 'projects/bencode/', cats: ['编解码', '格式转换'] },
-        { name: 'BIP39 助记词', desc: '生成 BIP39 标准助记词短语', link: 'projects/bip39-generator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'CSS Border 生成器', desc: '可视化生成 CSS 边框样式', link: 'projects/border-generator/', cats: ['前端开发', '数据生成'] },
-        { name: 'Box Shadow 生成器', desc: '可视化生成 CSS 阴影效果', link: 'projects/box-shadow-generator/', cats: ['前端开发', '数据生成'] },
-        { name: '字节格式化', desc: '字节转人类可读格式 (IEC/SI)', link: 'projects/bytes-formatter/', cats: ['数据处理', '单位换算'] },
-        { name: '拍照工具', desc: '调用摄像头拍照并下载', link: 'projects/camera-recorder/', cats: ['网页工具', '数据处理'] },
-        { name: '命名风格转换', desc: '驼峰/蛇形/短横线等互转', link: 'projects/case-converter/', cats: ['字符串', '格式转换'] },
-        { name: '字符映射表', desc: '字符 Unicode 码点与信息查询', link: 'projects/character-map/', cats: ['字符串', '文档工具'] },
-        { name: '校验和计算器', desc: '文件/文本校验和 (CRC/SHA/MD5)', link: 'projects/checksum-calculator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'Chmod 计算器', desc: 'Linux 文件权限数值与符号互转', link: 'projects/chmod-calculator/', cats: ['编程工具', '安全工具'] },
-        { name: '计时器', desc: '精确计时与分段计时工具', link: 'projects/chronometer/', cats: ['日期时间', '数学计算'] },
-        { name: '维吉尼亚密码', desc: '维吉尼亚密码加密与解密', link: 'projects/cipher-tool/', cats: ['加密哈希', '安全工具'] },
-        { name: 'CMYK 转换', desc: 'CMYK 与 RGB 颜色值互转', link: 'projects/cmyk-converter/', cats: ['颜色工具', '格式转换'] },
-        { name: '抛硬币', desc: '模拟抛硬币并统计结果', link: 'projects/coin-flipper/', cats: ['随机生成', '数学计算'] },
-        { name: '色盲测试图', desc: '色盲类型检测与测试图', link: 'projects/color-blindness/', cats: ['颜色工具', '网页工具'] },
-        { name: '色盲模拟器', desc: '模拟不同类型色盲视觉效果', link: 'projects/color-blindness-sim/', cats: ['颜色工具', '网页工具'] },
-        { name: '色彩对比检查', desc: '检查前景/背景颜色对比度 WCAG', link: 'projects/color-contrast/', cats: ['颜色工具', '网页工具'] },
-        { name: '颜色转换', desc: 'HEX / RGB / HSL 互转与预览', link: 'projects/color-converter/', cats: ['颜色工具', '格式转换'] },
-        { name: '颜色名称查询', desc: '颜色名称与十六进制值互查', link: 'projects/color-names/', cats: ['颜色工具', '文档工具'] },
-        { name: '调色板生成器', desc: '从图片或规则生成配色方案', link: 'projects/color-palette/', cats: ['颜色工具', '数据生成'] },
-        { name: '配色方案', desc: '预设配色方案浏览与选择', link: 'projects/color-scheme/', cats: ['颜色工具', '数据生成'] },
-        { name: '倒计时器', desc: '设置目标时间实时倒计时', link: 'projects/countdown-timer/', cats: ['日期时间', '网页工具'] },
-        { name: '信用卡号验证', desc: 'Luhn 算法验证并检测卡类型', link: 'projects/credit-card-validator/', cats: ['数据处理', '安全工具'] },
-        { name: 'Cron 表达式解析', desc: '解析 cron 表达式含义并预览执行时间', link: 'projects/cron-expression/', cats: ['日期时间', '编程工具'] },
-        { name: 'Crontab 生成器', desc: '可视化生成 crontab 定时任务', link: 'projects/crontab-generator/', cats: ['日期时间', '数据生成'] },
-        { name: 'CSS 动画生成器', desc: '生成 CSS 关键帧动画代码', link: 'projects/css-animation/', cats: ['前端开发', '数据生成'] },
-        { name: 'CSS 格式化', desc: 'CSS 代码格式化与压缩', link: 'projects/css-formatter/', cats: ['代码美化', '前端开发'] },
-        { name: 'CSS 压缩', desc: 'CSS 代码压缩优化', link: 'projects/css-minifier/', cats: ['代码美化', '前端开发'] },
-        { name: 'CSS 单位转换', desc: 'px/em/rem/%/vw/vh 等单位互转', link: 'projects/css-unit-converter/', cats: ['前端开发', '单位换算'] },
-        { name: 'CSV JSON 互转', desc: 'CSV 表格与 JSON 格式互相转换', link: 'projects/csv-to-json/', cats: ['格式转换', '数据处理'] },
-        { name: '数据存储单位转换', desc: 'B/KB/MB/GB/TB/PB 互转', link: 'projects/data-storage-converter/', cats: ['单位换算', '格式转换'] },
-        { name: '日期差计算', desc: '计算两个日期之差', link: 'projects/date-difference/', cats: ['日期时间', '数学计算'] },
-        { name: '设备信息', desc: '查看浏览器/屏幕/网络详情', link: 'projects/device-info/', cats: ['网页工具', '编程工具'] },
-        { name: '掷骰子', desc: '可配置面数和数量的骰子', link: 'projects/dice-roller/', cats: ['随机生成', '数学计算'] },
-        { name: '文本差异对比', desc: '两段文本逐行对比高亮差异', link: 'projects/diff-checker/', cats: ['文本处理', '数据处理'] },
-        { name: 'DNA 互补链', desc: 'DNA 碱基序列互补链转换', link: 'projects/dna-complement/', cats: ['文本处理', '数据处理'] },
-        { name: 'Docker Run→Compose', desc: 'docker run 参数转 compose.yml', link: 'projects/docker-compose-converter/', cats: ['格式转换', '编程工具'] },
-        { name: '邮箱规范化', desc: '规范化邮箱：去点、去 +tag、转小写', link: 'projects/email-normalizer/', cats: ['文本处理', '数据处理'] },
-        { name: 'Emoji 选择器', desc: '搜索并复制 emoji 表情', link: 'projects/emoji-picker/', cats: ['字符串', '网页工具'] },
-        { name: 'Emoji 搜索', desc: '按关键词搜索 emoji 并复制', link: 'projects/emoji-search/', cats: ['字符串', '网页工具'] },
-        { name: '加密工具', desc: '凯撒密码与 ROT13 加密/解密', link: 'projects/encryption/', cats: ['加密哈希', '安全工具'] },
-        { name: '时间戳转换', desc: 'Unix 时间戳与日期互转 (秒/毫秒)', link: 'projects/epoch-converter/', cats: ['时间戳', '格式转换'] },
-        { name: 'ETA 计算器', desc: '预计到达时间与进度计算', link: 'projects/eta-calculator/', cats: ['日期时间', '数学计算'] },
-        { name: 'Flexbox 生成器', desc: '可视化生成 Flexbox 布局代码', link: 'projects/flexbox-generator/', cats: ['前端开发', '数据生成'] },
-        { name: 'Git 备忘录', desc: 'Git 命令速查与搜索', link: 'projects/git-memo/', cats: ['编程工具', '文档工具'] },
-        { name: '渐变生成器', desc: 'CSS 渐变颜色在线生成', link: 'projects/gradient-generator/', cats: ['颜色工具', '数据生成'] },
-        { name: 'Hash 计算器', desc: 'SHA-1/256/384/512 哈希计算', link: 'projects/hash-generator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'Hash 识别', desc: '识别哈希值类型与算法', link: 'projects/hash-identifier/', cats: ['加密哈希', '安全工具'] },
-        { name: 'Hex/RGB/Decimal 转换', desc: '颜色值在十六进制 RGB Decimal 间互转', link: 'projects/hex-converter/', cats: ['颜色工具', '进制转换'] },
-        { name: 'Hex 转 HSL', desc: '十六进制颜色值转为 HSL', link: 'projects/hex-to-hsl/', cats: ['颜色工具', '格式转换'] },
-        { name: 'Hex 转 RGB', desc: '十六进制颜色值转为 RGB', link: 'projects/hex-to-rgb/', cats: ['颜色工具', '格式转换'] },
-        { name: 'HMAC 生成器', desc: '密钥消息 HMAC 签名 (SHA1/256/384/512)', link: 'projects/hmac-generator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'HSL 拾色器', desc: 'HSL 颜色拾取与调整', link: 'projects/hsl-picker/', cats: ['颜色工具', '网页工具'] },
-        { name: 'HSL 转 Hex', desc: 'HSL 颜色值转为十六进制', link: 'projects/hsl-to-hex/', cats: ['颜色工具', '格式转换'] },
-        { name: 'HTML 实体转义', desc: 'HTML 特殊字符编码与解码', link: 'projects/html-entities/', cats: ['网页工具', '格式转换'] },
-        { name: 'HTML 压缩', desc: 'HTML 代码压缩优化', link: 'projects/html-minifier/', cats: ['代码美化', '前端开发'] },
-        { name: 'HTML 实时预览', desc: '编写 HTML 并实时预览渲染效果', link: 'projects/html-preview/', cats: ['前端开发', '网页工具'] },
-        { name: 'HTML 参考手册', desc: 'HTML 标签与属性速查', link: 'projects/html-reference/', cats: ['网页工具', '文档工具'] },
-        { name: 'HTML 转 Markdown', desc: 'HTML 格式转换为 Markdown', link: 'projects/html-to-markdown/', cats: ['格式转换', '网页工具'] },
-        { name: 'HTML 编辑器', desc: '简易 WYSIWYG 所见即所得编辑器', link: 'projects/html-wysiwyg/', cats: ['前端开发', '网页工具'] },
-        { name: 'HTTP 状态码', desc: '浏览与搜索 HTTP 状态码含义', link: 'projects/http-status-codes/', cats: ['网络工具', '文档工具'] },
-        { name: 'IBAN 验证器', desc: '验证国际银行账号格式与国家代码', link: 'projects/iban-validator/', cats: ['数据处理', '安全工具'] },
-        { name: '图片转 Base64', desc: '上传图片生成 Base64 数据 URL', link: 'projects/image-to-base64/', cats: ['编解码', '数据处理'] },
-        { name: '印尼区号查询', desc: '印度尼西亚地区号码查询', link: 'projects/indonesia-area/', cats: ['网络工具', '数据处理'] },
-        { name: 'INI JSON 互转', desc: 'INI 配置文件与 JSON 格式转换', link: 'projects/ini-converter/', cats: ['格式转换', '数据处理'] },
-        { name: 'IP 定位查询', desc: 'IP 地址地理位置查询', link: 'projects/ip-location/', cats: ['网络工具', '数据处理'] },
-        { name: 'IPv4 地址转换', desc: 'IPv4 地址整数/二进制/十六进制互转', link: 'projects/ipv4-address-converter/', cats: ['网络工具', '进制转换'] },
-        { name: 'IPv4 范围展开', desc: 'CIDR 网段展开为全部 IP', link: 'projects/ipv4-range-expander/', cats: ['网络工具', '数学计算'] },
-        { name: 'IPv4 子网计算', desc: 'IPv4 CIDR 子网详细计算', link: 'projects/ipv4-subnet-calculator/', cats: ['网络工具', '数学计算'] },
-        { name: 'IPv6 ULA 生成器', desc: '生成随机唯一本地 IPv6 地址', link: 'projects/ipv6-ula-generator/', cats: ['网络工具', '数据生成'] },
-        { name: 'JS 格式化', desc: 'JavaScript 代码格式化与美化', link: 'projects/js-formatter/', cats: ['代码美化', '编程工具'] },
-        { name: 'JS 压缩', desc: 'JavaScript 代码压缩优化', link: 'projects/js-minifier/', cats: ['代码美化', '编程工具'] },
-        { name: 'JSON 对比', desc: '比较两个 JSON 对象的差异', link: 'projects/json-diff/', cats: ['数据处理', '编程工具'] },
-        { name: 'JSON Formatter', desc: 'JSON 格式化压缩与校验', link: 'projects/json-formatter/', cats: ['数据处理', '代码美化'] },
-        { name: 'JSON 压缩', desc: 'JSON 压缩为紧凑格式', link: 'projects/json-minify/', cats: ['数据处理', '代码美化'] },
-        { name: 'JSON → CSV', desc: 'JSON 数组转换为 CSV 表格', link: 'projects/json-to-csv/', cats: ['格式转换', '数据处理'] },
-        { name: 'JSON → TOML', desc: 'JSON 格式转换为 TOML', link: 'projects/json-to-toml/', cats: ['格式转换', '数据处理'] },
-        { name: 'JSON → XML', desc: 'JSON 格式转换为 XML', link: 'projects/json-to-xml/', cats: ['格式转换', '数据处理'] },
-        { name: 'JSON → YAML', desc: 'JSON 格式转换为 YAML', link: 'projects/json-to-yaml/', cats: ['格式转换', '数据处理'] },
-        { name: 'JSON 校验器', desc: 'JSON 语法验证与错误定位', link: 'projects/json-validator/', cats: ['数据处理', '编程工具'] },
-        { name: 'JSON Viewer', desc: 'JSON 可折叠树形结构浏览', link: 'projects/json-viewer/', cats: ['数据处理', '网页工具'] },
-        { name: 'JWT 解析器', desc: '解码 JWT Token 的 Header 和 Payload', link: 'projects/jwt-parser/', cats: ['安全工具', '加密哈希'] },
-        { name: '按键信息', desc: '捕获键盘事件，显示 key/keyCode/code 等', link: 'projects/keycode-info/', cats: ['网页工具', '编程工具'] },
-        { name: '长度单位转换', desc: 'm/cm/km/in/ft/yd/mi 互转', link: 'projects/length-converter/', cats: ['单位换算', '格式转换'] },
-        { name: 'LESS 编译器', desc: 'LESS 样式在线编译为 CSS', link: 'projects/less-compiler/', cats: ['前端开发', '编程工具'] },
-        { name: '行号添加器', desc: '为每行添加行号，可自定义格式', link: 'projects/line-numberer/', cats: ['文本处理', '编程工具'] },
-        { name: '列表格式转换', desc: '逗号/换行/编号等格式互转', link: 'projects/list-converter/', cats: ['文本处理', '格式转换'] },
-        { name: '列表随机化', desc: '打乱列表/随机抽取元素', link: 'projects/list-randomizer/', cats: ['随机生成', '数据处理'] },
-        { name: 'Lorem Ipsum 生成器', desc: '生成 Lorem Ipsum 段落文本', link: 'projects/lorem-ipsum-generator/', cats: ['文本处理', '数据生成'] },
-        { name: 'Lorem Ipsum 单词', desc: '生成 Lorem Ipsum 占位单词', link: 'projects/lorem-ipsum-word/', cats: ['文本处理', '数据生成'] },
-        { name: 'MAC 地址生成器', desc: '生成随机 MAC 地址，自定义前缀', link: 'projects/mac-address-generator/', cats: ['网络工具', '数据生成'] },
-        { name: 'MAC 地址查询', desc: '查询 MAC 厂商 OUI 信息', link: 'projects/mac-address-lookup/', cats: ['网络工具', '数据处理'] },
-        { name: 'Markdown 预览', desc: 'Markdown 实时渲染预览', link: 'projects/markdown-preview/', cats: ['文档工具', '网页工具'] },
-        { name: 'Markdown 转 HTML', desc: 'Markdown 实时预览为 HTML', link: 'projects/markdown-to-html/', cats: ['格式转换', '文档工具'] },
-        { name: '数学表达式计算', desc: '安全计算数学表达式并显示步骤', link: 'projects/math-evaluator/', cats: ['数学计算', '网页工具'] },
-        { name: 'MD5 生成器', desc: '纯 JS 实现的 MD5 哈希计算', link: 'projects/md5-generator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'Meta 标签生成器', desc: '生成 HTML meta 标签代码', link: 'projects/meta-tag-generator/', cats: ['网页工具', '数据生成'] },
-        { name: 'MIME 类型查询', desc: '文件扩展名查 MIME 类型', link: 'projects/mime-lookup/', cats: ['网络工具', '文档工具'] },
-        { name: 'MIME 类型大全', desc: 'MIME 类型完整列表与说明', link: 'projects/mime-types/', cats: ['网络工具', '文档工具'] },
-        { name: '摩斯密码', desc: '文本与摩斯密码互转并播放音频', link: 'projects/morse-code/', cats: ['编解码', '文本处理'] },
-        { name: '数字格式化', desc: '千分位/序数/英文单词/百分比', link: 'projects/number-formatter/', cats: ['数学计算', '格式转换'] },
-        { name: 'Numeronym 生成器', desc: '单词转 numeronym 缩写 (i18n/l10n)', link: 'projects/numeronym-generator/', cats: ['文本处理', '数据生成'] },
-        { name: 'OTP 生成器', desc: '基于时间/计数器的一次性密码', link: 'projects/otp-generator/', cats: ['密码管理', '安全工具'] },
-        { name: '密码检测', desc: '检查密码是否在已知泄露中', link: 'projects/password-checker/', cats: ['密码管理', '安全工具'] },
-        { name: '密码生成器', desc: '可配置字符集的强密码生成', link: 'projects/password-generator/', cats: ['密码管理', '数据生成'] },
-        { name: '密码强度分析', desc: '分析密码熵值、字符集、破解时间', link: 'projects/password-strength/', cats: ['密码管理', '安全工具'] },
-        { name: '数字签名解析', desc: 'PEM 公钥/证书信息查看', link: 'projects/pdf-signature/', cats: ['安全工具', '文档工具'] },
-        { name: '百分比计算器', desc: '百分比计算与增减比例', link: 'projects/percentage-calculator/', cats: ['数学计算', '网页工具'] },
-        { name: '电话号码生成', desc: '生成指定国家格式的电话号码', link: 'projects/phone-generator/', cats: ['数据生成', '数据处理'] },
-        { name: '电话号码解析', desc: '解析电话号码，检测国家代码', link: 'projects/phone-parser/', cats: ['数据处理', '文本处理'] },
-        { name: '番茄钟', desc: '番茄工作法计时器', link: 'projects/pomodoro-timer/', cats: ['日期时间', '网页工具'] },
-        { name: 'QR 码生成器', desc: '从文本生成 QR 二维码', link: 'projects/qr-code-generator/', cats: ['数据生成', '网页工具'] },
-        { name: 'QR 码读取器', desc: '上传二维码图片并解码', link: 'projects/qr-reader/', cats: ['编解码', '网页工具'] },
-        { name: '随机数生成器', desc: '范围随机整数，可批量', link: 'projects/random-number/', cats: ['随机生成', '数学计算'] },
-        { name: '随机端口生成', desc: '生成随机端口号排除常用端口', link: 'projects/random-port-generator/', cats: ['随机生成', '网络工具'] },
-        { name: '随机字符串', desc: '可配置字符集随机字符串', link: 'projects/random-string/', cats: ['随机生成', '字符串'] },
-        { name: '正则备忘录', desc: '正则模式速查与示例', link: 'projects/regex-memo/', cats: ['正则表达式', '文档工具'] },
-        { name: '正则测试器', desc: '编写正则实时匹配测试', link: 'projects/regex-tester/', cats: ['正则表达式', '编程工具'] },
-        { name: 'RGB 转 Hex', desc: 'RGB 颜色值转为十六进制', link: 'projects/rgb-to-hex/', cats: ['颜色工具', '格式转换'] },
-        { name: '罗马数字转换', desc: '阿拉伯数字与罗马数字互转', link: 'projects/roman-numeral-converter/', cats: ['格式转换', '字符串'] },
-        { name: 'RSA 密钥对生成器', desc: '生成 RSA 公钥/私钥 PEM 格式', link: 'projects/rsa-key-pair-generator/', cats: ['加密哈希', '安全工具'] },
-        { name: 'SafeLink 解码', desc: '解码微软/Google 重定向链接', link: 'projects/safelink-decoder/', cats: ['网址工具', '安全工具'] },
-        { name: 'Slugify 字符串', desc: '文本转为 URL 友好的 slug 格式', link: 'projects/slugify-string/', cats: ['字符串', '网址工具'] },
-        { name: '速度单位转换', desc: 'km/h/mph/knot/m/s 互转', link: 'projects/speed-converter/', cats: ['单位换算', '格式转换'] },
-        { name: 'SQL 格式化', desc: 'SQL 代码格式化与美化', link: 'projects/sql-format/', cats: ['代码美化', '数据处理'] },
-        { name: 'SQL 美化', desc: 'SQL 语句格式化高亮', link: 'projects/sql-prettify/', cats: ['代码美化', '数据处理'] },
-        { name: 'SQL 校验器', desc: 'SQL 语法验证检查', link: 'projects/sql-validator/', cats: ['数据处理', '编程工具'] },
-        { name: 'SSL 检查器', desc: '检测 SSL/TLS 证书信息', link: 'projects/ssl-checker/', cats: ['安全工具', '网络工具'] },
-        { name: '字符串混淆器', desc: '在字符间插入随机字符混淆', link: 'projects/string-obfuscator/', cats: ['字符串', '安全工具'] },
-        { name: '子网计算器', desc: 'IPv4 CIDR 子网计算与二进制可视化', link: 'projects/subnet-calc/', cats: ['网络工具', '数学计算'] },
-        { name: 'SVG 编辑器', desc: '在线编辑 SVG 矢量图形', link: 'projects/svg-editor/', cats: ['前端开发', '网页工具'] },
-        { name: 'SVG 占位图', desc: '生成定制尺寸/颜色的 SVG 占位图', link: 'projects/svg-placeholder/', cats: ['前端开发', '数据生成'] },
-        { name: '温度单位转换', desc: '℃/℉/K 温度单位互转', link: 'projects/temperature-converter/', cats: ['单位换算', '格式转换'] },
-        { name: '文本清理器', desc: '清理文本多余空格、空行、控制字符', link: 'projects/text-cleaner/', cats: ['文本处理', '字符串'] },
-        { name: '文本去重', desc: '移除重复行并显示统计', link: 'projects/text-deduplicator/', cats: ['文本处理', '字符串'] },
-        { name: '文本对比', desc: '逐行对比文本差异 (LCS diff)', link: 'projects/text-diff/', cats: ['文本处理', '编程工具'] },
-        { name: '文本重复器', desc: '文本按次数重复，可选分隔符', link: 'projects/text-repeater/', cats: ['文本处理', '字符串'] },
-        { name: '文本反转器', desc: '反转字符、单词、行顺序', link: 'projects/text-reverser/', cats: ['文本处理', '字符串'] },
-        { name: 'Text Shadow 生成器', desc: 'CSS 文字阴影效果生成', link: 'projects/text-shadow-generator/', cats: ['前端开发', '数据生成'] },
-        { name: '文本排序器', desc: 'A-Z/Z-A/按长度/打乱/去重排序', link: 'projects/text-sorter/', cats: ['文本处理', '数据处理'] },
-        { name: '文本统计', desc: '字符/单词/行数/音节等详细统计', link: 'projects/text-statistics/', cats: ['文本处理', '数据处理'] },
-        { name: '文本与二进制互转', desc: '文本 ↔ 二进制 (8-bit)', link: 'projects/text-to-binary/', cats: ['进制转换', '字符串'] },
-        { name: 'Text to NATO', desc: '文本转北约音标字母', link: 'projects/text-to-nato/', cats: ['字符串', '格式转换'] },
-        { name: '文本与 Unicode 互转', desc: '文本 ↔ \\uXXXX 码点', link: 'projects/text-to-unicode/', cats: ['字符串', '格式转换'] },
-        { name: '时间戳转换', desc: 'Unix 时间戳与日期互转 (秒)', link: 'projects/timestamp/', cats: ['时间戳', '格式转换'] },
-        { name: 'TOML → JSON', desc: 'TOML 格式转换为 JSON', link: 'projects/toml-to-json/', cats: ['格式转换', '数据处理'] },
-        { name: 'TOML → YAML', desc: 'TOML 格式转换为 YAML', link: 'projects/toml-to-yaml/', cats: ['格式转换', '数据处理'] },
-        { name: '字体排版测试', desc: '网页字体排版效果对比测试', link: 'projects/typography-tester/', cats: ['前端开发', '网页工具'] },
-        { name: 'ULID 生成器', desc: '生成时序可排序的唯一标识符', link: 'projects/ulid-generator/', cats: ['序列生成', '数据处理'] },
-        { name: 'Unicode 查询', desc: 'Unicode 字符信息与码点查询', link: 'projects/unicode-lookup/', cats: ['字符串', '文档工具'] },
-        { name: '运行时间计算', desc: '计算系统/服务运行时间', link: 'projects/uptime-calculator/', cats: ['日期时间', '数学计算'] },
-        { name: 'URL 编解码', desc: 'URL 参数编码与解码', link: 'projects/url-encode/', cats: ['网址工具', '格式转换'] },
-        { name: 'URL 解析器', desc: '解析 URL 各组成部分', link: 'projects/url-parser/', cats: ['网址工具', '网页工具'] },
-        { name: 'User-Agent 信息', desc: '查看当前浏览器 User-Agent', link: 'projects/user-agent/', cats: ['网页工具', '网络工具'] },
-        { name: 'User-Agent 解析器', desc: '解析 UA 字符串，提取浏览器/OS/引擎/设备', link: 'projects/user-agent-parser/', cats: ['网页工具', '网络工具'] },
-        { name: 'UUID 生成器', desc: '生成 UUID v4 与批量 ID', link: 'projects/uuid-generator/', cats: ['序列生成', '数据处理'] },
-        { name: '体积单位转换', desc: 'L/mL/gal/qt/pt/cup 互转', link: 'projects/volume-converter/', cats: ['单位换算', '格式转换'] },
-        { name: '重量单位转换', desc: 'kg/g/lb/oz/ton 互转', link: 'projects/weight-converter/', cats: ['单位换算', '格式转换'] },
-        { name: '本机 IP 查询', desc: '显示当前网络公网 IP 信息', link: 'projects/whats-my-ip/', cats: ['网络工具', '网页工具'] },
-        { name: 'WiFi QR 码', desc: '生成 WiFi 连接二维码', link: 'projects/wifi-qr-code/', cats: ['网络工具', '数据生成'] },
-        { name: '单词统计器', desc: '统计单词数/唯一词/平均词长', link: 'projects/word-counter/', cats: ['文档工具', '文本处理'] },
-        { name: 'XML Formatter', desc: 'XML 格式化与压缩', link: 'projects/xml-formatter/', cats: ['数据处理', '代码美化'] },
-        { name: 'XML → JSON', desc: 'XML 格式转换为 JSON', link: 'projects/xml-to-json/', cats: ['格式转换', '数据处理'] },
-        { name: 'YAML → JSON', desc: 'YAML 格式转换为 JSON', link: 'projects/yaml-to-json/', cats: ['格式转换', '数据处理'] },
-        { name: 'YAML → TOML', desc: 'YAML 格式转换为 TOML', link: 'projects/yaml-to-toml/', cats: ['格式转换', '数据处理'] },
-        { name: 'YAML Viewer', desc: 'JSON 转 YAML 格式查看', link: 'projects/yaml-viewer/', cats: ['数据处理', '网页工具'] },
-        { name: 'XOR 加密', desc: '使用 XOR 算法加密解密文本', link: 'projects/xor-cipher/', cats: ['加密哈希', '安全工具'] },
-        { name: 'NanoID 生成器', desc: '生成紧凑型唯一 ID', link: 'projects/nanoid-generator/', cats: ['序列生成', '数据生成'] },
-        { name: 'Base36 编解码', desc: 'Base36 格式编码与解码', link: 'projects/base36-encoder/', cats: ['编解码', '进制转换'] },
-        { name: 'Base62 编解码', desc: 'Base62 格式编码与解码', link: 'projects/base62-encoder/', cats: ['编解码', '进制转换'] },
-        { name: '字符级文本对比', desc: '逐字符对比两段文本的差异', link: 'projects/text-diff-char/', cats: ['文本处理', '编程工具'] },
-        { name: 'Punycode 转换', desc: '域名 Punycode 与 Unicode 互转', link: 'projects/punycode-converter/', cats: ['编解码', '网址工具'] },
-        { name: 'HSL 颜色选择器', desc: '通过 HSL 滑块精确选择颜色', link: 'projects/hsl-selector/', cats: ['颜色工具', '网页工具'] },
-        { name: 'JSON 合并', desc: '深度合并两个 JSON 对象', link: 'projects/json-merge/', cats: ['数据处理', '编程工具'] },
-        { name: 'YAML 验证器', desc: '验证 YAML 语法并格式化输出', link: 'projects/yaml-validator/', cats: ['数据处理', '编程工具'] },
-        { name: 'Atbash 密码', desc: 'Atbash 字母替换加密解密', link: 'projects/atbash-cipher/', cats: ['加密哈希', '安全工具'] },
-        { name: 'Rail Fence 密码', desc: '栅栏密码加密解密', link: 'projects/rail-fence-cipher/', cats: ['加密哈希', '安全工具'] },
-        { name: '工作日计算器', desc: '计算两个日期之间的工作日数量', link: 'projects/working-days/', cats: ['日期时间', '数学计算'] }
+        { name: '年龄计算器', desc: '根据出生日期精确计算年龄，显示年/月/日详情', link: 'projects/age-calculator/', cats: ['日期时间', '数学计算'] },
+        { name: 'Alpha Hex 转换', desc: '在十六进制颜色中添加 Alpha 透明度通道，支持 RGBA', link: 'projects/alpha-hex-converter/', cats: ['颜色工具', '格式转换'] },
+        { name: 'API 请求测试器', desc: '发送 GET/POST/PUT/DELETE 请求并查看完整响应', link: 'projects/api-tester/', cats: ['网络工具', '编程工具'] },
+        { name: 'CSS 选择器测试', desc: '输入 HTML 和 CSS 选择器实时高亮匹配元素', link: 'projects/css-selector-tester/', cats: ['前端开发', '网页工具'] },
+        { name: 'Git 提交信息生成器', desc: '根据 Conventional Commits 规范生成格式化提交信息', link: 'projects/git-commit-generator/', cats: ['编程工具', '文档工具'] },
+        { name: 'HTML 净化器', desc: '过滤移除 HTML 中的 XSS 危险标签和属性', link: 'projects/html-sanitizer/', cats: ['安全工具', '网页工具'] },
+        { name: 'JSON Schema 验证器', desc: '根据 JSON Schema 规范验证 JSON 数据结构', link: 'projects/json-schema-validator/', cats: ['数据处理', '编程工具'] },
+        { name: 'SemVer 版本比较', desc: '比较校验语义化版本号 SemVer 的主/次/补丁', link: 'projects/semver-compare/', cats: ['编程工具', '数学计算'] },
+        { name: '正则表达式可视化', desc: '逐步可视化展示正则表达式匹配过程和步骤', link: 'projects/regex-visualizer/', cats: ['正则表达式', '编程工具'] },
+        { name: '面积单位转换', desc: '面积单位 m²/km²/ha/acre/ft²/in² 互相转换', link: 'projects/area-converter/', cats: ['单位换算', '格式转换'] },
+        { name: 'ASCII 码表', desc: '查阅 ASCII 字符编码表包含控制字符和可打印字符', link: 'projects/ascii-table/', cats: ['字符串', '文档工具'] },
+        { name: 'ASCII 文字画', desc: '将输入文本转换为各种风格的 ASCII 艺术字图案', link: 'projects/ascii-text-drawer/', cats: ['文本处理', '数据生成'] },
+        { name: '条码生成器', desc: '根据输入文本生成 CODE128 格式条形码 SVG 图像', link: 'projects/barcode-generator/', cats: ['数据生成', '网页工具'] },
+        { name: '进制转换', desc: '二进制/八进制/十进制/十六进制任意互相转换', link: 'projects/base-converter/', cats: ['进制转换', '数学计算'] },
+        { name: 'Base32 编解码', desc: '将文本与 Base32 编码格式互相转换', link: 'projects/base32-converter/', cats: ['编解码', '格式转换'] },
+        { name: 'Base58 编解码', desc: '将文本与 Base58 编码格式互相转换', link: 'projects/base58-converter/', cats: ['编解码', '格式转换'] },
+        { name: 'Base64 编解码', desc: '将普通文本与 Base64 编码格式互相转换', link: 'projects/base64/', cats: ['编解码', '格式转换'] },
+        { name: 'Base64 转图片', desc: '将 Base64 编码的数据 URL 还原为可下载图片', link: 'projects/base64-to-image/', cats: ['编解码', '数据处理'] },
+        { name: 'Base85 编解码', desc: '将文本与 Base85 Ascii85 格式互相转换', link: 'projects/base85-converter/', cats: ['编解码', '格式转换'] },
+        { name: 'Basic Auth 生成', desc: '生成 HTTP Basic Authentication 认证请求头', link: 'projects/basic-auth-generator/', cats: ['安全工具', '网络工具'] },
+        { name: '性能测试', desc: '测试浏览器 JavaScript 引擎运算性能基准分数', link: 'projects/benchmark-builder/', cats: ['编程工具', '数学计算'] },
+        { name: 'Bencode 编解码', desc: '将数据与 BitTorrent Bencode 格式互相转换', link: 'projects/bencode/', cats: ['编解码', '格式转换'] },
+        { name: 'BIP39 助记词', desc: '根据 BIP39 标准生成钱包助记词短语', link: 'projects/bip39-generator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'CSS Border 生成器', desc: '通过可视化界面生成 CSS 边框样式代码', link: 'projects/border-generator/', cats: ['前端开发', '数据生成'] },
+        { name: 'Box Shadow 生成器', desc: '通过可视化滑块生成 CSS box-shadow 代码', link: 'projects/box-shadow-generator/', cats: ['前端开发', '数据生成'] },
+        { name: '字节格式化', desc: '将字节数转换为人类可读的 IEC 或 SI 格式', link: 'projects/bytes-formatter/', cats: ['数据处理', '单位换算'] },
+        { name: '拍照工具', desc: '调用摄像头拍照并将照片下载到本地', link: 'projects/camera-recorder/', cats: ['网页工具', '数据处理'] },
+        { name: '命名风格转换', desc: '在驼峰/蛇形/短横线/帕斯卡命名间互相转换', link: 'projects/case-converter/', cats: ['字符串', '格式转换'] },
+        { name: '字符映射表', desc: '查询字符的 Unicode 码点和编码信息详情', link: 'projects/character-map/', cats: ['字符串', '文档工具'] },
+        { name: '校验和计算器', desc: '计算文件和文本的 CRC/SHA/MD5 校验和', link: 'projects/checksum-calculator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'Chmod 计算器', desc: 'Linux chmod 权限数值表示与符号表示互转', link: 'projects/chmod-calculator/', cats: ['编程工具', '安全工具'] },
+        { name: '计时器', desc: '启动秒表精确计时并支持分段记录时间', link: 'projects/chronometer/', cats: ['日期时间', '数学计算'] },
+        { name: '维吉尼亚密码', desc: '使用维吉尼亚密码算法加密和解密文本', link: 'projects/cipher-tool/', cats: ['加密哈希', '安全工具'] },
+        { name: 'CMYK 转换', desc: '将 CMYK 印刷色彩与 RGB 显示色彩互相转换', link: 'projects/cmyk-converter/', cats: ['颜色工具', '格式转换'] },
+        { name: '抛硬币', desc: '模拟抛硬币正反面并统计各面出现次数', link: 'projects/coin-flipper/', cats: ['随机生成', '数学计算'] },
+        { name: '色盲测试图', desc: '检测红绿色盲类型并生成色盲测试图', link: 'projects/color-blindness/', cats: ['颜色工具', '网页工具'] },
+        { name: '色盲模拟器', desc: '模拟红/绿/蓝色盲等不同类型色盲视觉', link: 'projects/color-blindness-sim/', cats: ['颜色工具', '网页工具'] },
+        { name: '色彩对比检查', desc: '检查前景背景颜色对比度是否符合 WCAG 标准', link: 'projects/color-contrast/', cats: ['颜色工具', '网页工具'] },
+        { name: '颜色转换', desc: '在 HEX/RGB/HSL 颜色格式间互转并实时预览', link: 'projects/color-converter/', cats: ['颜色工具', '格式转换'] },
+        { name: '颜色名称查询', desc: '根据颜色名称查询十六进制值或反向查询', link: 'projects/color-names/', cats: ['颜色工具', '文档工具'] },
+        { name: '调色板生成器', desc: '从上传图片或预设规则自动生成配色方案', link: 'projects/color-palette/', cats: ['颜色工具', '数据生成'] },
+        { name: '配色方案', desc: '浏览预设精美配色方案并复制颜色代码', link: 'projects/color-scheme/', cats: ['颜色工具', '数据生成'] },
+        { name: '倒计时器', desc: '设置目标日期时间进行实时倒计时显示', link: 'projects/countdown-timer/', cats: ['日期时间', '网页工具'] },
+        { name: '信用卡号验证', desc: '通过 Luhn 算法验证信用卡号并检测卡品牌', link: 'projects/credit-card-validator/', cats: ['数据处理', '安全工具'] },
+        { name: 'Cron 表达式解析', desc: '解析 cron 表达式含义并预览未来执行时间', link: 'projects/cron-expression/', cats: ['日期时间', '编程工具'] },
+        { name: 'Crontab 生成器', desc: '通过可视化界面生成 crontab 定时任务表达式', link: 'projects/crontab-generator/', cats: ['日期时间', '数据生成'] },
+        { name: 'CSS 动画生成器', desc: '通过可视化界面生成 CSS @keyframes 动画代码', link: 'projects/css-animation/', cats: ['前端开发', '数据生成'] },
+        { name: 'CSS 格式化', desc: '对 CSS 代码进行格式美化或压缩优化', link: 'projects/css-formatter/', cats: ['代码美化', '前端开发'] },
+        { name: 'CSS 压缩', desc: '压缩 CSS 代码移除多余空格和注释', link: 'projects/css-minifier/', cats: ['代码美化', '前端开发'] },
+        { name: 'CSS 单位转换', desc: 'CSS 单位 px/em/rem/百分比/vw/vh 互相转换', link: 'projects/css-unit-converter/', cats: ['前端开发', '单位换算'] },
+        { name: 'CSV JSON 互转', desc: '将 CSV 表格数据与 JSON 格式互相转换', link: 'projects/csv-to-json/', cats: ['格式转换', '数据处理'] },
+        { name: '数据存储单位转换', desc: '数据存储单位 B/KB/MB/GB/TB/PB 互相转换', link: 'projects/data-storage-converter/', cats: ['单位换算', '格式转换'] },
+        { name: '日期差计算', desc: '计算两个日期之间的天数/月数/年数差值', link: 'projects/date-difference/', cats: ['日期时间', '数学计算'] },
+        { name: '设备信息', desc: '查看浏览器 User-Agent/屏幕分辨率/网络信息', link: 'projects/device-info/', cats: ['网页工具', '编程工具'] },
+        { name: '掷骰子', desc: '模拟掷骰子支持自定义面数和一次投掷数量', link: 'projects/dice-roller/', cats: ['随机生成', '数学计算'] },
+        { name: '文本差异对比', desc: '将两段文本逐行对比并用颜色高亮差异处', link: 'projects/diff-checker/', cats: ['文本处理', '数据处理'] },
+        { name: 'DNA 互补链', desc: '将 DNA 碱基序列转换为其互补链序列', link: 'projects/dna-complement/', cats: ['文本处理', '数据处理'] },
+        { name: 'Docker Run→Compose', desc: '将 docker run 命令行参数转换为 compose.yml 格式', link: 'projects/docker-compose-converter/', cats: ['格式转换', '编程工具'] },
+        { name: '邮箱规范化', desc: '规范化邮箱地址去除多余字符和转小写', link: 'projects/email-normalizer/', cats: ['文本处理', '数据处理'] },
+        { name: 'Emoji 选择器', desc: '按分类浏览搜索 emoji 表情并一键复制', link: 'projects/emoji-picker/', cats: ['字符串', '网页工具'] },
+        { name: 'Emoji 搜索', desc: '输入关键词快速搜索 emoji 并点击复制', link: 'projects/emoji-search/', cats: ['字符串', '网页工具'] },
+        { name: '加密工具', desc: '使用凯撒移位密码或 ROT13 加密解密文本', link: 'projects/encryption/', cats: ['加密哈希', '安全工具'] },
+        { name: '时间戳转换', desc: 'Unix 时间戳与人类可读日期互相转换支持秒毫秒', link: 'projects/epoch-converter/', cats: ['时间戳', '格式转换'] },
+        { name: 'ETA 计算器', desc: '根据速度和距离计算预计到达时间和进度', link: 'projects/eta-calculator/', cats: ['日期时间', '数学计算'] },
+        { name: 'Flexbox 生成器', desc: '通过可视化拖拽调整生成 Flexbox 布局 CSS 代码', link: 'projects/flexbox-generator/', cats: ['前端开发', '数据生成'] },
+        { name: 'Git 备忘录', desc: '速查常用 Git 命令支持按关键词搜索', link: 'projects/git-memo/', cats: ['编程工具', '文档工具'] },
+        { name: '渐变生成器', desc: '在线生成 CSS 线性/径向渐变颜色代码', link: 'projects/gradient-generator/', cats: ['颜色工具', '数据生成'] },
+        { name: 'Hash 计算器', desc: '计算文本的 SHA-1/SHA-256/SHA-384/SHA-512 哈希值', link: 'projects/hash-generator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'Hash 识别', desc: '根据哈希值格式和长度识别可能的哈希算法', link: 'projects/hash-identifier/', cats: ['加密哈希', '安全工具'] },
+        { name: 'Hex/RGB/Decimal 转换', desc: '颜色值在 HEX/RGB/Decimal 格式之间互相转换', link: 'projects/hex-converter/', cats: ['颜色工具', '进制转换'] },
+        { name: 'Hex 转 HSL', desc: '将十六进制颜色代码转换为 HSL 颜色值', link: 'projects/hex-to-hsl/', cats: ['颜色工具', '格式转换'] },
+        { name: 'Hex 转 RGB', desc: '将十六进制颜色代码转换为 RGB 颜色值', link: 'projects/hex-to-rgb/', cats: ['颜色工具', '格式转换'] },
+        { name: 'HMAC 生成器', desc: '使用密钥计算 HMAC 签名支持 SHA1/256/384/512', link: 'projects/hmac-generator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'HSL 拾色器', desc: '通过 HSL 滑块拾取和微调颜色并复制代码', link: 'projects/hsl-picker/', cats: ['颜色工具', '网页工具'] },
+        { name: 'HSL 转 Hex', desc: '将 HSL 颜色值转换为十六进制颜色代码', link: 'projects/hsl-to-hex/', cats: ['颜色工具', '格式转换'] },
+        { name: 'HTML 实体转义', desc: '将 HTML 特殊字符编码为实体或解码还原', link: 'projects/html-entities/', cats: ['网页工具', '格式转换'] },
+        { name: 'HTML 压缩', desc: '压缩 HTML 代码移除多余空格和注释', link: 'projects/html-minifier/', cats: ['代码美化', '前端开发'] },
+        { name: 'HTML 实时预览', desc: '左侧编写 HTML 代码右侧实时预览渲染效果', link: 'projects/html-preview/', cats: ['前端开发', '网页工具'] },
+        { name: 'HTML 参考手册', desc: '快速查阅 HTML 标签和属性的用法说明', link: 'projects/html-reference/', cats: ['网页工具', '文档工具'] },
+        { name: 'HTML 转 Markdown', desc: '将 HTML 格式文档转换为 Markdown 标记格式', link: 'projects/html-to-markdown/', cats: ['格式转换', '网页工具'] },
+        { name: 'HTML 编辑器', desc: '简易可视化编辑器所见即所得编辑 HTML 内容', link: 'projects/html-wysiwyg/', cats: ['前端开发', '网页工具'] },
+        { name: 'HTTP 状态码', desc: '浏览查阅 HTTP 状态码含义说明支持搜索', link: 'projects/http-status-codes/', cats: ['网络工具', '文档工具'] },
+        { name: 'IBAN 验证器', desc: '验证 IBAN 国际银行账号格式和国家代码', link: 'projects/iban-validator/', cats: ['数据处理', '安全工具'] },
+        { name: '图片转 Base64', desc: '上传本地图片文件生成 Base64 编码数据 URL', link: 'projects/image-to-base64/', cats: ['编解码', '数据处理'] },
+        { name: '印尼区号查询', desc: '查询印度尼西亚各地区电话区号信息', link: 'projects/indonesia-area/', cats: ['网络工具', '数据处理'] },
+        { name: 'INI JSON 互转', desc: '将 INI 配置文件格式与 JSON 格式互相转换', link: 'projects/ini-converter/', cats: ['格式转换', '数据处理'] },
+        { name: 'IP 定位查询', desc: '根据 IP 地址查询其地理位置信息', link: 'projects/ip-location/', cats: ['网络工具', '数据处理'] },
+        { name: 'IPv4 地址转换', desc: 'IPv4 地址在整数/二进制/十六进制间互相转换', link: 'projects/ipv4-address-converter/', cats: ['网络工具', '进制转换'] },
+        { name: 'IPv4 范围展开', desc: '将 CIDR 网段展开列出范围内的所有 IP 地址', link: 'projects/ipv4-range-expander/', cats: ['网络工具', '数学计算'] },
+        { name: 'IPv4 子网计算', desc: '计算 IPv4 CIDR 子网掩码/网络地址/广播地址', link: 'projects/ipv4-subnet-calculator/', cats: ['网络工具', '数学计算'] },
+        { name: 'IPv6 ULA 生成器', desc: '根据 RFC 4193 生成随机唯一本地 IPv6 ULA 地址', link: 'projects/ipv6-ula-generator/', cats: ['网络工具', '数据生成'] },
+        { name: 'JS 格式化', desc: '对 JavaScript 代码进行格式化和语法美化', link: 'projects/js-formatter/', cats: ['代码美化', '编程工具'] },
+        { name: 'JS 压缩', desc: '压缩 JavaScript 代码减小文件体积', link: 'projects/js-minifier/', cats: ['代码美化', '编程工具'] },
+        { name: 'JSON 对比', desc: '深度比较两个 JSON 对象的差异并高亮显示', link: 'projects/json-diff/', cats: ['数据处理', '编程工具'] },
+        { name: 'JSON Formatter', desc: '对 JSON 数据进行格式化/压缩和语法校验', link: 'projects/json-formatter/', cats: ['数据处理', '代码美化'] },
+        { name: 'JSON 压缩', desc: '将 JSON 数据压缩为紧凑无空格格式', link: 'projects/json-minify/', cats: ['数据处理', '代码美化'] },
+        { name: 'JSON → CSV', desc: '将 JSON 数组数据转换为 CSV 表格格式', link: 'projects/json-to-csv/', cats: ['格式转换', '数据处理'] },
+        { name: 'JSON → TOML', desc: '将 JSON 格式数据转换为 TOML 配置格式', link: 'projects/json-to-toml/', cats: ['格式转换', '数据处理'] },
+        { name: 'JSON → XML', desc: '将 JSON 格式数据转换为 XML 标记语言', link: 'projects/json-to-xml/', cats: ['格式转换', '数据处理'] },
+        { name: 'JSON → YAML', desc: '将 JSON 格式数据转换为 YAML 配置格式', link: 'projects/json-to-yaml/', cats: ['格式转换', '数据处理'] },
+        { name: 'JSON 校验器', desc: '验证 JSON 语法正确性并定位错误位置', link: 'projects/json-validator/', cats: ['数据处理', '编程工具'] },
+        { name: 'JSON Viewer', desc: '以可折叠树形结构浏览 JSON 数据', link: 'projects/json-viewer/', cats: ['数据处理', '网页工具'] },
+        { name: 'JWT 解析器', desc: '解码 JWT Token 查看 Header/Payload/Signature', link: 'projects/jwt-parser/', cats: ['安全工具', '加密哈希'] },
+        { name: '按键信息', desc: '实时捕获键盘按键显示 key/keyCode/code 信息', link: 'projects/keycode-info/', cats: ['网页工具', '编程工具'] },
+        { name: '长度单位转换', desc: '长度单位 m/cm/km/in/ft/yd/mi 互相转换', link: 'projects/length-converter/', cats: ['单位换算', '格式转换'] },
+        { name: 'LESS 编译器', desc: '将 LESS 样式代码在线编译为 CSS 样式', link: 'projects/less-compiler/', cats: ['前端开发', '编程工具'] },
+        { name: '行号添加器', desc: '为文本每行添加行号支持自定义格式前缀', link: 'projects/line-numberer/', cats: ['文本处理', '编程工具'] },
+        { name: '列表格式转换', desc: '在逗号分隔/换行分隔/编号列表格式间互转', link: 'projects/list-converter/', cats: ['文本处理', '格式转换'] },
+        { name: '列表随机化', desc: '随机打乱列表顺序或从列表中随机抽取元素', link: 'projects/list-randomizer/', cats: ['随机生成', '数据处理'] },
+        { name: 'Lorem Ipsum 生成器', desc: '生成指定段落数的 Lorem Ipsum 占位文本', link: 'projects/lorem-ipsum-generator/', cats: ['文本处理', '数据生成'] },
+        { name: 'Lorem Ipsum 单词', desc: '生成指定数量的 Lorem Ipsum 占位单词', link: 'projects/lorem-ipsum-word/', cats: ['文本处理', '数据生成'] },
+        { name: 'MAC 地址生成器', desc: '生成随机 MAC 地址支持自定义 OUI 前缀', link: 'projects/mac-address-generator/', cats: ['网络工具', '数据生成'] },
+        { name: 'MAC 地址查询', desc: '根据 MAC 地址前缀查询对应的设备厂商信息', link: 'projects/mac-address-lookup/', cats: ['网络工具', '数据处理'] },
+        { name: 'Markdown 预览', desc: '实时输入 Markdown 并预览渲染后的 HTML 效果', link: 'projects/markdown-preview/', cats: ['文档工具', '网页工具'] },
+        { name: 'Markdown 转 HTML', desc: '将 Markdown 格式实时渲染为 HTML 代码预览', link: 'projects/markdown-to-html/', cats: ['格式转换', '文档工具'] },
+        { name: '数学表达式计算', desc: '安全计算数学表达式并显示详细计算步骤', link: 'projects/math-evaluator/', cats: ['数学计算', '网页工具'] },
+        { name: 'MD5 生成器', desc: '使用纯 JavaScript 实现 MD5 哈希值计算', link: 'projects/md5-generator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'Meta 标签生成器', desc: '可视化生成 HTML 头部 meta 标签代码', link: 'projects/meta-tag-generator/', cats: ['网页工具', '数据生成'] },
+        { name: 'MIME 类型查询', desc: '根据文件扩展名查询对应的 MIME 类型', link: 'projects/mime-lookup/', cats: ['网络工具', '文档工具'] },
+        { name: 'MIME 类型大全', desc: '浏览完整的 MIME 类型列表和说明', link: 'projects/mime-types/', cats: ['网络工具', '文档工具'] },
+        { name: '摩斯密码', desc: '文本与摩斯密码互转并播放摩斯音频信号', link: 'projects/morse-code/', cats: ['编解码', '文本处理'] },
+        { name: '数字格式化', desc: '将数字格式化为千分位/序数/英文/百分比', link: 'projects/number-formatter/', cats: ['数学计算', '格式转换'] },
+        { name: 'Numeronym 生成器', desc: '将单词转换为 numeronym 数字缩写形式', link: 'projects/numeronym-generator/', cats: ['文本处理', '数据生成'] },
+        { name: 'OTP 生成器', desc: '生成基于时间 TOTP 或计数器 HOTP 的一次性密码', link: 'projects/otp-generator/', cats: ['密码管理', '安全工具'] },
+        { name: '密码检测', desc: '通过 Have I Been Pwned API 检查密码是否泄露', link: 'projects/password-checker/', cats: ['密码管理', '安全工具'] },
+        { name: '密码生成器', desc: '生成高强度密码支持自定义字符集和长度', link: 'projects/password-generator/', cats: ['密码管理', '数据生成'] },
+        { name: '密码强度分析', desc: '分析密码强度计算熵值并估算破解所需时间', link: 'projects/password-strength/', cats: ['密码管理', '安全工具'] },
+        { name: '数字签名解析', desc: '查看 PEM 格式公钥和数字证书的详细信息', link: 'projects/pdf-signature/', cats: ['安全工具', '文档工具'] },
+        { name: '百分比计算器', desc: '计算百分比值和数字增减百分比变化', link: 'projects/percentage-calculator/', cats: ['数学计算', '网页工具'] },
+        { name: '电话号码生成', desc: '生成指定国家的虚拟电话号码用于测试', link: 'projects/phone-generator/', cats: ['数据生成', '数据处理'] },
+        { name: '电话号码解析', desc: '解析电话号码信息并检测所属国家代码', link: 'projects/phone-parser/', cats: ['数据处理', '文本处理'] },
+        { name: '番茄钟', desc: '番茄工作法计时器专注 25 分钟休息 5 分钟', link: 'projects/pomodoro-timer/', cats: ['日期时间', '网页工具'] },
+        { name: 'QR 码生成器', desc: '将文本或链接内容生成 QR 二维码图片', link: 'projects/qr-code-generator/', cats: ['数据生成', '网页工具'] },
+        { name: 'QR 码读取器', desc: '上传二维码图片文件并解码其中的文本内容', link: 'projects/qr-reader/', cats: ['编解码', '网页工具'] },
+        { name: '随机数生成器', desc: '在指定范围内生成随机整数支持批量生成', link: 'projects/random-number/', cats: ['随机生成', '数学计算'] },
+        { name: '随机端口生成', desc: '生成随机 TCP/UDP 端口并排除常用服务端口', link: 'projects/random-port-generator/', cats: ['随机生成', '网络工具'] },
+        { name: '随机字符串', desc: '生成随机字符串支持自定义字符集和长度', link: 'projects/random-string/', cats: ['随机生成', '字符串'] },
+        { name: '正则备忘录', desc: '速查正则表达式元字符/量词/分组等模式', link: 'projects/regex-memo/', cats: ['正则表达式', '文档工具'] },
+        { name: '正则测试器', desc: '编写正则表达式并在测试文本中实时高亮匹配', link: 'projects/regex-tester/', cats: ['正则表达式', '编程工具'] },
+        { name: 'RGB 转 Hex', desc: '将 RGB 颜色值转换为十六进制颜色代码', link: 'projects/rgb-to-hex/', cats: ['颜色工具', '格式转换'] },
+        { name: '罗马数字转换', desc: '将阿拉伯数字与罗马数字互相转换', link: 'projects/roman-numeral-converter/', cats: ['格式转换', '字符串'] },
+        { name: 'RSA 密钥对生成器', desc: '生成 RSA 密钥对导出 PEM 格式公钥和私钥', link: 'projects/rsa-key-pair-generator/', cats: ['加密哈希', '安全工具'] },
+        { name: 'SafeLink 解码', desc: '解码 Microsoft 和 Google 安全重定向链接', link: 'projects/safelink-decoder/', cats: ['网址工具', '安全工具'] },
+        { name: 'Slugify 字符串', desc: '将文本转换为 URL 友好的小写连字符 slug', link: 'projects/slugify-string/', cats: ['字符串', '网址工具'] },
+        { name: '速度单位转换', desc: '速度单位 km/h/mph/knot/m/s 互相转换', link: 'projects/speed-converter/', cats: ['单位换算', '格式转换'] },
+        { name: 'SQL 格式化', desc: '对 SQL 查询代码进行格式化和语法美化', link: 'projects/sql-format/', cats: ['代码美化', '数据处理'] },
+        { name: 'SQL 美化', desc: '将 SQL 语句格式化为整齐可读的格式并高亮', link: 'projects/sql-prettify/', cats: ['代码美化', '数据处理'] },
+        { name: 'SQL 校验器', desc: '验证 SQL 语句的语法正确性并指出错误位置', link: 'projects/sql-validator/', cats: ['数据处理', '编程工具'] },
+        { name: 'SSL 检查器', desc: '检测目标网站的 SSL/TLS 证书详细信息', link: 'projects/ssl-checker/', cats: ['安全工具', '网络工具'] },
+        { name: '字符串混淆器', desc: '在字符串字符之间插入随机字符进行混淆', link: 'projects/string-obfuscator/', cats: ['字符串', '安全工具'] },
+        { name: '子网计算器', desc: '计算 IPv4 CIDR 子网并以二进制可视化展示', link: 'projects/subnet-calc/', cats: ['网络工具', '数学计算'] },
+        { name: 'SVG 编辑器', desc: '在线编辑和预览 SVG 矢量图形代码', link: 'projects/svg-editor/', cats: ['前端开发', '网页工具'] },
+        { name: 'SVG 占位图', desc: '生成自定义尺寸和颜色的 SVG 占位图', link: 'projects/svg-placeholder/', cats: ['前端开发', '数据生成'] },
+        { name: '温度单位转换', desc: '摄氏度/华氏度/开尔文温度单位互相转换', link: 'projects/temperature-converter/', cats: ['单位换算', '格式转换'] },
+        { name: '文本清理器', desc: '清理文本中的多余空格空行和控制字符', link: 'projects/text-cleaner/', cats: ['文本处理', '字符串'] },
+        { name: '文本去重', desc: '移除文本中的重复行并显示去重统计信息', link: 'projects/text-deduplicator/', cats: ['文本处理', '字符串'] },
+        { name: '文本对比', desc: '使用 LCS 算法逐行对比两段文本差异', link: 'projects/text-diff/', cats: ['文本处理', '编程工具'] },
+        { name: '文本重复器', desc: '将文本按指定次数重复并可选分隔符连接', link: 'projects/text-repeater/', cats: ['文本处理', '字符串'] },
+        { name: '文本反转器', desc: '反转文本的字符顺序或单词顺序或行顺序', link: 'projects/text-reverser/', cats: ['文本处理', '字符串'] },
+        { name: 'Text Shadow 生成器', desc: '可视化生成 CSS text-shadow 文字阴影代码', link: 'projects/text-shadow-generator/', cats: ['前端开发', '数据生成'] },
+        { name: '文本排序器', desc: '按字母升序降序/长度/打乱/去重排序文本', link: 'projects/text-sorter/', cats: ['文本处理', '数据处理'] },
+        { name: '文本统计', desc: '统计文本的字符数/单词数/行数/音节等', link: 'projects/text-statistics/', cats: ['文本处理', '数据处理'] },
+        { name: '文本与二进制互转', desc: '将文本与 8 位二进制编码互相转换', link: 'projects/text-to-binary/', cats: ['进制转换', '字符串'] },
+        { name: 'Text to NATO', desc: '将文本转换为北约 phonetic 音标字母', link: 'projects/text-to-nato/', cats: ['字符串', '格式转换'] },
+        { name: '文本与 Unicode 互转', desc: '将文本与 Unicode \\uXXXX 转义序列互相转换', link: 'projects/text-to-unicode/', cats: ['字符串', '格式转换'] },
+        { name: '时间戳转换', desc: 'Unix 时间戳与人类可读日期互相转换秒级', link: 'projects/timestamp/', cats: ['时间戳', '格式转换'] },
+        { name: 'TOML → JSON', desc: '将 TOML 配置格式转换为 JSON 格式', link: 'projects/toml-to-json/', cats: ['格式转换', '数据处理'] },
+        { name: 'TOML → YAML', desc: '将 TOML 配置格式转换为 YAML 格式', link: 'projects/toml-to-yaml/', cats: ['格式转换', '数据处理'] },
+        { name: '字体排版测试', desc: '对比测试不同网页字体的排版和渲染效果', link: 'projects/typography-tester/', cats: ['前端开发', '网页工具'] },
+        { name: 'ULID 生成器', desc: '生成 ULID 时序可排序的唯一标识符', link: 'projects/ulid-generator/', cats: ['序列生成', '数据处理'] },
+        { name: 'Unicode 查询', desc: '查询 Unicode 字符的详细信息编码和码点', link: 'projects/unicode-lookup/', cats: ['字符串', '文档工具'] },
+        { name: '运行时间计算', desc: '计算系统和服务的持续运行时长', link: 'projects/uptime-calculator/', cats: ['日期时间', '数学计算'] },
+        { name: 'URL 编解码', desc: '对 URL 参数进行编码解码处理特殊字符', link: 'projects/url-encode/', cats: ['网址工具', '格式转换'] },
+        { name: 'URL 解析器', desc: '解析 URL 显示协议/域名/路径/查询参数等', link: 'projects/url-parser/', cats: ['网址工具', '网页工具'] },
+        { name: 'User-Agent 信息', desc: '查看当前浏览器的 User-Agent 字符串', link: 'projects/user-agent/', cats: ['网页工具', '网络工具'] },
+        { name: 'User-Agent 解析器', desc: '解析 User-Agent 提取浏览器/操作系统/设备信息', link: 'projects/user-agent-parser/', cats: ['网页工具', '网络工具'] },
+        { name: 'UUID 生成器', desc: '生成 UUID v4 随机唯一标识符支持批量生成', link: 'projects/uuid-generator/', cats: ['序列生成', '数据处理'] },
+        { name: '体积单位转换', desc: '体积单位 L/mL/gal/qt/pt/cup 互相转换', link: 'projects/volume-converter/', cats: ['单位换算', '格式转换'] },
+        { name: '重量单位转换', desc: '重量单位 kg/g/lb/oz/ton 互相转换', link: 'projects/weight-converter/', cats: ['单位换算', '格式转换'] },
+        { name: '本机 IP 查询', desc: '获取并显示当前网络的公网 IP 地址信息', link: 'projects/whats-my-ip/', cats: ['网络工具', '网页工具'] },
+        { name: 'WiFi QR 码', desc: '生成包含 WiFi 密码信息的连接二维码', link: 'projects/wifi-qr-code/', cats: ['网络工具', '数据生成'] },
+        { name: '单词统计器', desc: '统计文本的单词数/唯一词数/平均词长等', link: 'projects/word-counter/', cats: ['文档工具', '文本处理'] },
+        { name: 'XML Formatter', desc: '对 XML 数据进行格式化或压缩', link: 'projects/xml-formatter/', cats: ['数据处理', '代码美化'] },
+        { name: 'XML → JSON', desc: '将 XML 标记格式转换为 JSON 数据格式', link: 'projects/xml-to-json/', cats: ['格式转换', '数据处理'] },
+        { name: 'YAML → JSON', desc: '将 YAML 配置格式转换为 JSON 数据格式', link: 'projects/yaml-to-json/', cats: ['格式转换', '数据处理'] },
+        { name: 'YAML → TOML', desc: '将 YAML 配置格式转换为 TOML 配置格式', link: 'projects/yaml-to-toml/', cats: ['格式转换', '数据处理'] },
+        { name: 'YAML Viewer', desc: '粘贴 JSON 数据以 YAML 格式查看', link: 'projects/yaml-viewer/', cats: ['数据处理', '网页工具'] },
+        { name: 'XOR 加密', desc: '使用 XOR 异或算法对文本进行加密和解密', link: 'projects/xor-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: 'NanoID 生成器', desc: '生成 NanoID 紧凑型 URL 安全的唯一标识符', link: 'projects/nanoid-generator/', cats: ['序列生成', '数据生成'] },
+        { name: 'Base36 编解码', desc: '将文本与 Base36 编码格式互相转换', link: 'projects/base36-encoder/', cats: ['编解码', '进制转换'] },
+        { name: 'Base62 编解码', desc: '将文本与 Base62 编码格式互相转换', link: 'projects/base62-encoder/', cats: ['编解码', '进制转换'] },
+        { name: '字符级文本对比', desc: '逐字符对比两段文本并高亮显示每个差异处', link: 'projects/text-diff-char/', cats: ['文本处理', '编程工具'] },
+        { name: 'Punycode 转换', desc: '将域名在 Punycode 与 Unicode 编码间互相转换', link: 'projects/punycode-converter/', cats: ['编解码', '网址工具'] },
+        { name: 'HSL 颜色选择器', desc: '使用 HSL 色相饱和度亮度滑块精确选色', link: 'projects/hsl-selector/', cats: ['颜色工具', '网页工具'] },
+        { name: 'JSON 合并', desc: '递归深度合并两个 JSON 对象为单一对象', link: 'projects/json-merge/', cats: ['数据处理', '编程工具'] },
+        { name: 'YAML 验证器', desc: '验证 YAML 语法正确性并格式化输出', link: 'projects/yaml-validator/', cats: ['数据处理', '编程工具'] },
+        { name: 'Atbash 密码', desc: '使用 Atbash 字母逆向替换加密解密文本', link: 'projects/atbash-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: 'Rail Fence 密码', desc: '使用 Rail Fence 栅栏密码算法加密解密文本', link: 'projects/rail-fence-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: '工作日计算器', desc: '计算两个日期之间排除周末的工作日数量', link: 'projects/working-days/', cats: ['日期时间', '数学计算'] },
+        { name: '仿射密码', desc: '使用仿射密码算法加密和解密文本', link: 'projects/affine-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: 'API 密钥生成器', desc: '生成随机安全的 API 访问密钥令牌', link: 'projects/api-key-generator/', cats: ['安全工具', '数据生成'] },
+        { name: 'ASCII85 编解码', desc: '将文本与 ASCII85 编码格式互相转换', link: 'projects/ascii85/', cats: ['编解码', '格式转换'] },
+        { name: '自动密钥密码', desc: '使用自动密钥密码算法加密解密文本', link: 'projects/autokey-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: '带宽计算器', desc: '根据数据量和时间计算网络带宽速率', link: 'projects/bandwidth-calculator/', cats: ['网络工具', '数学计算'] },
+        { name: 'Base45 编解码', desc: '将文本与 Base45 编码格式互相转换', link: 'projects/base45/', cats: ['编解码', '格式转换'] },
+        { name: 'Base91 编解码', desc: '将文本与 Base91 编码格式互相转换', link: 'projects/base91/', cats: ['编解码', '格式转换'] },
+        { name: 'Base92 编解码', desc: '将文本与 Base92 编码格式互相转换', link: 'projects/base92/', cats: ['编解码', '格式转换'] },
+        { name: '博福特密码', desc: '使用博福特密码算法加密解密文本', link: 'projects/beaufort-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: '盲文转换器', desc: '将文本转换为盲文字符表示形式', link: 'projects/braille/', cats: ['字符串', '格式转换'] },
+        { name: '气泡文字', desc: '将文本转换为带圆圈气泡风格字符', link: 'projects/bubble-text/', cats: ['字符串', '数据生成'] },
+        { name: '营业时间计算', desc: '计算工作时长和营业时间差值', link: 'projects/business-hours/', cats: ['日期时间', '数学计算'] },
+        { name: '图片颜色提取', desc: '从上传图片中自动提取主要颜色', link: 'projects/color-extractor/', cats: ['颜色工具', '数据处理'] },
+        { name: '色彩和谐搭配', desc: '根据色彩和谐规则生成配色方案', link: 'projects/color-harmony/', cats: ['颜色工具', '数据生成'] },
+        { name: '颜色混合器', desc: '将两种或多种颜色混合得到新颜色', link: 'projects/color-mixer/', cats: ['颜色工具', '网页工具'] },
+        { name: '高级拾色器', desc: '高级颜色选取器支持多种色彩空间', link: 'projects/color-picker-advanced/', cats: ['颜色工具', '网页工具'] },
+        { name: '色温转换', desc: '将色温值转换为对应颜色代码', link: 'projects/color-temperature/', cats: ['颜色工具', '格式转换'] },
+        { name: '色环工具', desc: '在色环上选取互补色和对比色', link: 'projects/color-wheel/', cats: ['颜色工具', '网页工具'] },
+        { name: '排列组合计算', desc: '计算排列数和组合数的结果值', link: 'projects/combination-permutation/', cats: ['数学计算', '随机生成'] },
+        { name: 'Crontab 校验器', desc: '验证 crontab 表达式语法是否正确', link: 'projects/crontab-validator/', cats: ['日期时间', '编程工具'] },
+        { name: 'CSV 美化器', desc: '将 CSV 数据格式化为整齐表格展示', link: 'projects/csv-pretty/', cats: ['数据处理', '格式转换'] },
+        { name: 'CSV 转 Markdown', desc: '将 CSV 表格数据转换为 Markdown 表格', link: 'projects/csv-to-markdown/', cats: ['格式转换', '文档工具'] },
+        { name: 'CSV 验证器', desc: '验证 CSV 格式正确性并定位错误', link: 'projects/csv-validate/', cats: ['数据处理', '编程工具'] },
+        { name: '日期加减计算', desc: '对指定日期进行加减天数操作', link: 'projects/date-add/', cats: ['日期时间', '数学计算'] },
+        { name: '年中第几天', desc: '计算指定日期在当年中是第几天', link: 'projects/day-of-year/', cats: ['日期时间', '数学计算'] },
+        { name: 'DND 骰子', desc: '龙与地下城游戏专用多面骰子', link: 'projects/dice-dnd/', cats: ['随机生成', '数学计算'] },
+        { name: 'Enigma 模拟器', desc: '模拟恩尼格玛密码机加密解密过程', link: 'projects/enigma-sim/', cats: ['加密哈希', '安全工具'] },
+        { name: '斐波那契数列', desc: '生成斐波那契数列前 N 项数值', link: 'projects/fibonacci-generator/', cats: ['数学计算', '序列生成'] },
+        { name: '翻转文字', desc: '将文本上下翻转生成趣味文字', link: 'projects/flip-text/', cats: ['字符串', '数据生成'] },
+        { name: '分数转换器', desc: '小数与分数之间互相精确转换', link: 'projects/fraction-converter/', cats: ['数学计算', '格式转换'] },
+        { name: '全角半角转换', desc: '全角字符与半角字符互相转换', link: 'projects/fullwidth-converter/', cats: ['字符串', '格式转换'] },
+        { name: 'GCD/LCM 计算', desc: '计算最大公约数和最小公倍数', link: 'projects/gcd-lcm/', cats: ['数学计算', '数据处理'] },
+        { name: 'Gravatar 查询', desc: '根据邮箱查询 Gravatar 全球头像', link: 'projects/gravatar/', cats: ['网络工具', '网页工具'] },
+        { name: 'Hash 对比工具', desc: '对比两个哈希值是否匹配和一致', link: 'projects/hash-comparison/', cats: ['加密哈希', '安全工具'] },
+        { name: 'HMAC 验证器', desc: '使用密钥验证 HMAC 签名正确性', link: 'projects/hmac-verify/', cats: ['加密哈希', '安全工具'] },
+        { name: 'HTML 标签去除', desc: '移除文本中的 HTML 标签保留纯文本', link: 'projects/html-stripper/', cats: ['网页工具', '文本处理'] },
+        { name: 'HTML 表格提取', desc: '从 HTML 页面中提取表格数据', link: 'projects/html-table-extractor/', cats: ['数据处理', '网页工具'] },
+        { name: 'HTML 表格生成', desc: '通过可视化界面生成 HTML 表格代码', link: 'projects/html-table-generator/', cats: ['前端开发', '数据生成'] },
+        { name: '间歇计时器', desc: '设置间隔循环提醒的计时器工具', link: 'projects/interval-timer/', cats: ['日期时间', '网页工具'] },
+        { name: 'IP 段计算器', desc: '计算 IP 地址范围起始和结束地址', link: 'projects/ip-range-calculator/', cats: ['网络工具', '数学计算'] },
+        { name: 'JSON 扁平化', desc: '将嵌套 JSON 对象扁平化为单层结构', link: 'projects/json-flatten/', cats: ['数据处理', '编程工具'] },
+        { name: 'JSON 高级压缩', desc: '高级选项压缩 JSON 移除多余空格', link: 'projects/json-minify-advanced/', cats: ['数据处理', '代码美化'] },
+        { name: 'JSONPath 查询', desc: '使用 JSONPath 表达式查询 JSON 数据', link: 'projects/json-path/', cats: ['数据处理', '编程工具'] },
+        { name: 'JSON 美化输出', desc: '将 JSON 格式化为带颜色高亮显示', link: 'projects/json-prettify/', cats: ['数据处理', '代码美化'] },
+        { name: 'JSON 排序工具', desc: '对 JSON 对象的键进行排序输出', link: 'projects/json-sort/', cats: ['数据处理', '编程工具'] },
+        { name: 'JSON 转 TypeScript', desc: '将 JSON 数据转换为 TypeScript 接口', link: 'projects/json-to-typescript/', cats: ['格式转换', '编程工具'] },
+        { name: '闰年判断', desc: '判断指定年份是否为闰年', link: 'projects/leap-year/', cats: ['日期时间', '数学计算'] },
+        { name: 'Leet 语转换', desc: '将普通文本转换为 Leet 语风格', link: 'projects/leetspeak/', cats: ['字符串', '数据生成'] },
+        { name: '对数计算器', desc: '计算任意底数的对数函数值', link: 'projects/logarithm-calculator/', cats: ['数学计算', '网页工具'] },
+        { name: 'Lorem Pixel 图', desc: '生成 Lorem Pixel 风格占位图片', link: 'projects/lorem-pixel/', cats: ['数据生成', '前端开发'] },
+        { name: '彩票号码生成', desc: '随机生成彩票选号组合号码', link: 'projects/lottery-generator/', cats: ['随机生成', '数据生成'] },
+        { name: 'Markdown 转纯文本', desc: '将 Markdown 格式转换为纯文本内容', link: 'projects/markdown-to-plain/', cats: ['格式转换', '文档工具'] },
+        { name: '模运算计算器', desc: '计算模运算和取模结果值', link: 'projects/modulo-calculator/', cats: ['数学计算', '网页工具'] },
+        { name: '月相查询', desc: '查询指定日期的月相和月亮信息', link: 'projects/moon-phase/', cats: ['日期时间', '网页工具'] },
+        { name: '摩斯音频播放', desc: '播放摩斯密码的音频信号声音', link: 'projects/morse-audio/', cats: ['编解码', '网页工具'] },
+        { name: '数字进制转换', desc: '任意进制数字表示互相转换', link: 'projects/number-base-converter/', cats: ['进制转换', '数学计算'] },
+        { name: '可记忆密码', desc: '生成容易记忆的高强度密码短语', link: 'projects/password-memorable/', cats: ['密码管理', '数据生成'] },
+        { name: 'PIN 码生成器', desc: '生成数字 PIN 码支持自定义位数', link: 'projects/password-pin/', cats: ['密码管理', '数据生成'] },
+        { name: 'Playfair 密码', desc: '使用 Playfair 双字母密码加密解密', link: 'projects/playfair-cipher/', cats: ['加密哈希', '安全工具'] },
+        { name: '素数检测器', desc: '判断一个数字是否为素数', link: 'projects/prime-checker/', cats: ['数学计算', '网页工具'] },
+        { name: '素数生成器', desc: '在指定范围内生成所有素数列表', link: 'projects/prime-generator/', cats: ['数学计算', '序列生成'] },
+        { name: 'QP 编解码', desc: '将文本与 Quoted-Printable 格式互转', link: 'projects/quoted-printable/', cats: ['编解码', '格式转换'] },
+        { name: '随机选择器', desc: '从多个选项中随机抽取选择结果', link: 'projects/random-choices/', cats: ['随机生成', '数据处理'] },
+        { name: '随机日期生成', desc: '在指定范围内生成随机日期', link: 'projects/random-date/', cats: ['随机生成', '数据生成'] },
+        { name: '随机邮箱生成', desc: '生成随机临时邮箱地址用于测试', link: 'projects/random-email/', cats: ['随机生成', '数据生成'] },
+        { name: '随机 Emoji', desc: '随机生成 emoji 表情符号', link: 'projects/random-emoji/', cats: ['随机生成', '数据生成'] },
+        { name: '随机小数生成', desc: '在指定范围内生成随机浮点数', link: 'projects/random-float/', cats: ['随机生成', '数学计算'] },
+        { name: '随机 Hex 颜色', desc: '生成随机的十六进制颜色代码', link: 'projects/random-hex-color/', cats: ['随机生成', '颜色工具'] },
+        { name: '随机整数生成', desc: '在指定范围内生成随机整数', link: 'projects/random-int/', cats: ['随机生成', '数学计算'] },
+        { name: '随机 IP 地址', desc: '生成随机的 IP 地址用于测试', link: 'projects/random-ip/', cats: ['随机生成', '网络工具'] },
+        { name: '随机姓名生成', desc: '生成随机中文或英文姓名', link: 'projects/random-name/', cats: ['随机生成', '数据生成'] },
+        { name: '随机 RGB 颜色', desc: '生成随机的 RGB 颜色值', link: 'projects/random-rgb-color/', cats: ['随机生成', '颜色工具'] },
+        { name: '随机句子生成', desc: '生成随机的英文句子用于填充', link: 'projects/random-sentence/', cats: ['随机生成', '数据生成'] },
+        { name: '随机时间生成', desc: '在范围内生成随机时间点', link: 'projects/random-time/', cats: ['随机生成', '数据生成'] },
+        { name: '随机用户名生成', desc: '生成随机用户名用于注册测试', link: 'projects/random-username/', cats: ['随机生成', '数据生成'] },
+        { name: '比例计算器', desc: '计算比例值和比率换算结果', link: 'projects/ratio-calculator/', cats: ['数学计算', '网页工具'] },
+        { name: '正则转义工具', desc: '自动转义正则中的特殊字符', link: 'projects/regex-escape/', cats: ['正则表达式', '编程工具'] },
+        { name: '正则替换工具', desc: '使用正则表达式批量替换文本内容', link: 'projects/regex-replace/', cats: ['正则表达式', '文本处理'] },
+        { name: 'ROT13 密码', desc: '使用 ROT13 轮转 13 位加密解密文本', link: 'projects/rot13/', cats: ['加密哈希', '安全工具'] },
+        { name: '数值取整工具', desc: '对数值进行四舍五入向上向下取整', link: 'projects/rounding-tool/', cats: ['数学计算', '数据处理'] },
+        { name: '序列生成器', desc: '生成等差数列和自定义序列', link: 'projects/sequence-generator/', cats: ['序列生成', '数学计算'] },
+        { name: '小型大写字母', desc: '将文本转换为小型大写字母样式', link: 'projects/small-caps/', cats: ['字符串', '格式转换'] },
+        { name: 'SQL 查询构造器', desc: '通过可视化界面构建 SQL 查询语句', link: 'projects/sql-query-builder/', cats: ['数据处理', '编程工具'] },
+        { name: '统计计算器', desc: '计算平均值中位数标准差方差等', link: 'projects/statistics-calculator/', cats: ['数学计算', '数据处理'] },
+        { name: '删除线文字', desc: '将文本转换为带删除线效果文字', link: 'projects/strikethrough/', cats: ['字符串', '数据生成'] },
+        { name: '日出日落时间', desc: '查询指定地点的日出日落时间', link: 'projects/sunrise-sunset/', cats: ['日期时间', '网页工具'] },
+        { name: '文本对齐工具', desc: '将文本按指定对齐方式排列', link: 'projects/text-aligner/', cats: ['文本处理', '字符串'] },
+        { name: '字谜生成器', desc: '打乱单词字母顺序生成字谜', link: 'projects/text-anagram/', cats: ['文本处理', '数据生成'] },
+        { name: '文本对比工具', desc: '逐行详细对比两段文本的异同', link: 'projects/text-comparison/', cats: ['文本处理', '编程工具'] },
+        { name: '词频统计工具', desc: '统计文本中各单词出现频率', link: 'projects/text-frequency/', cats: ['文本处理', '数据处理'] },
+        { name: '文本缩进工具', desc: '为文本添加或移除缩进空格', link: 'projects/text-indenter/', cats: ['文本处理', '字符串'] },
+        { name: 'N-Gram 分析', desc: '提取文本中的 N-Gram 词组序列', link: 'projects/text-n-gram/', cats: ['文本处理', '数据处理'] },
+        { name: '文本填充工具', desc: '在文本两侧填充字符到固定长度', link: 'projects/text-padder/', cats: ['文本处理', '字符串'] },
+        { name: '回文检测器', desc: '检测文本是否为回文字符串', link: 'projects/text-palindrome/', cats: ['文本处理', '字符串'] },
+        { name: '文本 Slug 转换', desc: '将文本转换为 URL 友好 slug 格式', link: 'projects/text-slug/', cats: ['字符串', '网址工具'] },
+        { name: '高级文本统计', desc: '分析文本音节阅读时间复杂度和可读性', link: 'projects/text-statistics-adv/', cats: ['文本处理', '文档工具'] },
+        { name: '文本摘要工具', desc: '自动提取文本中的关键句子摘要', link: 'projects/text-summarizer/', cats: ['文本处理', '数据处理'] },
+        { name: '文本解包工具', desc: '将换行文本合并为连续段落', link: 'projects/text-unwrapper/', cats: ['文本处理', '字符串'] },
+        { name: '文本换行工具', desc: '将长文本按指定宽度自动换行', link: 'projects/text-wrapper/', cats: ['文本处理', '字符串'] },
+        { name: '时间前计算', desc: '计算相对时间如多少时间前', link: 'projects/time-ago/', cats: ['日期时间', '时间戳'] },
+        { name: '时间段计算', desc: '计算两个时间点之间的持续时长', link: 'projects/time-duration/', cats: ['日期时间', '数学计算'] },
+        { name: '秒表计时器', desc: '精确秒表计时支持分段计时功能', link: 'projects/timer-stopwatch/', cats: ['日期时间', '网页工具'] },
+        { name: '时区转换器', desc: '在不同时区之间互相转换时间', link: 'projects/timezone-converter/', cats: ['日期时间', '格式转换'] },
+        { name: 'TSV 转换器', desc: 'TSV 与 CSV/JSON 表格格式互相转换', link: 'projects/tsv-converter/', cats: ['格式转换', '数据处理'] },
+        { name: 'Unicode 转义', desc: '文本与 Unicode 转义序列互相转换', link: 'projects/unicode-escape/', cats: ['字符串', '格式转换'] },
+        { name: 'UUencode 编解码', desc: '将文本与 UUencode 编码格式互相转换', link: 'projects/uuencode/', cats: ['编解码', '格式转换'] },
+        { name: 'UUID v1 生成器', desc: '基于时间和 MAC 地址生成 UUID v1', link: 'projects/uuid-v1/', cats: ['序列生成', '数据处理'] },
+        { name: 'UUID v6 生成器', desc: '生成 UUID v6 可排序唯一标识符', link: 'projects/uuid-v6/', cats: ['序列生成', '数据处理'] },
+        { name: '周数计算器', desc: '计算指定日期在当年中的周数', link: 'projects/week-number/', cats: ['日期时间', '数学计算'] },
+        { name: 'XPath 查询工具', desc: '在 XML/HTML 中使用 XPath 查询节点', link: 'projects/xpath-query/', cats: ['数据处理', '编程工具'] },
+        { name: '年度进度', desc: '显示当前年份进度百分比和剩余天数', link: 'projects/year-progress/', cats: ['日期时间', '网页工具'] },
+        { name: 'Zalgo 文字', desc: '在文字上添加组合字符产生 Zalgo 效果', link: 'projects/zalgo/', cats: ['字符串', '数据生成'] }
       ];
 
       var activeCategory = null;
+      var currentSection = 'all';
+      var searchQuery = '';
+
+      function getToolByName(name) {
+        for (var i = 0; i < tools.length; i++) {
+          if (tools[i].name === name) return tools[i];
+        }
+        return null;
+      }
+
+      function getCurrentToolList() {
+        if (currentSection === 'history') {
+          var hist = getHistory(200);
+          return hist.map(function (t) { return getToolByName(t.name); }).filter(function (t) { return t; });
+        }
+        if (currentSection === 'popular') {
+          var popNames = [
+            'Base64 编解码','JSON Formatter','URL 编解码','Hash 计算器','MD5 生成器',
+            'QR 码生成器','UUID 生成器','时间戳转换','进制转换','密码生成器',
+            '颜色转换','温度单位转换','正则测试器','命名风格转换','百分比计算器',
+            'JWT 解析器','图片转 Base64','随机数生成器','Lorem Ipsum 生成器',
+            'ASCII 文字画','JSON 转 CSV','YAML 转 JSON','RSA 密钥对生成器',
+            'HSL 拾色器','Cron 表达式解析','IP 段计算器',
+            'HTML 参考手册','Emoji 选择器','色盲模拟器',
+            'HSL 颜色选择器','JSON 合并','JSON 校验器','SQL 格式化','HTML 净化器',
+            'CSS 动画生成器','Flexbox 生成器','SVG 编辑器','ASCII 码表',
+            'JSON Viewer','YAML Viewer','Base85 编解码','HMAC 生成器',
+            '倒计时器','随机字符串','文本统计','长度单位转换','Base36 编解码',
+            '校验和计算器','摩斯密码','数值取整工具','IP 段计算器',
+            '工作日计算器','色环工具','加密工具','IP 定位查询',
+            '图片颜色提取','随机选择器','文本对比',
+            'CSS 选择器测试','HTML 编辑器','JS 格式化','XML Formatter',
+            'Crontab 生成器','Markdown 预览','密码强度分析','OTP 生成器',
+            'SVG 占位图','JSON 对比','Hash 识别','Gravatar 查询',
+            'CSS Border 生成器','CSS 单位转换','HTML 转 Markdown','Cron 表达式解析',
+            '颜色名称查询','数字格式化','本机 IP 查询','Crontab 校验器',
+            'JSONPath 查询','序列生成器','SQL 查询构造器'
+          ];
+          return popNames.map(function (n) { return getToolByName(n); }).filter(function (t) { return t; });
+        }
+        return activeCategory
+          ? tools.filter(function (t) { return t.cats.indexOf(activeCategory) !== -1; })
+          : tools;
+      }
 
       function renderCategories() {
         var bar = document.getElementById('categoryBar');
         bar.innerHTML = '';
+        var currentTools = getCurrentToolList();
         var allBtn = document.createElement('button');
         allBtn.className = 'cat-tag' + (activeCategory === null ? ' active' : '');
         allBtn.textContent = '全部';
@@ -325,7 +492,7 @@
         bar.appendChild(allBtn);
 
         categories.forEach(function (cat) {
-          var count = tools.filter(function (t) { return t.cats.indexOf(cat) !== -1; }).length;
+          var count = currentTools.filter(function (t) { return t && t.cats.indexOf(cat) !== -1; }).length;
           if (count === 0) return;
           var btn = document.createElement('button');
           btn.className = 'cat-tag' + (activeCategory === cat ? ' active' : '');
@@ -339,52 +506,121 @@
         });
       }
 
-      var currentSection = 'all';
-
-      function getToolByName(name) {
-        for (var i = 0; i < tools.length; i++) {
-          if (tools[i].name === name) return tools[i];
-        }
-        return null;
+      function getSearchRelevance(tool, query) {
+        var q = query.toLowerCase();
+        var name = tool.name.toLowerCase();
+        var desc = tool.desc.toLowerCase();
+        var cats = tool.cats.join(' ').toLowerCase();
+        var score = 0;
+        if (name === q) score += 100;
+        if (name.indexOf(q) === 0) score += 50;
+        if (name.indexOf(q) !== -1) score += 30;
+        if (desc.indexOf(q) !== -1) score += 15;
+        if (cats.indexOf(q) !== -1) score += 10;
+        return score;
       }
 
       function renderTools() {
         var grid = document.getElementById('toolGrid');
         grid.innerHTML = '';
-        var list = [];
+        var list = getCurrentToolList();
 
-        if (currentSection === 'freq') {
-          var freq = getFrequentlyUsed(12);
-          freq.forEach(function (t) {
-            var tool = getToolByName(t.name);
-            if (tool) list.push(tool);
-          });
-          if (list.length === 0) { grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无使用记录，点击工具后会自动记录。</p>'; return; }
-        } else if (currentSection === 'recent') {
-          var recent = getRecentUsed(8);
-          recent.forEach(function (t) {
-            var tool = getToolByName(t.name);
-            if (tool) list.push(tool);
-          });
-          if (list.length === 0) { grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无使用记录。</p>'; return; }
-        } else if (currentSection === 'popular') {
-          POPULAR_TOOLS.forEach(function (name) {
-            var tool = getToolByName(name);
-            if (tool) list.push(tool);
-          });
-        } else {
-          list = activeCategory ? tools.filter(function (t) { return t.cats.indexOf(activeCategory) !== -1; }) : tools;
+        if (searchQuery) {
+          list = list.filter(function (t) { return t && getSearchRelevance(t, searchQuery) > 0; });
+          list.sort(function (a, b) { return getSearchRelevance(b, searchQuery) - getSearchRelevance(a, searchQuery); });
+          if (list.length === 0) {
+            grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">未找到与 "<strong>' + searchQuery + '</strong>" 相关的工具。</p>';
+            return;
+          }
         }
 
+        if (currentSection !== 'all' && list.length === 0) {
+          grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无数据，使用工具后会自动记录。</p>';
+          return;
+        }
+
+        if (activeCategory) list = list.filter(function (t) { return t && t.cats.indexOf(activeCategory) !== -1; });
+
+        var isHistory = (currentSection === 'history');
+        var tb = document.getElementById('historyToolbar');
+        if (tb) tb.style.display = isHistory && list.length > 0 ? 'flex' : 'none';
+
         list.forEach(function (tool) {
-          var card = document.createElement('a');
-          card.href = tool.link;
-          card.className = 'tool-card';
-          card.addEventListener('click', function () { recordUse(tool.name); });
+          if (!tool) return;
+          var card = document.createElement('div');
+          card.style.display = 'flex';
+          card.style.alignItems = 'flex-start';
+          card.style.gap = '8px';
+
+          if (isHistory) {
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'history-cb';
+            cb.dataset.name = tool.name;
+            cb.style.marginTop = '16px';
+            cb.style.flexShrink = '0';
+            cb.addEventListener('change', updateHistoryInfo);
+            card.appendChild(cb);
+          }
+
+          var link = document.createElement('a');
+          link.href = tool.link;
+          link.className = 'tool-card';
+          link.style.flex = '1';
+          link.style.minWidth = '0';
+          var usage = getUsage();
+          var info = usage[tool.name];
+          var usageHtml = info ? '<span style="font-size:10px;color:var(--color-text-disabled);">使用 ' + info.count + ' 次</span>' : '';
           var tagsHtml = tool.cats.map(function (c) { return '<span>#' + c + '</span>'; }).join('');
-          card.innerHTML = '<h2>' + tool.name + '</h2><p>' + tool.desc + '</p><div class="tags">' + tagsHtml + '</div>';
+          link.innerHTML = '<h2>' + tool.name + '</h2><p>' + tool.desc + '</p><div class="tags" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">' + tagsHtml + usageHtml + '</div>';
+          card.appendChild(link);
           grid.appendChild(card);
         });
+      }
+
+      function updateHistoryInfo() {
+        var cbs = document.querySelectorAll('.history-cb');
+        var checked = 0;
+        cbs.forEach(function (cb) { if (cb.checked) checked++; });
+        var info = document.getElementById('historySelectInfo');
+        if (info) info.textContent = '已选 ' + checked + ' / ' + cbs.length;
+      }
+
+      function setupHistoryToolbar() {
+        document.getElementById('selectAllBtn').addEventListener('click', function () {
+          document.querySelectorAll('.history-cb').forEach(function (cb) { cb.checked = true; });
+          updateHistoryInfo();
+        });
+        document.getElementById('deselectAllBtn').addEventListener('click', function () {
+          document.querySelectorAll('.history-cb').forEach(function (cb) { cb.checked = !cb.checked; });
+          updateHistoryInfo();
+        });
+        document.getElementById('deleteSelectedBtn').addEventListener('click', function () {
+          var usage = getUsage();
+          var count = 0;
+          document.querySelectorAll('.history-cb').forEach(function (cb) {
+            if (cb.checked) { delete usage[cb.dataset.name]; count++; }
+          });
+          if (count === 0) { setStatus('请先选择要删除的记录', 'error'); return; }
+          saveUsage(usage);
+          setStatus('已删除 ' + count + ' 条记录');
+          updateBadge();
+          renderCategories();
+          renderTools();
+        });
+        document.getElementById('clearHistoryBtn').addEventListener('click', function () {
+          if (!confirm('确定要清空全部历史记录吗？')) return;
+          savePreference('usage', {});
+          setStatus('已清空全部历史记录');
+          updateBadge();
+          renderCategories();
+          renderTools();
+        });
+      }
+
+      function updateBadge() {
+        var badge = document.getElementById('historyBadge');
+        if (badge) badge.textContent = '(' + getHistoryCount() + ')';
       }
 
       function renderSectionTabs() {
@@ -395,17 +631,33 @@
             this.className = 'sec-tab active';
             currentSection = this.dataset.section;
             activeCategory = null;
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
             renderCategories();
             renderTools();
           });
         });
+        updateBadge();
       }
+
+      /* ---- Search ---- */
+      var searchTimer = null;
+      document.getElementById('searchInput').addEventListener('input', function () {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          searchQuery = document.getElementById('searchInput').value.trim();
+          activeCategory = null;
+          renderCategories();
+          renderTools();
+        }, 200);
+      });
 
       // style for section tabs
       var secStyle = document.createElement('style');
       secStyle.textContent = '.sec-tab{font-family:var(--font-mono);font-size:var(--font-size-sm);padding:6px 14px;border:1px solid var(--color-border);border-radius:9999px;background:transparent;cursor:pointer;color:var(--color-text-secondary);transition:all 0.15s;letter-spacing:0.02em;}.sec-tab:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}.sec-tab.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}';
       document.head.appendChild(secStyle);
 
+      setupHistoryToolbar();
       renderSectionTabs();
       renderCategories();
       renderTools();

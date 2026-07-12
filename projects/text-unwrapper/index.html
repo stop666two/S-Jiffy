@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本解包器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .tu-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .tu-row .field { flex:1; min-width:80px; }
+    .tu-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>文本解包器</h1>
+    <p class="tool-desc">将多行文本合并为单行，移除换行符和多余空格。</p>
+    <div class="card">
+      <div class="tu-row">
+        <div class="field" style="flex:2;"><label for="inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:100px;">This is a text
+that spans multiple
+lines and needs
+to be unwrapped.</textarea></div>
+      </div>
+      <div class="tu-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="collapseChk" type="checkbox" checked> 合并多余空格</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="trimChk" type="checkbox" checked> 去除首尾空格</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">解包</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputText');
+    var collapseChk = document.getElementById('collapseChk');
+    var trimChk = document.getElementById('trimChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function generate() {
+      var text = inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var collapse = collapseChk.checked;
+      var doTrim = trimChk.checked;
+
+      var 结果 = text.replace(/[\r\n]+/g, ' ');
+      if (collapse) {
+        结果 = 结果.replace(/\s+/g, ' ');
+      }
+      if (doTrim) {
+        结果 = 结果.trim();
+      }
+
+      输出El.textContent = 结果;
+      setStatus('解包完成，共 ' + 结果.length + ' 字符');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

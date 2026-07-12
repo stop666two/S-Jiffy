@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="toUniBtn" class="btn btn-secondary">Punycode → Unicode</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var toPunyBtn = document.getElementById('toPunyBtn');
       var toUniBtn = document.getElementById('toUniBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -61,7 +61,7 @@
       }
 
       function punycodeEncode(input) {
-        var output = [];
+        var 输出 = [];
         var n = INITIAL_N;
         var bias = INITIAL_BIAS;
         var handled = 0;
@@ -77,8 +77,8 @@
 
         var h = handled;
         if (basic.length > 0) {
-          for (var j = 0; j < basic.length; j++) output.push(basic[j]);
-          if (h < input.length) output.push(DELIMITER);
+          for (var j = 0; j < basic.length; j++) 输出.push(basic[j]);
+          if (h < input.length) 输出.push(DELIMITER);
         }
 
         while (h < input.length) {
@@ -101,10 +101,10 @@
                 var t = k3 <= bias ? TMIN : k3 >= bias + TMAX ? TMAX : k3 - bias;
                 if (q < t) break;
                 var digit = t + (q - t) % (BASE - t);
-                output.push(String.fromCharCode(digit < 26 ? digit + 97 : digit + 22));
+                输出.push(String.fromCharCode(digit < 26 ? digit + 97 : digit + 22));
                 q = Math.floor((q - t) / (BASE - t));
               }
-              output.push(String.fromCharCode(q < 26 ? q + 97 : q + 22));
+              输出.push(String.fromCharCode(q < 26 ? q + 97 : q + 22));
               bias = adaptBias(delta, h + 1, h === handled);
               delta = 0;
               h++;
@@ -113,11 +113,11 @@
           delta++;
           n++;
         }
-        return output.join('');
+        return 输出.join('');
       }
 
       function punycodeDecode(input) {
-        var output = [];
+        var 输出 = [];
         var n = INITIAL_N;
         var bias = INITIAL_BIAS;
         var i = 0;
@@ -127,7 +127,7 @@
         for (var j = 0; j < basicLen; j++) {
           var cp = input.charCodeAt(j);
           if (cp >= 128) throw new Error('Invalid basic codepoint');
-          output.push(cp);
+          输出.push(cp);
         }
 
         var pos = basicLen > 0 ? basicLen + 1 : 0;
@@ -144,13 +144,13 @@
             if (digit < t) break;
             w *= BASE - t;
           }
-          bias = adaptBias(i - oldI, output.length + 1, oldI === 0);
-          n += Math.floor(i / (output.length + 1));
-          i %= (output.length + 1);
-          output.splice(i, 0, n);
+          bias = adaptBias(i - oldI, 输出.length + 1, oldI === 0);
+          n += Math.floor(i / (输出.length + 1));
+          i %= (输出.length + 1);
+          输出.splice(i, 0, n);
           i++;
         }
-        return String.fromCharCode.apply(null, output);
+        return String.fromCharCode.apply(null, 输出);
       }
 
       function encodeDomain(domain) {
@@ -172,19 +172,19 @@
       toPunyBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入域名', 'error'); return; }
-        try { outputEl.textContent = encodeDomain(text); setStatus(''); }
+        try { 输出El.textContent = encodeDomain(text); setStatus(''); }
         catch (e) { setStatus('转换失败: ' + e.message, 'error'); }
       });
 
       toUniBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入域名', 'error'); return; }
-        try { outputEl.textContent = decodeDomain(text); setStatus(''); }
+        try { 输出El.textContent = decodeDomain(text); setStatus(''); }
         catch (e) { setStatus('转换失败: ' + e.message, 'error'); }
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

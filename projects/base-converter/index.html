@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -33,8 +33,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
 
-    <div class="output-box" id="outputContainer" style="min-height:60px;">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container" style="min-height:60px;">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -45,7 +45,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var v = document.getElementById('inputValue'), f = document.getElementById('fromBase'), t = document.getElementById('toBase'), o = document.getElementById('outputText');
+      var v = document.getElementById('inputValue'), f = document.getElementById('fromBase'), t = document.getElementById('toBase'), o = document.getElementById('输出Text');
       var baseNames = { 2: '二进制', 8: '八进制', 10: '十进制', 16: '十六进制' };
       document.getElementById('convertBtn').addEventListener('click', function () {
         var str = v.value.trim();
@@ -53,8 +53,8 @@
         var dec = parseInt(str, parseInt(f.value));
         if (isNaN(dec)) { setStatus('输入与所选进制不匹配', 'error'); o.textContent = ''; return; }
         var to = parseInt(t.value);
-        var result = dec.toString(to).toUpperCase();
-        o.textContent = baseNames[to] + ': ' + result;
+        var 结果 = dec.toString(to).to大写();
+        o.textContent = baseNames[to] + ': ' + 结果;
         setStatus('');
       });
       document.getElementById('clearBtn').addEventListener('click', function () { v.value = ''; o.textContent = ''; setStatus(''); v.focus(); });

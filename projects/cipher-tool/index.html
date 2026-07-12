@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -22,8 +22,8 @@
       <button id="decryptBtn" class="btn btn-secondary">解密</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -36,16 +36,16 @@
     (function () {
       var inputEl = document.getElementById('inputText');
       var keyEl = document.getElementById('keyInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var encryptBtn = document.getElementById('encryptBtn');
       var decryptBtn = document.getElementById('decryptBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
       function vigenere(text, key, mode) {
-        var result = '';
+        var 结果 = '';
         var keyIndex = 0;
-        var keyUpper = key.toUpperCase().replace(/[^A-Z]/g, '');
+        var keyUpper = key.to大写().replace(/[^A-Z]/g, '');
         if (!keyUpper.length) return '错误：密钥必须包含至少一个字母';
         for (var i = 0; i < text.length; i++) {
           var ch = text[i];
@@ -53,18 +53,18 @@
           if (code >= 65 && code <= 90) {
             var shift = keyUpper.charCodeAt(keyIndex % keyUpper.length) - 65;
             if (mode === 'decrypt') shift = 26 - shift;
-            result += String.fromCharCode(65 + (code - 65 + shift) % 26);
+            结果 += String.fromCharCode(65 + (code - 65 + shift) % 26);
             keyIndex++;
           } else if (code >= 97 && code <= 122) {
             var shift2 = keyUpper.charCodeAt(keyIndex % keyUpper.length) - 65;
             if (mode === 'decrypt') shift2 = 26 - shift2;
-            result += String.fromCharCode(97 + (code - 97 + shift2) % 26);
+            结果 += String.fromCharCode(97 + (code - 97 + shift2) % 26);
             keyIndex++;
           } else {
-            result += ch;
+            结果 += ch;
           }
         }
-        return result;
+        return 结果;
       }
 
       encryptBtn.addEventListener('click', function () {
@@ -72,7 +72,7 @@
         var key = keyEl.value.trim();
         if (!text) { setStatus('请输入文本', 'error'); return; }
         if (!key) { setStatus('请输入密钥', 'error'); return; }
-        outputEl.textContent = vigenere(text, key, 'encrypt');
+        输出El.textContent = vigenere(text, key, 'encrypt');
         setStatus('');
       });
 
@@ -81,12 +81,12 @@
         var key = keyEl.value.trim();
         if (!text) { setStatus('请输入文本', 'error'); return; }
         if (!key) { setStatus('请输入密钥', 'error'); return; }
-        outputEl.textContent = vigenere(text, key, 'decrypt');
+        输出El.textContent = vigenere(text, key, 'decrypt');
         setStatus('');
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

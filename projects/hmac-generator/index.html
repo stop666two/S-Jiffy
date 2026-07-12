@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -27,8 +27,8 @@
       <button id="generateBtn" class="btn btn-primary">生成 HMAC</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -42,7 +42,7 @@
       var inputEl = document.getElementById('inputText');
       var keyEl = document.getElementById('keyInput');
       var algoEl = document.getElementById('algoSelect');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var generateBtn = document.getElementById('generateBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -61,7 +61,7 @@
           return crypto.subtle.sign('HMAC', cryptoKey, msgData);
         }).then(function (sig) {
           var hex = Array.from(new Uint8Array(sig)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-          outputEl.textContent = hex;
+          输出El.textContent = hex;
           setStatus('');
         }).catch(function () {
           setStatus('HMAC 生成失败', 'error');
@@ -69,8 +69,8 @@
       }
 
       generateBtn.addEventListener('click', generate);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

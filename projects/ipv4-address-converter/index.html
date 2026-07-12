@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -10,10 +10,10 @@
     .ipconv-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
     .ipconv-row .field { flex:1; min-width:200px; }
     .ipconv-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .ipconv-result { margin-top:var(--space-3); }
-    .ipconv-result .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); font-size:var(--font-size-sm); }
-    .ipconv-result .item:last-child { border-bottom:none; }
-    .ipconv-result .lbl { color:var(--color-text-secondary); }
+    .ipconv-结果 { margin-top:var(--space-3); }
+    .ipconv-结果 .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); font-size:var(--font-size-sm); }
+    .ipconv-结果 .item:last-child { border-bottom:none; }
+    .ipconv-结果 .lbl { color:var(--color-text-secondary); }
   </style>
 </head>
 <body>
@@ -21,7 +21,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>IPv4 Address Converter</h1>
+    <h1>IPv4 地址转换</h1>
     <p class="tool-desc">将 IPv4 地址转换为十进制、十六进制、二进制以及 IPv6 映射地址。</p>
     <div class="card">
       <div class="ipconv-grid">
@@ -30,10 +30,10 @@
           <button id="convertBtn" class="btn btn-primary">转换</button>
         </div>
       </div>
-      <div class="ipconv-result" id="resultContainer"></div>
+      <div class="ipconv-结果" id="结果Container"></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -46,8 +46,8 @@
     (function() {
       var ipInput = document.getElementById('ipInput');
       var convertBtn = document.getElementById('convertBtn');
-      var resultContainer = document.getElementById('resultContainer');
-      var outputEl = document.getElementById('outputText');
+      var 结果Container = document.getElementById('结果Container');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function ipToNum(ip) {
@@ -66,13 +66,13 @@
         var ip = ipInput.value.trim();
         var num = ipToNum(ip);
         if (num === -1) {
-          resultContainer.innerHTML = '<div style="color:var(--color-error);">无效的 IPv4 地址</div>';
-          outputEl.textContent = '';
+          结果Container.innerHTML = '<div style="color:var(--color-error);">无效的 IPv4 地址</div>';
+          输出El.textContent = '';
           setStatus('请输入有效的 IPv4 地址', 'error');
           return;
         }
 
-        var hex = '0x' + num.toString(16).toUpperCase();
+        var hex = '0x' + num.toString(16).to大写();
         var dec = num.toString(10);
         var binary = num.toString(2).padStart(32, '0');
         var binaryGrouped = binary.slice(0,8) + ' ' + binary.slice(8,16) + ' ' + binary.slice(16,24) + ' ' + binary.slice(24);
@@ -88,8 +88,8 @@
         for (var i = 0; i < items.length; i++) {
           html += '<div class="item"><span class="lbl">' + items[i][0] + '</span><span>' + items[i][1] + '</span></div>';
         }
-        resultContainer.innerHTML = html;
-        outputEl.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
+        结果Container.innerHTML = html;
+        输出El.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
         setStatus('');
       }
 
@@ -97,7 +97,7 @@
       ipInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') convert(); });
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

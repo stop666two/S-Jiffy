@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <style>
     .io-pair { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
     @media(max-width:640px){ .io-pair { grid-template-columns:1fr; } }
-    .output-box textarea { width:100%; min-height:300px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .输出-box textarea { width:100%; min-height:300px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
   </style>
 </head>
 <body>
@@ -27,8 +27,8 @@
         </div>
         <div>
           <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">TypeScript 接口</label>
-          <div class="output-box" style="min-height:340px;">
-            <textarea id="tsOutput" readonly placeholder="生成的 TypeScript 接口..."></textarea>
+          <div class="输出-box" style="min-height:340px;">
+            <textarea id="ts输出" readonly placeholder="生成的 TypeScript 接口..."></textarea>
             <button class="copy-btn" id="copyBtn">复制</button>
           </div>
         </div>
@@ -48,13 +48,13 @@
   <script>
     (function () {
       var jsonInput = document.getElementById('jsonInput');
-      var tsOutput = document.getElementById('tsOutput');
+      var ts输出 = document.getElementById('ts输出');
       var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
       var interfaces = [];
 
       function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
+        return str.charAt(0).to大写() + str.slice(1);
       }
 
       function toTypeName(key) {
@@ -120,17 +120,17 @@
             var arrayItemType = rootType.replace('[]', '');
             finalStr += '\n\nexport type ' + rootName + ' = ' + arrayItemType + '[];';
           }
-          tsOutput.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
+          ts输出.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
           setStatus('转换成功');
         } catch (e) {
-          tsOutput.value = '';
+          ts输出.value = '';
           setStatus('JSON 解析失败: ' + e.message, 'error');
         }
       }
 
       convertBtn.addEventListener('click', convert);
-      clearBtn.addEventListener('click', function () { jsonInput.value = ''; tsOutput.value = ''; setStatus(''); jsonInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (tsOutput.value) { copyToClipboard(tsOutput.value, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { jsonInput.value = ''; ts输出.value = ''; setStatus(''); jsonInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (ts输出.value) { copyToClipboard(ts输出.value, copyBtn); setStatus('已复制'); } });
       jsonInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') convert(); });
     })();
   </script>

@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符/词频分析器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .tf-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .tf-row .field { flex:1; min-width:100px; }
+    .tf-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .bar-chart { margin-top:var(--space-2); }
+    .bar-row { display:flex; align-items:center; margin-bottom:4px; font-size:var(--font-size-sm); }
+    .bar-label { min-width:40px; text-align:right; margin-right:8px; }
+    .bar-fill { height:20px; background:var(--color-text-primary); border-radius:var(--radius-sm); transition:width 0.3s; min-width:2px; }
+    .bar-count { margin-left:6px; color:var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>字符/词频分析器</h1>
+    <p class="tool-desc">分析文本中字符或单词的出现频率，支持排序显示和柱状图可视化。</p>
+    <div class="card">
+      <div class="tf-row">
+        <div class="field" style="flex:2;"><label for="inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:100px;">hello world hello everyone</textarea></div>
+      </div>
+      <div class="tf-row">
+        <label style="display:flex;align-items:center;gap:8px;">
+          分析类型
+          <select id="typeSel" class="input" style="width:auto;min-width:80px;">
+            <option value="char">字符</option>
+            <option value="word" selected>单词</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="caseChk" type="checkbox"> 忽略大小写</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="topChk" type="checkbox" checked> 仅显示前 20 项</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">分析</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('inputText');
+    var typeEl = document.getElementById('typeSel');
+    var caseChk = document.getElementById('caseChk');
+    var topChk = document.getElementById('topChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function generate() {
+      var text = inputEl.value;
+      if (!text) { setStatus('请输入文本', 'error'); return; }
+      var type = typeEl.value;
+      var ignoreCase = caseChk.checked;
+      var onlyTop = topChk.checked;
+
+      if (ignoreCase) text = text.to小写();
+
+      var freq = {};
+      if (type === 'char') {
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (ch === ' ' || ch === '\n' || ch === '\t') continue;
+          freq[ch] = (freq[ch] || 0) + 1;
+        }
+      } else {
+        var words = text.split(/[\s\n\r\t]+/).filter(function(w) { return w !== ''; });
+        for (var i = 0; i < words.length; i++) {
+          freq[words[i]] = (freq[words[i]] || 0) + 1;
+        }
+      }
+
+      var entries = [];
+      var keys = Object.keys(freq);
+      for (var i = 0; i < keys.length; i++) {
+        entries.push({ 密钥： keys[i], count: freq[keys[i]] });
+      }
+      entries.sort(function(a, b) { return b.count - a.count; });
+
+      var maxCount = entries.length > 0 ? entries[0].count : 1;
+      var limit = onlyTop ? Math.min(20, entries.length) : entries.length;
+
+      var html = '<div class="bar-chart">';
+      var text输出 = '';
+      for (var i = 0; i < limit; i++) {
+        var e = entries[i];
+        var pct = (e.count / maxCount * 100).toFixed(0);
+        var label = type === 'char' ? (e.key === ' ' ? '␣' : escapeHtml(e.key)) : escapeHtml(e.key);
+        html += '<div class="bar-row"><span class="bar-label">' + label + '</span><div class="bar-fill" style="width:' + pct + '%;"></div><span class="bar-count">' + e.count + '</span></div>';
+        text输出 += e.key + ': ' + e.count + '\n';
+      }
+      html += '</div>';
+
+      输出El.innerHTML = html;
+      setStatus('分析完成，共 ' + entries.length + ' 个唯一项');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() {
+      var text = 输出El.textContent;
+      if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+    });
+  })();</script>
+</body>
+</html>

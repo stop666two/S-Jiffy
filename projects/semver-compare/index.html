@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <style>
     .version-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
     .version-row .input { width:220px; }
-    .comparison-result { font-size:var(--font-size-xl); text-align:center; padding:var(--space-3); }
+    .comparison-结果 { font-size:var(--font-size-xl); text-align:center; padding:var(--space-3); }
     .cmp-gt { color:var(--color-success); }
     .cmp-lt { color:var(--color-error); }
     .cmp-eq { color:var(--color-text-secondary); }
@@ -35,8 +35,8 @@
       </div>
     </div>
 
-    <div class="output-box" style="min-height:120px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="min-height:120px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +47,7 @@
     (function () {
       var versionA = document.getElementById('versionA');
       var versionB = document.getElementById('versionB');
-      var outputText = document.getElementById('outputText');
+      var 输出Text = document.getElementById('输出Text');
       var compareBtn = document.getElementById('compareBtn');
       var swapBtn = document.getElementById('swapBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -66,12 +66,12 @@
         var a = formatVersion(aRaw);
         var b = formatVersion(bRaw);
         if (!a || !b) {
-          return '<div class="comparison-result cmp-invalid">版本号格式无效。请使用语义化版本号，如 "1.2.3"</div>';
+          return '<div class="comparison-结果 cmp-invalid">版本号格式无效。请使用语义化版本号，如 "1.2.3"</div>';
         }
         var validA = semver.valid(a.raw);
         var validB = semver.valid(b.raw);
         if (!validA || !validB) {
-          return '<div class="comparison-result cmp-invalid">版本号格式无效。语义化版本号格式为 major.minor.patch</div>';
+          return '<div class="comparison-结果 cmp-invalid">版本号格式无效。语义化版本号格式为 major.minor.patch</div>';
         }
         var cmp = semver.compare(a.raw, b.raw);
         var symbol, cls;
@@ -79,7 +79,7 @@
         else if (cmp < 0) { symbol = '<'; cls = 'cmp-lt'; }
         else { symbol = '='; cls = 'cmp-eq'; }
 
-        var html = '<div class="comparison-result ' + cls + '">';
+        var html = '<div class="comparison-结果 ' + cls + '">';
         html += '<span style="font-size:28px;font-weight:700;">' + a.raw + '</span>';
         html += ' &nbsp;<span style="font-size:36px;">' + symbol + '</span>&nbsp; ';
         html += '<span style="font-size:28px;font-weight:700;">' + b.raw + '</span>';
@@ -98,7 +98,7 @@
         var a = versionA.value.trim();
         var b = versionB.value.trim();
         if (!a || !b) { setStatus('请输入两个版本号', 'error'); return; }
-        outputText.innerHTML = buildHtml(a, b);
+        输出Text.innerHTML = buildHtml(a, b);
         setStatus('');
       }
 
@@ -112,7 +112,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
       });
 
       versionA.addEventListener('keydown', function (e) { if (e.key === 'Enter') compareBtn.click(); });

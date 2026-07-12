@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,7 +6,7 @@
   <title>信用卡号验证 - S-Jiffy</title>
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .cc-result { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; }
+    .cc-结果 { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; }
     .cc-badge { display:inline-block; padding:4px 12px; border-radius:9999px; font-size:var(--font-size-sm); font-weight:500; }
     .cc-badge.valid { background:#e6f4e6; color:var(--color-success); }
     .cc-badge.invalid { background:#fde8e8; color:var(--color-error); }
@@ -21,13 +21,13 @@
     <p class="tool-desc">验证信用卡号（Luhn 算法），检测卡类型（Visa/MC/Amex/Discover）。</p>
     <div class="card">
       <input id="cardInput" class="input js-focus-input" type="text" placeholder="输入信用卡号..." style="margin-bottom:var(--space-2);">
-      <div class="cc-result">
+      <div class="cc-结果">
         <span id="validBadge" class="cc-badge">等待输入</span>
         <span id="cardType" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -41,7 +41,7 @@
       var cardInput = document.getElementById('cardInput');
       var validBadge = document.getElementById('validBadge');
       var cardType = document.getElementById('cardType');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function luhnCheck(num) {
@@ -76,7 +76,7 @@
           validBadge.textContent = '等待输入';
           validBadge.className = 'cc-badge';
           cardType.textContent = '';
-          outputEl.textContent = '';
+          输出El.textContent = '';
           return;
         }
 
@@ -85,7 +85,7 @@
           validBadge.textContent = '无效';
           validBadge.className = 'cc-badge invalid';
           cardType.textContent = '号码长度或格式不正确';
-          outputEl.textContent = '信用卡号无效：长度或格式错误';
+          输出El.textContent = '信用卡号无效：长度或格式错误';
           return;
         }
 
@@ -96,13 +96,13 @@
           validBadge.textContent = '有效 ✓';
           validBadge.className = 'cc-badge valid';
           cardType.textContent = '卡类型: ' + type;
-          outputEl.textContent = '有效 ' + type + ' 卡号';
+          输出El.textContent = '有效 ' + type + ' 卡号';
           setStatus('');
         } else {
           validBadge.textContent = '无效 ✗';
           validBadge.className = 'cc-badge invalid';
           cardType.textContent = 'Luhn 校验失败';
-          outputEl.textContent = '信用卡号无效：Luhn 校验失败';
+          输出El.textContent = '信用卡号无效：Luhn 校验失败';
           setStatus('Luhn 校验失败', 'error');
         }
       }
@@ -110,7 +110,7 @@
       cardInput.addEventListener('input', validate);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

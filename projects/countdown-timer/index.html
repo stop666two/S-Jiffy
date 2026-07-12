@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -34,8 +34,8 @@
       <div class="cd-unit"><div class="val" id="cdSecs">--</div><div class="lbl">秒</div></div>
     </div>
     <div class="cd-expired" id="cdExpired" style="display:none;">时间已到！</div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -48,7 +48,7 @@
     (function() {
       var targetEl = document.getElementById('targetDatetime');
       var startBtn = document.getElementById('startBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var cdDays = document.getElementById('cdDays');
       var cdHours = document.getElementById('cdHours');
@@ -73,7 +73,7 @@
           cdMins.textContent = '00';
           cdSecs.textContent = '00';
           cdExpired.style.display = 'block';
-          outputEl.textContent = '目标时间已过';
+          输出El.textContent = '目标时间已过';
           stopTimer();
           return;
         }
@@ -89,7 +89,7 @@
         cdHours.textContent = pad2(hours);
         cdMins.textContent = pad2(mins);
         cdSecs.textContent = pad2(secs);
-        outputEl.textContent = '剩余 ' + days + ' 天 ' + hours + ' 时 ' + mins + ' 分 ' + secs + ' 秒';
+        输出El.textContent = '剩余 ' + days + ' 天 ' + hours + ' 时 ' + mins + ' 分 ' + secs + ' 秒';
       }
 
       function stopTimer() {
@@ -110,7 +110,7 @@
       startBtn.addEventListener('click', startCountdown);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

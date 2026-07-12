@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模运算计算器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .mc-row .field { flex:1; min-width:80px; }
+    .mc-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>模运算计算器</h1>
+    <p class="tool-desc">计算 a mod b、模逆元和模幂运算。</p>
+    <div class="card">
+      <div class="mc-row">
+        <div class="field"><label for="aVal">a（底数）</label><input id="aVal" class="input" type="number" value="7"></div>
+        <div class="field"><label for="bVal">b（模数）</label><input id="bVal" class="input" type="number" value="26"></div>
+      </div>
+      <div class="mc-row" id="powRow" style="display:none;">
+        <div class="field"><label for="expVal">指数 (mod pow)</label><input id="expVal" class="input" type="number" value="3" min="0"></div>
+      </div>
+      <div class="mc-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="showPowChk" type="checkbox"> 模幂运算</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var aEl = document.getElementById('aVal');
+    var bEl = document.getElementById('bVal');
+    var expEl = document.getElementById('expVal');
+    var showPowChk = document.getElementById('showPowChk');
+    var powRow = document.getElementById('powRow');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    showPowChk.addEventListener('change', function() {
+      powRow.style.display = showPowChk.checked ? 'flex' : 'none';
+    });
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) { var t = b; b = a % b; a = t; }
+      return a;
+    }
+
+    function modInverse(a, m) {
+      a = ((a % m) + m) % m;
+      for (var x = 1; x < m; x++) {
+        if ((a * x) % m === 1) return x;
+      }
+      return null;
+    }
+
+    function modPow(base, exp, mod) {
+      var 结果 = 1;
+      base = base % mod;
+      while (exp > 0) {
+        if (exp % 2 === 1) 结果 = (结果 * base) % mod;
+        exp = Math.floor(exp / 2);
+        base = (base * base) % mod;
+      }
+      return 结果;
+    }
+
+    function generate() {
+      var a = parseInt(aEl.value, 10);
+      var b = parseInt(bEl.value, 10);
+      if (isNaN(a) || isNaN(b)) { setStatus('请输入有效数字', 'error'); return; }
+      if (b === 0) { setStatus('模数不能为 0', 'error'); return; }
+
+      var modVal = ((a % b) + b) % b;
+      var inv = modInverse(a, b);
+      var 输出 = 'a = ' + a + ', b = ' + b + '\n';
+      输出 += '\na mod b = ' + a + ' % ' + b + ' = ' + modVal + '\n';
+      输出 += '\n模逆元: ' + a + '⁻¹ mod ' + b + ' = ';
+      if (inv === null) {
+        输出 += '不存在（gcd(' + a + ', ' + b + ') = ' + gcd(a, b) + ' ≠ 1）';
+      } else {
+        输出 += inv + ' (验证: ' + a + ' × ' + inv + ' % ' + b + ' = ' + (a * inv % b) + ')';
+      }
+
+      if (showPowChk.checked) {
+        var exp = parseInt(expEl.value, 10) || 0;
+        if (exp < 0) exp = 0;
+        var pow结果 = modPow(a, exp, b);
+        输出 += '\n\n模幂运算: ' + a + '^' + exp + ' mod ' + b + ' = ' + pow结果;
+      }
+
+      输出El.textContent = 输出;
+      setStatus('计算完成');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

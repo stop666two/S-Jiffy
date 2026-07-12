@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Hash Comparison - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.comp-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.comp-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.结果-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;display:inline-block;}
+.结果-badge.match{background:#e8f5e9;color:#2e7d32;}
+.结果-badge.no-match{background:#ffebee;color:#c62828;}
+.结果-badge.pending{background:#f5f5f5;color:#666;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Hash 对比验证</h1><p class="tool-desc">Compare text or file content against a known hash value to verify integrity.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter text to verify..." style="min-height:100px;"></textarea></div>
+<div class="card">
+<div class="comp-row"><label>Hash to compare</label><input id="hashInput" class="input" placeholder="Paste the known hash value" style="flex:1;min-width:200px;"></div>
+<div class="comp-row">
+<label>算法</label><select id="algoSelect" class="input" style="width:auto;"><option value="SHA-1">SHA-1</option><option value="SHA-224">SHA-224</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="MD5">MD5 (simple)</option></select>
+<label>格式化</label><select id="fmtSelect" class="input" style="width:auto;"><option value="hex">Hex</option><option value="base64">Base64</option></select>
+<button id="compareBtn" class="btn btn-primary">对比</button>
+<button id="fileBtn" class="btn btn-secondary">选择文件</button>
+<input type="file" id="fileInput" style="display:none;">
+</div>
+</div>
+<div class="card" style="text-align:center;"><span id="结果Badge" class="结果-badge pending">等待</span><div id="结果Detail" style="margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var i=document.getElementById('inputText'),hi=document.getElementById('hashInput'),al=document.getElementById('algoSelect'),fm=document.getElementById('fmtSelect');
+var rb=document.getElementById('结果Badge'),rd=document.getElementById('结果Detail'),o=document.getElementById('输出Text'),fi=document.getElementById('fileInput');
+
+function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
+function b64(buf){var b=new Uint8Array(buf),s='';for(var x=0;x<b.length;x++)s+=String.fromCharCode(b[x]);return btoa(s);}
+function simpleMD5(s){var hash=0;if(s.length===0)return hash.toString(16).padStart(32,'0');for(var i=0;i<s.length;i++){var ch=s.charCodeAt(i);hash=((hash<<5)-hash)+ch;hash=hash&hash;}
+return(Math.abs(hash)>>>0).toString(16).padStart(32,'0');}
+
+function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().to小写();if(!target){setStatus('Enter a hash to compare','error');return;}
+var hash;
+if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.to小写()===target;
+rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match?'match':'no-match');
+rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
+o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('Error: '+e.message,'error');});
+return;}
+var computed2=hash;var match2=computed2.to小写()===target;
+rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match2?'match':'no-match');
+rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed2+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
+o.textContent=computed2;setStatus(match2?'Match!':'No match');}
+
+document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus('Enter text','error');return;}
+compare(new TextEncoder().encode(text),true);});
+document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
+fi.addEventListener('change',function(){if(!fi.files[0])return;var reader=new FileReader();
+reader.onload=function(e){compare(e.target.结果,false);};
+reader.readAsArrayBuffer(fi.files[0]);});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+})();
+</script></body></html>

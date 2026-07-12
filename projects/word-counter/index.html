@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -30,8 +30,8 @@
       <div class="wc-stat"><div class="num" id="shortestWord">-</div><div class="label">最短单词</div></div>
       <div class="wc-stat"><div class="num" id="charCount">0</div><div class="label">总字符</div></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -43,7 +43,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function count() {
@@ -67,7 +67,7 @@
           avgLengthEl.textContent = '0';
           longestEl.textContent = '-';
           shortestEl.textContent = '-';
-          outputEl.textContent = '无单词';
+          输出El.textContent = '无单词';
           return;
         }
 
@@ -90,14 +90,14 @@
         longestEl.textContent = longest;
         shortestEl.textContent = shortest;
 
-        outputEl.textContent = '总单词: ' + words.length + ' | 唯一: ' + Object.keys(unique).length + ' | 平均词长: ' + (totalLen / words.length).toFixed(1) + ' | 最长: ' + longest + ' | 最短: ' + shortest;
+        输出El.textContent = '总单词: ' + words.length + ' | 唯一: ' + Object.keys(unique).length + ' | 平均词长: ' + (totalLen / words.length).toFixed(1) + ' | 最长: ' + longest + ' | 最短: ' + shortest;
         setStatus('统计完成');
       }
 
       inputEl.addEventListener('input', count);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

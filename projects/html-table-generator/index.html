@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,7 @@
     .table-preview table { border-collapse:collapse; font-size:var(--font-size-sm); }
     .table-preview th, .table-preview td { padding:6px 12px; border:1px solid #ccc; text-align:left; }
     .table-preview th { background:#f5f5f5; font-weight:600; }
-    .output-box textarea { width:100%; min-height:120px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .输出-box textarea { width:100%; min-height:120px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
   </style>
 </head>
 <body>
@@ -43,8 +43,8 @@
       <div id="previewArea" class="table-preview"></div>
     </div>
 
-    <div class="output-box">
-      <textarea id="htmlOutput" readonly placeholder="HTML 代码将显示在这里..."></textarea>
+    <div class="输出-box">
+      <textarea id="html输出" readonly placeholder="HTML 代码将显示在这里..."></textarea>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -58,7 +58,7 @@
       var csvInput = document.getElementById('csvInput');
       var optHeader = document.getElementById('optHeader');
       var optSep = document.getElementById('optSep');
-      var htmlOutput = document.getElementById('htmlOutput');
+      var html输出 = document.getElementById('html输出');
       var previewArea = document.getElementById('previewArea');
       var generateBtn = document.getElementById('generateBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
@@ -113,7 +113,7 @@
         }
         html += '  </tbody>\n</table>';
 
-        htmlOutput.value = html;
+        html输出.value = html;
 
         var previewHtml = '<table>\n';
         if (headerRow) {
@@ -138,8 +138,8 @@
       }
 
       generateBtn.addEventListener('click', generate);
-      clearBtn.addEventListener('click', function () { csvInput.value = ''; htmlOutput.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (htmlOutput.value) { copyToClipboard(htmlOutput.value, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { csvInput.value = ''; html输出.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (html输出.value) { copyToClipboard(html输出.value, copyBtn); setStatus('已复制'); } });
       csvInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generate(); });
     })();
   </script>

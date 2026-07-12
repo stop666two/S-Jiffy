@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -25,8 +25,8 @@
       </div>
       <div><button id="calcBtn" class="btn btn-primary">计算差值</button></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -40,7 +40,7 @@
       var date1El = document.getElementById('date1');
       var date2El = document.getElementById('date2');
       var calcBtn = document.getElementById('calcBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function todayStr() {
@@ -70,14 +70,14 @@
         if (end.getDate() < start.getDate()) months--;
 
         var label = d1 < d2 ? '相差' : '相差（绝对值）';
-        outputEl.textContent = label + ' ' + days + ' 天 = ' + weeks + ' 周 = ' + months + ' 个月 ≈ ' + years + ' 年';
+        输出El.textContent = label + ' ' + days + ' 天 = ' + weeks + ' 周 = ' + months + ' 个月 ≈ ' + years + ' 年';
         setStatus('计算完成');
       }
 
       calcBtn.addEventListener('click', calc);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

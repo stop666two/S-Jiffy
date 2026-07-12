@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Key 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ak-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .ak-row .field { flex:1; min-width:100px; }
+    .ak-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>API Key 生成器</h1>
+    <p class="tool-desc">生成 API 密钥，支持自定义前缀、格式（hex/base64/hybrid）和长度。</p>
+    <div class="card">
+      <div class="ak-row">
+        <div class="field"><label for="prefixVal">前缀（可选）</label><input id="prefixVal" class="input" type="text" value="sk-" placeholder="例如 sk-"></div>
+        <div class="field"><label for="fmtSel">格式</label>
+          <select id="fmtSel" class="input" style="width:auto;min-width:80px;">
+            <option value="hex">Hex</option>
+            <option value="base64">Base64 (URL-safe)</option>
+            <option value="hybrid" selected>Hybrid</option>
+          </select>
+        </div>
+        <div class="field"><label for="lenVal">总长度</label><input id="lenVal" class="input" type="number" value="32" min="8" max="256"></div>
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="3" min="1" max="100"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var prefixEl = document.getElementById('prefixVal');
+    var fmtEl = document.getElementById('fmtSel');
+    var lenEl = document.getElementById('lenVal');
+    var countEl = document.getElementById('countVal');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var hexChars = '0123456789abcdef';
+    var b64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    var hybridChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    function generate() {
+      var prefix = prefixEl.value;
+      var fmt = fmtEl.value;
+      var totalLen = parseInt(lenEl.value, 10) || 32;
+      if (totalLen < 8) totalLen = 8;
+      if (totalLen > 256) totalLen = 256;
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+
+      var bodyLen = totalLen - prefix.length;
+      if (bodyLen < 4) { setStatus('前缀过长，请缩短前缀或增加长度', 'error'); return; }
+
+      var chars;
+      if (fmt === 'hex') chars = hexChars;
+      else if (fmt === 'base64') chars = b64Chars;
+      else chars = hybridChars;
+
+      var 结果 = [];
+      for (var n = 0; n < count; n++) {
+        var body = '';
+        var bytes = new Uint8Array(bodyLen);
+        crypto.getRandomValues(bytes);
+        for (var i = 0; i < bodyLen; i++) {
+          body += chars[bytes[i] % chars.length];
+        }
+        结果.push(prefix + body);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个 API Key');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

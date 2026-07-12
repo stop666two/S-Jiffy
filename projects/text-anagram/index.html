@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>变位词检测器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ta-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .ta-row .field { flex:1; min-width:100px; }
+    .ta-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .letter-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:var(--space-2); }
+    .letter-col { }
+    .letter-row { display:flex; justify-content:space-between; padding:2px 0; font-size:var(--font-size-sm); }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>变位词检测器</h1>
+    <p class="tool-desc">检查两个文本是否为变位词（字母重排），并显示字母计数对比。</p>
+    <div class="card">
+      <div class="ta-row">
+        <div class="field"><label for="textA">文本 A</label><input id="textA" class="input" type="text" value="listen" placeholder="第一个文本"></div>
+        <div class="field"><label for="textB">文本 B</label><input id="textB" class="input" type="text" value="silent" placeholder="第二个文本"></div>
+      </div>
+      <div class="ta-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="ignoreCaseChk" type="checkbox" checked> 忽略大小写</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="ignoreSpaceChk" type="checkbox" checked> 忽略空格</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">检查</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var aEl = document.getElementById('textA');
+    var bEl = document.getElementById('textB');
+    var ignoreCaseChk = document.getElementById('ignoreCaseChk');
+    var ignoreSpaceChk = document.getElementById('ignoreSpaceChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function countChars(s, ignoreCase, ignoreSpace) {
+      var 结果 = {};
+      for (var i = 0; i < s.length; i++) {
+        var c = s[i];
+        if (ignoreSpace && (c === ' ' || c === '\t' || c === '\n')) continue;
+        if (ignoreCase) c = c.to小写();
+        结果[c] = (结果[c] || 0) + 1;
+      }
+      return 结果;
+    }
+
+    function generate() {
+      var a = aEl.value;
+      var b = bEl.value;
+      if (!a || !b) { setStatus('请输入两个文本', 'error'); return; }
+      var ignoreCase = ignoreCaseChk.checked;
+      var ignoreSpace = ignoreSpaceChk.checked;
+
+      var cntA = countChars(a, ignoreCase, ignoreSpace);
+      var cntB = countChars(b, ignoreCase, ignoreSpace);
+      var keysA = Object.keys(cntA);
+      var keysB = Object.keys(cntB);
+
+      var isAnagram = true;
+      if (keysA.length !== keysB.length) {
+        isAnagram = false;
+      } else {
+        for (var i = 0; i < keysA.length; i++) {
+          if (cntA[keysA[i]] !== cntB[keysA[i]]) { isAnagram = false; break; }
+        }
+      }
+
+      if (isAnagram) {
+        for (var i = 0; i < keysB.length; i++) {
+          if (cntA[keysB[i]] !== cntB[keysB[i]]) { isAnagram = false; break; }
+        }
+      }
+
+      var allKeys = {};
+      for (var i = 0; i < keysA.length; i++) allKeys[keysA[i]] = true;
+      for (var i = 0; i < keysB.length; i++) allKeys[keysB[i]] = true;
+      var sortedKeys = Object.keys(allKeys).sort();
+
+      var 输出 = '';
+      输出 += '文本 A: ' + a + '\n';
+      输出 += '文本 B: ' + b + '\n';
+      输出 += '\n结果: ' + (isAnagram ? '✓ 是变位词' : '✗ 不是变位词') + '\n';
+      输出 += '\n字母计数对比:\n';
+      输出 += '字符 | A计数 | B计数\n';
+      输出 += '-----------------\n';
+      for (var i = 0; i < sortedKeys.length; i++) {
+        var k = sortedKeys[i];
+        var ca = cntA[k] || 0;
+        var cb = cntB[k] || 0;
+        输出 += k + '    | ' + ca + '     | ' + cb + '\n';
+      }
+
+      输出El.textContent = 输出;
+      setStatus(isAnagram ? '是变位词' : '不是变位词');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

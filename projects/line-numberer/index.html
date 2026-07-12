@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -34,8 +34,8 @@
         <button id="numberBtn" class="btn btn-primary">添加行号</button>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -50,7 +50,7 @@
       var startNum = document.getElementById('startNum');
       var formatStr = document.getElementById('formatStr');
       var numberBtn = document.getElementById('numberBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function numberLines() {
@@ -59,19 +59,19 @@
         var lines = text.split('\n');
         var start = parseInt(startNum.value, 10) || 1;
         var fmt = formatStr.value || '{n}. ';
-        var result = [];
+        var 结果 = [];
         for (var i = 0; i < lines.length; i++) {
           var n = start + i;
-          result.push(fmt.replace('{n}', n) + lines[i]);
+          结果.push(fmt.replace('{n}', n) + lines[i]);
         }
-        outputEl.textContent = result.join('\n');
+        输出El.textContent = 结果.join('\n');
         setStatus('已添加行号，共 ' + lines.length + ' 行');
       }
 
       numberBtn.addEventListener('click', numberLines);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

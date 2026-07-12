@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -53,8 +53,8 @@
       <div id="editor" class="editor-area" contenteditable="true"><h2>欢迎使用 HTML 编辑器</h2><p>在这里编辑内容...</p></div>
       <textarea id="sourceEditor" class="html-source" style="display:none;"></textarea>
     </div>
-    <div class="output-box" id="outputContainer" style="margin-top:16px; min-height:60px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container" style="margin-top:16px; min-height:60px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制 HTML</button>
     </div>
   </main>
@@ -67,7 +67,7 @@
     (function() {
       var editor = document.getElementById('editor');
       var sourceEditor = document.getElementById('sourceEditor');
-      var outputText = document.getElementById('outputText');
+      var 输出Text = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var editModeBtn = document.getElementById('editModeBtn');
       var sourceModeBtn = document.getElementById('sourceModeBtn');
@@ -124,20 +124,20 @@
       editModeBtn.addEventListener('click', switchToEdit);
       sourceModeBtn.addEventListener('click', switchToSource);
 
-      function updateOutput() {
+      function update输出() {
         var html = isSourceMode ? sourceEditor.value : editor.innerHTML;
-        outputText.textContent = html || '(空)';
+        输出Text.textContent = html || '(空)';
       }
 
-      editor.addEventListener('input', updateOutput);
-      sourceEditor.addEventListener('input', updateOutput);
+      editor.addEventListener('input', update输出);
+      sourceEditor.addEventListener('input', update输出);
 
       copyBtn.addEventListener('click', function() {
         var html = isSourceMode ? sourceEditor.value : editor.innerHTML;
         if (html) { copyToClipboard(html, copyBtn); setStatus('HTML 已复制'); }
       });
 
-      updateOutput();
+      update输出();
     })();
   </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,8 +31,8 @@
       </div>
       <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -48,7 +48,7 @@
       var countEl = document.getElementById('countVal');
       var repeatEl = document.getElementById('allowRepeat');
       var generateBtn = document.getElementById('generateBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function generate() {
@@ -67,10 +67,10 @@
           return;
         }
 
-        var result = [];
+        var 结果 = [];
         if (allowRepeat) {
           for (var i = 0; i < count; i++) {
-            result.push(Math.floor(Math.random() * range) + min);
+            结果.push(Math.floor(Math.random() * range) + min);
           }
         } else {
           var pool = [];
@@ -81,17 +81,17 @@
             pool[i] = pool[j];
             pool[j] = tmp;
           }
-          result = pool.slice(0, count);
+          结果 = pool.slice(0, count);
         }
 
-        outputEl.textContent = result.join(', ');
+        输出El.textContent = 结果.join(', ');
         setStatus('已生成 ' + count + ' 个随机数');
       }
 
       generateBtn.addEventListener('click', generate);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

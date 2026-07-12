@@ -27,11 +27,6 @@ function setStatus(message, type) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  var focusInput = document.querySelector('.js-focus-input');
-  if (focusInput) focusInput.focus();
-});
-
 function savePreference(key, value) {
   try { localStorage.setItem('s-jiffy:' + key, JSON.stringify(value)); } catch (e) {}
 }
@@ -42,10 +37,7 @@ function loadPreference(key, defaultValue) {
   } catch (e) { return defaultValue; }
 }
 
-/* ---- History & Usage Tracking ---- */
-
-var HISTORY_KEY = 's-jiffy:history';
-var USAGE_KEY = 's-jiffy:usage';
+/* ---- Usage history (localStorage, survives updates) ---- */
 
 function getUsage() {
   return loadPreference('usage', {});
@@ -67,32 +59,27 @@ function recordUse(toolName) {
   saveUsage(usage);
 }
 
-function getFrequentlyUsed(limit) {
-  if (limit === undefined) limit = 12;
+function getHistory(limit) {
+  if (limit === undefined) limit = 50;
   var usage = getUsage();
   var sorted = Object.keys(usage)
     .map(function (k) { return { name: k, count: usage[k].count, lastUsed: usage[k].lastUsed }; })
-    .filter(function (t) { return t.count > 0; })
-    .sort(function (a, b) { return b.count - a.count; });
-  return sorted.slice(0, limit);
-}
-
-function getRecentUsed(limit) {
-  if (limit === undefined) limit = 8;
-  var usage = getUsage();
-  var sorted = Object.keys(usage)
-    .map(function (k) { return { name: k, count: usage[k].count, lastUsed: usage[k].lastUsed }; })
-    .filter(function (t) { return t.count > 0; })
     .sort(function (a, b) { return b.lastUsed - a.lastUsed; });
   return sorted.slice(0, limit);
 }
 
-/* ---- Popular tools (based on common internet usage patterns) ---- */
-var POPULAR_TOOLS = [
-  'Base64 编解码', 'JSON Formatter', 'URL 编解码', 'Hash 计算器', 'MD5 生成器',
-  'QR 码生成器', 'UUID 生成器', '时间戳转换', '进制转换', '密码生成器',
-  '颜色转换', '温度转换', '正则测试器', '命名风格转换', '百分比计算',
-  'JWT 解析器', 'HTML 实体转义', '图片转 Base64', '随机数生成', 'Lorem Ipsum',
-  'ASCII 文字画', 'JSON 转 CSV', 'YAML 转 JSON', 'HTML 净化器', 'HSL 取色器',
-  '随机密码', 'RSA 密钥生成', 'Epoch 转换', 'Cron 表达式', 'IP 子网计算'
-];
+function getHistoryCount() {
+  var usage = getUsage();
+  return Object.keys(usage).length;
+}
+
+/* ---- Auto-record tool visit on tool pages ---- */
+document.addEventListener('DOMContentLoaded', function () {
+  var h1 = document.querySelector('.tool-workspace h1');
+  var path = window.location.pathname;
+  if (h1 && path.indexOf('/projects/') !== -1) {
+    recordUse(h1.textContent.trim());
+  }
+  var focusInput = document.querySelector('.js-focus-input');
+  if (focusInput) focusInput.focus();
+});

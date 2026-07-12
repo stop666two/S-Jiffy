@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="toIniBtn" class="btn btn-secondary">JSON → INI</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,23 +34,23 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var toJsonBtn = document.getElementById('toJsonBtn');
       var toIniBtn = document.getElementById('toIniBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
       function iniToJson(ini) {
-        var result = {};
+        var 结果 = {};
         var lines = ini.split('\n');
-        var section = result;
+        var section = 结果;
         for (var i = 0; i < lines.length; i++) {
           var line = lines[i].trim();
           if (!line || line.startsWith(';') || line.startsWith('#')) continue;
           if (line.startsWith('[') && line.endsWith(']')) {
             var sName = line.slice(1, -1).trim();
-            result[sName] = {};
-            section = result[sName];
+            结果[sName] = {};
+            section = 结果[sName];
             continue;
           }
           var eqIdx = line.indexOf('=');
@@ -58,12 +58,12 @@
           if (eqIdx === -1) continue;
           var key = line.substring(0, eqIdx).trim();
           var val = line.substring(eqIdx + 1).trim();
-          if (val.toLowerCase() === 'true') val = true;
-          else if (val.toLowerCase() === 'false') val = false;
+          if (val.to小写() === 'true') val = true;
+          else if (val.to小写() === 'false') val = false;
           else if (!isNaN(val) && val !== '') val = Number(val);
           section[key] = val;
         }
-        return result;
+        return 结果;
       }
 
       function jsonToIni(obj) {
@@ -94,10 +94,10 @@
         if (!text) { setStatus('请输入 INI 内容', 'error'); return; }
         try {
           var parsed = iniToJson(text);
-          outputEl.textContent = JSON.stringify(parsed, null, 2);
+          输出El.textContent = JSON.stringify(parsed, null, 2);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('INI 解析失败', 'error');
         }
       });
@@ -107,16 +107,16 @@
         if (!text) { setStatus('请输入 JSON 内容', 'error'); return; }
         try {
           var parsed = JSON.parse(text);
-          outputEl.textContent = jsonToIni(parsed);
+          输出El.textContent = jsonToIni(parsed);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('JSON 解析失败: ' + e.message, 'error');
         }
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -25,8 +25,8 @@
       <button id="parseBtn" class="btn btn-primary">解析</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -38,7 +38,7 @@
   <script>
     (function() {
       var jwtEl = document.getElementById('jwtInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -57,7 +57,7 @@
         if (!token) { setStatus('请输入 JWT Token', 'error'); return; }
         var parts = token.split('.');
         if (parts.length !== 3) {
-          outputEl.textContent = '无效的 JWT 格式。JWT 应包含 3 个由点号分隔的部分 (header.payload.signature)';
+          输出El.textContent = '无效的 JWT 格式。JWT 应包含 3 个由点号分隔的部分 (header.payload.signature)';
           setStatus('格式错误', 'error');
           return;
         }
@@ -74,43 +74,43 @@
           try { headerObj = JSON.parse(headerRaw); } catch(e) { headerObj = headerRaw; }
           try { payloadObj = JSON.parse(payloadRaw); } catch(e) { payloadObj = payloadRaw; }
 
-          var result = '';
-          result += '═══════ Header ═══════\n';
-          result += JSON.stringify(headerObj, null, 2) + '\n\n';
-          result += '═══════ Payload ═══════\n';
-          result += JSON.stringify(payloadObj, null, 2) + '\n\n';
+          var 结果 = '';
+          结果 += '═══════ Header ═══════\n';
+          结果 += JSON.stringify(headerObj, null, 2) + '\n\n';
+          结果 += '═══════ Payload ═══════\n';
+          结果 += JSON.stringify(payloadObj, null, 2) + '\n\n';
 
           // Expiration check
           if (payloadObj && payloadObj.exp) {
             var expDate = new Date(payloadObj.exp * 1000);
             var now = new Date();
-            result += '═══════ 时效检查 ═══════\n';
-            result += '过期时间: ' + expDate.toLocaleString() + '\n';
-            result += '当前时间: ' + now.toLocaleString() + '\n';
-            result += (expDate > now) ? '✅ Token 未过期' : '❌ Token 已过期';
+            结果 += '═══════ 时效检查 ═══════\n';
+            结果 += '过期时间: ' + expDate.toLocaleString() + '\n';
+            结果 += '当前时间: ' + now.toLocaleString() + '\n';
+            结果 += (expDate > now) ? '✅ Token 未过期' : '❌ Token 已过期';
           }
 
-          result += '\n\n═══════ Signature (原始) ═══════\n';
-          result += signatureB64.substring(0, 40) + '... (' + signatureB64.length + ' chars)';
+          结果 += '\n\n═══════ Signature (原始) ═══════\n';
+          结果 += signatureB64.substring(0, 40) + '... (' + signatureB64.length + ' chars)';
 
-          outputEl.textContent = result;
+          输出El.textContent = 结果;
           setStatus('解析成功');
 
         } catch (e) {
-          outputEl.textContent = '解析失败: ' + e.message;
+          输出El.textContent = '解析失败: ' + e.message;
           setStatus('解析失败', 'error');
         }
       });
 
       clearBtn.addEventListener('click', function() {
         jwtEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         jwtEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

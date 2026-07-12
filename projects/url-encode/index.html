@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>URL 编解码 - S-Jiffy</title>
+  <title>URL Encode/Decode - S-Jiffy</title>
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .url-part-grid { display:grid; gap:var(--space-2); }
@@ -14,145 +14,114 @@
     .query-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:13px; }
     .query-table th { text-align:left; padding:6px 8px; border-bottom:1px solid var(--color-border); color:var(--color-text-secondary); font-weight:500; }
     .query-table td { padding:6px 8px; border-bottom:1px solid var(--color-border); word-break:break-all; }
-    .valid-badge { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:var(--font-size-xs); font-family:var(--font-mono); }
-    .valid-badge.ok { background:#E6F4E6; color:var(--color-success); }
-    .valid-badge.err { background:#FFECEC; color:var(--color-error); }
+    .mode-radio { display:flex; gap:12px; align-items:center; margin-bottom:12px; font-size:var(--font-size-sm); }
+    .mode-radio label { display:flex; align-items:center; gap:4px; cursor:pointer; }
   </style>
 </head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
   <main class="tool-workspace">
     <h1>URL 编解码</h1>
-    <p class="tool-desc">URL 编码/解码、URL 解析与验证、查询参数提取。</p>
-
+    <p class="tool-desc">URL encoding/decoding: standard, RFC 3986, form-encoding, URL parsing & query extraction.</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 URL 或文本..." style="min-height:120px;"></textarea>
+      <div class="mode-radio">
+        <label><input type="radio" name="urlMode" value="standard" checked> Standard (encodeURIComponent)</label>
+        <label><input type="radio" name="urlMode" value="rfc3986"> RFC 3986</label>
+        <label><input type="radio" name="urlMode" value="form"> Form-encoding</label>
+      </div>
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter URL or text..." style="min-height:120px;"></textarea>
     </div>
-
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="encodeBtn" class="btn btn-primary">编码</button>
       <button id="decodeBtn" class="btn btn-secondary">解码</button>
-      <button id="parseBtn" class="btn btn-secondary">解析 URL</button>
+      <button id="parseBtn" class="btn btn-secondary">Parse URL</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-
-    <div id="parseResult" style="display:none;">
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-2);">
-          <strong style="font-size:var(--font-size-sm);">URL 解析</strong>
-          <span id="validBadge" class="valid-badge"></span>
-        </div>
-        <div class="url-part-grid" id="urlParts"></div>
-      </div>
-      <div class="card" id="queryCard" style="display:none;">
-        <div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);">查询参数</div>
-        <table class="query-table" id="queryTable"><thead><tr><th>参数</th><th>值</th></tr></thead><tbody id="queryBody"></tbody></table>
-      </div>
+    <div id="parse结果" style="display:none;">
+      <div class="card"><div class="url-part-grid" id="urlParts"></div></div>
+      <div class="card" id="queryCard" style="display:none;"><table class="query-table"><thead><tr><th>Param</th><th>Value</th></tr></thead><tbody id="queryBody"></tbody></table></div>
     </div>
-
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
+    <div class="输出-box" id="输出Container"><span id="输出Text" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var i = document.getElementById('inputText'), o = document.getElementById('outputText');
-      var parseResult = document.getElementById('parseResult');
-      var urlParts = document.getElementById('urlParts');
-      var validBadge = document.getElementById('validBadge');
-      var queryCard = document.getElementById('queryCard');
-      var queryBody = document.getElementById('queryBody');
+      var i = document.getElementById('inputText'), o = document.getElementById('输出Text');
+      var parse结果 = document.getElementById('parse结果'), urlParts = document.getElementById('urlParts');
+      var queryCard = document.getElementById('queryCard'), queryBody = document.getElementById('queryBody');
+
+      function getMode() {
+        var radios = document.getElementsByName('urlMode');
+        for (var j = 0; j < radios.length; j++) { if (radios[j].checked) return radios[j].value; }
+        return 'standard';
+      }
+
+      function rfc3986Encode(str) {
+        return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+          return '%' + c.charCodeAt(0).toString(16).to大写();
+        });
+      }
+      function formEncode(str) {
+        return encodeURIComponent(str).replace(/%20/g, '+');
+      }
+      function formDecode(str) {
+        return decodeURIComponent(str.replace(/\+/g, ' '));
+      }
 
       function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-      function parseUrl(str) {
-        var info = { valid: false, protocol: '', host: '', hostname: '', port: '', path: '', query: '', hash: '', queryParams: [] };
-        try {
-          var url = new URL(str);
-          info.valid = true;
-          info.protocol = url.protocol;
-          info.host = url.host;
-          info.hostname = url.hostname;
-          info.port = url.port || '(default)';
-          info.path = url.pathname;
-          info.query = url.search;
-          info.hash = url.hash;
-          if (url.search) {
-            url.searchParams.forEach(function(v, k) {
-              info.queryParams.push({ key: k, value: v });
-            });
-          }
-        } catch (e) {
-          info.valid = false;
-        }
-        return info;
-      }
-
       document.getElementById('encodeBtn').addEventListener('click', function () {
-        parseResult.style.display = 'none';
-        try { o.textContent = encodeURIComponent(i.value); setStatus(''); } catch (e) { setStatus('编码出错', 'error'); }
+        parse结果.style.display = 'none';
+        var mode = getMode();
+        try {
+          if (mode === 'rfc3986') o.textContent = rfc3986Encode(i.value);
+          else if (mode === 'form') o.textContent = formEncode(i.value);
+          else o.textContent = encodeURIComponent(i.value);
+          setStatus('');
+        } catch (e) { setStatus('Encoding error', 'error'); }
       });
       document.getElementById('decodeBtn').addEventListener('click', function () {
-        parseResult.style.display = 'none';
-        try { o.textContent = decodeURIComponent(i.value); setStatus(''); } catch (e) { o.textContent = ''; setStatus('解码失败：格式不正确', 'error'); }
+        parse结果.style.display = 'none';
+        var mode = getMode();
+        try {
+          if (mode === 'form') o.textContent = formDecode(i.value);
+          else o.textContent = decodeURIComponent(i.value);
+          setStatus('');
+        } catch (e) { o.textContent = ''; setStatus('Decode failed', 'error'); }
       });
       document.getElementById('parseBtn').addEventListener('click', function () {
         var val = i.value.trim();
-        if (!val) { setStatus('请输入 URL', 'error'); return; }
-        var info = parseUrl(val);
-        parseResult.style.display = 'block';
-
-        if (!info.valid) {
-          validBadge.className = 'valid-badge err';
-          validBadge.textContent = '无效 URL';
-          urlParts.innerHTML = '<div style="color:var(--color-error);font-size:var(--font-size-sm);">无法解析：URL 格式无效</div>';
-          queryCard.style.display = 'none';
-          o.textContent = '';
-          setStatus('URL 无效', 'error');
-          return;
-        }
-
-        validBadge.className = 'valid-badge ok';
-        validBadge.textContent = '有效 URL';
-
-        var parts = [
-          { label: '协议', value: info.protocol },
-          { label: '主机', value: info.host },
-          { label: '主机名', value: info.hostname },
-          { label: '端口', value: info.port },
-          { label: '路径', value: info.path },
-          { label: '查询字符串', value: info.query || '(无)' },
-          { label: 'Hash', value: info.hash || '(无)' }
-        ];
-        urlParts.innerHTML = parts.map(function(p) {
-          return '<div class="url-part-row"><span class="url-part-label">' + escapeHtml(p.label) + '</span><span class="url-part-value">' + escapeHtml(p.value) + '</span></div>';
-        }).join('');
-
-        if (info.queryParams.length > 0) {
-          queryCard.style.display = 'block';
-          queryBody.innerHTML = info.queryParams.map(function(qp) {
-            return '<tr><td>' + escapeHtml(qp.key) + '</td><td>' + escapeHtml(qp.value) + '</td></tr>';
+        if (!val) { setStatus('Enter URL', 'error'); return; }
+        parse结果.style.display = 'block';
+        try {
+          var url = new URL(val);
+          var parts = [
+            { label: 'Protocol', value: url.protocol }, { label: 'Host', value: url.host },
+            { label: 'Hostname', value: url.hostname }, { label: 'Port', value: url.port || '(default)' },
+            { label: 'Path', value: url.pathname }, { label: 'Query', value: url.search || '(none)' },
+            { label: 'Hash', value: url.hash || '(none)' }
+          ];
+          urlParts.innerHTML = parts.map(function(p) {
+            return '<div class="url-part-row"><span class="url-part-label">' + escapeHtml(p.label) + '</span><span class="url-part-value">' + escapeHtml(p.value) + '</span></div>';
           }).join('');
-        } else {
+          if (url.search) {
+            queryCard.style.display = 'block';
+            queryBody.innerHTML = '';
+            url.searchParams.forEach(function(v, k) {
+              queryBody.innerHTML += '<tr><td>' + escapeHtml(k) + '</td><td>' + escapeHtml(v) + '</td></tr>';
+            });
+          } else { queryCard.style.display = 'none'; }
+          o.textContent = val;
+          setStatus('');
+        } catch (e) {
+          urlParts.innerHTML = '<div style="color:var(--color-error);font-size:var(--font-size-sm);">Invalid URL</div>';
           queryCard.style.display = 'none';
+          setStatus('Invalid URL', 'error');
         }
-        o.textContent = val;
-        setStatus('');
       });
-      document.getElementById('clearBtn').addEventListener('click', function () {
-        i.value = ''; o.textContent = ''; parseResult.style.display = 'none'; setStatus(''); i.focus();
-      });
-      document.getElementById('copyBtn').addEventListener('click', function () {
-        if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); }
-      });
+      document.getElementById('clearBtn').addEventListener('click', function () { i.value = ''; o.textContent = ''; parse结果.style.display = 'none'; setStatus(''); i.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('Copied'); } });
     })();
   </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       <button id="pickOneBtn" class="btn btn-secondary">随机抽取一项</button>
       <button id="pickSomeBtn" class="btn btn-secondary">随机抽取多项</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -37,7 +37,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function getItems() {
@@ -59,7 +59,7 @@
       document.getElementById('shuffleBtn').addEventListener('click', function() {
         var items = getItems();
         if (!items) return;
-        outputEl.textContent = shuffle(items).join('\n');
+        输出El.textContent = shuffle(items).join('\n');
         setStatus('已打乱，共 ' + items.length + ' 项');
       });
 
@@ -67,7 +67,7 @@
         var items = getItems();
         if (!items) return;
         var picked = items[Math.floor(Math.random() * items.length)];
-        outputEl.textContent = '→ ' + picked;
+        输出El.textContent = '→ ' + picked;
         setStatus('已随机抽取一项');
       });
 
@@ -76,12 +76,12 @@
         if (!items) return;
         var count = Math.min(3, items.length);
         var shuffled = shuffle(items.slice());
-        outputEl.textContent = shuffled.slice(0, count).map(function(s) { return '→ ' + s; }).join('\n');
+        输出El.textContent = shuffled.slice(0, count).map(function(s) { return '→ ' + s; }).join('\n');
         setStatus('已随机抽取 ' + count + ' 项');
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

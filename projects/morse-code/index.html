@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -26,8 +26,8 @@
       <button id="playBtn" class="btn btn-secondary">播放音频</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <details style="margin-top:var(--space-2);">
@@ -43,7 +43,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var encodeBtn = document.getElementById('encodeBtn');
       var decodeBtn = document.getElementById('decodeBtn');
       var playBtn = document.getElementById('playBtn');
@@ -75,7 +75,7 @@
       }
 
       function textToMorse(text) {
-        var upper = text.toUpperCase();
+        var upper = text.to大写();
         var parts = [];
         for (var i = 0; i < upper.length; i++) {
           var ch = upper[i];
@@ -87,7 +87,7 @@
 
       function morseToText(morse) {
         var words = morse.trim().split('/');
-        var result = [];
+        var 结果 = [];
         for (var w = 0; w < words.length; w++) {
           var letters = words[w].trim().split(/\s+/);
           var word = '';
@@ -95,13 +95,13 @@
             if (revMap[letters[i]] !== undefined) word += revMap[letters[i]];
             else word += '?';
           }
-          result.push(word);
+          结果.push(word);
         }
-        return result.join(' ');
+        return 结果.join(' ');
       }
 
       function playMorse() {
-        var morse = outputEl.textContent.trim();
+        var morse = 输出El.textContent.trim();
         if (!morse || morse.indexOf('.') === -1 && morse.indexOf('-') === -1) {
           setStatus('无摩斯码可播放', 'error'); return;
         }
@@ -138,21 +138,21 @@
       encodeBtn.addEventListener('click', function () {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        outputEl.textContent = textToMorse(text);
+        输出El.textContent = textToMorse(text);
         setStatus('');
       });
 
       decodeBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入摩斯密码', 'error'); return; }
-        outputEl.textContent = morseToText(text);
+        输出El.textContent = morseToText(text);
         setStatus('');
       });
 
       playBtn.addEventListener('click', playMorse);
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

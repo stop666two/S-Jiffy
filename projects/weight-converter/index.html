@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -34,8 +34,8 @@
         </div>
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -51,7 +51,7 @@
       var inputLb = document.getElementById('inputLb');
       var inputOz = document.getElementById('inputOz');
       var inputTon = document.getElementById('inputTon');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -65,7 +65,7 @@
         inputLb.value = r(kg * 2.20462);
         inputOz.value = r(kg * 35.274);
         inputTon.value = r(kg / 1000);
-        outputEl.textContent = kg + ' kg = ' + inputLb.value + ' lb = ' + inputOz.value + ' oz = ' + inputTon.value + ' ton';
+        输出El.textContent = kg + ' kg = ' + inputLb.value + ' lb = ' + inputOz.value + ' oz = ' + inputTon.value + ' ton';
         updating = false;
       }
 
@@ -76,7 +76,7 @@
       inputTon.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) * 1000); });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

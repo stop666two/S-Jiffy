@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>易记密码生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pm-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .pm-row .field { flex:1; min-width:100px; }
+    .pm-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>易记密码生成器</h1>
+    <p class="tool-desc">使用单词+单词+数字模式生成好记又安全的密码。</p>
+    <div class="card">
+      <div class="pm-row">
+        <div class="field"><label for="wordCount">单词数量</label><input id="wordCount" class="input" type="number" value="3" min="2" max="8"></div>
+        <div class="field"><label for="sepVal">分隔符</label>
+          <select id="sepVal" class="input" style="width:auto;min-width:80px;">
+            <option value="">无</option>
+            <option value="-" selected>-</option>
+            <option value="_">_</option>
+            <option value=".">.</option>
+            <option value="~">~</option>
+            <option value="!">!</option>
+          </select>
+        </div>
+        <div class="field"><label for="countVal">密码数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+      </div>
+      <div class="pm-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="capChk" type="checkbox" checked> 首字母大写</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var wordCntEl = document.getElementById('wordCount');
+    var sepEl = document.getElementById('sepVal');
+    var countEl = document.getElementById('countVal');
+    var capChk = document.getElementById('capChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var wordList = ['Apple','Arrow','Basket','Beach','Breeze','Cabin','Candy','Cherry','Coral','Crisp','Daisy','Dream','Drift','Eagle','Echo','Ember','Fancy','Flame','Flower','Forest','Frost','Fuzzy','Garden','Gentle','Ghost','Gleam','Glow','Grape','Green','Happy','Haven','Honey','House','Icicle','Ivy','Jelly','Jewel','Jolly','Jungle','Kettle','Lemon','Light','Lily','Lucky','Maple','Meadow','Mint','Moon','Moss','Mystic','Noble','Ocean','Olive','Owl','Panda','Paper','Peach','Pearl','Petal','Piano','Pine','Plum','Purple','Quiet','Rabbit','Rain','River','Robin','Rose','Royal','Rubber','Sable','Salad','Sandy','Sapphire','Sharp','Shell','Silk','Silver','Sky','Snow','Solar','Spirit','Spring','Star','Storm','Summer','Sunny','Swift','Tiger','Travel','Tree','Tulip','Twilight','Velvet','Violet','Wallet','Water','Whisper','Wild','Willow','Winter','Wish','Yellow','Zeal','Zebra','Zephyr','Zest','Zipper','Zone'];
+
+    function capitalize(s) { return s.charAt(0).to大写() + s.slice(1); }
+
+    function pick() {
+      var b = new Uint16Array(1);
+      crypto.getRandomValues(b);
+      return wordList[b[0] % wordList.length];
+    }
+
+    function generate() {
+      var wc = parseInt(wordCntEl.value, 10) || 3;
+      if (wc < 2) wc = 2;
+      if (wc > 8) wc = 8;
+      var sep = sepEl.value;
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var doCap = capChk.checked;
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var parts = [];
+        for (var j = 0; j < wc; j++) {
+          var w = pick();
+          parts.push(doCap ? capitalize(w) : w.to小写());
+        }
+        var numBytes = new Uint32Array(1);
+        crypto.getRandomValues(numBytes);
+        var num = numBytes[0] % 9999 + 1;
+        结果.push(parts.join(sep) + num);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个易记密码');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

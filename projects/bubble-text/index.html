@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>泡泡字 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>泡泡字</h1><p class="tool-desc">将文本转换为 ⓑⓤⓑⓑⓛⓔ 圆圈/方框/括号风格。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">样式</label>
+<label><input type="radio" name="style" value="circle" checked> ⓒⓘⓡⓒⓛⓔ</label>
+<label><input type="radio" name="style" value="square"> 🅂🅀🅄🄰🅁🄴</label>
+<label><input type="radio" name="style" value="paren"> 🄟🄐🅁🄔🄽</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var maps={
+circle:{'A':'Ⓛ','B':'Ⓝ','C':'Ⓞ','D':'Ⓟ','E':'Ⓠ','F':'Ⓡ','G':'Ⓢ','H':'Ⓣ','I':'Ⓤ','J':'Ⓥ','K':'Ⓦ','L':'Ⓧ','M':'Ⓨ','N':'Ⓩ','O':'ⓐ','P':'ⓑ','Q':'ⓒ','R':'ⓓ','S':'ⓔ','T':'ⓕ','U':'ⓖ','V':'ⓗ','W':'ⓘ','X':'ⓙ','Y':'ⓚ','Z':'ⓛ',
+'a':'Ⓛ','b':'Ⓝ','c':'Ⓞ','d':'Ⓟ','e':'Ⓠ','f':'Ⓡ','g':'Ⓢ','h':'Ⓣ','i':'Ⓤ','j':'Ⓥ','k':'Ⓦ','l':'Ⓧ','m':'Ⓨ','n':'Ⓩ','o':'ⓐ','p':'ⓑ','q':'ⓒ','r':'ⓓ','s':'ⓔ','t':'ⓕ','u':'ⓖ','v':'ⓗ','w':'ⓘ','x':'ⓙ','y':'ⓚ','z':'ⓛ',
+'0':'Ⓚ','1':'Ⓛ','2':'Ⓜ','3':'Ⓝ','4':'Ⓞ','5':'Ⓟ','6':'Ⓠ','7':'Ⓡ','8':'Ⓢ','9':'Ⓣ'},
+square:{'A':'🄰','B':'🄱','C':'🄲','D':'🄳','E':'🄴','F':'🄵','G':'🄶','H':'🄷','I':'🄸','J':'🄹','K':'🄺','L':'🄻','M':'🄼','N':'🄽','O':'🄾','P':'🄿','Q':'🅀','R':'🅁','S':'🅂','T':'🅃','U':'🅄','V':'🅅','W':'🅆','X':'🅇','Y':'🅈','Z':'🅉',
+'a':'🄰','b':'🄱','c':'🄲','d':'🄳','e':'🄴','f':'🄵','g':'🄶','h':'🄷','i':'🄸','j':'🄹','k':'🄺','l':'🄻','m':'🄼','n':'🄽','o':'🄾','p':'🄿','q':'🅀','r':'🅁','s':'🅂','t':'🅃','u':'🅄','v':'🅅','w':'🅆','x':'🅇','y':'🅈','z':'🅉',
+'0':'🄀','1':'🄁','2':'🄂','3':'🄃','4':'🄄','5':'🄅','6':'🄆','7':'🄇','8':'🄈','9':'🄉'},
+paren:{'A':'🄐','B':'🄑','C':'🄒','D':'🄓','E':'🄔','F':'🄕','G':'🄖','H':'🄗','I':'🄘','J':'🄙','K':'🄚','L':'🄛','M':'🄜','N':'🄝','O':'🄞','P':'🄟','Q':'🄠','R':'🄡','S':'🄢','T':'🄣','U':'🄤','V':'🄥','W':'🄦','X':'🄧','Y':'🄨','Z':'🄩',
+'a':'🄐','b':'🄑','c':'🄒','d':'🄓','e':'🄔','f':'🄕','g':'🄖','h':'🄗','i':'🄘','j':'🄙','k':'🄚','l':'🄛','m':'🄜','n':'🄝','o':'🄞','p':'🄟','q':'🄠','r':'🄡','s':'🄢','t':'🄣','u':'🄤','v':'🄥','w':'🄦','x':'🄧','y':'🄨','z':'🄩'}
+};
+function getStyle(){
+var radios=document.getElementsByName('style');
+for(var i=0;i<radios.length;i++){if(radios[i].checked)return radios[i].value;}
+return'circle';
+}
+function convert(text){
+var style=getStyle();
+var map=maps[style];
+var r='';
+for(var i=0;i<text.length;i++){
+var ch=text[i];
+r+=map[ch]!==undefined?map[ch]:ch;
+}
+return r;
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+输出El.textContent=convert(t);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

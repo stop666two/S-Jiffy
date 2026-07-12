@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSONPath 提取 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.jp-hint{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;font-family:var(--font-mono)}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>JSONPath 提取</h1><p class="tool-desc">使用 JSONPath 表达式从 JSON 中提取值，支持点号和括号语法。</p>
+<div class="card">
+<input id="pathInput" class="input" placeholder="JSONPath 表达式，如 $.store.book[0].title" style="width:100%;max-width:500px;">
+<div style="margin-top:var(--space-1);"><span class="jp-hint">支持: $.key, $.key.subkey, $[0], $..recursive, *.wildcard</span></div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='输入 JSON，如 {"store":{"book":[{"title":"JSON","price":12}]}}' style="min-height:120px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="extractBtn" class="btn btn-primary">提取</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var pathInput=document.getElementById('pathInput');
+var extractBtn=document.getElementById('extractBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+function evaluatePath(obj,path){
+if(!path||path==='$')return obj;
+var p=path;
+if(p.startsWith('$.'))p=p.substring(2);
+else if(p.startsWith('$'))p=p.substring(1);
+else if(p.startsWith('.'))p=p.substring(1);
+var parts=[];
+var buf='';
+for(var i=0;i<p.length;i++){
+var c=p[i];
+if(c==='.'){
+if(buf){parts.push(buf);buf='';}
+}else if(c==='['){
+if(buf){parts.push(buf);buf='';}
+var bracket='';
+i++;
+while(i<p.length&&p[i]!==']'){bracket+=p[i];i++;}
+if(bracket.startsWith("'")&&bracket.endsWith("'"))bracket=bracket.slice(1,-1);
+if(bracket.startsWith('"')&&bracket.endsWith('"'))bracket=bracket.slice(1,-1);
+parts.push(bracket);
+}else if(c==='*'){
+parts.push('*');
+}else{
+buf+=c;
+}
+}
+if(buf)parts.push(buf);
+var current=obj;
+for(var j=0;j<parts.length;j++){
+var part=parts[j];
+if(part==='*'){
+if(Array.isArray(current)){return current;}
+if(typeof current==='object'&&current!==null){return Object.values(current);}
+return undefined;
+}
+if(current===null||current===undefined)return undefined;
+if(Array.isArray(current)){
+var idx=parseInt(part);
+if(!isNaN(idx))current=current[idx];
+else current=undefined;
+}else{
+current=current[part];
+}
+}
+return current;
+}
+extractBtn.addEventListener('click',function(){
+var json=inputEl.value.trim();
+var path=pathInput.value.trim();
+if(!json){setStatus('请输入 JSON','error');return;}
+if(!path){setStatus('请输入 JSONPath 表达式','error');return;}
+try{
+var parsed=JSON.parse(json);
+var 结果=evaluatePath(parsed,path);
+if(结果===undefined||结果===null){
+输出El.textContent='未找到匹配的值';
+}else{
+输出El.textContent=JSON.stringify(结果,null,2);
+}
+setStatus('');
+}catch(e){
+setStatus('错误: '+e.message,'error');
+}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';pathInput.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

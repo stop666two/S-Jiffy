@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ROT 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.rot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-2);margin-top:var(--space-2)}.rot-card{background:var(--color-bg-secondary);border-radius:var(--radius-md);padding:var(--space-2)}.rot-card h3{font-size:var(--font-size-sm);margin-bottom:4px}.rot-card .val{font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>ROT 密码</h1><p class="tool-desc">ROT5/13/18/47 文本旋转密码，一键查看所有变体。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要加密/解密的文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="processBtn" class="btn btn-primary">全部转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="rot-grid" id="结果s"></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var processBtn=document.getElementById('processBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var 结果s=document.getElementById('结果s');
+function rot(text,n,start,end){
+var r='';
+for(var i=0;i<text.length;i++){
+var code=text.charCodeAt(i);
+if(code>=start&&code<=end){
+var offset=code-start;
+r+=String.fromCharCode(start+(offset+n)%26);
+}else{r+=text[i];}
+}
+return r;
+}
+function rot13(text){return rot(text,13,65,90)+rot(text,13,97,122);}
+function rot47(text){
+var r='';
+for(var i=0;i<text.length;i++){
+var code=text.charCodeAt(i);
+if(code>=33&&code<=126){
+r+=String.fromCharCode(33+((code-33+47)%94));
+}else{r+=text[i];}
+}
+return r;
+}
+function rot5(text){
+var r='';
+for(var i=0;i<text.length;i++){
+var c=text[i];
+if(c>='0'&&c<='9'){r+=String.fromCharCode(((c.charCodeAt(0)-48+5)%10)+48);}
+else{r+=c;}
+}
+return r;
+}
+function rot18(text){
+return rot5(rot13(text));
+}
+function process(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var modes=[
+{name:'ROT5（数字）',val:rot5(t)},
+{name:'ROT13（字母）',val:rot13(t)},
+{name:'ROT18（ROT5+13）',val:rot18(t)},
+{name:'ROT47（ASCII）',val:rot47(t)}
+];
+var html='';
+for(var i=0;i<modes.length;i++){
+html+='<div class="rot-card"><h3>'+modes[i].name+'</h3><div class="val">'+escapeHtml(modes[i].val)+'</div></div>';
+}
+结果s.innerHTML=html;
+输出El.textContent='ROT5: '+rot5(t)+' | ROT13: '+rot13(t)+' | ROT18: '+rot18(t)+' | ROT47: '+rot47(t);
+setStatus('');
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+processBtn.addEventListener('click',process);
+clearBtn.addEventListener('click',function(){inputEl.value='';结果s.innerHTML='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

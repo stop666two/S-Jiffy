@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>XPath 查询测试 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>XPath 查询测试</h1><p class="tool-desc">在 XML/HTML 中测试 XPath 表达式，查看匹配节点数量和内容。</p>
+<div class="card"><input id="xpathInput" class="input" placeholder="XPath 表达式，如 //div[@class='foo']//text()" style="width:100%;max-width:600px;"></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 XML 或 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="queryBtn" class="btn btn-primary">查询</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="card" id="结果Card" style="display:none;"><h3 style="margin-bottom:var(--space-1);">查询结果</h3><p id="matchCount" style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"></p><div id="match结果s" style="font-family:var(--font-mono);font-size:var(--font-size-xs);max-height:300px;overflow-y:auto;"></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var xpathInput=document.getElementById('xpathInput');
+var queryBtn=document.getElementById('queryBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var 结果Card=document.getElementById('结果Card');
+var matchCount=document.getElementById('matchCount');
+var match结果s=document.getElementById('match结果s');
+function evaluateXPath(xml,xpath){
+var parser=new DOMParser();
+var doc;
+try{
+doc=parser.parseFromString(xml,'text/xml');
+var parseErr=doc.querySelector('parsererror');
+if(parseErr)doc=parser.parseFromString(xml,'text/html');
+}catch(e){doc=parser.parseFromString(xml,'text/html');}
+var 结果s=[];
+var resolver=null;
+try{
+var ns=doc.documentElement.getAttribute('xmlns');
+if(ns)resolver=doc.createNSResolver(doc.documentElement);
+}catch(e){}
+try{
+var xpath结果=doc.evaluate(xpath,doc,resolver,XPath结果.ANY_TYPE,null);
+var node=xpath结果.iterateNext();
+while(node){
+var val=node.textContent||node.nodeValue||'';
+val=val.trim();
+if(val)结果s.push(val);
+node=xpath结果.iterateNext();
+}
+}catch(e){throw new Error('XPath 错误: '+e.message);}
+return 结果s;
+}
+queryBtn.addEventListener('click',function(){
+var xml=inputEl.value.trim();
+var xpath=xpathInput.value.trim();
+if(!xml){setStatus('请输入 XML/HTML','error');return;}
+if(!xpath){setStatus('请输入 XPath','error');return;}
+try{
+var 结果s=evaluateXPath(xml,xpath);
+结果Card.style.display='block';
+matchCount.textContent='匹配 '+结果s.length+' 个节点';
+match结果s.innerHTML='';
+if(结果s.length===0){
+match结果s.innerHTML='<span style="color:var(--color-text-secondary)">无匹配结果</span>';
+}else{
+var ol=document.createElement('ol');
+ol.style.paddingLeft='20px';
+for(var i=0;i<Math.min(结果s.length,100);i++){
+var li=document.createElement('li');
+li.textContent=结果s[i].substring(0,200);
+ol.appendChild(li);
+}
+match结果s.appendChild(ol);
+if(结果s.length>100){
+var note=document.createElement('p');
+note.style.color='var(--color-text-secondary)';
+note.textContent='... 还有 '+(结果s.length-100)+' 个结果';
+match结果s.appendChild(note);
+}
+}
+输出El.textContent='XPath '+xpath+' 匹配 '+结果s.length+' 个节点';
+setStatus('');
+}catch(e){
+结果Card.style.display='none';
+输出El.textContent='';
+setStatus(e.message,'error');
+}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';xpathInput.value='';输出El.textContent='';结果Card.style.display='none';match结果s.innerHTML='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

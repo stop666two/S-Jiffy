@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Playfair 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.pf-grid{font-family:var(--font-mono);font-size:var(--font-size-sm);border-collapse:collapse;margin:var(--space-2) 0}.pf-grid td{border:1px solid var(--color-border);padding:8px 12px;text-align:center;width:36px;height:36px}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Playfair 密码</h1><p class="tool-desc">Playfair 密码加密/解密，使用 5x5 字母矩阵和关键词。</p>
+<div class="card"><input id="keyInput" class="input" placeholder="关键词" value="PLAYFAIR" style="width:200px;"></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encryptBtn" class="btn btn-primary">加密</button>
+<button id="decryptBtn" class="btn btn-secondary">解密</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div id="gridArea" style="overflow-x:auto;margin-top:var(--space-2);"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var keyInput=document.getElementById('keyInput');
+var encryptBtn=document.getElementById('encryptBtn');
+var decryptBtn=document.getElementById('decryptBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var gridArea=document.getElementById('gridArea');
+function buildGrid(key){
+var k=key.to大写().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+var seen={};
+var grid=[];
+var all='ABCDEFGHIKLMNOPQRSTUVWXYZ';
+for(var i=0;i<k.length;i++){
+var ch=k[i];
+if(!seen[ch]){seen[ch]=true;grid.push(ch);}
+}
+for(var i=0;i<all.length;i++){
+var ch=all[i];
+if(!seen[ch]){seen[ch]=true;grid.push(ch);}
+}
+return grid;
+}
+function findPos(grid,ch){
+var idx=grid.indexOf(ch);
+return{row:Math.floor(idx/5),col:idx%5};
+}
+function renderGrid(grid){
+var html='<table class="pf-grid"><tbody>';
+for(var r=0;r<5;r++){
+html+='<tr>';
+for(var c=0;c<5;c++)html+='<td>'+grid[r*5+c]+'</td>';
+html+='</tr>';
+}
+html+='</tbody></table>';
+gridArea.innerHTML=html;
+}
+function prepare(text){
+var t=text.to大写().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+var r='';
+for(var i=0;i<t.length;i+=2){
+var a=t[i];
+var b=t[i+1]||'X';
+if(a===b)b='X';
+r+=a+b;
+}
+return r;
+}
+function process(text,key,dir){
+var k=keyInput.value||key;
+var grid=buildGrid(k);
+renderGrid(grid);
+var t=prepare(text);
+if(t.length%2===1)t+='X';
+var r='';
+var step=dir===1?1:4;
+for(var i=0;i<t.length;i+=2){
+var a=t[i],b=t[i+1];
+var p1=findPos(grid,a);
+var p2=findPos(grid,b);
+var c1,c2;
+if(p1.row===p2.row){
+var nc1=(p1.col+step+5)%5;
+var nc2=(p2.col+step+5)%5;
+c1=grid[p1.row*5+nc1];
+c2=grid[p2.row*5+nc2];
+}else if(p1.col===p2.col){
+var nr1=(p1.row+step+5)%5;
+var nr2=(p2.row+step+5)%5;
+c1=grid[nr1*5+p1.col];
+c2=grid[nr2*5+p2.col];
+}else{
+c1=grid[p1.row*5+p2.col];
+c2=grid[p2.row*5+p1.col];
+}
+r+=c1+c2;
+}
+return r;
+}
+encryptBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t||!keyInput.value){setStatus('请输入文本和关键词','error');return;}
+输出El.textContent=process(t,keyInput.value,1);
+setStatus('');
+});
+decryptBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t||!keyInput.value){setStatus('请输入密文和关键词','error');return;}
+输出El.textContent=process(t,keyInput.value,-1);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';gridArea.innerHTML='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

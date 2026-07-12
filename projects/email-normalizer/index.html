@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       <button id="normalizeBtn" class="btn btn-primary">规范化</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <div class="email-grid" id="emailGrid"></div>
@@ -37,7 +37,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('emailInput');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     var gridEl = document.getElementById('emailGrid');
     var gmailDomains = ['gmail.com', 'googlemail.com', 'google.com'];
     function normalize(email) {
@@ -45,7 +45,7 @@
       var parts = email.trim().split('@');
       if (parts.length !== 2) return { original: email.trim(), normalized: null, error: '格式无效', domain: null, local: null };
       var local = parts[0];
-      var domain = parts[1].toLowerCase();
+      var domain = parts[1].to小写();
       var isGmail = false;
       for (var i = 0; i < gmailDomains.length; i++) {
         if (domain === gmailDomains[i]) { isGmail = true; break; }
@@ -55,24 +55,24 @@
         var plusIdx = local.indexOf('+');
         if (plusIdx !== -1) local = local.substr(0, plusIdx);
       }
-      local = local.toLowerCase();
+      local = local.to小写();
       var normalized = local + '@' + domain;
       return { original: email.trim(), normalized: normalized, domain: domain, local: local, isGmail: isGmail, error: null };
     }
     function render(d) {
-      if (!d) { outputEl.textContent = ''; gridEl.innerHTML = ''; return; }
+      if (!d) { 输出El.textContent = ''; gridEl.innerHTML = ''; return; }
       if (d.error) {
-        outputEl.textContent = d.original + ' - ' + d.error;
-        outputEl.style.color = 'var(--color-error)';
+        输出El.textContent = d.original + ' - ' + d.error;
+        输出El.style.color = 'var(--color-error)';
         gridEl.innerHTML = '';
         return;
       }
       if (d.normalized !== d.original) {
-        outputEl.textContent = d.original + ' → ' + d.normalized;
+        输出El.textContent = d.original + ' → ' + d.normalized;
       } else {
-        outputEl.textContent = d.normalized + ' (无需更改)';
+        输出El.textContent = d.normalized + ' (无需更改)';
       }
-      outputEl.style.color = 'var(--color-success)';
+      输出El.style.color = 'var(--color-success)';
       var items = [
         { label: '原始地址', val: d.original },
         { label: '规范化后', val: d.normalized },
@@ -90,15 +90,15 @@
     function doNormalize() {
       var email = inputEl.value.trim();
       if (!email) { setStatus('请输入邮箱地址', 'error'); render(null); return; }
-      var result = normalize(email);
-      render(result);
-      if (result.error) { setStatus(result.error, 'error'); } else { setStatus(result.normalized === result.original ? '无需更改' : '已规范化'); }
+      var 结果 = normalize(email);
+      render(结果);
+      if (结果.error) { setStatus(结果.error, 'error'); } else { setStatus(结果.normalized === 结果.original ? '无需更改' : '已规范化'); }
     }
     document.getElementById('normalizeBtn').addEventListener('click', doNormalize);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doNormalize(); });
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.textContent = ''; 输出El.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
     document.getElementById('copyBtn').addEventListener('click', function() {
-      var text = outputEl.textContent;
+      var text = 输出El.textContent;
       if (text) {
         var m = text.match(/→ (.+)$/);
         copyToClipboard(m ? m[1] : text, this);

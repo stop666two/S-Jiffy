@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +20,8 @@
         <img id="previewImg" style="max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);">
       </div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -33,7 +33,7 @@
   <script>
     (function() {
       var fileInput = document.getElementById('fileInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var previewImg = document.getElementById('previewImg');
       var previewArea = document.getElementById('previewArea');
@@ -42,14 +42,14 @@
         try {
           var code = jsQR(imgData.data, imgData.width, imgData.height);
           if (code && code.data) {
-            outputEl.textContent = code.data;
+            输出El.textContent = code.data;
             setStatus('解码成功');
           } else {
-            outputEl.textContent = '未检测到 QR 码';
+            输出El.textContent = '未检测到 QR 码';
             setStatus('未检测到 QR 码', 'error');
           }
         } catch (e) {
-          outputEl.textContent = '解码出错: ' + e.message;
+          输出El.textContent = '解码出错: ' + e.message;
           setStatus('解码失败', 'error');
         }
       }
@@ -59,7 +59,7 @@
         if (!file) return;
         var reader = new FileReader();
         reader.onload = function(e) {
-          var dataUrl = e.target.result;
+          var dataUrl = e.target.结果;
           previewImg.src = dataUrl;
           previewArea.style.display = 'block';
           var img = new Image();
@@ -78,7 +78,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text && text.indexOf('未检测') === -1 && text.indexOf('出错') === -1) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Beaufort 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Beaufort 密码</h1><p class="tool-desc">Beaufort 密码加密/解密（Vigenère 变体，加密与解密相同操作）。</p>
+<div class="card"><input id="keyInput" class="input" placeholder="关键词" value="BEAUFORT" style="width:200px;"></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encryptBtn" class="btn btn-primary">加密</button>
+<button id="decryptBtn" class="btn btn-secondary">解密</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var keyInput=document.getElementById('keyInput');
+var encryptBtn=document.getElementById('encryptBtn');
+var decryptBtn=document.getElementById('decryptBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+function beaufort(text,key){
+var t=text.to大写().replace(/[^A-Z]/g,'');
+var k=key.to大写().replace(/[^A-Z]/g,'');
+if(!t||!k){setStatus('请输入文本和关键词','error');return null;}
+var r='';
+for(var i=0;i<t.length;i++){
+var p=t.charCodeAt(i)-65;
+var s=k.charCodeAt(i%k.length)-65;
+var c=(s-p+26)%26;
+r+=String.fromCharCode(c+65);
+}
+return r;
+}
+encryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var k=keyInput.value;
+if(!t||!k){setStatus('请输入文本和关键词','error');return;}
+var r=beaufort(t,k);
+if(r){输出El.textContent=r;setStatus('');}
+});
+decryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var k=keyInput.value;
+if(!t||!k){setStatus('请输入密文和关键词','error');return;}
+var r=beaufort(t,k);
+if(r){输出El.textContent=r;setStatus('');}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

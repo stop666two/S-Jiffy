@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -37,8 +37,8 @@
       </div>
       <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -57,7 +57,7 @@
       var chSpecial = document.getElementById('chSpecial');
       var customEl = document.getElementById('customCharset');
       var generateBtn = document.getElementById('generateBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function generate() {
@@ -78,22 +78,22 @@
         }
         if (!charset) { setStatus('请至少选择一个字符集', 'error'); return; }
 
-        var results = [];
+        var 结果s = [];
         for (var n = 0; n < count; n++) {
           var s = '';
           for (var i = 0; i < len; i++) {
             s += charset.charAt(Math.floor(Math.random() * charset.length));
           }
-          results.push(s);
+          结果s.push(s);
         }
-        outputEl.textContent = results.join('\n');
+        输出El.textContent = 结果s.join('\n');
         setStatus('已生成 ' + count + ' 个随机字符串');
       }
 
       generateBtn.addEventListener('click', generate);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机整数生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ri-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .ri-row .field { flex:1; min-width:100px; }
+    .ri-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机整数生成器</h1>
+    <p class="tool-desc">在指定范围内生成随机整数，支持数量、唯一性、排序设置。</p>
+    <div class="card">
+      <div class="ri-row">
+        <div class="field"><label for="minVal">最小值</label><input id="minVal" class="input" type="number" value="1"></div>
+        <div class="field"><label for="maxVal">最大值</label><input id="maxVal" class="input" type="number" value="100"></div>
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="1000"></div>
+      </div>
+      <div class="ri-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="uniqueChk" type="checkbox" checked> 唯一</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="sortChk" type="checkbox"> 升序排序</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var minEl = document.getElementById('minVal');
+    var maxEl = document.getElementById('maxVal');
+    var countEl = document.getElementById('countVal');
+    var uniqueChk = document.getElementById('uniqueChk');
+    var sortChk = document.getElementById('sortChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoInt(min, max) {
+      var range = max - min + 1;
+      var bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return min + (bytes[0] % range);
+    }
+
+    function generate() {
+      var min = parseInt(minEl.value, 10) || 0;
+      var max = parseInt(maxEl.value, 10) || 100;
+      var count = parseInt(countEl.value, 10) || 1;
+      var unique = uniqueChk.checked;
+      var sort = sortChk.checked;
+
+      if (min > max) { setStatus('最小值不能大于最大值', 'error'); return; }
+      if (count < 1) count = 1;
+      if (count > 10000) count = 10000;
+
+      var range = max - min + 1;
+      if (unique && count > range) {
+        setStatus('唯一模式下数量不能超过范围 (' + range + ')', 'error');
+        return;
+      }
+
+      var 结果 = [];
+      if (unique) {
+        var pool = [];
+        for (var i = min; i <= max; i++) pool.push(i);
+        for (var i = pool.length - 1; i > 0; i--) {
+          var j = cryptoInt(0, i);
+          var tmp = pool[i];
+          pool[i] = pool[j];
+          pool[j] = tmp;
+        }
+        结果 = pool.slice(0, count);
+      } else {
+        for (var i = 0; i < count; i++) 结果.push(cryptoInt(min, max));
+      }
+
+      if (sort) 结果.sort(function(a, b) { return a - b; });
+      输出El.textContent = 结果.join(', ');
+      setStatus('已生成 ' + count + ' 个随机整数');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

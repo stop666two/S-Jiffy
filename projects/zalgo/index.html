@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Zalgo 文本 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.zalgo-preview{font-size:var(--font-size-lg);padding:var(--space-3);background:var(--color-bg-secondary);border-radius:var(--radius-md);margin-top:var(--space-2);word-break:break-all;line-height:1.8}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Zalgo 文本</h1><p class="tool-desc">将文本转化为 Zalgo 鬼畜风格，可调节上/下/双向注入强度。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">强度</label><input id="intensity" type="range" min="1" max="10" value="5" style="width:150px;"><span id="intensityVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">5</span></div>
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">模式</label>
+<select id="modeSelect" class="input" style="width:120px;"><option value="up">向上</option><option value="down">向下</option><option value="both" selected>双向</option></select></div>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:80px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="zalgo-preview" id="previewArea" style="display:none;"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var intensity=document.getElementById('intensity');
+var intensityVal=document.getElementById('intensityVal');
+var modeSelect=document.getElementById('modeSelect');
+var previewArea=document.getElementById('previewArea');
+var upChars=[0x0300,0x0301,0x0302,0x0303,0x0304,0x0306,0x0307,0x0308,0x0309,0x030A,0x030B,0x030C,0x030D,0x030E,0x030F,0x0310,0x0311,0x0312,0x0313,0x0314];
+var downChars=[0x0316,0x0317,0x0318,0x0319,0x031C,0x031D,0x031E,0x031F,0x0320,0x0321,0x0322,0x0323,0x0324,0x0325,0x0326,0x0327,0x0328,0x0329,0x032A,0x032B];
+var midChars=[0x0335,0x0336,0x0337,0x0338,0x033A,0x033B,0x033C,0x033D,0x033E,0x033F];
+intensity.addEventListener('input',function(){intensityVal.textContent=intensity.value;});
+function zalgo(text,level,mode){
+var r='';
+for(var i=0;i<text.length;i++){
+r+=text[i];
+if(text[i]===' ')continue;
+if(mode==='up'||mode==='both'){
+var n=1+Math.floor(Math.random()*level);
+for(var u=0;u<n;u++){r+=String.fromCharCode(upChars[Math.floor(Math.random()*upChars.length)]);}
+}
+if(mode==='down'||mode==='both'){
+var n=1+Math.floor(Math.random()*level);
+for(var d=0;d<n;d++){r+=String.fromCharCode(downChars[Math.floor(Math.random()*downChars.length)]);}
+}
+}
+return r;
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var l=parseInt(intensity.value);
+var m=modeSelect.value;
+var 结果=zalgo(t,l,m);
+输出El.textContent=结果;
+previewArea.style.display='block';
+previewArea.textContent=结果;
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';previewArea.style.display='none';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

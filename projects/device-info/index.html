@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,8 +24,8 @@
       <button id="refreshBtn" class="btn btn-primary">刷新信息</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -36,7 +36,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function() {
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -110,21 +110,21 @@
       }
 
       document.getElementById('refreshBtn').addEventListener('click', function() {
-        outputEl.textContent = gatherInfo();
+        输出El.textContent = gatherInfo();
         setStatus('信息已刷新');
       });
 
       clearBtn.addEventListener('click', function() {
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
 
       // Auto-refresh on load
-      outputEl.textContent = gatherInfo();
+      输出El.textContent = gatherInfo();
     })();
   </script>
 </body>

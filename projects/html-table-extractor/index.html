@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 表格提取 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.hte-table{font-family:var(--font-mono);font-size:var(--font-size-xs);border-collapse:collapse;width:100%;margin-top:var(--space-2)}.hte-table th,.hte-table td{border:1px solid var(--color-border);padding:4px 8px}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>HTML 表格提取</h1><p class="tool-desc">从 HTML 中提取表格数据，导出为 CSV 或 JSON 格式。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴包含表格的 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="extractBtn" class="btn btn-primary">提取表格</button>
+<select id="formatSelect" class="input" style="width:80px;"><option value="csv">CSV</option><option value="json">JSON</option></select>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div id="tablePreview" style="overflow-x:auto;"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var extractBtn=document.getElementById('extractBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var formatSelect=document.getElementById('formatSelect');
+var tablePreview=document.getElementById('tablePreview');
+function extractTables(html){
+var parser=new DOMParser();
+var doc=parser.parseFromString(html,'text/html');
+var tables=doc.querySelectorAll('table');
+var 结果s=[];
+tables.forEach(function(table,idx){
+var rows=table.querySelectorAll('tr');
+var data=[];
+rows.forEach(function(row){
+var cells=row.querySelectorAll('td,th');
+var rowData=[];
+cells.forEach(function(cell){rowData.push(cell.textContent.trim());});
+if(rowData.length>0)data.push(rowData);
+});
+if(data.length>0)结果s.push({index:idx+1,data:data});
+});
+return 结果s;
+}
+function dataToCSV(data){
+return data.map(function(row){return row.map(function(cell){var c=String(cell);return c.indexOf(',')!==-1||c.indexOf('"')!==-1?'"'+c.replace(/"/g,'""')+'"':c;}).join(',');}).join('\n');
+}
+extractBtn.addEventListener('click',function(){
+var html=inputEl.value.trim();
+if(!html){setStatus('请输入 HTML','error');return;}
+var tables=extractTables(html);
+if(tables.length===0){setStatus('未找到表格','error');输出El.textContent='';tablePreview.innerHTML='';return;}
+var fmt=formatSelect.value;
+var 输出='';
+var previewHtml='';
+for(var i=0;i<tables.length;i++){
+var tbl=tables[i];
+if(fmt==='csv'){输出+='--- 表格 '+(i+1)+' ---\n'+dataToCSV(tbl.data)+'\n\n';}
+else{输出+='--- 表格 '+(i+1)+' ---\n'+JSON.stringify(tbl.data,null,2)+'\n\n';}
+var ph='<table class="hte-table"><tbody>';
+for(var r=0;r<Math.min(tbl.data.length,20);r++){
+ph+='<tr>';
+for(var c=0;c<tbl.data[r].length;c++){
+var tag=r===0?'th':'td';
+ph+='<'+tag+'>'+tbl.data[r][c]+'</'+tag+'>';
+}
+ph+='</tr>';
+}
+if(tbl.data.length>20)ph+='<tr><td colspan="'+(tbl.data[0]?tbl.data[0].长度：1)+'" style="text-align:center;color:var(--color-text-secondary)">... 共 '+tbl.data.length+' 行</td></tr>';
+ph+='</tbody></table>';
+previewHtml+=ph;
+}
+输出El.textContent=输出.trim();
+tablePreview.innerHTML=previewHtml;
+setStatus('已提取 '+tables.length+' 个表格');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';tablePreview.innerHTML='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

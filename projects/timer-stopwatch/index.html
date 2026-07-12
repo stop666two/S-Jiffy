@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Timer & Stopwatch - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.time-display{font-size:56px;font-weight:600;font-family:var(--font-mono);text-align:center;padding:var(--space-3);letter-spacing:2px;}
+.time-sub{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-3);}
+.time-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.preset-grid{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-3);}
+.preset-btn{padding:4px 16px;font-size:var(--font-size-xs);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;}
+.preset-btn:hover{background:var(--color-bg-soft);}
+.lap-list{max-height:200px;overflow-y:auto;font-family:var(--font-mono);font-size:var(--font-size-sm);}
+.lap-list div{padding:4px 8px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>计时秒表</h1><p class="tool-desc">Countdown timer with presets, and a lap-recording stopwatch.</p>
+<div class="card">
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);">
+<select id="modeSelect" class="input" style="width:auto;"><option value="stopwatch">Stopwatch</option><option value="timer">Countdown Timer</option></select>
+<div id="timerInputs" style="display:flex;gap:8px;align-items:center;">
+<input id="minInput" class="input" type="number" value="5" min="1" style="width:70px;"><label style="font-size:var(--font-size-sm);">min</label>
+<input id="secInput" class="input" type="number" value="0" min="0" max="59" style="width:70px;"><label style="font-size:var(--font-size-sm);">sec</label>
+</div>
+</div>
+<div class="preset-grid" id="presetGrid"><button class="preset-btn" data-min="1">1 min</button><button class="preset-btn" data-min="3">3 min</button><button class="preset-btn" data-min="5">5 min</button><button class="preset-btn" data-min="10">10 min</button><button class="preset-btn" data-min="15">15 min</button><button class="preset-btn" data-min="30">30 min</button></div>
+<div class="time-display" id="display">00:00.0</div>
+<div class="time-sub" id="statusSub">准备</div>
+<div class="time-btns">
+<button id="startBtn" class="btn btn-primary">开始</button>
+<button id="pauseBtn" class="btn btn-secondary">暂停</button>
+<button id="lapBtn" class="btn btn-secondary" id="lapBtn">Lap</button>
+<button id="resetBtn" class="btn btn-secondary">重置</button>
+</div>
+</div>
+<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">Laps</h3><div class="lap-list" id="lapList"><div style="color:var(--color-text-disabled);">No laps yet</div></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var dp=document.getElementById('display'),sub=document.getElementById('statusSub'),ms=document.getElementById('modeSelect');
+var mi=document.getElementById('minInput'),si=document.getElementById('secInput'),ti=document.getElementById('timerInputs');
+var st=document.getElementById('startBtn'),pa=document.getElementById('pauseBtn'),lb=document.getElementById('lapBtn'),rs=document.getElementById('resetBtn');
+var ll=document.getElementById('lapList'),o=document.getElementById('输出Text');
+var startTime=0,elapsed=0,lastLap=0,running=false,laps=[],timerId=null,targetMs=0;
+
+function fmt(ms){var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);var d=Math.floor((ms%1000)/100);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;}
+function fmt2(ms){if(ms<60000)return(ms/1000).toFixed(1)+'s';var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);return m+'m '+s+'s';}
+
+function tick(){if(!running)return;
+var now=Date.now();if(ms.value==='timer'){var remaining=Math.max(0,targetMs-(now-startTime));elapsed=remaining;
+if(remaining<=0){running=false;elapsed=0;dp.textContent='00:00.0';sub.textContent='Time is up!';clearInterval(timerId);return;}}else{elapsed=now-startTime;}
+dp.textContent=fmt(elapsed);o.textContent=dp.textContent;}
+
+function startTimer(){if(running)return;if(ms.value==='timer'){var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus('Set a valid time','error');return;}
+targetMs=total;startTime=Date.now();elapsed=total;}else{startTime=Date.now()-elapsed;}
+running=true;sub.textContent='Running...';clearInterval(timerId);timerId=setInterval(tick,100);}
+
+function pauseTimer(){if(!running)return;running=false;clearInterval(timerId);sub.textContent='Paused';}
+function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent='Ready';ll.innerHTML='<div style="color:var(--color-text-disabled);">No laps yet</div>';o.textContent='';}
+function recordLap(){if(!running||ms.value!=='stopwatch')return;var now=elapsed;var lapTime=now-lastLap;laps.push({total:now,split:lapTime});lastLap=now;
+var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>Lap '+(i+1)+'</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
+ll.innerHTML=h;o.textContent=fmt(elapsed);}
+
+st.addEventListener('click',startTimer);pa.addEventListener('click',pauseTimer);rs.addEventListener('click',resetTimer);lb.addEventListener('click',recordLap);
+ms.addEventListener('change',function(){resetTimer();ti.style.display=ms.value==='timer'?'flex':'none';lb.style.display=ms.value==='timer'?'none':'inline-flex';});
+lb.style.display='none';ti.style.display='flex';
+var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){mi.value=this.dataset.min;si.value='0';ms.value='timer';ti.style.display='flex';lb.style.display='none';resetTimer();});}
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+})();
+</script></body></html>

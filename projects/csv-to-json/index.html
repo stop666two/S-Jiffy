@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="toCsvBtn" class="btn btn-secondary">JSON → CSV</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var toJsonBtn = document.getElementById('toJsonBtn');
       var toCsvBtn = document.getElementById('toCsvBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -83,16 +83,16 @@
         var headers = lines[0].split(',').map(function (h) {
           return h.trim().replace(/^"|"$/g, '');
         });
-        var result = [];
+        var 结果 = [];
         for (var i = 1; i < lines.length; i++) {
           var vals = lines[i].split(',').map(function (v) { return v.trim().replace(/^"|"$/g, ''); });
           var row = {};
           for (var j = 0; j < headers.length; j++) {
             row[headers[j]] = vals[j] || '';
           }
-          result.push(row);
+          结果.push(row);
         }
-        return result;
+        return 结果;
       }
 
       function jsonToCsv(json) {
@@ -117,10 +117,10 @@
         if (!text) { setStatus('请输入 CSV 内容', 'error'); return; }
         try {
           var parsed = csvToJson(text);
-          outputEl.textContent = JSON.stringify(parsed, null, 2);
+          输出El.textContent = JSON.stringify(parsed, null, 2);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('CSV 解析失败: ' + e.message, 'error');
         }
       });
@@ -130,16 +130,16 @@
         if (!text) { setStatus('请输入 JSON 内容', 'error'); return; }
         try {
           var parsed = JSON.parse(text);
-          outputEl.textContent = jsonToCsv(parsed);
+          输出El.textContent = jsonToCsv(parsed);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('JSON 解析失败: ' + e.message, 'error');
         }
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

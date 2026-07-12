@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -29,8 +29,8 @@
     <h1>HTTP 状态码</h1>
     <p class="tool-desc">浏览和搜索 HTTP 状态码及其含义。</p>
     <input id="searchInput" class="status-search js-focus-input" placeholder="搜索状态码或描述... 如 404, not found, redirect..." autocomplete="off">
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -105,16 +105,16 @@
       ];
 
       var searchEl = document.getElementById('searchInput');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function render(query) {
-        query = (query || '').toLowerCase().trim();
+        query = (query || '').to小写().trim();
         var filtered = statusCodes;
         if (query) {
           filtered = statusCodes.filter(function(s) {
             return String(s.code).indexOf(query) !== -1
-              || s.name.toLowerCase().indexOf(query) !== -1
+              || s.name.to小写().indexOf(query) !== -1
               || s.desc.indexOf(query) !== -1;
           });
         }
@@ -128,7 +128,7 @@
             + '<span class="status-desc">' + s.desc + '</span>'
             + '</div>';
         }
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
         setStatus('显示 ' + filtered.length + ' 个状态码');
       }
 
@@ -137,7 +137,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent || outputEl.innerText;
+        var text = 输出El.textContent || 输出El.innerText;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
 

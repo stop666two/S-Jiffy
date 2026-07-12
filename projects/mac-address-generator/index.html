@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -32,8 +32,8 @@
       <button id="generateBtn" class="btn btn-primary">生成</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +47,7 @@
     var sepEl = document.getElementById('sepSelect');
     var caseEl = document.getElementById('caseSelect');
     var countEl = document.getElementById('countInput');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     function randomByte() { return Math.floor(Math.random() * 256); }
     function toHex(n) { var h = n.toString(16); return h.length === 1 ? '0' + h : h; }
     function generateMac() {
@@ -61,18 +61,18 @@
       }
       while (bytes.length < 6) { bytes.push(randomByte()); }
       var hex = bytes.map(function(b) { return toHex(b); }).join(sep);
-      return useUpper ? hex.toUpperCase() : hex;
+      return useUpper ? hex.to大写() : hex;
     }
     document.getElementById('generateBtn').addEventListener('click', function() {
       var n = parseInt(countEl.value) || 1;
       if (n < 1) n = 1; if (n > 100) n = 100;
       var arr = [];
       for (var i = 0; i < n; i++) arr.push(generateMac());
-      outputEl.textContent = arr.join('\n');
+      输出El.textContent = arr.join('\n');
       setStatus('已生成 ' + n + ' 个 MAC 地址');
     });
-    document.getElementById('clearBtn').addEventListener('click', function() { outputEl.textContent = ''; setStatus(''); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    document.getElementById('clearBtn').addEventListener('click', function() { 输出El.textContent = ''; setStatus(''); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

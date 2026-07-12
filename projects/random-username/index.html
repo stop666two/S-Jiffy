@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机用户名生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ru-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .ru-row .field { flex:1; min-width:100px; }
+    .ru-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机用户名生成器</h1>
+    <p class="tool-desc">组合形容词和名词生成随机用户名，支持数字、分隔符和长度控制。</p>
+    <div class="card">
+      <div class="ru-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="sepVal">分隔符</label>
+          <select id="sepVal" class="input" style="width:auto;min-width:80px;">
+            <option value="">无</option>
+            <option value="_" selected>下划线 _</option>
+            <option value="-">连字符 -</option>
+            <option value=".">点号 .</option>
+          </select>
+        </div>
+      </div>
+      <div class="ru-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="numChk" type="checkbox" checked> 追加数字</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="capChk" type="checkbox" checked> 首字母大写</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var sepEl = document.getElementById('sepVal');
+    var numChk = document.getElementById('numChk');
+    var capChk = document.getElementById('capChk');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var adjectives = ['Swift','Brave','Calm','Daring','Eager','Fierce','Gentle','Happy','Jolly','Kind','Lively','Merry','Nice','Proud','Quick','Rich','Shy','Silly','Smart','Sunny','Witty','Bold','Bright','Cool','Crazy','Cute','Fancy','Fast','Fine','Free','Fresh','Funky','Grand','Great','Happy','Heavy','Humble','Icy','Jazzy','Lucky','Mighty','Neat','Noble','Quiet','Rapid','Royal','Sharp','Smooth','Solid','Steady','Super','Sweet','Tough','Vivid','Wild','Wise','Young','Alert','Ample','Brief','Chill','Clean','Clear','Crisp','Deep','Dense','Dry','Dual','Even','Exact','Fair','Flat','Fleet','Full','Grim','Hale','Harsh','Hush','Lame','Lean','Loud','Mild','Mint','Mute','Numb','Open','Plain','Prior','Pure','Rare','Ripe','Roof','Safe','Same','Sane','Slim','Sore','Stem','Sunk','Sure','Tall','Tame','Tidy','Tiny','Trim','True','Vain','Vast','Warm','Wary','Wide','Zeal'];
+
+    var nouns = ['Ant','Art','Axe','Badge','Bread','Brush','Cake','Camel','Cloud','Crane','Crown','Daisy','Dance','Desk','Dish','Dog','Dove','Drum','Duck','Eagle','Echo','Edge','Fang','Fern','Fish','Flame','Flute','Fox','Frog','Garden','Ghost','Globe','Glove','Grape','Grass','Hawk','Horn','Horse','House','Jade','Jewel','Kite','Knot','Lamp','Leaf','Lemon','Lion','Lotus','Lynx','Maple','Meadow','Mint','Moon','Moss','Moth','Muse","Nest","Noble","Nova","Ocean","Olive","Otter","Owl","Panda","Peach","Pearl","Petal","Piano","Pillar","Pine","Plum","Poem","Pond","Quill","Rain","Raven","Reed","Ridge","Ripple","River","Robin","Rock","Rose","Rust","Sage","Sail","Salad","Scale","Seed","Silk","Skate","Sky","Sloth","Snail","Snake","Snow","Sparrow","Spice","Spirit","Spoon","Spring","Star","Storm","Stream","Swan","Tiger","Toad","Trail","Tree","Truck","Tulip","Twig","Valley","Vine","Violet","Wagon","Water","Wave","Weed","Wheat","Wheel","Whisper","Willow","Wing","Wolf","Worm","Wren","Yacht","Yarn','Yoga','Zebra','Zephyr'];
+
+    function capitalize(s) { return s.charAt(0).to大写() + s.slice(1); }
+
+    function pick(arr) {
+      var b = new Uint8Array(1);
+      crypto.getRandomValues(b);
+      return arr[b[0] % arr.length];
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var sep = sepEl.value;
+      var addNum = numChk.checked;
+      var doCap = capChk.checked;
+      var 结果 = [];
+
+      for (var i = 0; i < count; i++) {
+        var adj = pick(adjectives);
+        var noun = pick(nouns);
+        if (doCap) {
+          adj = capitalize(adj);
+          noun = capitalize(noun);
+        }
+        var username = adj + sep + noun;
+        if (addNum) {
+          var numBytes = new Uint32Array(1);
+          crypto.getRandomValues(numBytes);
+          var num = numBytes[0] % 9999 + 1;
+          username += num;
+        }
+        结果.push(username);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个用户名');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

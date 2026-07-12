@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -9,11 +9,11 @@
     .example-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-3); }
     .example-tag { background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: 9999px; padding: 4px 12px; font-size: var(--font-size-sm); cursor: pointer; transition: border-color 0.15s; }
     .example-tag:hover { border-color: var(--color-text-primary); }
-    .result-line { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
-    .result-line:last-child { border-bottom: none; }
-    .result-original { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-width: 200px; }
-    .result-arrow { color: var(--color-text-disabled); }
-    .result-numeronym { font-weight: 600; }
+    .结果-line { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+    .结果-line:last-child { border-bottom: none; }
+    .结果-original { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-width: 200px; }
+    .结果-arrow { color: var(--color-text-disabled); }
+    .结果-numeronym { font-weight: 600; }
   </style>
 </head>
 <body>
@@ -38,8 +38,8 @@
       <span class="example-tag" data-text="personalization">p13n</span>
       <span class="example-tag" data-text="localization">L10N</span>
     </div>
-    <div class="output-box">
-      <div id="outputText" style="display:block;padding-right:60px;"></div>
+    <div class="输出-box">
+      <div id="输出Text" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -50,7 +50,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('inputText');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     function toNumeronym(word) {
       word = word.trim();
       if (!word) return '';
@@ -69,18 +69,18 @@
         var line = lines[i].trim();
         if (!line) continue;
         var numeronym = toNumeronym(line);
-        html += '<div class="result-line"><span class="result-original">' + line + '</span><span class="result-arrow">→</span><span class="result-numeronym">' + numeronym + '</span></div>';
+        html += '<div class="结果-line"><span class="结果-original">' + line + '</span><span class="结果-arrow">→</span><span class="结果-numeronym">' + numeronym + '</span></div>';
       }
-      outputEl.innerHTML = html;
+      输出El.innerHTML = html;
       setStatus('转换完成');
     }
     document.getElementById('generateBtn').addEventListener('click', convert);
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.innerHTML = ''; setStatus(''); inputEl.focus(); });
     document.getElementById('copyBtn').addEventListener('click', function() {
       var texts = [];
-      var lines = outputEl.querySelectorAll('.result-line');
+      var lines = 输出El.querySelectorAll('.结果-line');
       for (var i = 0; i < lines.length; i++) {
-        var numEl = lines[i].querySelector('.result-numeronym');
+        var numEl = lines[i].querySelector('.结果-numeronym');
         if (numEl) texts.push(numEl.textContent);
       }
       if (texts.length) { copyToClipboard(texts.join('\n'), this); setStatus('已复制'); }

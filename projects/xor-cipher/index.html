@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -18,7 +18,7 @@
     </div>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <input id="keyInput" class="input" placeholder="密钥 (Key)" style="width:200px;">
-      <select id="outputFormat" class="input" style="width:120px;">
+      <select id="输出Format" class="input" style="width:120px;">
         <option value="hex">Hex</option>
         <option value="base64">Base64</option>
       </select>
@@ -26,8 +26,8 @@
       <button id="decryptBtn" class="btn btn-secondary">解密</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -40,19 +40,19 @@
     (function () {
       var inputEl = document.getElementById('inputText');
       var keyEl = document.getElementById('keyInput');
-      var formatEl = document.getElementById('outputFormat');
-      var outputEl = document.getElementById('outputText');
+      var formatEl = document.getElementById('输出Format');
+      var 输出El = document.getElementById('输出Text');
       var encryptBtn = document.getElementById('encryptBtn');
       var decryptBtn = document.getElementById('decryptBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
       function xorBytes(text, key) {
-        var result = [];
+        var 结果 = [];
         for (var i = 0; i < text.length; i++) {
-          result.push(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+          结果.push(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
         }
-        return result;
+        return 结果;
       }
 
       function bytesToHex(bytes) {
@@ -91,7 +91,7 @@
         if (!key) { setStatus('请输入密钥', 'error'); return; }
         var bytes = xorBytes(text, key);
         var fmt = formatEl.value;
-        outputEl.textContent = fmt === 'hex' ? bytesToHex(bytes) : bytesToBase64(bytes);
+        输出El.textContent = fmt === 'hex' ? bytesToHex(bytes) : bytesToBase64(bytes);
         setStatus('');
       }
 
@@ -108,18 +108,18 @@
           setStatus(fmt === 'hex' ? 'Hex 格式无效' : 'Base64 格式无效', 'error');
           return;
         }
-        var result = '';
+        var 结果 = '';
         for (var i = 0; i < bytes.length; i++) {
-          result += String.fromCharCode(bytes[i] ^ key.charCodeAt(i % key.length));
+          结果 += String.fromCharCode(bytes[i] ^ key.charCodeAt(i % key.length));
         }
-        outputEl.textContent = result;
+        输出El.textContent = 结果;
         setStatus('');
       }
 
       encryptBtn.addEventListener('click', doEncrypt);
       decryptBtn.addEventListener('click', doDecrypt);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

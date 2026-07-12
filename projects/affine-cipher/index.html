@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Affine 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ac-all{font-family:var(--font-mono);font-size:var(--font-size-xs);max-height:300px;overflow-y:auto;margin-top:var(--space-2);white-space:pre-wrap}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Affine 密码</h1><p class="tool-desc">Affine 仿射密码加密/解密，使用 a/b 密钥，支持遍历所有可能组合。</p>
+<div class="card">
+<div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">密钥 a（与 26 互质）</label><input id="keyA" type="number" class="input" value="5" style="width:80px;"></div>
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">密钥 b</label><input id="keyB" type="number" class="input" value="8" style="width:80px;"></div>
+<button id="tryAllBtn" class="btn btn-secondary" style="margin-top:14px;">尝试所有 a</button>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encryptBtn" class="btn btn-primary">加密</button>
+<button id="decryptBtn" class="btn btn-secondary">解密</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="ac-all" id="all结果s" style="display:none;"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var keyA=document.getElementById('keyA');
+var keyB=document.getElementById('keyB');
+var encryptBtn=document.getElementById('encryptBtn');
+var decryptBtn=document.getElementById('decryptBtn');
+var tryAllBtn=document.getElementById('tryAllBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var all结果s=document.getElementById('all结果s');
+var coPrimes=[1,3,5,7,9,11,15,17,19,21,23,25];
+function modInverse(a,m){
+for(var x=1;x<m;x++){if((a*x)%m===1)return x;}
+return null;
+}
+function affine(text,a,b,mode){
+var t=text.to大写().replace(/[^A-Z]/g,'');
+var r='';
+if(mode==='decrypt'){
+var inv=modInverse(a,26);
+if(inv===null){setStatus('密钥 a 与 26 不互质','error');return null;}
+for(var i=0;i<t.length;i++){
+var c=t.charCodeAt(i)-65;
+var p=(inv*((c-b+26)%26))%26;
+r+=String.fromCharCode(p+65);
+}
+}else{
+for(var i=0;i<t.length;i++){
+var p=t.charCodeAt(i)-65;
+var c=(a*p+b)%26;
+r+=String.fromCharCode(c+65);
+}
+}
+return r;
+}
+encryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var a=parseInt(keyA.value);var b=parseInt(keyB.value);
+if(!t||isNaN(a)||isNaN(b)){setStatus('请输入文本和密钥','error');return;}
+var r=affine(t,a,b,'encrypt');
+if(r){输出El.textContent=r;setStatus('');}
+});
+decryptBtn.addEventListener('click',function(){
+var t=inputEl.value;var a=parseInt(keyA.value);var b=parseInt(keyB.value);
+if(!t||isNaN(a)||isNaN(b)){setStatus('请输入密文和密钥','error');return;}
+var r=affine(t,a,b,'decrypt');
+if(r){输出El.textContent=r;setStatus('');}
+});
+tryAllBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+var b=parseInt(keyB.value)||0;
+var lines='';
+for(var i=0;i<coPrimes.length;i++){
+var a=coPrimes[i];
+var r=affine(t,a,b,'decrypt');
+if(r)lines+='a='+a+', b='+b+': '+r+'\n';
+}
+all结果s.style.display='block';
+all结果s.textContent=lines;
+输出El.textContent='已尝试 '+coPrimes.length+' 种 a 值组合';
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';all结果s.style.display='none';all结果s.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

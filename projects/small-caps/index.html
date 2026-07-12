@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>小型大写 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>小型大写</h1><p class="tool-desc">将文本转换为 ᴜɴɪᴄᴏᴅᴇ sᴍᴀʟʟ ᴄᴀᴘs 小型大写字母。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var convertBtn=document.getElementById('convertBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var smallCapsMap={
+'A':'\u1D00','B':'\u0299','C':'\u1D04','D':'\u1D05','E':'\u1D07','F':'\uA730','G':'\u0262','H':'\u029C','I':'\u026A','J':'\u1D0A','K':'\u1D0B','L':'\u029F','M':'\u1D0D','N':'\u0274','O':'\u1D0F','P':'\u1D18','Q':'\uA7AF','R':'\u0280','S':'\uA731','T':'\u1D1B','U':'\u1D1C','V':'\u1D20','W':'\u1D21','X':'\u02E3','Y':'\u028F','Z':'\u1D22',
+'a':'\u1D00','b':'\u0299','c':'\u1D04','d':'\u1D05','e':'\u1D07','f':'\uA730','g':'\u0262','h':'\u029C','i':'\u026A','j':'\u1D0A','k':'\u1D0B','l':'\u029F','m':'\u1D0D','n':'\u0274','o':'\u1D0F','p':'\u1D18','q':'\uA7AF','r':'\u0280','s':'\uA731','t':'\u1D1B','u':'\u1D1C','v':'\u1D20','w':'\u1D21','x':'\u02E3','y':'\u028F','z':'\u1D22'
+};
+function toSmallCaps(text){
+var r='';
+for(var i=0;i<text.length;i++){
+var ch=text[i];
+r+=smallCapsMap[ch]!==undefined?smallCapsMap[ch]:ch;
+}
+return r;
+}
+convertBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+输出El.textContent=toSmallCaps(t);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

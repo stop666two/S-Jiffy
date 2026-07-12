@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Advanced Text Statistics - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.adv-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-2);margin-bottom:var(--space-3);}
+.adv-stat-item{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);text-align:center;}
+.adv-stat-item .num{font-size:24px;font-weight:600;}
+.adv-stat-item .label{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.freq-table{width:100%;border-collapse:collapse;font-size:var(--font-size-sm);margin-top:var(--space-2);}
+.freq-table th,.freq-table td{padding:4px 8px;text-align:left;border-bottom:1px solid var(--color-border);}
+.freq-bar{height:14px;background:var(--color-text-primary);border-radius:2px;min-width:2px;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>高级文本统计</h1><p class="tool-desc">Syllables, Flesch readability score, grade level, word frequency analysis.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste your text here..." style="min-height:180px;"></textarea></div>
+<div class="adv-stat-grid">
+<div class="adv-stat-item"><div class="num" id="charCount">0</div><div class="label">Characters</div></div>
+<div class="adv-stat-item"><div class="num" id="wordCount">0</div><div class="label">Words</div></div>
+<div class="adv-stat-item"><div class="num" id="sentenceCount">0</div><div class="label">Sentences</div></div>
+<div class="adv-stat-item"><div class="num" id="syllableCount">0</div><div class="label">Syllables</div></div>
+<div class="adv-stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch RE</div></div>
+<div class="adv-stat-item"><div class="num" id="gradeLevel">0</div><div class="label">Grade Level</div></div>
+<div class="adv-stat-item"><div class="num" id="avgWordLen">0</div><div class="label">Avg Word Len</div></div>
+<div class="adv-stat-item"><div class="num" id="readingTime">0</div><div class="label">Read Time (min)</div></div>
+<div class="adv-stat-item"><div class="num" id="lexicalDensity">0%</div><div class="label">Lexical Density</div></div>
+<div class="adv-stat-item"><div class="num" id="complexWords">0%</div><div class="label">Complex Words</div></div>
+</div>
+<div class="card"><h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">Word Frequency</h2><div id="freqContainer"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var i=document.getElementById('inputText');
+var el={cc:document.getElementById('charCount'),wc:document.getElementById('wordCount'),sc:document.getElementById('sentenceCount'),sy:document.getElementById('syllableCount'),fr:document.getElementById('fleschScore'),gl:document.getElementById('gradeLevel'),aw:document.getElementById('avgWordLen'),rt:document.getElementById('readingTime'),ld:document.getElementById('lexicalDensity'),cw:document.getElementById('complexWords')};
+var freqC=document.getElementById('freqContainer'),o=document.getElementById('输出Text');
+
+function countSyllables(word){word=word.to小写().replace(/[^a-z]/g,'');if(!word)return 0;
+if(word.length<=3)return 1;
+word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'');
+word=word.replace(/^y/,'');
+var m=word.match(/[aeiouy]{1,2}/g);return m?m.长度：1;}
+
+function update(){var t=i.value;if(!t.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p>';o.textContent='';return;}
+var cc=t.length;
+var words=t.trim().split(/\s+/);var wc=words.length;
+var sents=t.split(/[.!?]+/).filter(function(s){return s.trim().length>0;}).length||1;
+var syl=0,cw=0;var freq={};
+for(var w=0;w<words.length;w++){var word=words[w].replace(/[^a-z]/gi,'');if(!word)continue;
+var cs=countSyllables(word);syl+=cs;
+var lw=word.to小写();freq[lw]=(freq[lw]||0)+1;
+if(cs>=3)cw++;}
+var flesch=206.835-1.015*(wc/sents)-84.6*(syl/wc);
+var grade=0.39*(wc/sents)+11.8*(syl/wc)-15.59;
+if(grade<0)grade=0;
+var avg=wc>0?words.reduce(function(s,w){return s+w.length;},0)/wc:0;
+var rtVal=(wc/200).toFixed(1);
+var ldVal=wc>0?((function(){var c=0;for(var w2=0;w2<words.length;w2++){if(words[w2].length>2&&!/^[a-zA-Z]+$/.test(words[w2]))c++}return c;})()/wc*100).toFixed(1):0;
+var cwp=wc>0?(cw/wc*100).toFixed(1):0;
+
+el.cc.textContent=cc;el.wc.textContent=wc;el.sc.textContent=sents;el.sy.textContent=syl;
+el.fr.textContent=flesch>100?100:flesch<0?0:Math.round(flesch*10)/10;
+el.gl.textContent=grade>18?'18+':Math.round(grade*10)/10;
+el.aw.textContent=avg.toFixed(1);el.rt.textContent=rtVal;
+el.ld.textContent=ldVal+'%';el.cw.textContent=cwp+'%';
+
+var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];});
+var top=sorted.slice(0,15);var maxF=top.length>0?freq[top[0]]:1;
+var h='<table class="freq-table"><thead><tr><th>#</th><th>Word</th><th>计数</th><th>Distribution</th></tr></thead><tbody>';
+for(var i2=0;i2<top.length;i2++){var pct=(freq[top[i2]]/maxF*100).toFixed(0);h+='<tr><td>'+(i2+1)+'</td><td>'+top[i2]+'</td><td>'+freq[top[i2]]+'</td><td><div class="freq-bar" style="width:'+pct+'%"></div></td></tr>';}
+h+='</tbody></table>';freqC.innerHTML=h;
+o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;
+}
+i.addEventListener('input',update);
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+update();})();
+</script></body></html>

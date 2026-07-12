@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机句子生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rs-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rs-row .field { flex:1; min-width:100px; }
+    .rs-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机句子生成器</h1>
+    <p class="tool-desc">从预设单词列表中生成随机句子，支持长度范围和数量控制。</p>
+    <div class="card">
+      <div class="rs-row">
+        <div class="field"><label for="countVal">句子数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="minLen">最少单词数</label><input id="minLen" class="input" type="number" value="4" min="1" max="50"></div>
+        <div class="field"><label for="maxLen">最多单词数</label><input id="maxLen" class="input" type="number" value="12" min="1" max="50"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var minLenEl = document.getElementById('minLen');
+    var maxLenEl = document.getElementById('maxLen');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var words = ['the','a','this','that','every','each','some','any','no','all','one','two','three','big','small','large','tiny','quick','slow','hot','cold','warm','cool','bright','dark','red','blue','green','black','white','soft','hard','smooth','rough','clean','dirty','new','old','young','ancient','fast','swift','brave','calm','eager','fierce','gentle','happy','jolly','kind','lively','proud','shy','silly','smart','sunny','witty','bold','bright','crazy','fancy','grand','great','heavy','humble','icy','jazzy','lucky','mighty','neat','noble','quiet','rapid','royal','sharp','smooth','solid','steady','super','sweet','tough','vivid','wild','wise','alert','ample','brief','chill','clean','clear','crisp','deep','dense','fair','flat','fleet','full','grim','harsh','lame','lean','loud','mild','pure','rare','ripe','safe','same','slim','tall','tame','tidy','tiny','trim','true','vast','warm','wary','wide','apple','bird','book','bread','bridge','cake','car','cat','cloud','crane','crown','dance','desk','dog','dove','drum','duck','eagle','echo','edge','eye','fern','fish','flame','flute','fox','frog','garden','ghost','globe','glove','grape','grass','hawk','heart','horse','house','jewel','kite','knot','lamp','leaf','lemon','lion','lotus','moon','moss','nest','nova','ocean','olive','otter','owl','panda','peach','pearl','piano','pine','plum','pond','rain','raven','reed','ridge','river','robin','rock','rose','sage','sail','seed','silk','sky','snail','snake','snow','spirit','spring','star','storm','stream','sun','swan','tiger','tree','valley','vine','water','wave','wheat','wheel','willow','wing','wolf','youth'];
+
+    function pick(arr) {
+      var b = new Uint8Array(1);
+      crypto.getRandomValues(b);
+      return arr[b[0] % arr.length];
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var minLen = parseInt(minLenEl.value, 10) || 4;
+      var maxLen = parseInt(maxLenEl.value, 10) || 12;
+      if (minLen < 1) minLen = 1;
+      if (maxLen < minLen) maxLen = minLen;
+      if (maxLen > 50) maxLen = 50;
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var lenBytes = new Uint8Array(1);
+        crypto.getRandomValues(lenBytes);
+        var wordCount = minLen + (lenBytes[0] % (maxLen - minLen + 1));
+        var sentenceWords = [];
+        for (var j = 0; j < wordCount; j++) {
+          sentenceWords.push(pick(words));
+        }
+        sentenceWords[0] = sentenceWords[0].charAt(0).to大写() + sentenceWords[0].slice(1);
+        结果.push(sentenceWords.join(' ') + '.');
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个句子');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

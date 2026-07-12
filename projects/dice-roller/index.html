@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -30,8 +30,8 @@
       </div>
     </div>
     <div class="dice-area" id="diceArea"></div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -46,7 +46,7 @@
       var diceSides = document.getElementById('diceSides');
       var rollBtn = document.getElementById('rollBtn');
       var diceArea = document.getElementById('diceArea');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function roll() {
@@ -57,33 +57,33 @@
         if (sides < 2) sides = 2;
         if (sides > 100) sides = 100;
 
-        var results = [];
+        var 结果s = [];
         var sum = 0;
         for (var i = 0; i < count; i++) {
           var val = Math.floor(Math.random() * sides) + 1;
-          results.push(val);
+          结果s.push(val);
           sum += val;
         }
 
         diceArea.innerHTML = '';
-        for (var i = 0; i < results.length; i++) {
+        for (var i = 0; i < 结果s.length; i++) {
           var die = document.createElement('div');
           die.className = 'die rolling';
-          die.textContent = results[i];
+          die.textContent = 结果s[i];
           diceArea.appendChild(die);
           setTimeout(function(el) {
             el.classList.remove('rolling');
           }.bind(null, die), 300);
         }
 
-        outputEl.textContent = results.join(', ') + '  |  总和: ' + sum + '  |  平均: ' + (sum / count).toFixed(1);
+        输出El.textContent = 结果s.join(', ') + '  |  总和: ' + sum + '  |  平均: ' + (sum / count).toFixed(1);
         setStatus('掷骰子完成');
       }
 
       rollBtn.addEventListener('click', roll);
 
       copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

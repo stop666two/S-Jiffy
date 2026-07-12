@@ -1,153 +1,90 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文本对比 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .diff-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .diff-pane { }
-    .diff-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
-    .diff-pane textarea { min-height:200px; }
-    .diff-output { font-family:var(--font-mono); font-size:12px; line-height:1.5; }
-    .diff-output .same { color:var(--color-text-primary); }
-    .diff-output .added { background:#e6ffe6; color:#1a7d1a; }
-    .diff-output .removed { background:#ffe6e6; color:#cc3333; }
-    .diff-stats { display:flex; gap:16px; margin:12px 0; font-size:var(--font-size-sm); }
-    .diff-stat { padding:2px 8px; border-radius:var(--radius-sm); }
-    .diff-stat.add { background:#e6ffe6; color:#1a7d1a; }
-    .diff-stat.del { background:#ffe6e6; color:#cc3333; }
-    .diff-stat.same { background:var(--color-bg-soft); color:var(--color-text-secondary); }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Text Diff - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.diff-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.diff-pane label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
+.diff-pane textarea{min-height:200px;}
+.diff-输出{font-family:var(--font-mono);font-size:12px;line-height:1.5;}
+.diff-输出 .same{color:var(--color-text-primary);}
+.diff-输出 .added{background:#e6ffe6;color:#1a7d1a;}
+.diff-输出 .removed{background:#ffe6e6;color:#cc3333;}
+.diff-stats{display:flex;gap:16px;margin:12px 0;font-size:var(--font-size-sm);}
+.diff-stat{padding:2px 8px;border-radius:var(--radius-sm);}
+.diff-stat.add{background:#e6ffe6;color:#1a7d1a;}
+.diff-stat.del{background:#ffe6e6;color:#cc3333;}
+.diff-stat.same{background:var(--color-bg-soft);color:var(--color-text-secondary);}
+.mode-select{margin-bottom:12px;display:flex;gap:12px;align-items:center;}
+.mode-select label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>文本对比</h1>
-    <p class="tool-desc">逐行对比两段文本的差异，高亮显示新增、删除和未变行。</p>
-    <div class="diff-container">
-      <div class="diff-pane">
-        <label for="textA">原文 (A)</label>
-        <textarea id="textA" class="input textarea" placeholder="原始文本..." style="min-height:200px;"></textarea>
-      </div>
-      <div class="diff-pane">
-        <label for="textB">新文 (B)</label>
-        <textarea id="textB" class="input textarea" placeholder="修改后文本..." style="min-height:200px;"></textarea>
-      </div>
-    </div>
-    <div class="action-bar" style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-      <button id="diffBtn" class="btn btn-primary">对比</button>
-      <button id="swapBtn" class="btn btn-secondary">交换</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
-    </div>
-    <div id="diffStats" class="diff-stats"></div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function() {
-      var textA = document.getElementById('textA');
-      var textB = document.getElementById('textB');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
-      var diffStats = document.getElementById('diffStats');
-      var clearBtn = document.getElementById('clearBtn');
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>文本差异对比</h1>
+<p class="tool-desc">Line-level, word-level, or character-level diff with highlighted additions and deletions.</p>
+<div class="diff-container">
+<div class="diff-pane"><label for="textA">Text A (Original)</label><textarea id="textA" class="input textarea" placeholder="Original text..." style="min-height:200px;"></textarea></div>
+<div class="diff-pane"><label for="textB">Text B (Changed)</label><textarea id="textB" class="input textarea" placeholder="Modified text..." style="min-height:200px;"></textarea></div>
+</div>
+<div class="mode-select">
+<label><input type="radio" name="diffMode" value="line" checked> Line-level</label>
+<label><input type="radio" name="diffMode" value="word"> Word-level</label>
+<label><input type="radio" name="diffMode" value="char"> Character-level</label>
+</div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+<button id="diffBtn" class="btn btn-primary">Diff</button>
+<button id="swapBtn" class="btn btn-secondary">Swap</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div id="diffStats" class="diff-stats"></div>
+<div class="输出-box" id="输出Container"><span id="输出Text" style="display:block;padding-right:60px;font-size:12px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var textA=document.getElementById('textA'),textB=document.getElementById('textB'),输出El=document.getElementById('输出Text'),diffStats=document.getElementById('diffStats');
 
-      function computeDiff(linesA, linesB) {
-        var ma = linesA.length, mb = linesB.length;
-        var dp = [];
-        for (var i = 0; i <= ma; i++) {
-          dp[i] = [];
-          dp[i][0] = 0;
-        }
-        for (var j = 0; j <= mb; j++) dp[0][j] = 0;
-        for (var i = 1; i <= ma; i++) {
-          for (var j = 1; j <= mb; j++) {
-            if (linesA[i-1] === linesB[j-1]) {
-              dp[i][j] = dp[i-1][j-1] + 1;
-            } else {
-              dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
-            }
-          }
-        }
-        // Backtrack
-        var result = [];
-        var i = ma, j = mb;
-        while (i > 0 || j > 0) {
-          if (i > 0 && j > 0 && linesA[i-1] === linesB[j-1]) {
-            result.push({ type: 'same', text: linesA[i-1] });
-            i--; j--;
-          } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
-            result.push({ type: 'added', text: linesB[j-1] });
-            j--;
-          } else {
-            result.push({ type: 'removed', text: linesA[i-1] });
-            i--;
-          }
-        }
-        result.reverse();
-        return result;
-      }
+  function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-      document.getElementById('diffBtn').addEventListener('click', function() {
-        var linesA = textA.value.split('\n');
-        var linesB = textB.value.split('\n');
-        // Remove trailing empty line if input doesn't end with newline
-        if (textA.value.length > 0 && textA.value[textA.value.length-1] !== '\n' && linesA[linesA.length-1] === '') linesA.pop();
-        if (textB.value.length > 0 && textB.value[textB.value.length-1] !== '\n' && linesB[linesB.length-1] === '') linesB.pop();
+  function LCS(a,b){
+    var ma=a.length,mb=b.length,dp=[];for(var i=0;i<=ma;i++){dp[i]=[];dp[i][0]=0;}
+    for(var j=0;j<=mb;j++)dp[0][j]=0;
+    for(var i=1;i<=ma;i++)for(var j=1;j<=mb;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+    var 结果=[],i=ma,j=mb;
+    while(i>0||j>0){if(i>0&&j>0&&a[i-1]===b[j-1]){结果.push({type:'same',text:a[i-1]});i--;j--;}
+    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){结果.push({type:'added',text:b[j-1]});j--;}
+    else{结果.push({type:'removed',text:a[i-1]});i--;}}
+    结果.reverse();return 结果;}
 
-        var diff = computeDiff(linesA, linesB);
-        var html = '';
-        var added = 0, removed = 0, same = 0;
-        for (var i = 0; i < diff.length; i++) {
-          var d = diff[i];
-          var prefix, cls;
-          if (d.type === 'same') { prefix = '  '; cls = 'same'; same++; }
-          else if (d.type === 'added') { prefix = '+ '; cls = 'added'; added++; }
-          else { prefix = '- '; cls = 'removed'; removed++; }
-          html += '<div class="' + cls + '">' + prefix + escapeHtml(d.text) + '</div>';
-        }
-        outputEl.innerHTML = html;
-        diffStats.innerHTML = '<span class="diff-stat same">不变 ' + same + '</span>'
-          + '<span class="diff-stat add">+新增 ' + added + '</span>'
-          + '<span class="diff-stat del">-删除 ' + removed + '</span>';
-        setStatus('对比完成：' + same + ' 行相同，' + added + ' 行新增，' + removed + ' 行删除');
-      });
+  function diffWords(a,b){
+    var wa=a.match(/[a-zA-Z0-9]+|[^a-zA-Z0-9]/g)||[],wb=b.match(/[a-zA-Z0-9]+|[^a-zA-Z0-9]/g)||[];
+    return LCS(wa,wb);}
 
-      function escapeHtml(s) {
-        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-      }
+  function diffChars(a,b){
+    return LCS(a.split(''),b.split(''));}
 
-      document.getElementById('swapBtn').addEventListener('click', function() {
-        var tmp = textA.value;
-        textA.value = textB.value;
-        textB.value = tmp;
-      });
+  document.getElementById('diffBtn').addEventListener('click',function(){
+    var mode=document.querySelector('input[name="diffMode"]:checked').value;
+    var a=textA.value,b=textB.value;
+    var diff;
+    if(mode==='word')diff=diffWords(a,b);
+    else if(mode==='char')diff=diffChars(a,b);
+    else{var linesA=a.split('\n'),linesB=b.split('\n');
+      if(a.length>0&&a[a.length-1]!=='\n'&&linesA[linesA.length-1]==='')linesA.pop();
+      if(b.length>0&&b[b.length-1]!=='\n'&&linesB[linesB.length-1]==='')linesB.pop();
+      diff=LCS(linesA,linesB);}
+    var html='',added=0,removed=0,same=0;
+    for(var i=0;i<diff.length;i++){var d=diff[i];var cls,prefix;
+      if(d.type==='same'){prefix='  ';cls='same';same++;}
+      else if(d.type==='added'){prefix='+ ';cls='added';added++;}
+      else{prefix='- ';cls='removed';removed++;}
+      html+='<div class="'+cls+'">'+prefix+escapeHtml(d.text)+'</div>';}
+    输出El.innerHTML=html;
+    diffStats.innerHTML='<span class="diff-stat same">Same '+same+'</span><span class="diff-stat add">+Added '+added+'</span><span class="diff-stat del">-Removed '+removed+'</span>';
+    setStatus('Diff complete: '+same+' same, '+added+' added, '+removed+' removed');});
 
-      clearBtn.addEventListener('click', function() {
-        textA.value = '';
-        textB.value = '';
-        outputEl.innerHTML = '';
-        diffStats.innerHTML = '';
-        setStatus('');
-        textA.focus();
-      });
-
-      copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent || outputEl.innerText;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
-      });
-    })();
-  </script>
-</body>
-</html>
+  document.getElementById('swapBtn').addEventListener('click',function(){var t=textA.value;textA.value=textB.value;textB.value=t;});
+  document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';输出El.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent||输出El.innerText;if(t){copyToClipboard(t,this);setStatus('Copied');}});
+})();
+</script></body></html>

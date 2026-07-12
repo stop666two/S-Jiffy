@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -38,8 +38,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
     <div id="portInfo" class="port-info"></div>
-    <div class="output-box" id="outputContainer" style="min-height:100px;">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container" style="min-height:100px;">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -54,7 +54,7 @@
       var minEl = document.getElementById('minInput');
       var maxEl = document.getElementById('maxInput');
       var excludeChk = document.getElementById('excludeCommon');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var infoEl = document.getElementById('portInfo');
 
       var commonPorts = [
@@ -94,7 +94,7 @@
       document.getElementById('generateBtn').addEventListener('click', function () {
         var ports = generatePorts();
         if (ports.length === 0) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('无法生成端口，请调整范围', 'error');
           return;
         }
@@ -106,17 +106,17 @@
         for (var i = 0; i < ports.length; i++) {
           grid += '<div class="port-item">' + ports[i] + '</div>';
         }
-        outputEl.innerHTML = '<div class="port-grid">' + grid + '</div>';
+        输出El.innerHTML = '<div class="port-grid">' + grid + '</div>';
         infoEl.textContent = '范围: ' + minEl.value + '-' + maxEl.value + ' · ' + (excludeChk.checked ? '已排除 ' + commonPorts.length + ' 个常用端口' : '不排除');
         setStatus('已生成 ' + ports.length + ' 个端口');
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {
-        outputEl.textContent = ''; infoEl.textContent = ''; setStatus('');
+        输出El.textContent = ''; infoEl.textContent = ''; setStatus('');
       });
 
       document.getElementById('copyBtn').addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text && text.trim()) {
           var nums = text.trim().split(/\s+/).join(', ');
           copyToClipboard(nums, this);

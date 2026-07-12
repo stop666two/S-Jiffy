@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -11,18 +11,18 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>XML Formatter</h1>
+    <h1>XML 格式化</h1>
     <p class="tool-desc">格式化与压缩 XML 数据。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder='<root><item id="1"><name>test</name></item></root>' style="min-height:200px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder='<root><item id="1"><name>测试</name></item></root>' style="min-height:200px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="formatBtn" class="btn btn-primary">格式化</button>
       <button id="minifyBtn" class="btn btn-secondary">压缩</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
 
       function formatXml(xml, minify) {
         var parser = new DOMParser();
@@ -51,7 +51,7 @@
 
       function formatXmlString(str) {
         var indent = 0;
-        var result = [];
+        var 结果 = [];
         var pad = '  ';
         // Normalize: remove whitespace between tags
         str = str.replace(/>\s*</g, '>\n<');
@@ -63,7 +63,7 @@
           if (line.indexOf('</') === 0) {
             indent--;
           }
-          result.push(pad.repeat(Math.max(0, indent)) + line);
+          结果.push(pad.repeat(Math.max(0, indent)) + line);
           // opening tag (not self-closing)
           if (line.indexOf('<?') === 0) {
             // no indent change
@@ -77,17 +77,17 @@
             indent++;
           }
         }
-        return result.join('\n');
+        return 结果.join('\n');
       }
 
       document.getElementById('formatBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 XML', 'error'); return; }
         try {
-          outputEl.textContent = formatXml(text, false);
+          输出El.textContent = formatXml(text, false);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('XML 格式错误', 'error');
         }
       });
@@ -96,16 +96,16 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 XML', 'error'); return; }
         try {
-          outputEl.textContent = formatXml(text, true);
+          输出El.textContent = formatXml(text, true);
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('XML 格式错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

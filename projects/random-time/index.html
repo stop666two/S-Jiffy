@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机时间生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .rt-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .rt-row .field { flex:1; min-width:100px; }
+    .rt-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机时间生成器</h1>
+    <p class="tool-desc">生成随机时间（时分秒），支持 12/24 小时制和分钟步进。</p>
+    <div class="card">
+      <div class="rt-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="stepVal">分钟步进</label><input id="stepVal" class="input" type="number" value="1" min="1" max="60"></div>
+      </div>
+      <div class="rt-row">
+        <label style="display:flex;align-items:center;gap:8px;">格式
+          <select id="fmtSel" class="input" style="width:auto;min-width:80px;">
+            <option value="24">24 小时制</option>
+            <option value="12">12 小时制</option>
+          </select>
+        </label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var stepEl = document.getElementById('stepVal');
+    var fmtEl = document.getElementById('fmtSel');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function cryptoInt(min, max) {
+      var bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return min + (bytes[0] % (max - min + 1));
+    }
+
+    function zeroPad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var step = parseInt(stepEl.value, 10) || 1;
+      if (step < 1) step = 1;
+      if (step > 60) step = 60;
+      var is12 = fmtEl.value === '12';
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var h = cryptoInt(0, 23);
+        var possibleMins = Math.floor(60 / step);
+        var m = cryptoInt(0, possibleMins - 1) * step;
+        var s = cryptoInt(0, 59);
+        if (is12) {
+          var ampm = h < 12 ? 'AM' : 'PM';
+          var h12 = h % 12;
+          if (h12 === 0) h12 = 12;
+          结果.push(zeroPad(h12) + ':' + zeroPad(m) + ':' + zeroPad(s) + ' ' + ampm);
+        } else {
+          结果.push(zeroPad(h) + ':' + zeroPad(m) + ':' + zeroPad(s));
+        }
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个时间');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

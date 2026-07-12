@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Color Temperature - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.kt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.kt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.kt-preview{width:100%;height:100px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-3);transition:background .2s;}
+.kt-结果{display:grid;gap:var(--space-2);}
+.kt-item{display:flex;justify-content:space-between;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.kt-item .key{color:var(--color-text-secondary);font-size:var(--font-size-sm);}
+.kt-item .val{font-weight:500;font-family:var(--font-mono);font-size:var(--font-size-sm);}
+.heat-map{display:flex;height:40px;border-radius:var(--radius-sm);overflow:hidden;margin-top:var(--space-2);}
+.heat-map .seg{flex:1;}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>色温转换</h1><p class="tool-desc">Convert between Kelvin temperature and RGB color. See black body radiation colors.</p>
+<div class="card">
+<div class="kt-row"><label>Temperature (K)</label><input id="kelvinInput" class="input" type="range" min="1000" max="40000" value="5500" style="flex:1;"><span id="kelvinVal" style="font-family:var(--font-mono);font-size:var(--font-size-sm);font-weight:600;">5500 K</span></div>
+<input id="kelvinNum" class="input" type="number" value="5500" min="1000" max="40000" style="width:120px;">
+</div>
+<div id="ktPreview" class="kt-preview"></div>
+<div class="card"><div class="kt-结果">
+<div class="kt-item"><span class="key">RGB</span><span class="val" id="ktRgb">—</span></div>
+<div class="kt-item"><span class="key">HEX</span><span class="val" id="ktHex">—</span></div>
+<div class="kt-item"><span class="key">Color Name</span><span class="val" id="ktName">—</span></div>
+<div class="kt-item"><span class="key">Mired (MK⁻¹)</span><span class="val" id="ktMired">—</span></div>
+</div></div>
+<div class="card"><div class="heat-map" id="heatMap"></div><div style="display:flex;justify-content:space-between;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;"><span>1000K (Candle)</span><span>6500K (Daylight)</span><span>40000K (Blue sky)</span></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var s=document.getElementById('kelvinInput'),n=document.getElementById('kelvinNum'),kv=document.getElementById('kelvinVal');
+var p=document.getElementById('ktPreview'),kr=document.getElementById('ktRgb'),kh=document.getElementById('ktHex'),kn=document.getElementById('ktName'),km=document.getElementById('ktMired'),hm=document.getElementById('heatMap'),o=document.getElementById('输出Text');
+
+function kelvinToRGB(t){var r,g,b;t=t/100;
+if(t<=66){r=255;g=99.4708025861*Math.log(t)-161.1195681661;if(t<=19)g=0;}else{r=329.698727446*Math.pow(t-60,-0.1332047592);g=288.1221695283*Math.pow(t-60,-0.0755148492);}
+if(t>=66){b=255;}else if(t<=19){b=0;}else{b=138.5177312231*Math.log(t-10)-305.0447927307;}
+r=Math.min(255,Math.max(0,Math.round(r)));g=Math.min(255,Math.max(0,Math.round(g)));b=Math.min(255,Math.max(0,Math.round(b)));
+return{r:r,g:g,b:b};}
+
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
+
+function colorName(t){if(t<2000)return'Candlelight';if(t<2800)return'Incandescent';if(t<3500)return'Warm White';if(t<4500)return'Neutral White';if(t<5500)return'Daylight';if(t<6500)return'Cool Daylight';if(t<8000)return'Overcast';return'Blue Sky';}
+
+function update(){var v=parseInt(s.value);n.value=v;kv.textContent=v+' K';
+var rgb=kelvinToRGB(v);var hex=rgbToHex(rgb.r,rgb.g,rgb.b);
+p.style.background=hex;kr.textContent='rgb('+rgb.r+', '+rgb.g+', '+rgb.b+')';kh.textContent=hex;
+kn.textContent=colorName(v);km.textContent=(1000000/v).toFixed(1)+' mired';
+hm.innerHTML='';for(var i=1000;i<=40000;i+=1000){var c=kelvinToRGB(i);hm.innerHTML+='<div class="seg" style="background:rgb('+c.r+','+c.g+','+c.b+')"></div>';}
+o.textContent=hex+' ('+v+'K)';}
+
+s.addEventListener('input',update);n.addEventListener('input',function(){var v=parseInt(this.value)||5500;if(v<1000)v=1000;if(v>40000)v=40000;s.value=v;update();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+update();})();
+</script></body></html>

@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Ipsum 按词生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
-.lorem-output{min-height:200px;resize:vertical;font-family:var(--font-family);font-size:15px;line-height:1.8;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.word-count{font-size:13px;color:var(--color-text-secondary)}
+.lorem-输出{min-height:200px;resize:vertical;font-family:var(--font-family);font-size:15px;line-height:1.8;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.word-count{font-size:13px;color:var(--color-text-secondary)}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
 <main class="tool-workspace"><h1>Lorem Ipsum 按词生成</h1><p class="tool-desc">按指定单词数量生成 Lorem Ipsum 占位文本。</p>
@@ -11,10 +11,10 @@
 <button id="generateBtn" class="btn btn-primary">生成</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<textarea id="loremOutput" class="lorem-output js-focus-input" readonly placeholder="生成的 Lorem Ipsum 文本将显示在此..."></textarea>
+<textarea id="lorem输出" class="lorem-输出 js-focus-input" readonly placeholder="生成的 Lorem Ipsum 文本将显示在此..."></textarea>
 <div class="word-count" id="wordCountDisplay"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>(function(){
@@ -22,15 +22,15 @@ var wordPool=[
 'lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','ut','aliquip','ex','ea','commodo','consequat','duis','aute','irure','dolor','in','reprehenderit','voluptate','velit','esse','cillum','eu','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','qui','officia','deserunt','mollit','anim','id','est','laborum','sed','perspiciatis','unde','omnis','iste','natus','error','voluptatem','accusantium','doloremque','laudantium','totam','rem','aperiam','eaque','ipsa','ab','illo','inventore','veritatis','quasi','architecto','beatae','vitae','dicta','sunt','explicabo','nemo','enim','ipsam','voluptatem','quia','voluptas','aspernatur','aut','odit','fugit','sed','quia','consequuntur','magni','dolores','eos','ratione','voluptatem','sequi','nesciunt','neque','porro','quisquam','est','qui','dolorem','ipsum','quia','dolor','amet','consectetur','adipisci','velit','sed','quia','non','numquam','modi','tempora','incidunt','ut','labore','dolore','magnam','aliquam','quaerat','voluptatem','ut','enim','ad','minima','veniam','quis','nostrum','exercitationem','ullam','corporis','suscipit','laboriosam','nisi','ut','aliquid','ex','ea','commodi','consequatur','quis','autem','vel','eum','iure','reprehenderit','qui','in','ea','voluptate','velit','esse','quam','nihil','molestiae','consequatur','vel','illum','qui','dolorem','eum','fugiat','quo','voluptas','nulla','pariatur'
 ];
 var wordCountInput=document.getElementById('wordCount');
-var loremOutput=document.getElementById('loremOutput');
+var lorem输出=document.getElementById('lorem输出');
 var generateBtn=document.getElementById('generateBtn');
 var clearBtn=document.getElementById('clearBtn');
 var wordCountDisplay=document.getElementById('wordCountDisplay');
-var outputEl=document.getElementById('outputText');
+var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 
 function capitalizeFirst(s){
-return s.charAt(0).toUpperCase()+s.slice(1);
+return s.charAt(0).to大写()+s.slice(1);
 }
 
 function generateLorem(count){
@@ -39,7 +39,7 @@ for(var i=0;i<count;i++){
 var idx=Math.floor(Math.random()*wordPool.length);
 words.push(wordPool[idx]);
 }
-var result='';
+var 结果='';
 var sentence=[];
 for(var i=0;i<words.length;i++){
 sentence.push(words[i]);
@@ -47,28 +47,28 @@ if(sentence.length>=5+Math.floor(Math.random()*8)||i===words.length-1){
 if(sentence.length>0){
 var s=sentence.join(' ').trim();
 if(!/[.!?]$/.test(s))s+='.';
-result+=capitalizeFirst(s)+' ';
+结果+=capitalizeFirst(s)+' ';
 sentence=[];
 }
 }
 }
-return result.trim();
+return 结果.trim();
 }
 
 function generate(){
 var n=parseInt(wordCountInput.value)||50;
 if(n<1)n=1;if(n>10000)n=10000;
 var text=generateLorem(n);
-loremOutput.value=text;
+lorem输出.value=text;
 var actualCount=text.split(/\s+/).length;
 wordCountDisplay.textContent='实际生成: '+actualCount+' 个词';
-outputEl.textContent='生成了 '+actualCount+' 个词';
+输出El.textContent='生成了 '+actualCount+' 个词';
 setStatus('');
 }
 
 generateBtn.addEventListener('click',generate);
-clearBtn.addEventListener('click',function(){loremOutput.value='';wordCountDisplay.textContent='';outputEl.textContent='';setStatus('');});
-copyBtn.addEventListener('click',function(){if(loremOutput.value){copyToClipboard(loremOutput.value,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){lorem输出.value='';wordCountDisplay.textContent='';输出El.textContent='';setStatus('');});
+copyBtn.addEventListener('click',function(){if(lorem输出.value){copyToClipboard(lorem输出.value,copyBtn);setStatus('已复制');}});
 wordCountInput.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
 generate();
 })();</script></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,8 +21,8 @@
       <button id="minifyBtn" class="btn btn-secondary">压缩</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +34,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var formatBtn = document.getElementById('formatBtn');
       var minifyBtn = document.getElementById('minifyBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -47,7 +47,7 @@
       }
 
       function formatCSS(css) {
-        var result = '';
+        var 结果 = '';
         var i = 0;
         var buf = '';
         var inBlock = false;
@@ -59,9 +59,9 @@
             selector = buf.trim();
             buf = '';
             inBlock = true;
-            result += selector + ' {\n  ';
+            结果 += selector + ' {\n  ';
           } else if (ch === '}' && inBlock) {
-            result += buf.trim() + '\n}\n\n';
+            结果 += buf.trim() + '\n}\n\n';
             buf = '';
             inBlock = false;
           } else if (ch === '@' && !inBlock) {
@@ -71,7 +71,7 @@
               i++;
             }
             if (css[i] === '{') {
-              result += atRule + '{\n';
+              结果 += atRule + '{\n';
               i++;
               var inner = '';
               var depth = 1;
@@ -84,9 +84,9 @@
               var formatted = formatCSS(inner);
               var lines = formatted.trim().split('\n');
               for (var li = 0; li < lines.length; li++) {
-                result += '  ' + lines[li] + '\n';
+                结果 += '  ' + lines[li] + '\n';
               }
-              result += '}\n\n';
+              结果 += '}\n\n';
               buf = '';
             }
           } else {
@@ -94,7 +94,7 @@
             i++;
           }
         }
-        return result.trim();
+        return 结果.trim();
       }
 
       function minifyCSS(css) {
@@ -106,21 +106,21 @@
         if (!text) { setStatus('请输入 CSS 代码', 'error'); return; }
         try {
           if (mode === 'format') {
-            outputEl.textContent = formatCSS(text);
+            输出El.textContent = formatCSS(text);
           } else {
-            outputEl.textContent = minifyCSS(text);
+            输出El.textContent = minifyCSS(text);
           }
           setStatus('');
         } catch (e) {
-          outputEl.textContent = '';
+          输出El.textContent = '';
           setStatus('处理失败', 'error');
         }
       }
 
       formatBtn.addEventListener('click', function () { update('format'); });
       minifyBtn.addEventListener('click', function () { update('minify'); });
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

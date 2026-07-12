@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -33,8 +33,8 @@
       </div>
     </div>
 
-    <div class="output-box" id="resultBox" style="min-height:80px;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="结果Box" style="min-height:80px;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -49,7 +49,7 @@
       var dropZone = document.getElementById('dropZone');
       var canvas = document.getElementById('canvas');
       var ctx = canvas.getContext('2d');
-      var o = document.getElementById('outputText');
+      var o = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function rgbToHex(r, g, b) {
@@ -134,7 +134,7 @@
           var hex = rgbToHex(c.r, c.g, c.b);
           html += '<div class="color-row">';
           html += '<div class="color-preview" style="background:' + hex + '"></div>';
-          html += '<span class="color-hex">' + hex.toUpperCase() + '</span>';
+          html += '<span class="color-hex">' + hex.to大写() + '</span>';
           html += '<div class="color-bar" style="background:' + hex + '"></div>';
           html += '<span class="color-pct">' + c.pct + '%</span>';
           html += '</div>';
@@ -162,10 +162,10 @@
           img.onload = function () {
             var preview = dropZone.querySelector('img');
             if (!preview) { preview = document.createElement('img'); dropZone.querySelector('div').appendChild(preview); }
-            preview.src = e.target.result;
+            preview.src = e.target.结果;
             processImage(img);
           };
-          img.src = e.target.result;
+          img.src = e.target.结果;
         };
         reader.readAsDataURL(file);
       }

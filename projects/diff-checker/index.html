@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
     .diff-panel textarea { width:100%; min-height:240px; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
     .diff-panel textarea:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
     .diff-panel label { display:block; font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:var(--space-1); }
-    .diff-output { font-family:var(--font-mono); font-size:13px; line-height:1.6; }
+    .diff-输出 { font-family:var(--font-mono); font-size:13px; line-height:1.6; }
     .diff-add { background:#e6ffec; color:#1a7f37; }
     .diff-del { background:#ffebe9; color:#cf222e; }
     .diff-eq { color:var(--color-text-disabled); }
@@ -39,8 +39,8 @@
       <button id="diffBtn" class="btn btn-primary">对比 Diff</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box">
-      <div id="outputText" class="diff-output" style="display:block;padding-right:60px;"></div>
+    <div class="输出-box">
+      <div id="输出Text" class="diff-输出" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -53,7 +53,7 @@
     (function () {
       var textA = document.getElementById('textA');
       var textB = document.getElementById('textB');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var diffBtn = document.getElementById('diffBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -109,7 +109,7 @@
         }
 
         setStatus('+ ' + addCount + ' 行  - ' + delCount + ' 行  = ' + ops.length + ' 行');
-        outputEl.innerHTML = html;
+        输出El.innerHTML = html;
       }
 
       function escapeHtml(s) {
@@ -117,9 +117,9 @@
       }
 
       diffBtn.addEventListener('click', diffTexts);
-      clearBtn.addEventListener('click', function () { textA.value = ''; textB.value = ''; outputEl.innerHTML = ''; setStatus(''); textA.focus(); });
+      clearBtn.addEventListener('click', function () { textA.value = ''; textB.value = ''; 输出El.innerHTML = ''; setStatus(''); textA.focus(); });
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

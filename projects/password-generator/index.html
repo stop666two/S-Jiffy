@@ -1,172 +1,84 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>密码生成器 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .strength-bar { height:6px; border-radius:3px; background:var(--color-border); margin:8px 0; overflow:hidden; }
-    .strength-fill { height:100%; border-radius:3px; transition:width .3s, background .3s; width:0; }
-    .pw-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .pw-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); white-space:nowrap; }
-    .pw-val { font-family:var(--font-mono); font-size:var(--font-size-lg); letter-spacing:2px; word-break:break-all; padding:8px 0; }
-    .strength-label { font-size:var(--font-size-xs); font-family:var(--font-mono); }
-    .meter-wrap { flex:1; min-width:120px; }
-    .range-wrap { display:flex; align-items:center; gap:8px; }
-    .range-wrap input[type=range] { flex:1; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>密码生成器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.strength-bar{height:6px;border-radius:3px;background:var(--color-border);margin:8px 0;overflow:hidden;}
+.strength-fill{height:100%;border-radius:3px;transition:width .3s,background .3s;width:0;}
+.pw-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.pw-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);white-space:nowrap;}
+.meter-wrap{flex:1;min-width:120px;}
+.range-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.gen-mode label{display:flex;align-items:center;gap:6px;font-size:var(--font-size-sm);cursor:pointer;margin-bottom:4px;}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>密码生成器</h1>
-    <p class="tool-desc">可配置字符集、强度指示、排除相似字符的强密码生成。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>密码生成器</h1>
+<p class="tool-desc">生成强密码，支持多种模式与强度检测。</p>
+<div class="card">
+<div class="pw-row" style="margin-bottom:12px;">
+<label>密码</label><div style="flex:1;font-family:var(--font-mono);font-size:var(--font-size-lg);letter-spacing:2px;word-break:break-all;" id="pwDisplay"></div>
+<button id="generateBtn" class="btn btn-primary">生成</button></div>
+<div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+<div style="display:flex;justify-content:space-between;"><span id="strengthLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">—</span><span id="entropyLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">0 bit</span></div>
+</div>
+<div class="card" style="display:flex;flex-direction:column;gap:12px;">
+<div class="gen-mode">
+<label><input type="radio" name="genMode" value="random" checked> 随机字符（自定义字符集）</label>
+<label><input type="radio" name="genMode" value="pronounceable"> 可读音（辅音+元音组合）</label>
+<label><input type="radio" name="genMode" value="pattern"> 模式组合（@=字母 #=数字 %=符号）</label>
+</div>
+<div class="range-wrap"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">长度 <span id="lenValue">16</span></label><input id="lengthSlider" type="range" min="4" max="128" value="16" style="flex:1;"></div>
+<div class="pw-row">
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkUpper" checked> A-Z</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkLower" checked> a-z</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkDigit" checked> 0-9</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkSym"> !@#$%</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkExclude"> 排除相似字符</label>
+</div>
+<div id="patternRow" style="display:none;" class="pw-row">
+<label style="font-size:var(--font-size-sm);">模式</label><input id="patternInput" class="input" value="@@##@@##@@##" placeholder="@=%E5%AD%97%E6%AF%8D #=%E6%95%B0%E5%AD%97 %%=%E7%AC%A6%E5%8F%B7" style="width:200px;">
+</div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ',lower='abcdefghijklmnopqrstuvwxyz',digits='0123456789',sym='!@#$%^&*()-_=+[]{}|;:,.<>?',similar='0O1lI2Z5S8B';
+  var vowel='aeiou',consonant='bcdfghjklmnpqrstvwxyz';
+  var pwDisplay=document.getElementById('pwDisplay'),slider=document.getElementById('lengthSlider'),lenValue=document.getElementById('lenValue');
+  var chkU=document.getElementById('chkUpper'),chkL=document.getElementById('chkLower'),chkD=document.getElementById('chkDigit'),chkS=document.getElementById('chkSym'),chkE=document.getElementById('chkExclude');
+  var fill=document.getElementById('strengthFill'),sLabel=document.getElementById('strengthLabel'),eLabel=document.getElementById('entropyLabel'),pi=document.getElementById('patternInput');
+  var o=document.getElementById('outputText'),currentPassword='';
 
-    <div class="card">
-      <div class="pw-row" style="margin-bottom:12px;">
-        <label>密码</label>
-        <div style="flex:1;font-family:var(--font-mono);font-size:var(--font-size-lg);letter-spacing:2px;word-break:break-all;" id="passwordDisplay"></div>
-        <button id="generateBtn" class="btn btn-primary">生成</button>
-      </div>
-      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-      <div style="display:flex;justify-content:space-between;">
-        <span class="strength-label" id="strengthLabel">—</span>
-        <span class="strength-label" id="entropyLabel">0 bit</span>
-      </div>
-    </div>
+  function genRandom(len,chars){var r='',a=new Uint32Array(len);crypto.getRandomValues(a);for(var i=0;i<len;i++)r+=chars[a[i]%chars.length];return r;}
+  function genPronounceable(len){var pw='';for(var i=0;i<len;i++)pw+=i%2===0?consonant[Math.floor(Math.random()*consonant.length)]:vowel[Math.floor(Math.random()*vowel.length)];return pw.substr(0,len);}
+  function genPattern(pat){var r='',a=new Uint32Array(pat.length);crypto.getRandomValues(a);for(var i=0;i<pat.length;i++){var c=pat[i];if(c==='@')r+=upper[a[i]%26];else if(c==='#')r+=digits[a[i]%10];else if(c==='%')r+=sym[a[i]%sym.length];else r+=c;}return r;}
+  function calcEntropy(cl,pl){return pl*Math.log2(cl);}
+  function getStrength(e){if(e<30)return{label:'非常弱',pct:10,color:'#D54941'};if(e<50)return{label:'弱',pct:25,color:'#E68A2E'};if(e<70)return{label:'中',pct:45,color:'#F0C040'};if(e<100)return{label:'强',pct:70,color:'#2BA471'};return{label:'非常强',pct:100,color:'#1E6DF2'};}
 
-    <div class="card" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="range-wrap">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">长度 <span id="lenValue">16</span></label>
-        <input id="lengthSlider" type="range" min="4" max="128" value="16" style="flex:1;">
-      </div>
-      <div class="pw-row">
-        <label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkUpper" checked> A-Z</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkLower" checked> a-z</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkDigits" checked> 0-9</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkSymbols"> !@#$%</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkSimilar"> 排除相似字符</label>
-      </div>
-      <div class="pw-row">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">最少数字</label>
-        <input id="minDigits" class="input" type="number" value="1" min="0" max="20" style="width:70px;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">最少符号</label>
-        <input id="minSymbols" class="input" type="number" value="0" min="0" max="20" style="width:70px;">
-      </div>
-    </div>
+  function generate(){
+    var len=parseInt(slider.value),mode=document.querySelector('input[name="genMode"]:checked').value,pw='';
+    if(mode==='pronounceable'){pw=genPronounceable(len);}
+    else if(mode==='pattern'){var pat=pi.value.trim()||'@@##@@##';pw=genPattern(pat);}
+    else{var chars='';if(chkU.checked)chars+=upper;if(chkL.checked)chars+=lower;if(chkD.checked)chars+=digits;if(chkS.checked)chars+=sym;
+    if(chkE.checked){var fl='';for(var i=0;i<chars.length;i++){if(similar.indexOf(chars[i])===-1)fl+=chars[i];}chars=fl;}
+    if(!chars){setStatus('请至少选择一种字符类型','error');return;}pw=genRandom(len,chars);}
+    currentPassword=pw;pwDisplay.textContent=pw;
+    var cs=mode==='pronounceable'?52:mode==='pattern'?36:0;
+    if(mode==='random'){if(chkU.checked)cs+=26;if(chkL.checked)cs+=26;if(chkD.checked)cs+=10;if(chkS.checked)cs+=sym.length;}
+    var entropy=calcEntropy(Math.max(cs,1),pw.length);var s=getStrength(entropy);
+    fill.style.width=s.pct+'%';fill.style.background=s.color;sLabel.textContent=s.label;eLabel.textContent=entropy.toFixed(1)+' bit';
+    o.textContent=pw;setStatus('密码已生成');
+  }
 
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function () {
-      var pwDisplay = document.getElementById('passwordDisplay');
-      var slider = document.getElementById('lengthSlider'), lenValue = document.getElementById('lenValue');
-      var fill = document.getElementById('strengthFill'), sLabel = document.getElementById('strengthLabel'), eLabel = document.getElementById('entropyLabel');
-      var chkU = document.getElementById('chkUpper'), chkL = document.getElementById('chkLower'), chkD = document.getElementById('chkDigits'), chkS = document.getElementById('chkSymbols'), chkSim = document.getElementById('chkSimilar');
-      var minDig = document.getElementById('minDigits'), minSym = document.getElementById('minSymbols');
-      var o = document.getElementById('outputText');
-      var currentPassword = '';
-
-      var upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      var lower = 'abcdefghijklmnopqrstuvwxyz';
-      var digits = '0123456789';
-      var symbols = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-      var similar = '0O1lI|';
-
-      function shuffle(s) {
-        var a = s.split('');
-        for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
-        return a.join('');
-      }
-
-      function calcEntropy(charsetSize, len) { return len * Math.log2(charsetSize); }
-
-      function getStrength(entropy) {
-        if (entropy < 30) return { label: '非常弱', pct: 10, color: '#9F2F2D' };
-        if (entropy < 50) return { label: '弱', pct: 30, color: '#C75C3A' };
-        if (entropy < 70) return { label: '中等', pct: 50, color: '#D4A72C' };
-        if (entropy < 100) return { label: '强', pct: 75, color: '#4A7C3F' };
-        return { label: '非常强', pct: 100, color: '#346538' };
-      }
-
-      function generateOne(len, chars, needDigits, needSym) {
-        var dChars = digits, sChars = symbols;
-        var mainChars = chars;
-        for (var attempt = 0; attempt < 100; attempt++) {
-          var arr = new Uint32Array(len);
-          crypto.getRandomValues(arr);
-          var result = '';
-          for (var i = 0; i < len; i++) result += mainChars[arr[i] % mainChars.length];
-          var dc = (result.match(/\d/g) || []).length;
-          var sc = (result.match(/[!@#$%^&*()\-_=+\[\]{}|;:,.<>?]/g) || []).length;
-          if (dc >= needDigits && sc >= needSym) return result;
-        }
-        var arr2 = new Uint32Array(len);
-        crypto.getRandomValues(arr2);
-        var r = '';
-        for (var j = 0; j < len; j++) r += mainChars[arr2[j] % mainChars.length];
-        return r;
-      }
-
-      function updateStrength(password, charsetSize) {
-        var entropy = calcEntropy(charsetSize, password.length);
-        var s = getStrength(entropy);
-        fill.style.width = s.pct + '%';
-        fill.style.background = s.color;
-        sLabel.textContent = s.label;
-        eLabel.textContent = entropy.toFixed(1) + ' bit';
-      }
-
-      function generate() {
-        var chars = '';
-        if (chkU.checked) chars += upper;
-        if (chkL.checked) chars += lower;
-        if (chkD.checked) chars += digits;
-        if (chkS.checked) chars += symbols;
-        if (chkSim.checked) {
-          var filtered = '';
-          for (var i = 0; i < chars.length; i++) { if (similar.indexOf(chars[i]) === -1) filtered += chars[i]; }
-          chars = filtered;
-        }
-        if (!chars) { setStatus('请至少选择一种字符类型', 'error'); return; }
-        var len = parseInt(slider.value) || 16;
-        var needDigits = parseInt(minDig.value) || 0;
-        var needSym2 = parseInt(minSym.value) || 0;
-        if (needDigits + needSym2 > len) { setStatus('最少字符要求超过密码长度', 'error'); return; }
-        var pw = generateOne(len, chars, needDigits, needSym2);
-        currentPassword = pw;
-        pwDisplay.textContent = pw;
-        var cs = 0;
-        if (chkU.checked) cs += 26;
-        if (chkL.checked) cs += 26;
-        if (chkD.checked) cs += 10;
-        if (chkS.checked) cs += symbols.length;
-        if (chkSim.checked) {
-          for (var j = 0; j < similar.length; j++) { if (chars.indexOf(similar[j]) !== -1) cs--; }
-        }
-        updateStrength(pw, cs);
-        o.textContent = pw;
-        setStatus('密码已生成');
-      }
-
-      slider.addEventListener('input', function () { lenValue.textContent = this.value; });
-      document.getElementById('generateBtn').addEventListener('click', generate);
-      document.getElementById('copyBtn').addEventListener('click', function () {
-        if (currentPassword) { copyToClipboard(currentPassword, this); setStatus('已复制'); if (o.textContent) generate(); }
-      });
-      generate();
-    })();
-  </script>
-</body>
-</html>
+  slider.addEventListener('input',function(){lenValue.textContent=this.value;});
+  var radios=document.querySelectorAll('input[name="genMode"]');
+  for(var i=0;i<radios.length;i++){radios[i].addEventListener('change',function(){document.getElementById('patternRow').style.display=this.value==='pattern'?'flex':'none';});}
+  document.getElementById('generateBtn').addEventListener('click',generate);
+  document.getElementById('copyBtn').addEventListener('click',function(){if(currentPassword){copyToClipboard(currentPassword,this);setStatus('已复制');}});
+  generate();
+})();
+</script></body></html>

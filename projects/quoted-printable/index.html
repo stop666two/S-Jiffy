@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Quoted-Printable 编解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>Quoted-Printable 编解码</h1><p class="tool-desc">Quoted-Printable 编码/解码（MIME 电子邮件编码标准）。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码的文本或 QP 字符串..." style="min-height:100px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="encodeBtn" class="btn btn-primary">编码</button>
+<button id="decodeBtn" class="btn btn-secondary">解码</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var encodeBtn=document.getElementById('encodeBtn');
+var decodeBtn=document.getElementById('decodeBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+function qpEncode(text){
+var r='';
+for(var i=0;i<text.length;i++){
+var code=text.charCodeAt(i);
+if(code===32){r+=' ';continue;}
+if(code===9){r+='\t';continue;}
+if(code===61||code>126||code<32){
+var hex=code.toString(16).to大写();
+if(hex.length<2)hex='0'+hex;
+r+='='+hex;
+}else{r+=text[i];}
+if((i+1)%76===0)r+='=\r\n';
+}
+return r;
+}
+function qpDecode(text){
+return text.replace(/=(?:[\r\n]+|$)/g,'').replace(/=([0-9A-Fa-f]{2})/g,function(m,h){return String.fromCharCode(parseInt(h,16));});
+}
+encodeBtn.addEventListener('click',function(){
+var t=inputEl.value;
+if(!t){setStatus('请输入文本','error');return;}
+输出El.textContent=qpEncode(t);
+setStatus('');
+});
+decodeBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 QP 字符串','error');return;}
+输出El.textContent=qpDecode(t);
+setStatus('');
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

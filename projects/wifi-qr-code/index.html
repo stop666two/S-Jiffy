@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -41,8 +41,8 @@
     <div style="text-align:center;padding:var(--space-3) 0;">
       <div id="qrcode"></div>
     </div>
-    <div class="output-box" style="text-align:center;">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" style="text-align:center;">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -58,7 +58,7 @@
     var encEl = document.getElementById('encryptSelect');
     var hiddenEl = document.getElementById('hiddenCheck');
     var qrEl = document.getElementById('qrcode');
-    var outputEl = document.getElementById('outputText');
+    var 输出El = document.getElementById('输出Text');
     function generate() {
       var ssid = ssidEl.value.trim();
       if (!ssid) { setStatus('请输入 SSID', 'error'); return; }
@@ -68,7 +68,7 @@
       var wifiStr = 'WIFI:S:' + ssid + ';T:' + enc + ';P:' + pwd + ';' + hidden + ';';
       qrEl.innerHTML = '';
       new QRCode(qrEl, { text: wifiStr, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M });
-      outputEl.textContent = wifiStr;
+      输出El.textContent = wifiStr;
       setStatus('WiFi 二维码已生成');
     }
     document.getElementById('generateBtn').addEventListener('click', generate);

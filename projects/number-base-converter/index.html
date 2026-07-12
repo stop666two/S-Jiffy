@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -43,8 +43,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
 
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <div id="tableArea"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
@@ -57,7 +57,7 @@
   <script>
     (function () {
       var inputVal = document.getElementById('inputValue'), fromBase = document.getElementById('fromBase'), toBase = document.getElementById('toBase');
-      var o = document.getElementById('outputText'), tableArea = document.getElementById('tableArea');
+      var o = document.getElementById('输出Text'), tableArea = document.getElementById('tableArea');
       var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
       var baseNames = { 2: '二进制', 3: '三进制', 4: '四进制', 5: '五进制', 6: '六进制', 7: '七进制', 8: '八进制', 9: '九进制', 10: '十进制', 11: '十一进制', 12: '十二进制', 13: '十三进制', 14: '十四进制', 15: '十五进制', 16: '十六进制', 17: '十七进制', 18: '十八进制', 19: '十九进制', 20: '二十进制', 21: '二十进制', 22: '二十二进制', 23: '二十三进制', 24: '二十四进制', 25: '二十五进制', 26: '二十六进制', 27: '二十七进制', 28: '二十八进制', 29: '二十九进制', 30: '三十进制', 31: '三十一进制', 32: '三十二进制', 33: '三十三进制', 34: '三十四进制', 35: '三十五进制', 36: '三十六进制' };
@@ -77,13 +77,13 @@
         }
         if (isNaN(dec)) { setStatus('输入与所选进制不匹配', 'error'); o.textContent = ''; tableArea.innerHTML = ''; return; }
 
-        var result = dec.toString(to).toUpperCase();
-        o.textContent = baseNames[to] + ': ' + result + '  (十进制: ' + dec + ')';
+        var 结果 = dec.toString(to).to大写();
+        o.textContent = baseNames[to] + ': ' + 结果 + '  (十进制: ' + dec + ')';
 
         var html = '<table class="base-table"><thead><tr><th>进制</th><th>名称</th><th>值</th></tr></thead><tbody>';
         for (var i = 0; i < showBases.length; i++) {
           var b = showBases[i];
-          var val = dec.toString(b).toUpperCase();
+          var val = dec.toString(b).to大写();
           html += '<tr><td>' + b + '</td><td>' + baseNames[b] + '</td><td>' + val + '</td></tr>';
         }
         html += '</tbody></table>';

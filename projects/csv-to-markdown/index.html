@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSV to Markdown - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.md-preview{font-family:var(--font-mono);font-size:13px;line-height:1.5;white-space:pre;overflow:auto;max-height:400px;}
+.opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.opt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>CSV 转 Markdown</h1><p class="tool-desc">Paste CSV data, generate GitHub-flavored markdown tables.</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='name,age,city&#10;Alice,30,NYC&#10;Bob,25,LA' style="min-height:160px;"></textarea></div>
+<div class="opt-row">
+<label>Delimiter</label><select id="delimSelect" class="input" style="width:auto;"><option value=",">Comma (,)</option><option value="\t">Tab</option><option value=";">Semicolon (;)</option><option value="|">Pipe (|)</option></select>
+<label>Align</label><select id="alignSelect" class="input" style="width:auto;"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><div id="md输出" class="md-preview"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var i=document.getElementById('inputText'),md=document.getElementById('md输出'),o=document.getElementById('输出Text');
+
+function escapeMd(s){return s.replace(/\|/g,'\\|').replace(/\n/g,'<br>');}
+
+function convert(){var t=i.value.trim(),delim=document.getElementById('delimSelect').value;if(delim==='\\t')delim='\t';
+var align=document.getElementById('alignSelect').value;if(!t){md.textContent='';setStatus('Enter CSV data','error');return;}
+var lines=t.split('\n').filter(function(l){return l.trim().length>0;});if(lines.length<1){md.textContent='';return;}
+function parseLine(l){var parts=[],cur='',inQ=false;for(var c=0;c<l.length;c++){var ch=l[c];
+if(ch==='"'){inQ=!inQ;}else if(ch===delim&&!inQ){parts.push(cur.trim());cur='';}else{cur+=ch;}}
+parts.push(cur.trim());return parts;}
+var rows=[];for(var r=0;r<lines.length;r++){rows.push(parseLine(lines[r]));}
+var maxCols=0;for(var r2=0;r2<rows.length;r2++){if(rows[r2].length>maxCols)maxCols=rows[r2].length;}
+var out='';if(rows.length>0){out+='| '+rows[0].map(function(c){return escapeMd(c);}).join(' | ')+' |\n';
+var sep='';if(align==='left')sep='| '+rows[0].map(function(){return':---'}).join(' | ')+' |';
+else if(align==='center')sep='| '+rows[0].map(function(){return':---:'}).join(' | ')+' |';
+else sep='| '+rows[0].map(function(){return'---:'}).join(' | ')+' |';
+out+=sep+'\n';for(var r3=1;r3<rows.length;r3++){out+='| '+rows[r3].map(function(c){return escapeMd(c);}).join(' | ')+' |\n';}}
+md.textContent=out;setStatus('Converted '+rows.length+' rows');}
+
+document.getElementById('convertBtn').addEventListener('click',convert);
+document.getElementById('clearBtn').addEventListener('click',function(){i.value='';md.textContent='';setStatus('');i.focus();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(md.textContent){copyToClipboard(md.textContent,this);setStatus('Copied');}});
+})();
+</script></body></html>

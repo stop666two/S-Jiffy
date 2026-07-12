@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +20,8 @@
       <button id="decodeBtn" class="btn btn-primary">解码</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="output-box" id="outputContainer">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <div class="输出-box" id="输出Container">
+      <span id="输出Text" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -33,7 +33,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -65,18 +65,18 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 URL', 'error'); return; }
         var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-        var results = [];
+        var 结果s = [];
         var decoded = 0;
         for (var i = 0; i < lines.length; i++) {
           var original = decodeSafelink(lines[i]);
           if (original) {
-            results.push('原始 URL: ' + original + '\n来源: ' + lines[i] + '\n');
+            结果s.push('原始 URL: ' + original + '\n来源: ' + lines[i] + '\n');
             decoded++;
           } else {
-            results.push('未能解码: ' + lines[i] + '\n');
+            结果s.push('未能解码: ' + lines[i] + '\n');
           }
         }
-        outputEl.textContent = results.join('\n');
+        输出El.textContent = 结果s.join('\n');
         if (decoded > 0) {
           setStatus('成功解码 ' + decoded + ' 个 URL');
         } else {
@@ -86,13 +86,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        outputEl.textContent = '';
+        输出El.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

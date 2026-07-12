@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   </header>
   <main class="tool-workspace">
-    <h1>Basic Auth Generator</h1>
+    <h1>Basic Auth 生成器</h1>
     <p class="tool-desc">将用户名和密码转换为 HTTP Basic Authentication 请求头。</p>
     <div class="card">
       <div class="auth-row">
@@ -25,8 +25,8 @@
       </div>
       <div style="margin-top:var(--space-3);"><button id="generateBtn" class="btn btn-primary">生成 Header</button></div>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="输出-box">
+      <span id="输出Text" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -40,7 +40,7 @@
       var authUsername = document.getElementById('authUsername');
       var authPassword = document.getElementById('authPassword');
       var generateBtn = document.getElementById('generateBtn');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       generateBtn.addEventListener('click', function () {
@@ -49,12 +49,12 @@
         if (!user && !pass) { setStatus('请输入用户名和密码', 'error'); return; }
         var token = btoa(unescape(encodeURIComponent(user + ':' + pass)));
         var header = 'Authorization: Basic ' + token;
-        outputEl.textContent = header;
+        输出El.textContent = header;
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent;
+        var text = 输出El.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

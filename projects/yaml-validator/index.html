@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     .yaml-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .yaml-pane textarea { min-height:300px; font-family:var(--font-mono); font-size:12px; }
     .yaml-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
-    .yaml-output { font-family:var(--font-mono); font-size:12px; line-height:1.6; white-space:pre-wrap; }
+    .yaml-输出 { font-family:var(--font-mono); font-size:12px; line-height:1.6; white-space:pre-wrap; }
     .yaml-error { color:var(--color-error); }
     .yaml-success { color:var(--color-success); }
     @media (max-width:700px) { .yaml-container { grid-template-columns:1fr; } }
@@ -29,8 +29,8 @@
       </div>
       <div class="yaml-pane">
         <label>输出</label>
-        <div class="output-box" style="min-height:300px;background:var(--color-bg);">
-          <div id="outputText" class="yaml-output" style="display:block;padding-right:60px;"></div>
+        <div class="输出-box" style="min-height:300px;background:var(--color-bg);">
+          <div id="输出Text" class="yaml-输出" style="display:block;padding-right:60px;"></div>
           <button class="copy-btn" id="copyBtn">复制</button>
         </div>
       </div>
@@ -49,7 +49,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var validateBtn = document.getElementById('validateBtn');
       var formatBtn = document.getElementById('formatBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -57,8 +57,8 @@
 
       function simpleYamlParse(text) {
         var lines = text.split('\n');
-        var result = {};
-        var stack = [{ obj: result, indent: -1 }];
+        var 结果 = {};
+        var stack = [{ obj: 结果, indent: -1 }];
         var errors = [];
 
         for (var i = 0; i < lines.length; i++) {
@@ -100,7 +100,7 @@
             parent[key] = parseScalar(value);
           }
         }
-        return { result: result, errors: errors };
+        return { 结果: 结果, errors: errors };
       }
 
       function parseScalar(value) {
@@ -124,33 +124,33 @@
       function yamlStringify(obj, indent) {
         indent = indent || 0;
         var pad = '  '.repeat(indent);
-        var result = '';
+        var 结果 = '';
         if (obj === null || obj === undefined) return pad + 'null\n';
         if (typeof obj === 'string') return pad + obj + '\n';
         if (typeof obj === 'number' || typeof obj === 'boolean') return pad + obj + '\n';
         if (Array.isArray(obj)) {
           for (var i = 0; i < obj.length; i++) {
             if (typeof obj[i] === 'object' && obj[i] !== null) {
-              result += pad + '- ' + yamlStringify(obj[i], indent + 1).trim() + '\n';
+              结果 += pad + '- ' + yamlStringify(obj[i], indent + 1).trim() + '\n';
             } else {
-              result += pad + '- ' + obj[i] + '\n';
+              结果 += pad + '- ' + obj[i] + '\n';
             }
           }
-          return result;
+          return 结果;
         }
         for (var key in obj) {
           if (Object.prototype.hasOwnProperty.call(obj, key)) {
             var val = obj[key];
             if (val !== null && typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length > 0) {
-              result += pad + key + ':\n' + yamlStringify(val, indent + 1);
+              结果 += pad + key + ':\n' + yamlStringify(val, indent + 1);
             } else if (val !== null && typeof val === 'object') {
-              result += pad + key + ': ' + (Array.isArray(val) ? yamlStringify(val, indent) : (val === null ? 'null' : JSON.stringify(val))) + '\n';
+              结果 += pad + key + ': ' + (Array.isArray(val) ? yamlStringify(val, indent) : (val === null ? 'null' : JSON.stringify(val))) + '\n';
             } else {
-              result += pad + key + ': ' + formatScalar(val) + '\n';
+              结果 += pad + key + ': ' + formatScalar(val) + '\n';
             }
           }
         }
-        return result;
+        return 结果;
       }
 
       function formatScalar(val) {
@@ -176,14 +176,14 @@
               html += escapeHtml(parsed.errors[i]) + '<br>';
             }
             html += '</div>';
-            outputEl.innerHTML = html;
+            输出El.innerHTML = html;
             setStatus(parsed.errors.length + ' 个错误', 'error');
           } else {
-            outputEl.innerHTML = '<div class="yaml-success"><strong>\u2714 YAML 语法有效</strong></div>';
+            输出El.innerHTML = '<div class="yaml-success"><strong>\u2714 YAML 语法有效</strong></div>';
             setStatus('验证通过');
           }
         } catch (e) {
-          outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 解析错误:</strong> ' + escapeHtml(e.message) + '</div>';
+          输出El.innerHTML = '<div class="yaml-error"><strong>\u2716 解析错误:</strong> ' + escapeHtml(e.message) + '</div>';
           setStatus('解析失败', 'error');
         }
       }
@@ -200,14 +200,14 @@
               html += escapeHtml(parsed.errors[i]) + '<br>';
             }
             html += '</div>';
-            outputEl.innerHTML = html;
+            输出El.innerHTML = html;
             setStatus(parsed.errors.length + ' 个错误', 'error');
           } else {
-            outputEl.textContent = yamlStringify(parsed.result).trim() + '\n';
+            输出El.textContent = yamlStringify(parsed.结果).trim() + '\n';
             setStatus('美化完成');
           }
         } catch (e) {
-          outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 错误:</strong> ' + escapeHtml(e.message) + '</div>';
+          输出El.innerHTML = '<div class="yaml-error"><strong>\u2716 错误:</strong> ' + escapeHtml(e.message) + '</div>';
           setStatus('格式化失败', 'error');
         }
       }
@@ -218,9 +218,9 @@
 
       validateBtn.addEventListener('click', validate);
       formatBtn.addEventListener('click', format);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.innerHTML = ''; setStatus(''); inputEl.focus(); });
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent || '';
+        var text = 输出El.textContent || '';
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

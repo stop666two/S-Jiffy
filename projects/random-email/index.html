@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机邮箱生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .re-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .re-row .field { flex:1; min-width:100px; }
+    .re-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机邮箱生成器</h1>
+    <p class="tool-desc">生成随机电子邮件地址，支持自定义域名和一次性邮箱选项。</p>
+    <div class="card">
+      <div class="re-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="domainVal">自定义域名（可选）</label><input id="domainVal" class="input" type="text" placeholder="例如 example.com"></div>
+      </div>
+      <div class="re-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="dispChk" type="checkbox"> 使用一次性邮箱域名</label>
+        <div class="field"><label for="nameLen">用户名长度</label><input id="nameLen" class="input" type="number" value="8" min="3" max="32"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var domainEl = document.getElementById('domainVal');
+    var dispChk = document.getElementById('dispChk');
+    var nameLenEl = document.getElementById('nameLen');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var dispDomains = ['mailinator.com','guerrillamail.com','10minutemail.com','temp-mail.org','throwaway.email','trashmail.com','yopmail.com','sharklasers.com'];
+    var normalDomains = ['gmail.com','yahoo.com','outlook.com','hotmail.com','protonmail.com','icloud.com','mail.com','zoho.com'];
+
+    function cryptoByte() { var b = new Uint8Array(1); crypto.getRandomValues(b); return b[0]; }
+
+    function randomString(len) {
+      var chars = 'abcdefghijklmnopqrstuvwxyz0123456789._-';
+      var 结果 = '';
+      for (var i = 0; i < len; i++) {
+        var bytes = new Uint8Array(1);
+        crypto.getRandomValues(bytes);
+        结果 += chars[bytes[0] % chars.length];
+      }
+      return 结果;
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var customDomain = domainEl.value.trim();
+      var useDisp = dispChk.checked;
+      var nameLen = parseInt(nameLenEl.value, 10) || 8;
+      if (nameLen < 3) nameLen = 3;
+      if (nameLen > 32) nameLen = 32;
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var domain;
+        if (customDomain) {
+          domain = customDomain;
+        } else if (useDisp) {
+          var di = new Uint8Array(1);
+          crypto.getRandomValues(di);
+          domain = dispDomains[di[0] % dispDomains.length];
+        } else {
+          var ni = new Uint8Array(1);
+          crypto.getRandomValues(ni);
+          domain = normalDomains[ni[0] % normalDomains.length];
+        }
+        var local = randomString(nameLen);
+        结果.push(local + '@' + domain);
+      }
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个邮箱');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

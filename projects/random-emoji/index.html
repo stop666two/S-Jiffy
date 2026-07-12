@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机 Emoji 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .re-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .re-row .field { flex:1; min-width:100px; }
+    .re-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .emoji-display { font-size:48px; line-height:1.4; letter-spacing:8px; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>随机 Emoji 生成器</h1>
+    <p class="tool-desc">从各类别中随机选取 Emoji 符号，支持分类过滤。</p>
+    <div class="card">
+      <div class="re-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="catSel">类别</label>
+          <select id="catSel" class="input" style="width:auto;min-width:100px;">
+            <option value="all">全部</option>
+            <option value="smileys">笑脸/表情</option>
+            <option value="nature">自然/动物</option>
+            <option value="food">食物/饮料</option>
+            <option value="activity">活动/运动</option>
+            <option value="travel">旅行/地点</option>
+            <option value="objects">物品/符号</option>
+            <option value="符号">符号/标志</option>
+          </select>
+        </div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-size:32px;line-height:1.4;letter-spacing:8px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var catEl = document.getElementById('catSel');
+    var genBtn = document.getElementById('genBtn');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var emojis = {
+      smileys: ['😀','😂','🤣','😊','😍','🤩','😎','🥳','😜','🤗','😇','🥰','😋','🤔','😏','😌','😴','🤤','😵','🤯','😈','👻','💀','👽','🤖','💩','🔥','⭐','✨','💯'],
+      nature: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🐺','🐗','🐴','🐝','🐛','🦋','🐌','🐞'],
+      food: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥝','🍅','🥑','🥦','🥬','🥒','🌽','🥕','🧅','🧄','🍞','🧀','🥚','🍳','🥞','🍕'],
+      activity: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🥊','🚴','🏋️','🤸','🤺','⛷️','🏂','🏄','🚣','🏊','🤿','🧗','🧘','🎯','🎳','🎮'],
+      travel: ['🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏯','🏰','💒','🗼','🗽','⛪','🕌','🕍','⛩️','🕋','⛲','⛺','🌄','🌅','🏝️','🏔️','🌋'],
+      objects: ['⌚','📱','💻','⌨️','🖥️','🖨️','🖱️','🖲️','🕹️','📷','📹','🔦','🔋','🪫','🔌','💡','🔦','🕯️','💎','💶','💷','💴','💵','💰','💳','🗝️','🔑','🔧','🔨','🪛'],
+      符号: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💕','💞','💗','💖','💘','💝','❣️','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','🆔','🈳','🈹','🈵']
+    };
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 1000) count = 1000;
+      var cat = catEl.value;
+
+      var pool = [];
+      if (cat === 'all') {
+        var keys = Object.keys(emojis);
+        for (var k = 0; k < keys.length; k++) {
+          pool = pool.concat(emojis[keys[k]]);
+        }
+      } else {
+        pool = emojis[cat] || emojis['smileys'];
+      }
+
+      var 结果 = [];
+      for (var i = 0; i < count; i++) {
+        var b = new Uint8Array(1);
+        crypto.getRandomValues(b);
+        结果.push(pool[b[0] % pool.length]);
+      }
+      输出El.textContent = 结果.join(' ');
+      setStatus('已生成 ' + count + ' 个 Emoji');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

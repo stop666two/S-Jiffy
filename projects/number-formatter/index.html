@@ -1,190 +1,118 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数字格式化 - S-Jiffy</title>
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .nf-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
-    .nf-row .field { flex:1; min-width:160px; }
-    .nf-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .nf-results { display:grid; gap:var(--space-2); }
-    .nf-item { display:flex; justify-content:space-between; padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); }
-    .nf-item .key { color:var(--color-text-secondary); font-size:var(--font-size-sm); }
-    .nf-item .val { font-weight:500; font-family:var(--font-mono); font-size:var(--font-size-sm); word-break:break-all; text-align:right; max-width:60%; }
-    .nf-extra { margin-top:var(--space-2); padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); }
-    .nf-extra label { font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-right:8px; }
-    .nf-extra input, .nf-extra select { margin-right:12px; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Number Formatter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.nf-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.nf-row .field{flex:1;min-width:160px;}
+.nf-row label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;}
+.nf-结果s{display:grid;gap:var(--space-2);}
+.nf-item{display:flex;justify-content:space-between;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.nf-item .key{color:var(--color-text-secondary);font-size:var(--font-size-sm);}
+.nf-item .val{font-weight:500;font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;text-align:right;max-width:60%;}
+</style></head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
-  <main class="tool-workspace">
-    <h1>数字格式化</h1>
-    <p class="tool-desc">格式化数字：千分位、英文/中文读法、序数、罗马数字、科学计数法、百分比、货币。</p>
-    <div class="card">
-      <div class="nf-row">
-        <div class="field">
-          <label for="inputNum">输入数字</label>
-          <input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any">
-        </div>
-        <div style="display:flex;align-items:flex-end;">
-          <button id="formatBtn" class="btn btn-primary">格式化</button>
-        </div>
-      </div>
-      <div class="nf-results">
-        <div class="nf-item"><span class="key">千分位格式</span><span class="val" id="resultComma">-</span></div>
-        <div class="nf-item"><span class="key">百分比 (保留4位)</span><span class="val" id="resultPercent">-</span></div>
-        <div class="nf-item"><span class="key">序数词</span><span class="val" id="resultOrdinal">-</span></div>
-        <div class="nf-item"><span class="key">英文读法</span><span class="val" id="resultWords">-</span></div>
-        <div class="nf-item"><span class="key">中文读法</span><span class="val" id="resultCnWords">-</span></div>
-        <div class="nf-item"><span class="key">罗马数字</span><span class="val" id="resultRoman">-</span></div>
-        <div class="nf-item"><span class="key">科学计数法</span><span class="val" id="resultSci">-</span></div>
-      </div>
-      <div class="nf-extra">
-        <label>货币符号</label>
-        <input id="currencySymbol" class="input" value="$" style="width:60px;display:inline-block;">
-        <span id="resultCurrency" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">-</span>
-      </div>
-    </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function() {
-      var inputNum = document.getElementById('inputNum');
-      var formatBtn = document.getElementById('formatBtn');
-      var resultComma = document.getElementById('resultComma');
-      var resultPercent = document.getElementById('resultPercent');
-      var resultOrdinal = document.getElementById('resultOrdinal');
-      var resultWords = document.getElementById('resultWords');
-      var resultCnWords = document.getElementById('resultCnWords');
-      var resultRoman = document.getElementById('resultRoman');
-      var resultSci = document.getElementById('resultSci');
-      var resultCurrency = document.getElementById('resultCurrency');
-      var currencySymbol = document.getElementById('currencySymbol');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace">
+<h1>数字格式化</h1>
+<p class="tool-desc">Format 数字: locale, words (EN/CN/JP/FR/DE), ordinal, Roman, scientific, currency.</p>
+<div class="card">
+<div class="nf-row">
+<div class="field"><label for="inputNum">Input Number</label><input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any"></div>
+<div class="field"><label for="langSelect">Language</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
+<button id="formatBtn" class="btn btn-primary">格式化</button>
+</div>
+<div class="nf-结果s">
+<div class="nf-item"><span class="key">Locale format</span><span class="val" id="结果Comma">-</span></div>
+<div class="nf-item"><span class="key">Percentage</span><span class="val" id="结果Percent">-</span></div>
+<div class="nf-item"><span class="key">Ordinal</span><span class="val" id="结果Ordinal">-</span></div>
+<div class="nf-item"><span class="key">In Words</span><span class="val" id="结果Words">-</span></div>
+<div class="nf-item"><span class="key">Roman</span><span class="val" id="结果Roman">-</span></div>
+<div class="nf-item"><span class="key">Scientific</span><span class="val" id="结果Sci">-</span></div>
+<div class="nf-item"><span class="key">Currency</span><span class="val" id="结果Currency">-</span></div>
+</div>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+  var inputNum=document.getElementById('inputNum'),langSelect=document.getElementById('langSelect');
+  var res={comma:document.getElementById('结果Comma'),percent:document.getElementById('结果Percent'),ordinal:document.getElementById('结果Ordinal'),words:document.getElementById('结果Words'),roman:document.getElementById('结果Roman'),sci:document.getElementById('结果Sci'),currency:document.getElementById('结果Currency')};
+  var 输出El=document.getElementById('输出Text');
 
-      var ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-      var tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  var onesEn=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  var tensEn=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  var onesCn=['','一','二','三','四','五','六','七','八','九'];var unitsCn=['','十','百','千','万','十','百','千','亿'];
+  var onesJp=['','一','二','三','四','五','六','七','八','九'];var unitsJp=['','十','百','千','万','十','百','千','億'];
+  var onesFr=['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  var tensFr=['','','vingt','trente','quarante','cinquante','soixante','soixante-dix','quatre-vingt','quatre-vingt-dix'];
+  var onesDe=['','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+  var tensDe=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
 
-      function numberToWords(n) {
-        if (n === 0) return 'zero';
-        if (n < 0) return 'minus ' + numberToWords(-n);
-        var word = '';
-        if (Math.floor(n / 1000000) > 0) {
-          word += numberToWords(Math.floor(n / 1000000)) + ' million ';
-          n %= 1000000;
-        }
-        if (Math.floor(n / 1000) > 0) {
-          word += numberToWords(Math.floor(n / 1000)) + ' thousand ';
-          n %= 1000;
-        }
-        if (Math.floor(n / 100) > 0) {
-          word += ones[Math.floor(n / 100)] + ' hundred ';
-          n %= 100;
-        }
-        if (n > 0) {
-          if (word !== '') word += 'and ';
-          if (n < 20) word += ones[n];
-          else {
-            word += tens[Math.floor(n / 10)];
-            if (n % 10 > 0) word += '-' + ones[n % 10];
-          }
-        }
-        return word.trim();
-      }
+  function numberToWordsEn(n){if(n===0)return'zero';if(n<0)return'minus '+numberToWordsEn(-n);var w='';
+    if(Math.floor(n/1000000)>0){w+=numberToWordsEn(Math.floor(n/1000000))+' million ';n%=1000000;}
+    if(Math.floor(n/1000)>0){w+=numberToWordsEn(Math.floor(n/1000))+' thousand ';n%=1000;}
+    if(Math.floor(n/100)>0){w+=onesEn[Math.floor(n/100)]+' hundred ';n%=100;}
+    if(n>0){if(w!=='')w+='and ';if(n<20)w+=onesEn[n];else{w+=tensEn[Math.floor(n/10)];if(n%10>0)w+='-'+onesEn[n%10];}}
+    return w.trim();}
 
-      var cnDigits = ['零','一','二','三','四','五','六','七','八','九'];
-      var cnUnits = ['','十','百','千','万','十','百','千','亿'];
+  function numberToWordsCn(n){if(n===0)return'零';if(n<0)return'负'+numberToWordsCn(-n);
+    var s=n.toString(),r='',len=s.length;
+    for(var i=0;i<len;i++){var d=parseInt(s[i]),pos=len-1-i;
+      if(d===0){if(pos===4||pos===8)r+=unitsCn[pos];else if(r.slice(-1)!=='零'&&i<len-1)r+='零';}
+      else{r+=onesCn[d]+unitsCn[pos];}}
+    return r;}
 
-      function numberToCn(n) {
-        if (n === 0) return '零';
-        if (n < 0) return '负' + numberToCn(-n);
-        var s = n.toString();
-        var result = '';
-        var len = s.length;
-        for (var i = 0; i < len; i++) {
-          var digit = parseInt(s[i]);
-          var pos = len - 1 - i;
-          if (digit === 0) {
-            if (pos === 4 || pos === 8) {
-              result += cnUnits[pos];
-            } else if (result.slice(-1) !== '零' && i < len - 1) {
-              result += '零';
-            }
-          } else {
-            result += cnDigits[digit] + cnUnits[pos];
-          }
-        }
-        return result;
-      }
+  function numberToWordsGeneric(n,ones,tens,big){if(n===0)return big[0]||'zero';if(n<0)return'minus '+numberToWordsGeneric(-n,ones,tens,big);var w='';
+    if(Math.floor(n/1000000)>0){w+=numberToWordsGeneric(Math.floor(n/1000000),ones,tens,big)+' million ';n%=1000000;}
+    if(Math.floor(n/1000)>0){w+=numberToWordsGeneric(Math.floor(n/1000),ones,tens,big)+' thousand ';n%=1000;}
+    if(Math.floor(n/100)>0){w+=ones[Math.floor(n/100)]+' hundred ';n%=100;}
+    if(n>0){if(n<20)w+=ones[n];else{w+=tens[Math.floor(n/10)];if(n%10>0)w+='-'+ones[n%10];}}
+    return w.trim();}
 
-      function ordinalSuffix(n) {
-        var j = n % 10;
-        var k = n % 100;
-        if (j === 1 && k !== 11) return n + 'st';
-        if (j === 2 && k !== 12) return n + 'nd';
-        if (j === 3 && k !== 13) return n + 'rd';
-        return n + 'th';
-      }
+  function numberToWordsFr(n){if(n===0)return'zéro';if(n<0)return'moins '+numberToWordsFr(-n);
+    var w='';if(Math.floor(n/1000000)>0){w+=numberToWordsFr(Math.floor(n/1000000))+' millions ';n%=1000000;}
+    if(Math.floor(n/1000)>0){var k=Math.floor(n/1000);if(k===1)w+='mille ';else w+=numberToWordsFr(k)+' mille ';n%=1000;}
+    if(Math.floor(n/100)>0){var h=Math.floor(n/100);if(h===1)w+='cent ';else w+=onesFr[h]+' cent ';n%=100;}
+    if(n>0){if(n<20)w+=onesFr[n];else{w+=tensFr[Math.floor(n/10)];if(n%10>0&&Math.floor(n/10)<7){w+='-'+onesFr[n%10];}else if(n%10>0&&Math.floor(n/10)===7){/* handled */}else if(n%10>0&&Math.floor(n/10)===9){/* handled */}}}
+    return w.trim();}
 
-      function toRoman(n) {
-        if (n <= 0 || n > 3999) return 'N/A';
-        var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
-        var chars = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
-        var result = '';
-        for (var i = 0; i < vals.length; i++) {
-          while (n >= vals[i]) {
-            result += chars[i];
-            n -= vals[i];
-          }
-        }
-        return result;
-      }
+  function numberToWordsDe(n){if(n===0)return'null';if(n<0)return'minus '+numberToWordsDe(-n);var w='';
+    if(Math.floor(n/1000000)>0){w+=numberToWordsDe(Math.floor(n/1000000))+' Millionen ';n%=1000000;}
+    if(Math.floor(n/1000)>0){w+=numberToWordsDe(Math.floor(n/1000))+' tausend ';n%=1000;}
+    if(Math.floor(n/100)>0){w+=onesDe[Math.floor(n/100)]+'hundert ';n%=100;}
+    if(n>0){if(n<20)w+=onesDe[n];else{w+=onesDe[n%10]+'und'+tensDe[Math.floor(n/10)];}
+      w+=' ';}
+    return w.trim();}
 
-      function format() {
-        var val = parseFloat(inputNum.value);
-        if (isNaN(val)) { setStatus('请输入有效数字', 'error'); return; }
-        resultComma.textContent = val.toLocaleString('en-US');
-        resultPercent.textContent = (val / 100).toFixed(4) + '%';
-        var intPart = Math.floor(Math.abs(val));
-        resultOrdinal.textContent = ordinalSuffix(intPart);
-        resultWords.textContent = numberToWords(intPart);
-        resultCnWords.textContent = numberToCn(intPart);
-        resultRoman.textContent = toRoman(intPart);
-        resultSci.textContent = val.toExponential(6);
-        var sym = currencySymbol.value || '$';
-        resultCurrency.textContent = sym + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        outputEl.textContent = resultComma.textContent + ' | ' + resultWords.textContent;
-        setStatus('格式化完成');
-      }
+  function ordinalSuffix(n){var j=n%10,k=n%100;if(j===1&&k!==11)return n+'st';if(j===2&&k!==12)return n+'nd';if(j===3&&k!==13)return n+'rd';return n+'th';}
+  function toRoman(n){if(n<=0||n>3999)return'N/A';var vals=[1000,900,500,400,100,90,50,40,10,9,5,4,1],chars=['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'],结果='';
+    for(var i=0;i<vals.length;i++){while(n>=vals[i]){结果+=chars[i];n-=vals[i];}}return 结果;}
 
-      formatBtn.addEventListener('click', format);
-      inputNum.addEventListener('keydown', function(e) { if (e.key === 'Enter') format(); });
-      currencySymbol.addEventListener('input', format);
+  function format(){
+    var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus('Enter a valid number','error');return;}
+    res.comma.textContent=val.toLocaleString('en-US');
+    res.percent.textContent=(val/100).toFixed(4)+'%';
+    var intPart=Math.floor(Math.abs(val));
+    res.ordinal.textContent=ordinalSuffix(intPart);
+    switch(lang){
+      case'cn':res.words.textContent=numberToWordsCn(intPart);break;
+      case'jp':res.words.textContent=numberToWordsGeneric(intPart,onesJp,['','','二十','三十','四十','五十','六十','七十','八十','九十'],['零']);break;
+      case'fr':res.words.textContent=numberToWordsFr(intPart);break;
+      case'de':res.words.textContent=numberToWordsDe(intPart);break;
+      default:res.words.textContent=numberToWordsEn(intPart);
+    }
+    res.roman.textContent=toRoman(intPart);
+    res.sci.textContent=val.toExponential(6);
+    var sym={en:'$',cn:'¥',jp:'¥',fr:'€',de:'€'}[lang]||'$';
+    res.currency.textContent=sym+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    输出El.textContent=res.comma.textContent+' | '+res.words.textContent;
+    setStatus('Formatted');}
 
-      copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
-        if (text) {
-          copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
-        }
-      });
-
-      format();
-    })();
-  </script>
-</body>
-</html>
+  formatBtn.addEventListener('click',format);
+  inputNum.addEventListener('keydown',function(e){if(e.key==='Enter')format();});
+  langSelect.addEventListener('change',format);
+  copyBtn.addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('Copied');}});
+  format();
+})();
+</script></body></html>

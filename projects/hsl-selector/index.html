@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -46,8 +46,8 @@
         <input id="alphaVal" type="number" min="0" max="100" value="100">
       </div>
     </div>
-    <div class="output-box" style="min-height:auto;background:var(--color-bg);">
-      <div id="outputText" class="hsl-values" style="display:block;padding-right:60px;"></div>
+    <div class="输出-box" style="min-height:auto;background:var(--color-bg);">
+      <div id="输出Text" class="hsl-values" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -67,7 +67,7 @@
       var lightVal = document.getElementById('lightVal');
       var alphaVal = document.getElementById('alphaVal');
       var preview = document.getElementById('preview');
-      var outputEl = document.getElementById('outputText');
+      var 输出El = document.getElementById('输出Text');
       var copyBtn = document.getElementById('copyBtn');
 
       function hslToHex(h, s, l) {
@@ -101,7 +101,7 @@
         var hexa = hex + (a < 100 ? (Math.round(a / 100 * 255).toString(16).padStart(2, '0')) : '');
 
         preview.style.background = a < 100 ? hsla : hex;
-        outputEl.innerHTML = '<span>HEX: ' + hexa + '</span><span>RGB: ' + rgb + '</span><span>HSL: ' + hsla + '</span>';
+        输出El.innerHTML = '<span>HEX: ' + hexa + '</span><span>RGB: ' + rgb + '</span><span>HSL: ' + hsla + '</span>';
       }
 
       function syncFromSlider() { update(); }
@@ -123,7 +123,7 @@
       alphaVal.addEventListener('input', syncFromInput);
 
       copyBtn.addEventListener('click', function () {
-        var text = outputEl.textContent || '';
+        var text = 输出El.textContent || '';
         if (text) {
           var lines = text.split(/\s+/);
           copyToClipboard(lines[1] || text, copyBtn);

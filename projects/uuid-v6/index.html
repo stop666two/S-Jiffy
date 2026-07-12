@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID v6 生成器 - S-Jiffy</title>
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .u6-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .u6-row .field { flex:1; min-width:80px; }
+    .u6-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .hex-breakdown { font-family:var(--font-mono); font-size:14px; line-height:1.8; }
+    .hex-part { display:inline-block; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <main class="tool-workspace">
+    <h1>UUID v6 生成器</h1>
+    <p class="tool-desc">生成 UUID v6（重新排序的时间基 UUID），显示十六进制拆分。</p>
+    <div class="card">
+      <div class="u6-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="1" min="1" max="100"></div>
+      </div>
+      <div class="u6-row">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="upperChk" type="checkbox"> 大写</label>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div class="hex-breakdown" id="breakdown"></div>
+    </div>
+    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var upperChk = document.getElementById('upperChk');
+    var genBtn = document.getElementById('genBtn');
+    var breakdown = document.getElementById('breakdown');
+    var 输出El = document.getElementById('输出Text');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function hex8(v) { var s = v.toString(16); while (s.length < 8) s = '0' + s; return s; }
+    function hex4(v) { var s = v.toString(16); while (s.length < 4) s = '0' + s; return s; }
+    function hex2(v) { var s = v.toString(16); while (s.length < 2) s = '0' + s; return s; }
+
+    function generateUUIDv6() {
+      var now = Date.now();
+      var tick = (now * 10000) + 0x01b21dd213814000;
+
+      var timeHi = (tick >>> 48) & 0x0FFF;
+      var timeMid = (tick >>> 32) & 0xFFFF;
+      var timeLow = tick & 0xFFFFFFFF;
+
+      var clockSeq = new Uint16Array(1);
+      crypto.getRandomValues(clockSeq);
+      clockSeq[0] = (clockSeq[0] & 0x3FFF) | 0x8000;
+
+      var node = new Uint8Array(6);
+      crypto.getRandomValues(node);
+      node[0] = node[0] & 0xFE | 0x02;
+
+      var parts = [
+        hex8((timeHi << 16) | (timeMid >>> 4)),
+        hex4(((timeMid & 0x0F) << 12) | ((timeLow >>> 20) & 0xFFF)),
+        hex4(((timeLow >>> 8) & 0x0FFF) | 0x6000),
+        hex4((clockSeq[0] & 0x3FFF) | 0x8000),
+        hex2(node[0]) + hex2(node[1]) + hex2(node[2]) + hex2(node[3]) + hex2(node[4]) + hex2(node[5])
+      ];
+      return parts.join('-');
+    }
+
+    function parseHex(uuid) {
+      var p = uuid.split('-');
+      return {
+        timeHiMid: p[0],
+        timeMidLow: p[1],
+        timeLowVersion: p[2],
+        clockSeq: p[3],
+        node: p[4]
+      };
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10) || 1;
+      if (count < 1) count = 1;
+      if (count > 100) count = 100;
+      var upper = upperChk.checked;
+
+      var 结果 = [];
+      var breakHtml = '';
+      for (var i = 0; i < count; i++) {
+        var uuid = generateUUIDv6();
+        if (upper) uuid = uuid.to大写();
+        结果.push(uuid);
+
+        if (i === 0) {
+          var p = parseHex(uuid);
+          breakHtml = '<div style="font-size:12px;color:var(--color-text-secondary);">UUID v6 十六进制拆分:</div>';
+          breakHtml += '<div><strong>时间戳高位+中位:</strong> ' + p.timeHiMid + ' (48 bits)</div>';
+          breakHtml += '<div><strong>时间戳中低位:</strong> ' + p.timeMidLow + ' (12+12 bits)</div>';
+          breakHtml += '<div><strong>时间低位+版本:</strong> ' + p.timeLowVersion + ' (12+4 bits, v=6)</div>';
+          breakHtml += '<div><strong>时钟序列+变体:</strong> ' + p.clockSeq + ' (14+2 bits)</div>';
+          breakHtml += '<div><strong>节点:</strong> ' + p.node + ' (48 bits)</div>';
+          breakHtml += '<div style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);">时间戳: ' + new Date().toISOString() + '</div>';
+        }
+      }
+
+      breakdown.innerHTML = breakHtml;
+      输出El.textContent = 结果.join('\n');
+      setStatus('已生成 ' + count + ' 个 UUID v6');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+  })();</script>
+</body>
+</html>

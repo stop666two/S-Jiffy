@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 扁平化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<main class="tool-workspace"><h1>JSON 扁平化</h1><p class="tool-desc">将嵌套 JSON 扁平化为单层键值，支持自定义分隔符和反向操作。</p>
+<div class="card">
+<div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">分隔符</label>
+<input id="separator" class="input" value="." style="width:50px;">
+<label style="margin-left:12px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="flattenArrays"> 展开数组</label>
+</div>
+</div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='输入 JSON，如 {"a":{"b":"c","d":[1,2]}}' style="min-height:120px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
+<button id="flattenBtn" class="btn btn-primary">扁平化</button>
+<button id="unflattenBtn" class="btn btn-secondary">还原</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script><script>
+(function(){
+var inputEl=document.getElementById('inputText');
+var 输出El=document.getElementById('输出Text');
+var flattenBtn=document.getElementById('flattenBtn');
+var unflattenBtn=document.getElementById('unflattenBtn');
+var clearBtn=document.getElementById('clearBtn');
+var copyBtn=document.getElementById('copyBtn');
+var separator=document.getElementById('separator');
+var flattenArrays=document.getElementById('flattenArrays');
+function flatten(obj,sep,arr){
+var 结果={};
+function recurse(cur,prefix){
+if(Array.isArray(cur)){
+if(arr){
+cur.forEach(function(v,i){recurse(v,prefix+sep+i);});
+}else{
+结果[prefix]=cur;
+}
+}else if(cur!==null&&typeof cur==='object'){
+Object.keys(cur).forEach(function(k){
+var newKey=prefix?prefix+sep+k:k;
+recurse(cur[k],newKey);
+});
+}else{
+结果[prefix]=cur;
+}
+}
+recurse(obj,'');
+return 结果;
+}
+function unflatten(obj,sep){
+var 结果={};
+Object.keys(obj).forEach(function(k){
+var keys=k.split(sep);
+var current=结果;
+for(var i=0;i<keys.length;i++){
+var key=keys[i];
+if(i===keys.length-1){
+current[key]=obj[k];
+}else{
+if(current[key]===undefined||typeof current[key]!=='object')current[key]={};
+current=current[key];
+}
+}
+});
+return 结果;
+}
+flattenBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入 JSON','error');return;}
+try{
+var parsed=JSON.parse(t);
+var flat=flatten(parsed,separator.value||'.',flattenArrays.checked);
+输出El.textContent=JSON.stringify(flat,null,2);
+setStatus('');
+}catch(e){
+setStatus('JSON 格式错误: '+e.message,'error');
+}
+});
+unflattenBtn.addEventListener('click',function(){
+var t=inputEl.value.trim();
+if(!t){setStatus('请输入扁平化 JSON','error');return;}
+try{
+var parsed=JSON.parse(t);
+var unflat=unflatten(parsed,separator.value||'.');
+输出El.textContent=JSON.stringify(unflat,null,2);
+setStatus('');
+}catch(e){
+setStatus('JSON 格式错误: '+e.message,'error');
+}
+});
+clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+})();
+</script></body></html>

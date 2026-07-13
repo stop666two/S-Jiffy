@@ -13,9 +13,9 @@
 .tz-card .tz-time{font-size:var(--font-size-base);font-weight:500;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>Epoch 时间戳</h1>
+<h1>时间戳转换</h1>
 <p class="tool-desc">Unix timestamp ↔ date, real-time clock, week of year, quarter, day of year.</p>
 <div class="card">
 <h2>⏱ Real-time Epoch Clock</h2>
@@ -78,7 +78,7 @@
 
   tsInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('tsToDateBtn').click();});
   updateClock();setInterval(updateClock,1000);
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
   var o=document.getElementById('输出Text');
   setInterval(function(){var now=Date.now();o.textContent=Math.floor(now/1000);},1000);
 })();

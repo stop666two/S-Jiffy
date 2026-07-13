@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -23,7 +23,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>Git 备忘录</h1>
     <p class="tool-desc">常用 Git 命令速查，支持搜索。</p>
@@ -141,7 +141,7 @@
 
       function render(query) {
         contentEl.innerHTML = '';
-        var lowerQuery = query ? query.to小写() : '';
+        var lowerQuery = query ? query.toLowerCase() : '';
 
         for (var s = 0; s < sections.length; s++) {
           var sec = sections[s];
@@ -153,7 +153,7 @@
 
           for (var i = 0; i < sec.items.length; i++) {
             var item = sec.items[i];
-            var combined = (item.cmd + ' ' + item.desc).to小写();
+            var combined = (item.cmd + ' ' + item.desc).toLowerCase();
             var match = !lowerQuery || combined.indexOf(lowerQuery) >= 0;
 
             if (match) {

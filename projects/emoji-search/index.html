@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Emoji 搜索 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.emoji-item{text-align:center;padding:10px 4px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:28px;line-height:1;transition:all .15s}.emoji-item:hover{transform:scale(1.08);border-color:var(--color-text-primary);background:var(--color-bg-soft)}.emoji-item .label{display:block;font-size:10px;color:var(--color-text-disabled);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.category-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}.pill{padding:4px 14px;border:1px solid var(--color-border);border-radius:20px;font-size:12px;cursor:pointer;background:var(--color-bg);transition:all .15s}.pill:hover,.pill.active{border-color:var(--color-text-primary);background:var(--color-text-primary);color:#fff}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Emoji 搜索</h1><p class="tool-desc">按名称或分类搜索 Emoji，点击即可复制。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;"><input id="searchInput" class="input js-focus-input" placeholder="搜索 emoji 名称..."></div>
@@ -49,13 +49,13 @@ renderGrid();
 }
 
 function renderGrid(){
-var q=searchInput.value.to小写();
+var q=searchInput.value.toLowerCase();
 var html='';
 var count=0;
 for(var i=0;i<emojis.length;i++){
 var e=emojis[i];
 if(activeCategory&&e[2]!==activeCategory)continue;
-if(q&&e[0].indexOf(q)===-1&&e[1].to小写().indexOf(q)===-1)continue;
+if(q&&e[0].indexOf(q)===-1&&e[1].toLowerCase().indexOf(q)===-1)continue;
 count++;
 html+='<div class="emoji-item" data-emoji="'+e[0]+'" data-name="'+e[1]+'">'+e[0]+'<span class="label">'+e[1]+'</span></div>';
 }

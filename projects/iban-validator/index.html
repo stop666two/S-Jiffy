@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -17,7 +17,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>IBAN 验证器</h1>
     <p class="tool-desc">验证国际银行账号 (IBAN) 格式、国家代码和校验位。</p>
@@ -72,7 +72,7 @@
       'VA': 22, 'VG': 24
     };
     function validateIBAN(iban) {
-      var clean = iban.replace(/\s/g, '').to大写();
+      var clean = iban.replace(/\s/g, '').toUpperCase();
       if (!clean) return null;
       if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: '格式无效', clean: clean }; }
       var cc = clean.substr(0, 2);

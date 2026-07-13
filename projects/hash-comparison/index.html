@@ -10,8 +10,8 @@
 .结果-badge.pending{background:#f5f5f5;color:#666;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>Hash 对比验证</h1><p class="tool-desc">Compare text or file content against a known hash value to verify integrity.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Hash 对比工具</h1><p class="tool-desc">Compare text or file content against a known hash value to verify integrity.<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter text to verify..." style="min-height:100px;"></textarea></div>
 <div class="card">
 <div class="comp-row"><label>Hash to compare</label><input id="hashInput" class="input" placeholder="Paste the known hash value" style="flex:1;min-width:200px;"></div>
@@ -36,24 +36,24 @@ function b64(buf){var b=new Uint8Array(buf),s='';for(var x=0;x<b.length;x++)s+=S
 function simpleMD5(s){var hash=0;if(s.length===0)return hash.toString(16).padStart(32,'0');for(var i=0;i<s.length;i++){var ch=s.charCodeAt(i);hash=((hash<<5)-hash)+ch;hash=hash&hash;}
 return(Math.abs(hash)>>>0).toString(16).padStart(32,'0');}
 
-function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().to小写();if(!target){setStatus('Enter a hash to compare','error');return;}
+function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().toLowerCase();if(!target){setStatus('Enter a hash to compare','error');return;}
 var hash;
-if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.to小写()===target;
+if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.toLowerCase()===target;
 rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match?'match':'no-match');
 rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
-o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('Error: '+e.message,'error');});
+o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('错误: '+e.message,'error');});
 return;}
-var computed2=hash;var match2=computed2.to小写()===target;
+var computed2=hash;var match2=computed2.toLowerCase()===target;
 rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match2?'match':'no-match');
 rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed2+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
 o.textContent=computed2;setStatus(match2?'Match!':'No match');}
 
-document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus('Enter text','error');return;}
+document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
 compare(new TextEncoder().encode(text),true);});
 document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
 fi.addEventListener('change',function(){if(!fi.files[0])return;var reader=new FileReader();
-reader.onload=function(e){compare(e.target.结果,false);};
+reader.onload=function(e){compare(e.target.result,false);};
 reader.readAsArrayBuffer(fi.files[0]);});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
-</script></body></html>
+if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script></body></html>

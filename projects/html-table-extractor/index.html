@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 表格提取 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.hte-table{font-family:var(--font-mono);font-size:var(--font-size-xs);border-collapse:collapse;width:100%;margin-top:var(--space-2)}.hte-table th,.hte-table td{border:1px solid var(--color-border);padding:4px 8px}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>HTML 表格提取</h1><p class="tool-desc">从 HTML 中提取表格数据，导出为 CSV 或 JSON 格式。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴包含表格的 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
@@ -65,7 +65,7 @@ ph+='<'+tag+'>'+tbl.data[r][c]+'</'+tag+'>';
 }
 ph+='</tr>';
 }
-if(tbl.data.length>20)ph+='<tr><td colspan="'+(tbl.data[0]?tbl.data[0].长度：1)+'" style="text-align:center;color:var(--color-text-secondary)">... 共 '+tbl.data.length+' 行</td></tr>';
+if(tbl.data.length>20)ph+='<tr><td colspan="'+(tbl.data[0]?tbl.data[0].length：1)+'" style="text-align:center;color:var(--color-text-secondary)">... 共 '+tbl.data.length+' 行</td></tr>';
 ph+='</tbody></table>';
 previewHtml+=ph;
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>MD5 生成器</h1>
     <p class="tool-desc">使用标准 MD5 算法计算文本或文件的哈希值。</p>
@@ -55,9 +55,9 @@
         if(!h){r32l.textContent=r32u.textContent=r16l.textContent=r16u.textContent='';o.textContent='';return;}
         lastHash=h;
         r32l.textContent=h;
-        r32u.textContent=h.to大写();
+        r32u.textContent=h.toUpperCase();
         r16l.textContent=h.substr(8,16);
-        r16u.textContent=h.substr(8,16).to大写();
+        r16u.textContent=h.substr(8,16).toUpperCase();
         o.textContent='MD5: '+h;
       }
 
@@ -66,7 +66,7 @@
       function readFile(file){
         var reader=new FileReader();
         reader.onload=function(e){
-          var words=e.target.结果;
+          var words=e.target.result;
           var hex=md5(words);
           show(hex);
           setStatus('文件 MD5 计算完成');

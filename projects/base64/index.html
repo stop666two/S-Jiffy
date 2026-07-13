@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Base64 Encode/Decode - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
@@ -10,22 +10,22 @@
 .valid-msg.fail{background:#ffebee;color:#c62828;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>Base64 编解码</h1>
-<p class="tool-desc">Text/file Base64, standard & URL-safe mode, validation.</p>
+<p class="tool-desc">文本与 Base64 标准/URL安全模式互相转换，支持文件上传。</p>
 <div class="card">
 <div class="opt-row">
-<label><input type="radio" name="b64mode" value="standard" checked> Standard</label>
-<label><input type="radio" name="b64mode" value="urlsafe"> URL-safe</label>
-<label><input type="checkbox" id="chkValidate"> Validate on encode/decode</label>
+<label><input type="radio" name="b64mode" value="standard" checked> 标准模式</label>
+<label><input type="radio" name="b64mode" value="urlsafe"> URL 安全模式</label>
+<label><input type="checkbox" id="chkValidate"> 编解码校验</label>
 </div>
-<textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter text..." style="min-height:120px;"></textarea>
+<textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:120px;"></textarea>
 </div>
 <div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">Upload file</span>
-<input type="file" id="fileInput" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">
-<span id="fileInfo" class="b64-file-info"></span>
+    <button id="fileBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;">📁 选择文件</button>
+    <input type="file" id="fileInput" style="display:none">
+    <span id="fileInfo" class="b64-file-info"></span>
 </div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
 <button id="encodeBtn" class="btn btn-primary">编码</button>
@@ -39,14 +39,14 @@
 <div id="validation结果" style="margin-top:var(--space-2);"></div>
 <div id="previewArea" style="display:none;margin-top:var(--space-2);">
 <div class="card" style="text-align:center;">
-<img id="previewImage" class="b64-preview" src="" alt="Preview">
-<div style="margin-top:8px;"><button id="downloadImgBtn" class="btn btn-secondary">Download Image</button></div>
+<img id="previewImage" class="b64-preview" src="" alt="预览">
+<div style="margin-top:8px;"><button id="downloadImgBtn" class="btn btn-secondary">下载图片</button></div>
 </div></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){
-  var inputEl=document.getElementById('inputText'),输出El=document.getElementById('输出Text'),fileInput=document.getElementById('fileInput'),fileInfo=document.getElementById('fileInfo');
+  var inputEl=document.getElementById('inputText'),输出El=document.getElementById('输出Text'),fileInput=document.getElementById('fileInput'),fileBtn=document.getElementById('fileBtn'),fileInfo=document.getElementById('fileInfo');
   var previewArea=document.getElementById('previewArea'),previewImage=document.getElementById('previewImage'),downloadImgBtn=document.getElementById('downloadImgBtn'),vr=document.getElementById('validation结果');
 
   function getMode(){var r=document.getElementsByName('b64mode');for(var i=0;i<r.length;i++){if(r[i].checked)return r[i].value;}return'standard';}
@@ -58,29 +58,30 @@
 
   function process(type){
     var text=inputEl.value.trim(),mode=getMode(),validate=document.getElementById('chkValidate').checked;
-    if(!text){输出El.textContent='';previewArea.style.display='none';setStatus('Enter content','error');return;}
+    if(!text){输出El.textContent='';previewArea.style.display='none';setStatus('请输入内容','error');return;}
     try{
       var 结果;
       if(type==='encode'){var encoded=btoa(unescape(encodeURIComponent(text)));结果=mode==='urlsafe'?toUrlSafe(encoded):encoded;
-        if(validate){vr.innerHTML='<span class="valid-msg ok">Valid encoding (can decode back)</span>';}}else{var processed=mode==='urlsafe'?toStandard(text):text;
-        if(validate&&!isValidBase64(processed)){vr.innerHTML='<span class="valid-msg fail">Invalid Base64 input</span>';}else{vr.innerHTML='';}
+        if(validate){vr.innerHTML='<span class="valid-msg ok">编码有效（可解码还原）</span>';}}else{var processed=mode==='urlsafe'?toStandard(text):text;
+        if(validate&&!isValidBase64(processed)){vr.innerHTML='<span class="valid-msg fail">无效的 Base64 输入</span>';}else{vr.innerHTML='';}
         结果=decodeURIComponent(escape(atob(processed)));}
       输出El.textContent=结果;
       if(type==='decode'){if(text.startsWith('data:image/')){previewArea.style.display='block';previewImage.src=text;
-        var mime=text.match(/^data:([^;]+);/);downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download='decoded.'+(mime?mime[1].split('/')[1]:'png');l.href=text;l.click();setStatus('Downloaded');};}else{previewArea.style.display='none';}}
-      setStatus('');}catch(e){输出El.textContent='';previewArea.style.display='none';setStatus('Error: invalid format','error');}}
+        var mime=text.match(/^data:([^;]+);/);downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download='decoded.'+(mime?mime[1].split('/')[1]:'png');l.href=text;l.click();setStatus('已下载');};}else{previewArea.style.display='none';}}
+      setStatus('');}catch(e){输出El.textContent='';previewArea.style.display='none';setStatus('无效的 Base64 格式','error');}}
 
+  if(fileBtn)fileBtn.addEventListener('click',function(){fileInput.click();});
   fileInput.addEventListener('change',function(){
     var file=this.files[0];if(!file){fileInfo.textContent='';return;}
-    fileInfo.textContent=file.name+' ('+file.size+' bytes)';
+    fileInfo.textContent=file.name+' ('+file.size+' 字节)';
     var reader=new FileReader();
-    reader.onload=function(e){var b=e.target.结果;inputEl.value=b;输出El.textContent=b;previewArea.style.display='block';previewImage.src=b;
-      downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download=file.name;l.href=b;l.click();};setStatus('Loaded');};
+    reader.onload=function(e){var b=e.target.result;inputEl.value=b;输出El.textContent=b;previewArea.style.display='block';previewImage.src=b;
+      downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download=file.name;l.href=b;l.click();};setStatus('已加载文件');};
     reader.readAsDataURL(file);});
 
   encodeBtn.addEventListener('click',function(){process('encode');});
   decodeBtn.addEventListener('click',function(){process('decode');});
   clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';fileInput.value='';fileInfo.textContent='';previewArea.style.display='none';vr.innerHTML='';setStatus('');inputEl.focus();});
-  copyBtn.addEventListener('click',function(){var r=输出El.textContent;if(r){copyToClipboard(r,copyBtn);setStatus('Copied');}});
+  copyBtn.addEventListener('click',function(){var r=输出El.textContent;if(r){copyToClipboard(r,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

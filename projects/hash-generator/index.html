@@ -3,10 +3,10 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Hash Generator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.hash-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-3);}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>Hash 计算器</h1>
-<p class="tool-desc">SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256 / SHA3-256 / SHA3-384 / SHA3-512, text & file.</p>
+<p class="tool-desc">SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256 / SHA3-256 / SHA3-384 / SHA3-512, text & file.<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter text to hash..." style="min-height:120px;"></textarea></div>
 <div class="hash-opts">
 <select id="algoSelect" class="input" style="width:auto;min-width:150px;">
@@ -31,21 +31,21 @@
     crypto.subtle.digest(mapped, data).then(function(buf){
       o.textContent=fmt.value==='hex'?toHex(buf):toBase64(buf);
       setStatus('');
-    }).catch(function(e){setStatus('Error: '+e.message,'error');});
+    }).catch(function(e){setStatus('错误: '+e.message,'error');});
   }
   document.getElementById('hashBtn').addEventListener('click',function(){
-    var text=i.value.trim();if(!text){setStatus('Enter content','error');return;}
+    var text=i.value.trim();if(!text){setStatus('请输入内容','error');return;}
     doHash(new TextEncoder().encode(text));
   });
   document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
   fi.addEventListener('change',function(){
     if(!fi.files[0])return;
     var reader=new FileReader();
-    reader.onload=function(e){doHash(e.target.结果);setStatus('Hashing file...');};
-    reader.onerror=function(){setStatus('File read error','error');};
+    reader.onload=function(e){doHash(e.target.result);setStatus('Hashing file...');};
+    reader.onerror=function(){setStatus('文件读取失败','error');};
     reader.readAsArrayBuffer(fi.files[0]);
   });
   document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();fi.value='';});
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
-</script></body></html>
+if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script></body></html>

@@ -25,10 +25,10 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>校验和计算器</h1>
-    <p class="tool-desc">计算文件或文本的 CRC16、CRC32、Adler-32、MD5、SHA-1、SHA-256 校验和，支持拖放文件。</p>
+    <p class="tool-desc">计算文件或文本的 CRC16、CRC32、Adler-32、MD5、SHA-1、SHA-256 校验和，支持拖放文件。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
     <div class="card">
       <div class="text-mode-row">
         <input id="textInput" class="input js-focus-input" placeholder="输入文本计算校验和...">
@@ -154,6 +154,9 @@
           showChecksums(vals);
           setTimeout(function(){ prog.style.display = 'none'; progFill.style.width = '0'; }, 500);
           setStatus('计算完成');
+        }).catch(function() {
+          setStatus('计算失败（需要 HTTPS 环境）', 'error');
+          prog.style.display = 'none';
         });
       }
 
@@ -170,7 +173,7 @@
           }
         };
         reader.onload = function(e) {
-          var data = new Uint8Array(e.target.结果);
+          var data = new Uint8Array(e.target.result);
           progFill.style.width = '35%';
 
           var text = '';
@@ -201,6 +204,9 @@
             showChecksums(vals);
             setTimeout(function(){ prog.style.display = 'none'; progFill.style.width = '0'; }, 500);
             setStatus('文件校验完成');
+          }).catch(function() {
+            setStatus('校验失败（需要 HTTPS 环境）', 'error');
+            prog.style.display = 'none';
           });
         };
         reader.readAsArrayBuffer(file);
@@ -239,6 +245,6 @@
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制全部校验和'); }
       });
     })();
-  </script>
+  if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>
 </html>

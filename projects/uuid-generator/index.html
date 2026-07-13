@@ -9,10 +9,10 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>UUID 生成器</h1>
-    <p class="tool-desc">生成 UUID v4，支持单条或批量生成。</p>
+    <p class="tool-desc">生成 UUID v4，支持单条或批量生成。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 
     <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
       <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">数量</label>
@@ -39,8 +39,9 @@
     (function () {
       var countEl = document.getElementById('countInput'), formatEl = document.getElementById('formatSelect'), o = document.getElementById('输出Text');
       function uuid() {
-        var u = crypto.randomUUID();
-        return formatEl.value === 'upper' ? u.to大写() : u;
+        var u;
+        try { u = crypto.randomUUID(); } catch (e) { u = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = crypto.getRandomValues(new Uint8Array(1))[0] % 16; var v = c === 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
+        return formatEl.value === 'upper' ? u.toUpperCase() : u;
       }
       document.getElementById('generateBtn').addEventListener('click', function () {
         var n = parseInt(countEl.value) || 1;
@@ -54,6 +55,6 @@
       document.getElementById('clearBtn').addEventListener('click', function () { o.textContent = ''; setStatus(''); });
       document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
     })();
-  </script>
+  if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>
 </html>

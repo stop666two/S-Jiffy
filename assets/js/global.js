@@ -1,3 +1,7 @@
+function isSecureContext() {
+  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
 function copyToClipboard(text, buttonEl) {
   navigator.clipboard.writeText(text).then(() => {
     var originalText = buttonEl.textContent;

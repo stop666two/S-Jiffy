@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSV 表格美化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.cp-table{font-family:var(--font-mono);font-size:var(--font-size-xs);border-collapse:collapse;width:100%}.cp-table th,.cp-table td{border:1px solid var(--color-border);padding:4px 8px;text-align:left;white-space:pre}.cp-table th{background:var(--color-bg-secondary);font-weight:600}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>CSV 表格美化</h1><p class="tool-desc">将 CSV 格式化为对齐的表格，可选择空格/Tab 填充。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSV 美化器</h1><p class="tool-desc">将 CSV 格式化为对齐的表格，可选择空格/Tab 填充。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
 <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">填充方式</label>
@@ -103,7 +103,7 @@ if(rows.length<2){setStatus('CSV 至少需要 2 行','error');return;}
 var formatted=formatCSV(rows,padSelect.value);
 输出El.textContent=formatted;
 tableArea.innerHTML=buildTable(rows,headerLine.checked);
-setStatus('共 '+rows.length+' 行，'+(rows[0]?rows[0].长度：0)+' 列');
+setStatus('共 '+rows.length+' 行，'+(rows[0]?rows[0].length：0)+' 列');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';tableArea.innerHTML='';setStatus('');inputEl.focus();});
 copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});

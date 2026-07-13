@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -14,9 +14,9 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>URL Slug 生成</h1>
+    <h1>文本 Slug 转换</h1>
     <p class="tool-desc">将文本转换为 URL 友好的 slug。</p>
     <div class="card">
       <input id="inputText" class="input js-focus-input" type="text" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
@@ -48,7 +48,7 @@
 
       function generate(text) {
         var s = text.trim();
-        if (optLower.checked) s = s.to小写();
+        if (optLower.checked) s = s.toLowerCase();
         if (optRemoveSpecial.checked) s = s.replace(/[^\w\s-]/g, '');
         s = s.replace(/[\s_]+/g, optSep.value || '-');
         s = s.replace(new RegExp(optSep.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '+', 'g'), optSep.value || '-');

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Quoted-Printable 编解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>Quoted-Printable 编解码</h1><p class="tool-desc">Quoted-Printable 编码/解码（MIME 电子邮件编码标准）。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>QP 编解码</h1><p class="tool-desc">Quoted-Printable 编码/解码（MIME 电子邮件编码标准）。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码的文本或 QP 字符串..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="encodeBtn" class="btn btn-primary">编码</button>
@@ -28,7 +28,7 @@ var code=text.charCodeAt(i);
 if(code===32){r+=' ';continue;}
 if(code===9){r+='\t';continue;}
 if(code===61||code>126||code<32){
-var hex=code.toString(16).to大写();
+var hex=code.toString(16).toUpperCase();
 if(hex.length<2)hex='0'+hex;
 r+='='+hex;
 }else{r+=text[i];}

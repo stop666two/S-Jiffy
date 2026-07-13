@@ -7,8 +7,8 @@
 .summary-stat{display:flex;gap:16px;margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>文本摘要</h1><p class="tool-desc">Extract key sentences using frequency-based extraction, limit by sentence count.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>文本摘要工具</h1><p class="tool-desc">Extract key sentences using frequency-based extraction, limit by sentence count.</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste a long article to summarize..." style="min-height:180px;"></textarea></div>
 <div class="opt-row">
 <label>Summary length</label><select id="lengthSelect" class="input" style="width:auto;"><option value="3">3 sentences</option><option value="5" selected>5 sentences</option><option value="7">7 sentences</option><option value="10">10 sentences</option><option value="20">20 sentences</option></select>
@@ -25,17 +25,17 @@ var oS=document.getElementById('origSents'),sS=document.getElementById('sumSents
 
 function summarize(text,limit){var sents=text.match(/[^.!?\n]+[.!?]?/g)||[text];if(sents.length<=limit)return sents.join(' ');
 var words={};var sentWords=[];
-for(var si=0;si<sents.length;si++){var sent=sents[si].trim().to小写();var w=sent.match(/[a-z0-9]+/g)||[];
+for(var si=0;si<sents.length;si++){var sent=sents[si].trim().toLowerCase();var w=sent.match(/[a-z0-9]+/g)||[];
 sentWords.push(w);for(var wi=0;wi<w.length;wi++){words[w[wi]]=(words[w[wi]]||0)+1;}}
 var maxFreq=0;for(var k in words){if(words[k]>maxFreq)maxFreq=words[k];}
 var scores=[];for(var si2=0;si2<sents.length;si2++){var sw=sentWords[si2];var score=0;for(var wi2=0;wi2<sw.length;wi2++){score+=words[sw[wi2]]||0;}
-score=sw.length>0?score/sw.长度：0;scores.push({idx:si2,score:score});}
+score=sw.length>0?score/sw.length：0;scores.push({idx:si2,score:score});}
 scores.sort(function(a,b){return b.score-a.score;});
 var selected={};for(var li=0;li<Math.min(limit,scores.length);li++){selected[scores[li].idx]=true;}
 var 结果=[];for(var ri=0;ri<sents.length;ri++){if(selected[ri])结果.push(sents[ri].trim());}
 return 结果.join(' ');}
 
-function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('Enter text','error');return;}
+function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('请输入文本','error');return;}
 var origSents=(t.match(/[^.!?\n]+[.!?]?/g)||[]).length;oS.textContent=origSents;
 var limit=parseInt(document.getElementById('lengthSelect').value);
 var summary=summarize(t,limit);o.textContent=summary;
@@ -45,6 +45,6 @@ setStatus('Summarized to '+sumS+' sentences');}
 
 document.getElementById('summarizeBtn').addEventListener('click',process);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
 </script></body></html>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>HTML 净化器</h1>
     <p class="tool-desc">移除 HTML 中的危险标签和属性</p>
@@ -117,7 +117,7 @@
         function cleanNode(node) {
           if (node.nodeType === 3) return node.cloneNode(false);
           if (node.nodeType !== 1) return null;
-          var tag = node.tagName.to小写();
+          var tag = node.tagName.toLowerCase();
           if (!allowed[tag]) return null;
           var clone = document.createElement(tag);
           if (!noAttrs) {

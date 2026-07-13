@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BMI 计算器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.row label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}.row .input{width:120px}.result-big{font-size:48px;font-weight:700;text-align:center;padding:16px 0}.result-label{text-align:center;font-size:16px;padding:8px 16px;border-radius:8px;margin-top:8px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.detail-item{padding:12px;background:var(--color-bg-soft);border-radius:8px;text-align:center}.detail-item .val{font-size:20px;font-weight:600}.detail-item .lbl{font-size:12px;color:var(--color-text-secondary);margin-top:4px}</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>BMI 计算器</h1><p class="tool-desc">根据身高体重计算身体质量指数 BMI，判断体重状况。</p>
+<div class="card">
+<div class="row"><div><label>身高 (cm)</label><input id="height" class="input" type="number" value="170" min="50" max="250"></div><div><label>体重 (kg)</label><input id="weight" class="input" type="number" value="65" min="10" max="300"></div><div style="display:flex;align-items:end;gap:8px"><button id="calcBtn" class="btn btn-primary">计算</button><button id="clearBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px">清空</button></div></div>
+</div>
+<div class="card"><div class="result-big" id="bmiDisplay">—</div><div class="result-label" id="bmiLabel">输入数据后点击计算</div>
+<div class="detail-grid"><div class="detail-item"><div class="val" id="categoryVal">—</div><div class="lbl">体重分类</div></div><div class="detail-item"><div class="val" id="rangeVal">—</div><div class="lbl">正常范围</div></div><div class="detail-item"><div class="val" id="idealVal">—</div><div class="lbl">理想体重</div></div><div class="detail-item"><div class="val" id="heightVal">—</div><div class="lbl">身高</div></div></div></div>
+<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){var h=document.getElementById('height'),w=document.getElementById('weight'),b=document.getElementById('bmiDisplay'),l=document.getElementById('bmiLabel'),cat=document.getElementById('categoryVal'),r=document.getElementById('rangeVal'),iv=document.getElementById('idealVal'),hv=document.getElementById('heightVal'),o=document.getElementById('输出Text');
+function calc(){var hVal=parseFloat(h.value),wVal=parseFloat(w.value);if(!hVal||!wVal||hVal<50||wVal<10){setStatus('请输入有效的身高和体重','error');return}
+var bmi=wVal/((hVal/100)*(hVal/100));b.textContent=bmi.toFixed(1);var catText='',color='',catEn='';if(bmi<18.5){catText='偏瘦';color='#2196F3';catEn='Underweight'}
+else if(bmi<24){catText='正常';color='#4CAF50';catEn='Normal'}else if(bmi<28){catText='超重';color='#FF9800';catEn='Overweight'}
+else if(bmi<35){catText='肥胖';color='#F44336';catEn='Obese'}else{catText='重度肥胖';color='#9C27B0';catEn='Severely Obese'}
+b.style.color=color;l.textContent=catText+' ('+catEn+')';l.style.background=color+'20';l.style.color=color;
+cat.textContent=catText;var minW=18.5*((hVal/100)*(hVal/100)),maxW=24*((hVal/100)*(hVal/100));
+r.textContent=minW.toFixed(1)+' - '+maxW.toFixed(1)+' kg';iv.textContent=22*((hVal/100)*(hVal/100)).toFixed(1)+' kg';hv.textContent=hVal+' cm';
+o.textContent='BMI: '+bmi.toFixed(1)+' | 分类: '+catText+' | 正常范围: '+minW.toFixed(1)+'-'+maxW.toFixed(1)+' kg';setStatus('计算完成')}
+document.getElementById('calcBtn').addEventListener('click',calc);
+document.getElementById('clearBtn').addEventListener('click',function(){b.textContent='—';l.textContent='输入数据后点击计算';l.style.background='';l.style.color='';cat.textContent='—';r.textContent='—';iv.textContent='—';hv.textContent='—';o.textContent='';setStatus('')});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制')}});
+calc();})();</script></body></html>

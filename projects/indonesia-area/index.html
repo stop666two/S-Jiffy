@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>印尼地区编码查询 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .search-box{display:flex;gap:8px;margin-bottom:16px}.search-box input{flex:1}.area-list{max-height:400px;overflow-y:auto;font-size:13px}.area-list table{width:100%;border-collapse:collapse}.area-list th{text-align:left;padding:6px 8px;border-bottom:2px solid var(--color-border);font-size:11px;color:var(--color-text-disabled);text-transform:大写;position:sticky;top:0;background:var(--color-bg-soft)}.area-list td{padding:6px 8px;border-bottom:1px solid var(--color-border)}.area-list tr:hover td{background:var(--color-bg-soft)}.badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:var(--color-bg-soft);color:var(--color-text-secondary);margin-left:4px}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>印尼地区编码查询</h1><p class="tool-desc">查询印度尼西亚省份与城市行政编码，支持名称或编码搜索。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>印尼区号查询</h1><p class="tool-desc">查询印度尼西亚省份与城市行政编码，支持名称或编码搜索。</p>
 <div class="card">
 <div class="search-box"><input id="searchInput" class="input js-focus-input" placeholder="输入省份/城市名称或编码..."></div>
 <div class="area-list" id="areaList"></div>
@@ -21,11 +21,11 @@ var copyBtn=document.getElementById('copyBtn');
 
 function render(filter){
 var html='<table><thead><tr><th>编码</th><th>名称</th><th>类型</th></tr></thead><tbody>';
-var q=(filter||'').to小写();
+var q=(filter||'').toLowerCase();
 var matched=[];
 for(var i=0;i<data.length;i++){
 var item=data[i];
-if(!q||item.code.indexOf(q)!==-1||item.name.to小写().indexOf(q)!==-1){
+if(!q||item.code.indexOf(q)!==-1||item.name.toLowerCase().indexOf(q)!==-1){
 matched.push(item);
 }
 }

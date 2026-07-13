@@ -11,9 +11,9 @@
 .gen-stats .stat strong{color:var(--color-text-primary);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>Lorem Ipsum 生成</h1>
+<h1>Lorem Ipsum 生成器</h1>
 <p class="tool-desc">Generate placeholder text with bytes, markdown modes, and locale word lists.</p>
 <div class="card">
 <div class="lorem-controls">
@@ -55,7 +55,7 @@
   };
   function getWords(){return wordLists[loremLocale.value]||wordLists.latin;}
   function randomWord(){var w=getWords();return w[Math.floor(Math.random()*w.length)];}
-  function capitalize(s){return s.charAt(0).to大写()+s.slice(1);}
+  function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
   function makeSentence(){var len=5+Math.floor(Math.random()*10),sent=[];for(var i=0;i<len;i++)sent.push(randomWord());return capitalize(sent.join(' '))+'.';}
 
   function generate(){
@@ -74,13 +74,13 @@
     输出El.textContent=ho.join('\n');}else if(format==='markdown'){var mp=raw.split('\n\n'),mo=[];for(var i=0;i<mp.length;i++){if(mp[i].trim())mo.push(mp[i].trim()+'\n');}
     输出El.textContent=mo.join('\n\n');}
 
-    var ft=输出El.textContent;statWords.textContent=ft.trim()?ft.trim().split(/\s+/).长度：0;
+    var ft=输出El.textContent;statWords.textContent=ft.trim()?ft.trim().split(/\s+/).length：0;
     statChars.textContent=ft.length;statParas.textContent=ft.split(/\n\s*\n/).filter(function(p){return p.trim().length>0;}).length||(ft.trim()?1:0);
     statSents.textContent=ft.split(/[.!?。！？]+/).filter(function(s){return s.trim().length>0;}).length;
     setStatus('Generated '+count+' '+unit);}
 
   generateBtn.addEventListener('click',generate);
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,this);setStatus('Copied');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});
   generate();
 })();
 </script></body></html>

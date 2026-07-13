@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -9,9 +9,9 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>Vigenère 密码</h1>
+    <h1>维吉尼亚密码</h1>
     <p class="tool-desc">使用密钥对文本进行维吉尼亚密码加密或解密（仅支持英文字母）。</p>
     <div class="card">
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
@@ -45,7 +45,7 @@
       function vigenere(text, key, mode) {
         var 结果 = '';
         var keyIndex = 0;
-        var keyUpper = key.to大写().replace(/[^A-Z]/g, '');
+        var keyUpper = key.toUpperCase().replace(/[^A-Z]/g, '');
         if (!keyUpper.length) return '错误：密钥必须包含至少一个字母';
         for (var i = 0; i < text.length; i++) {
           var ch = text[i];

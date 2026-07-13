@@ -14,9 +14,9 @@
 .tree-wrap{max-height:400px;overflow:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-2);background:var(--color-bg);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>JSON 格式化</h1>
+<h1>JSON Formatter</h1>
 <p class="tool-desc">Format, minify, tree view, JSONPath query, diff view, JSON to TypeScript types.</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","list":[1,2,3]}' style="min-height:150px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
@@ -87,7 +87,7 @@
   document.getElementById('toTsBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';if(!v){setStatus('Enter JSON','error');return;}
     var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}var ts=jsonToTs(结果.data);输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS type generated');});
   document.getElementById('diffBtn').addEventListener('click',function(){var a=inputEl.value.trim(),b=jsonB.value.trim();if(!a||!b){setStatus('Enter both JSONs','error');return;}
-    var ra=tryParse(a),rb=tryParse(b);if(!ra.ok||!rb.ok){setStatus('Invalid JSON','error');return;}
+    var ra=tryParse(a),rb=tryParse(b);if(!ra.ok||!rb.ok){setStatus('无效 JSON','error');return;}
     diff结果.innerHTML='<pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">A: '+escapeHtml(JSON.stringify(ra.data,null,2))+'</pre><pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">B: '+escapeHtml(JSON.stringify(rb.data,null,2))+'</pre>';setStatus('Diff shown');});
   document.getElementById('clearBtn')&&document.getElementById('clearBtn').addEventListener('click',function(){inputEl.value='';输出Content.innerHTML='';errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;setStatus('');inputEl.focus();});
   document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Format JSON first</div>';return;}
@@ -97,6 +97,6 @@
       结果s=next;}
     jp结果.innerHTML='<div class="json-path-结果"><strong>Matches ('+结果s.length+')</strong><br>'+escapeHtml(JSON.stringify(结果s,null,2))+'</div>';setStatus('');}catch(e){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Query error: '+escapeHtml(e.message)+'</div>';}});
   jpInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('jsonPathBtn').click();});
-  copyBtn.addEventListener('click',function(){var text=输出Content.textContent;if(text){copyToClipboard(text,this);setStatus('Copied');}});
+  copyBtn.addEventListener('click',function(){var text=输出Content.textContent;if(text){copyToClipboard(text,this);setStatus('已复制');}});
 })();
 </script></body></html>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -13,9 +13,9 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>BIP39 助记词生成器</h1>
+    <h1>BIP39 助记词</h1>
     <p class="tool-desc">生成 BIP39 标准助记词短语，支持自定义熵值。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">熵值 (Hex)</label>
@@ -334,7 +334,7 @@
       if (!hex) { setStatus('请先输入熵值或点击"随机熵"', 'error'); return; }
       if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) { setStatus('熵值格式无效，请输入十六进制', 'error'); return; }
       if (hex.length < 32) { setStatus('熵值过短，至少 16 字节 (32 hex)', 'error'); return; }
-      var words = entropyToMnemonic(hex.to小写());
+      var words = entropyToMnemonic(hex.toLowerCase());
       输出El.textContent = words.join(' ');
       var chips = '';
       for (var i = 0; i < words.length; i++) { chips += '<span class="word-chip">' + (i + 1) + '. ' + words[i] + '</span>'; }

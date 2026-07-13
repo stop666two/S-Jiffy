@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>HTTP 状态码</h1>
     <p class="tool-desc">浏览和搜索 HTTP 状态码及其含义。</p>
@@ -109,12 +109,12 @@
       var copyBtn = document.getElementById('copyBtn');
 
       function render(query) {
-        query = (query || '').to小写().trim();
+        query = (query || '').toLowerCase().trim();
         var filtered = statusCodes;
         if (query) {
           filtered = statusCodes.filter(function(s) {
             return String(s.code).indexOf(query) !== -1
-              || s.name.to小写().indexOf(query) !== -1
+              || s.name.toLowerCase().indexOf(query) !== -1
               || s.desc.indexOf(query) !== -1;
           });
         }

@@ -15,10 +15,10 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>数字签名验证</h1>
-    <p class="tool-desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。</p>
+    <h1>数字签名解析</h1>
+    <p class="tool-desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
     <div class="card">
       <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;">粘贴 PEM 公钥 / 证书</label>
       <textarea id="pemInput" class="input textarea pem-area js-focus-input" placeholder="-----BEGIN PUBLIC KEY-----&#10;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...&#10;-----END PUBLIC KEY-----" style="min-height:160px;"></textarea>
@@ -203,6 +203,6 @@
         if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
-  </script>
+  if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>
 </html>

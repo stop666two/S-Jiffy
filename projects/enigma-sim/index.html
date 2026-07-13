@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Enigma 模拟器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.enigma-grid{font-family:var(--font-mono);font-size:var(--font-size-xs);margin-top:var(--space-2)}.enigma-grid label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:var(--space-1)}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Enigma 模拟器</h1><p class="tool-desc">简化版 Enigma 密码机模拟：3 转子、反射器、插线板。</p>
 <div class="card">
 <div class="enigma-grid">
@@ -49,7 +49,7 @@ var alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 function buildPlugMap(pb){
 var map={};
 if(!pb)return map;
-var pairs=pb.to大写().split(/\s+/);
+var pairs=pb.toUpperCase().split(/\s+/);
 for(var i=0;i<pairs.length;i++){
 if(pairs[i].length===2){
 map[pairs[i][0]]=pairs[i][1];
@@ -59,7 +59,7 @@ map[pairs[i][1]]=pairs[i][0];
 return map;
 }
 function enigma(text,r1,r2,r3,pos,pb){
-var t=text.to大写().replace(/[^A-Z]/g,'');
+var t=text.toUpperCase().replace(/[^A-Z]/g,'');
 var plug=buildPlugMap(pb);
 var posArr=[pos.charCodeAt(0)-65,pos.charCodeAt(1)-65,pos.charCodeAt(2)-65];
 var rotors=[r1,r2,r3];
@@ -96,7 +96,7 @@ return r;
 processBtn.addEventListener('click',function(){
 var t=inputEl.value;
 if(!t){setStatus('请输入文本','error');return;}
-var pos=positions.value.to大写();
+var pos=positions.value.toUpperCase();
 if(pos.length!==3){setStatus('转子位置需要 3 个字母','error');return;}
 var r=enigma(t,rotor1.value,rotor2.value,rotor3.value,pos,plugboard.value);
 输出El.textContent=r;

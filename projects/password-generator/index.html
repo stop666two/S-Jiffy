@@ -11,14 +11,15 @@
 .gen-mode label{display:flex;align-items:center;gap:6px;font-size:var(--font-size-sm);cursor:pointer;margin-bottom:4px;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>密码生成器</h1>
 <p class="tool-desc">生成强密码，支持多种模式与强度检测。</p>
 <div class="card">
 <div class="pw-row" style="margin-bottom:12px;">
 <label>密码</label><div style="flex:1;font-family:var(--font-mono);font-size:var(--font-size-lg);letter-spacing:2px;word-break:break-all;" id="pwDisplay"></div>
-<button id="generateBtn" class="btn btn-primary">生成</button></div>
+          <div><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">数量</label><input id="countVal" type="number" value="5" min="1" max="100" class="input" style="width:70px;height:36px;font-size:13px"></div>
+          <button id="generateBtn" class="btn btn-primary">生成</button></div>
 <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
 <div style="display:flex;justify-content:space-between;"><span id="strengthLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">—</span><span id="entropyLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">0 bit</span></div>
 </div>
@@ -51,7 +52,7 @@
   var pwDisplay=document.getElementById('pwDisplay'),slider=document.getElementById('lengthSlider'),lenValue=document.getElementById('lenValue');
   var chkU=document.getElementById('chkUpper'),chkL=document.getElementById('chkLower'),chkD=document.getElementById('chkDigit'),chkS=document.getElementById('chkSym'),chkE=document.getElementById('chkExclude');
   var fill=document.getElementById('strengthFill'),sLabel=document.getElementById('strengthLabel'),eLabel=document.getElementById('entropyLabel'),pi=document.getElementById('patternInput');
-  var o=document.getElementById('outputText'),currentPassword='';
+  var o=document.getElementById('outputText'),countEl=document.getElementById('countVal'),currentPassword='';
 
   function genRandom(len,chars){var r='',a=new Uint32Array(len);crypto.getRandomValues(a);for(var i=0;i<len;i++)r+=chars[a[i]%chars.length];return r;}
   function genPronounceable(len){var pw='';for(var i=0;i<len;i++)pw+=i%2===0?consonant[Math.floor(Math.random()*consonant.length)]:vowel[Math.floor(Math.random()*vowel.length)];return pw.substr(0,len);}
@@ -60,18 +61,25 @@
   function getStrength(e){if(e<30)return{label:'非常弱',pct:10,color:'#D54941'};if(e<50)return{label:'弱',pct:25,color:'#E68A2E'};if(e<70)return{label:'中',pct:45,color:'#F0C040'};if(e<100)return{label:'强',pct:70,color:'#2BA471'};return{label:'非常强',pct:100,color:'#1E6DF2'};}
 
   function generate(){
-    var len=parseInt(slider.value),mode=document.querySelector('input[name="genMode"]:checked').value,pw='';
-    if(mode==='pronounceable'){pw=genPronounceable(len);}
-    else if(mode==='pattern'){var pat=pi.value.trim()||'@@##@@##';pw=genPattern(pat);}
-    else{var chars='';if(chkU.checked)chars+=upper;if(chkL.checked)chars+=lower;if(chkD.checked)chars+=digits;if(chkS.checked)chars+=sym;
-    if(chkE.checked){var fl='';for(var i=0;i<chars.length;i++){if(similar.indexOf(chars[i])===-1)fl+=chars[i];}chars=fl;}
-    if(!chars){setStatus('请至少选择一种字符类型','error');return;}pw=genRandom(len,chars);}
-    currentPassword=pw;pwDisplay.textContent=pw;
+    var len=parseInt(slider.value),mode=document.querySelector('input[name="genMode"]:checked').value,count=parseInt(countEl.value)||1;
+    if(count<1)count=1;if(count>100)count=100;
+    var passwords=[];
+    for(var n=0;n<count;n++){
+      var pw='';
+      if(mode==='pronounceable'){pw=genPronounceable(len);}
+      else if(mode==='pattern'){var pat=pi.value.trim()||'@@##@@##';pw=genPattern(pat);}
+      else{var chars='';if(chkU.checked)chars+=upper;if(chkL.checked)chars+=lower;if(chkD.checked)chars+=digits;if(chkS.checked)chars+=sym;
+      if(chkE.checked){var fl='';for(var i=0;i<chars.length;i++){if(similar.indexOf(chars[i])===-1)fl+=chars[i];}chars=fl;}
+      if(!chars){setStatus('请至少选择一种字符类型','error');return;}pw=genRandom(len,chars);}
+      passwords.push(pw);
+      if(n===0)currentPassword=pw;
+    }
+    pwDisplay.textContent=currentPassword;
     var cs=mode==='pronounceable'?52:mode==='pattern'?36:0;
     if(mode==='random'){if(chkU.checked)cs+=26;if(chkL.checked)cs+=26;if(chkD.checked)cs+=10;if(chkS.checked)cs+=sym.length;}
-    var entropy=calcEntropy(Math.max(cs,1),pw.length);var s=getStrength(entropy);
+    var entropy=calcEntropy(Math.max(cs,1),len);var s=getStrength(entropy);
     fill.style.width=s.pct+'%';fill.style.background=s.color;sLabel.textContent=s.label;eLabel.textContent=entropy.toFixed(1)+' bit';
-    o.textContent=pw;setStatus('密码已生成');
+    o.textContent=passwords.join('\n');setStatus('已生成 '+count+' 个密码');
   }
 
   slider.addEventListener('input',function(){lenValue.textContent=this.value;});

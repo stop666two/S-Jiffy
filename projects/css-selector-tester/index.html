@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>CSS 选择器测试</h1>
     <p class="tool-desc">测试 CSS 选择器在 HTML 中的匹配结果</p>
@@ -83,7 +83,7 @@
             输出Text.textContent += '\n\n匹配的元素:';
             for (var i = 0; i < matched.length; i++) {
               var el = matched[i];
-              var tag = el.tagName.to小写();
+              var tag = el.tagName.toLowerCase();
               var id = el.id ? '#' + el.id : '';
               var cls = el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '';
               输出Text.textContent += '\n  ' + (i + 1) + '. <' + tag + id + cls + '> 「' + (el.textContent || '').substring(0, 50) + '」';
@@ -110,7 +110,7 @@
           var matchedInTemp = tempBody.querySelectorAll(selector);
 
           function buildHighlightedHTML(el) {
-            var tag = el.tagName ? el.tagName.to小写() : '';
+            var tag = el.tagName ? el.tagName.toLowerCase() : '';
             if (!tag || tag === 'html' || tag === 'head' || tag === 'body') {
               var 结果 = '';
               for (var ci = 0; ci < el.childNodes.length; ci++) {

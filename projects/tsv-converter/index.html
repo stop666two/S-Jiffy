@@ -8,8 +8,8 @@
 .输出-format label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>TSV ↔ CSV ↔ JSON</h1><p class="tool-desc">Convert between tab-separated, comma-separated and JSON formats.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>TSV 转换器</h1><p class="tool-desc">Convert between tab-separated, comma-separated and JSON formats.</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste TSV, CSV or JSON data..." style="min-height:150px;"></textarea></div>
 <div class="format-opt">
 <label>Input format</label>
@@ -47,7 +47,7 @@ function convert(){var t=i.value.trim();if(!t){setStatus('Enter data','error');r
 var delim;if(inf.value==='auto'){delim=detectDelim(t);}else{delim=inf.value==='tsv'?'\t':',';}
 var rows;if(inf.value==='json'||(inf.value==='auto'&&t.trim().startsWith('['))){try{var arr=JSON.parse(t.trim());if(!Array.isArray(arr)||arr.length===0){setStatus('JSON must be an array','error');return;}
 var headers=Object.keys(arr[0]);rows=[headers];for(var r=0;r<arr.length;r++){var rw=[];for(var h=0;h<headers.length;h++){rw.push(arr[r][headers[h]]!==undefined?String(arr[r][headers[h]]):'');}
-rows.push(rw);}}catch(e){setStatus('Invalid JSON','error');return;}}else{rows=parseTable(t,delim);}
+rows.push(rw);}}catch(e){setStatus('无效 JSON','error');return;}}else{rows=parseTable(t,delim);}
 if(rows.length<2){setStatus('Need header + data rows','error');return;}
 var fmt=document.querySelector('input[name="outFmt"]:checked').value;
 var 结果='';switch(fmt){case'tsv':结果=toTSV(rows);break;case'csv':结果=toCSV(rows);break;case'json':结果=toJSON(rows);break;case'markdown':结果=toMarkdown(rows);break;}
@@ -55,6 +55,6 @@ o.textContent=结果;setStatus('Converted '+(rows.length-1)+' rows');}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
 </script></body></html>

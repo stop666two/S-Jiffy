@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>颜色转换</h1>
     <p class="tool-desc">HEX / RGB / HSL / CMYK / HSV / OKLCH / LAB / LCH / HSLA 互转，含色盲模拟。</p>
@@ -180,7 +180,7 @@
         return html;
       }
 
-      function toHex(r, g, b) { return '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('').to大写(); }
+      function toHex(r, g, b) { return '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('').toUpperCase(); }
       function toRgbStr(r, g, b, a) { return a < 1 ? 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')' : 'rgb(' + r + ', ' + g + ', ' + b + ')'; }
       function toHslStr(r, g, b, a) { var hsl = rgbToHsl(r, g, b); return (a < 1 ? 'hsla(' : 'hsl(') + Math.round(hsl.h) + ', ' + Math.round(hsl.s) + '%, ' + Math.round(hsl.l) + '%' + (a < 1 ? ', ' + a + ')' : ')'); }
 
@@ -226,7 +226,7 @@
       });
       inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('convertBtn').click(); });
       document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; o.textContent = ''; preview.style.background = ''; [vHex, vRgb, vHsl, vHsla, vHsv, vCmyk, vOklch, vLab, vLch].forEach(function (el) { el.textContent = '—'; }); cbSim.innerHTML = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('Copied'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
     })();
   </script>
 </body>

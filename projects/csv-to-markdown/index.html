@@ -7,7 +7,7 @@
 .opt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>CSV 转 Markdown</h1><p class="tool-desc">Paste CSV data, generate GitHub-flavored markdown tables.</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='name,age,city&#10;Alice,30,NYC&#10;Bob,25,LA' style="min-height:160px;"></textarea></div>
 <div class="opt-row">
@@ -41,6 +41,6 @@ md.textContent=out;setStatus('Converted '+rows.length+' rows');}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';md.textContent='';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(md.textContent){copyToClipboard(md.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(md.textContent){copyToClipboard(md.textContent,this);setStatus('已复制');}});
 })();
 </script></body></html>

@@ -9,10 +9,10 @@
 #preview img{max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>拍照工具</h1>
-<p class="tool-desc">使用摄像头拍照并下载，所有数据仅在本地处理。</p>
+<p class="tool-desc">使用摄像头拍照并下载，所有数据仅在本地处理。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 <p style="font-size:var(--font-size-xs);color:var(--color-error);margin-bottom:var(--space-3);">⚠ 提示：请提前摆好姿势，因浏览器限制摄像头画面可能仅短暂可用。打开后请尽快拍照。</p>
 <div id="wrap">
 <video id="v" autoplay playsinline muted style="display:none;"></video>
@@ -76,4 +76,4 @@
 
   window.addEventListener('beforeunload',function(){if(st)st.getTracks().forEach(function(t){t.stop();});});
 })();
-</script></body></html>
+if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script></body></html>

@@ -11,7 +11,7 @@
 .freq-bar{height:14px;background:var(--color-text-primary);border-radius:2px;min-width:2px;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>高级文本统计</h1><p class="tool-desc">Syllables, Flesch readability score, grade level, word frequency analysis.</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste your text here..." style="min-height:180px;"></textarea></div>
 <div class="adv-stat-grid">
@@ -35,11 +35,11 @@
 var el={cc:document.getElementById('charCount'),wc:document.getElementById('wordCount'),sc:document.getElementById('sentenceCount'),sy:document.getElementById('syllableCount'),fr:document.getElementById('fleschScore'),gl:document.getElementById('gradeLevel'),aw:document.getElementById('avgWordLen'),rt:document.getElementById('readingTime'),ld:document.getElementById('lexicalDensity'),cw:document.getElementById('complexWords')};
 var freqC=document.getElementById('freqContainer'),o=document.getElementById('输出Text');
 
-function countSyllables(word){word=word.to小写().replace(/[^a-z]/g,'');if(!word)return 0;
+function countSyllables(word){word=word.toLowerCase().replace(/[^a-z]/g,'');if(!word)return 0;
 if(word.length<=3)return 1;
 word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'');
 word=word.replace(/^y/,'');
-var m=word.match(/[aeiouy]{1,2}/g);return m?m.长度：1;}
+var m=word.match(/[aeiouy]{1,2}/g);return m?m.length：1;}
 
 function update(){var t=i.value;if(!t.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p>';o.textContent='';return;}
 var cc=t.length;
@@ -48,7 +48,7 @@ var sents=t.split(/[.!?]+/).filter(function(s){return s.trim().length>0;}).lengt
 var syl=0,cw=0;var freq={};
 for(var w=0;w<words.length;w++){var word=words[w].replace(/[^a-z]/gi,'');if(!word)continue;
 var cs=countSyllables(word);syl+=cs;
-var lw=word.to小写();freq[lw]=(freq[lw]||0)+1;
+var lw=word.toLowerCase();freq[lw]=(freq[lw]||0)+1;
 if(cs>=3)cw++;}
 var flesch=206.835-1.015*(wc/sents)-84.6*(syl/wc);
 var grade=0.39*(wc/sents)+11.8*(syl/wc)-15.59;
@@ -72,6 +72,6 @@ h+='</tbody></table>';freqC.innerHTML=h;
 o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;
 }
 i.addEventListener('input',update);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 update();})();
 </script></body></html>

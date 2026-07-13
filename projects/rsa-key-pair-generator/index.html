@@ -14,10 +14,10 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>RSA 密钥对生成器</h1>
-    <p class="tool-desc">使用 Web Crypto API 生成 RSA 密钥对，输出 PEM 格式。</p>
+    <p class="tool-desc">使用 Web Crypto API 生成 RSA 密钥对，输出 PEM 格式。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">密钥长度</label>
       <select id="bitsSelect" class="input" style="width:auto;min-width:90px;">
@@ -63,7 +63,7 @@
       privArea.textContent = '生成中...';
       setStatus('正在生成 RSA ' + bits + ' 密钥对...');
       crypto.subtle.generateKey(
-        { name: 'RSA-OAEP', modulus长度： bits, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+        { name: 'RSA-OAEP', modulusLength: bits, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
         true, ['encrypt', 'decrypt']
       ).then(function(keyPair) {
         return Promise.all([
@@ -88,6 +88,6 @@
     document.getElementById('copyPrivBtn').addEventListener('click', function() {
       if (privPem) { copyToClipboard(privPem, this); setStatus('私钥已复制'); }
     });
-  })();</script>
+  })();if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>
 </html>

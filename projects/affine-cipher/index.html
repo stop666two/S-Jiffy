@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Affine 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ac-all{font-family:var(--font-mono);font-size:var(--font-size-xs);max-height:300px;overflow-y:auto;margin-top:var(--space-2);white-space:pre-wrap}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>Affine 密码</h1><p class="tool-desc">Affine 仿射密码加密/解密，使用 a/b 密钥，支持遍历所有可能组合。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>仿射密码</h1><p class="tool-desc">Affine 仿射密码加密/解密，使用 a/b 密钥，支持遍历所有可能组合。</p>
 <div class="card">
 <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
 <div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">密钥 a（与 26 互质）</label><input id="keyA" type="number" class="input" value="5" style="width:80px;"></div>
@@ -39,7 +39,7 @@ for(var x=1;x<m;x++){if((a*x)%m===1)return x;}
 return null;
 }
 function affine(text,a,b,mode){
-var t=text.to大写().replace(/[^A-Z]/g,'');
+var t=text.toUpperCase().replace(/[^A-Z]/g,'');
 var r='';
 if(mode==='decrypt'){
 var inv=modInverse(a,26);

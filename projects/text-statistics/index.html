@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>文本统计</h1>
     <p class="tool-desc">Real-time stats: syllables, Flesch-Kincaid grade level, reading ease, word frequency.</p>
@@ -59,7 +59,7 @@
       var 输出El = document.getElementById('输出Text');
 
       function countSyllables(word) {
-        word = word.to小写().replace(/[^a-z]/g, '');
+        word = word.toLowerCase().replace(/[^a-z]/g, '');
         if (!word || word.length <= 3) return 1;
         word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
         word = word.replace(/^y/, '');
@@ -110,7 +110,7 @@
         } else {
           var freq = {};
           for (var i = 0; i < wordsArr.length; i++) {
-            var wd = wordsArr[i].to小写().replace(/[^a-z\u4e00-\u9fff]/g, '');
+            var wd = wordsArr[i].toLowerCase().replace(/[^a-z\u4e00-\u9fff]/g, '');
             if (wd) freq[wd] = (freq[wd] || 0) + 1;
           }
           var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; });
@@ -130,7 +130,7 @@
       }
 
       inputEl.addEventListener('input', updateStats);
-      document.getElementById('copyBtn').addEventListener('click', function () { var text = 输出El.textContent; if (text) { copyToClipboard(text, this); setStatus('Copied'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { var text = 输出El.textContent; if (text) { copyToClipboard(text, this); setStatus('已复制'); } });
       updateStats();
     })();
   </script>

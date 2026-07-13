@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Math Evaluator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.math-input{position:relative;}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>数学表达式计算</h1>
 <p class="tool-desc">Expression evaluation with log, trig, inverse trig, hyperbolic, constants support.</p>
@@ -37,12 +37,12 @@
       history.unshift(expr+' = '+结果);if(history.length>10)history.pop();
       historyList.innerHTML=history.map(function(h){return'<div style="padding:2px 0;border-bottom:1px solid var(--color-border);">'+h+'</div>';}).join('');
       setStatus('');}
-    catch(e){输出El.textContent='';setStatus('Error: '+e.message,'error');}}
+    catch(e){输出El.textContent='';setStatus('错误: '+e.message,'error');}}
 
   evalBtn.addEventListener('click',evaluate);
   exprInput.addEventListener('keydown',function(e){if(e.key==='Enter')evaluate();});
   clearBtn.addEventListener('click',function(){exprInput.value='';输出El.textContent='';setStatus('');exprInput.focus();});
-  copyBtn.addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('Copied');}});
+  copyBtn.addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
   evaluate();
 })();
 </script></body></html>

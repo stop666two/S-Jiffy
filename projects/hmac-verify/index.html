@@ -9,8 +9,8 @@
 .结果-badge.fail{background:#ffebee;color:#c62828;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>HMAC 签名验证</h1><p class="tool-desc">Verify HMAC signatures of text using SHA-256/SHA-384/SHA-512 with a secret key.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>HMAC 验证器</h1><p class="tool-desc">Verify HMAC signatures of text using SHA-256/SHA-384/SHA-512 with a secret key.<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter the message text..." style="min-height:100px;"></textarea></div>
 <div class="card">
 <div class="hrow"><label>Secret Key</label><input id="keyInput" class="input" type="password" placeholder="HMAC secret key" style="flex:1;min-width:150px;"></div>
@@ -39,11 +39,11 @@ var algo={algo:al.value};
 crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:algo},false,['sign']).then(function(k){
 return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(text));}).then(function(sig){var computed=fm.value==='hex'?hex(sig):b64(sig);
 o.textContent=computed;
-var expected=ei.value.trim();if(expected){var match=computed.to小写()===expected.to小写();
+var expected=ei.value.trim();if(expected){var match=computed.toLowerCase()===expected.toLowerCase();
 vb.style.display='inline-block';vb.textContent=match?'VERIFIED ✓':'FAILED ✗';vb.className='结果-badge '+(match?'ok':'fail');
-setStatus(match?'Verified!':'Verification failed');}else{vb.style.display='none';setStatus('HMAC computed');}}).catch(function(e){setStatus('Error: '+e.message,'error');});}
+setStatus(match?'Verified!':'Verification failed');}else{vb.style.display='none';setStatus('HMAC computed');}}).catch(function(e){setStatus('错误: '+e.message,'error');});}
 
 document.getElementById('calcBtn').addEventListener('click',compute);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
-</script></body></html>
+if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script></body></html>

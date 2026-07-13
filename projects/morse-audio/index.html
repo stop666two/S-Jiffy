@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>摩斯音频 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ma-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-bottom:var(--space-2)}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>摩斯音频</h1><p class="tool-desc">文本转摩斯码并通过 Web Audio API 播放音频，支持速度和音高调节。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>摩斯音频播放</h1><p class="tool-desc">文本转摩斯码并通过 Web Audio API 播放音频，支持速度和音高调节。</p>
 <div class="card">
 <div class="ma-controls">
 <div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">速度</label><input id="speedInput" type="range" min="2" max="20" value="10" style="width:120px;"><span id="speedVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">10</span></div>
@@ -38,7 +38,7 @@ var morseMap={'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'-
 speedInput.addEventListener('input',function(){speedVal.textContent=speedInput.value;});
 pitchInput.addEventListener('input',function(){pitchVal.textContent=pitchInput.value;});
 function textToMorse(text){
-var upper=text.to大写();
+var upper=text.toUpperCase();
 var parts=[];
 for(var i=0;i<upper.length;i++){
 var ch=upper[i];

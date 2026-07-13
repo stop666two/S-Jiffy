@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -12,9 +12,9 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>易记密码生成器</h1>
+    <h1>可记忆密码</h1>
     <p class="tool-desc">使用单词+单词+数字模式生成好记又安全的密码。</p>
     <div class="card">
       <div class="pm-row">
@@ -51,7 +51,7 @@
 
     var wordList = ['Apple','Arrow','Basket','Beach','Breeze','Cabin','Candy','Cherry','Coral','Crisp','Daisy','Dream','Drift','Eagle','Echo','Ember','Fancy','Flame','Flower','Forest','Frost','Fuzzy','Garden','Gentle','Ghost','Gleam','Glow','Grape','Green','Happy','Haven','Honey','House','Icicle','Ivy','Jelly','Jewel','Jolly','Jungle','Kettle','Lemon','Light','Lily','Lucky','Maple','Meadow','Mint','Moon','Moss','Mystic','Noble','Ocean','Olive','Owl','Panda','Paper','Peach','Pearl','Petal','Piano','Pine','Plum','Purple','Quiet','Rabbit','Rain','River','Robin','Rose','Royal','Rubber','Sable','Salad','Sandy','Sapphire','Sharp','Shell','Silk','Silver','Sky','Snow','Solar','Spirit','Spring','Star','Storm','Summer','Sunny','Swift','Tiger','Travel','Tree','Tulip','Twilight','Velvet','Violet','Wallet','Water','Whisper','Wild','Willow','Winter','Wish','Yellow','Zeal','Zebra','Zephyr','Zest','Zipper','Zone'];
 
-    function capitalize(s) { return s.charAt(0).to大写() + s.slice(1); }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
     function pick() {
       var b = new Uint16Array(1);
@@ -74,7 +74,7 @@
         var parts = [];
         for (var j = 0; j < wc; j++) {
           var w = pick();
-          parts.push(doCap ? capitalize(w) : w.to小写());
+          parts.push(doCap ? capitalize(w) : w.toLowerCase());
         }
         var numBytes = new Uint32Array(1);
         crypto.getRandomValues(numBytes);

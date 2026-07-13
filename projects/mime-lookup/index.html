@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>MIME 类型查询 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .mime-search{display:flex;gap:8px;margin-bottom:16px}.mime-search input{flex:1}.mime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;max-height:400px;overflow-y:auto}.mime-item{display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--color-border);font-size:12px;cursor:pointer;transition:background .1s}.mime-item:hover{background:var(--color-bg-soft)}.mime-item .ext{font-weight:600;font-family:var(--font-mono)}.mime-item .type{color:var(--color-text-secondary);font-size:11px;text-align:right;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.结果-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;margin-top:12px;display:none}.结果-card.show{display:block}.结果-card .label{font-size:11px;color:var(--color-text-disabled);text-transform:大写}.结果-card .value{font-family:var(--font-mono);font-size:16px;margin:4px 0}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>MIME 类型查询</h1><p class="tool-desc">按文件扩展名查询对应的 MIME 类型，支持反向查找。</p>
 <div class="card">
 <div class="mime-search">
@@ -29,7 +29,7 @@ var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 
 function render(filter){
-var q=(filter||'').to小写().replace(/^\./,'');
+var q=(filter||'').toLowerCase().replace(/^\./,'');
 var html='';
 var count=0;
 var exts=Object.keys(mimes);

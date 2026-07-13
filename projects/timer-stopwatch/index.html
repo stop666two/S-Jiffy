@@ -12,8 +12,8 @@
 .lap-list div{padding:4px 8px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>计时秒表</h1><p class="tool-desc">Countdown timer with presets, and a lap-recording stopwatch.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>秒表计时器</h1><p class="tool-desc">Countdown timer with presets, and a lap-recording stopwatch.</p>
 <div class="card">
 <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);">
 <select id="modeSelect" class="input" style="width:auto;"><option value="stopwatch">Stopwatch</option><option value="timer">Countdown Timer</option></select>
@@ -65,6 +65,6 @@ st.addEventListener('click',startTimer);pa.addEventListener('click',pauseTimer);
 ms.addEventListener('change',function(){resetTimer();ti.style.display=ms.value==='timer'?'flex':'none';lb.style.display=ms.value==='timer'?'none':'inline-flex';});
 lb.style.display='none';ti.style.display='flex';
 var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){mi.value=this.dataset.min;si.value='0';ms.value='timer';ti.style.display='flex';lb.style.display='none';resetTimer();});}
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
 </script></body></html>

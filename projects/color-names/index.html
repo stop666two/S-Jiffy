@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS 颜色名称 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:12px}.color-card{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;transition:transform .15s}.color-card:hover{transform:scale(1.03)}.color-swatch{height:44px}.color-info{padding:6px 8px;font-size:11px}.color-info .name{font-weight:600;display:block}.color-info .hex{color:var(--color-text-secondary)}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>CSS 颜色名称</h1><p class="tool-desc">147 个标准 CSS 命名颜色，支持搜索、点击复制颜色值。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>颜色名称查询</h1><p class="tool-desc">147 个标准 CSS 命名颜色，支持搜索、点击复制颜色值。</p>
 <div class="card"><input id="searchInput" class="input js-focus-input" placeholder="搜索颜色名称或十六进制值..."></div>
 <div class="color-grid" id="colorGrid"></div>
 <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
@@ -17,13 +17,13 @@ var 输出El=document.getElementById('输出Text');
 var copyBtn=document.getElementById('copyBtn');
 
 function render(){
-var q=searchInput.value.to小写();
+var q=searchInput.value.toLowerCase();
 var html='';
 var count=0;
 for(var i=0;i<colors.length;i++){
 var name=colors[i][0];
 var hex=colors[i][1];
-if(q&&name.indexOf(q)===-1&&hex.to小写().indexOf(q)===-1)continue;
+if(q&&name.indexOf(q)===-1&&hex.toLowerCase().indexOf(q)===-1)continue;
 count++;
 var textColor=parseInt(hex.slice(1,2),16)<4?'#fff':'#000';
 html+='<div class="color-card" data-name="'+name+'" data-hex="'+hex+'"><div class="color-swatch" style="background:'+hex+'"></div><div class="color-info"><span class="name">'+name+'</span><span class="hex">'+hex+'</span></div></div>';

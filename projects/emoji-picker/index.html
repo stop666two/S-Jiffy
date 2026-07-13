@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +19,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>Emoji 选择器</h1>
     <p class="tool-desc">搜索并点击复制 emoji，支持中文和英文搜索。</p>
@@ -62,12 +62,12 @@
 
       function renderEmojis(query) {
         gridEl.innerHTML = '';
-        query = query.to小写().trim();
+        query = query.toLowerCase().trim();
         var filtered = emojis;
         if (query) {
           var keywords = query.split(/\s+/);
           filtered = emojis.filter(function(e) {
-            var text = (e.n + ' ' + e.k).to小写();
+            var text = (e.n + ' ' + e.k).toLowerCase();
             for (var i = 0; i < keywords.length; i++) {
               if (text.indexOf(keywords[i]) === -1) return false;
             }
@@ -85,7 +85,7 @@
             previewArea.style.display = 'flex';
             previewEmoji.textContent = e.e;
             previewName.textContent = e.n.trim();
-            previewCode.textContent = 'U+' + e.e.codePointAt(0).toString(16).to大写();
+            previewCode.textContent = 'U+' + e.e.codePointAt(0).toString(16).toUpperCase();
             setStatus('已选中: ' + e.e);
           });
           gridEl.appendChild(cell);

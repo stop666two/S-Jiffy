@@ -10,8 +10,8 @@
 .结果-item .val{font-weight:600;font-family:var(--font-mono);font-size:var(--font-size-sm);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>文本相似度</h1><p class="tool-desc">Compare two texts: similarity %, character overlap, edit distance (Levenshtein).</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>文本对比工具</h1><p class="tool-desc">Compare two texts: similarity %, character overlap, edit distance (Levenshtein).</p>
 <div class="comp-grid"><div class="comp-pane"><label for="textA">Text A</label><textarea id="textA" class="input textarea js-focus-input" placeholder="First text..." style="min-height:120px;"></textarea></div>
 <div class="comp-pane"><label for="textB">Text B</label><textarea id="textB" class="input textarea" placeholder="Second text..." style="min-height:120px;"></textarea></div></div>
 <div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);">
@@ -47,6 +47,6 @@ o.textContent='Similarity: '+sim+'% | Edit: '+editDist+' | Overlap: '+Math.round
 
 document.getElementById('compareBtn').addEventListener('click',compare);
 document.getElementById('clearBtn').addEventListener('click',function(){tA.value='';tB.value='';rg.innerHTML='';o.textContent='';setStatus('');tA.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 })();
 </script></body></html>

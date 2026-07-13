@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Playfair 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.pf-grid{font-family:var(--font-mono);font-size:var(--font-size-sm);border-collapse:collapse;margin:var(--space-2) 0}.pf-grid td{border:1px solid var(--color-border);padding:8px 12px;text-align:center;width:36px;height:36px}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Playfair 密码</h1><p class="tool-desc">Playfair 密码加密/解密，使用 5x5 字母矩阵和关键词。</p>
 <div class="card"><input id="keyInput" class="input" placeholder="关键词" value="PLAYFAIR" style="width:200px;"></div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
@@ -26,7 +26,7 @@ var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
 var gridArea=document.getElementById('gridArea');
 function buildGrid(key){
-var k=key.to大写().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+var k=key.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
 var seen={};
 var grid=[];
 var all='ABCDEFGHIKLMNOPQRSTUVWXYZ';
@@ -55,7 +55,7 @@ html+='</tbody></table>';
 gridArea.innerHTML=html;
 }
 function prepare(text){
-var t=text.to大写().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+var t=text.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
 var r='';
 for(var i=0;i<t.length;i+=2){
 var a=t[i];

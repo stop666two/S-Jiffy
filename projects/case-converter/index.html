@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Case Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
@@ -10,7 +10,7 @@
 .wc-badge{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-left:8px;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>命名风格转换</h1>
 <p class="tool-desc">Convert between camelCase / snake_case / kebab-case / PascalCase / Title Case (with exceptions) / URL slug etc.</p>
@@ -44,20 +44,20 @@
 
   function convert(type,w,raw){
     switch(type){
-      case'camel':return w.map(function(s,idx){return idx===0?s.to小写():s[0].to大写()+s.slice(1).to小写();}).join('');
-      case'pascal':return w.map(function(s){return s[0].to大写()+s.slice(1).to小写();}).join('');
-      case'snake':return w.map(function(s){return s.to小写();}).join('_');
-      case'kebab':return w.map(function(s){return s.to小写();}).join('-');
-      case'upper':return w.map(function(s){return s.to大写();}).join('_');
-      case'lower':return w.map(function(s){return s.to小写();}).join(' ');
-      case'title':return w.map(function(s,i){var lower=s.to小写();return i===0||!titleExceptions[lower]?s[0].to大写()+s.slice(1).to小写():lower;}).join(' ');
-      case'sentence':return w.map(function(s,i){return i===0?s[0].to大写()+s.slice(1).to小写():s.to小写();}).join(' ');
-      case'toggle':return raw.split('').map(function(c){return c===c.to大写()?c.to小写():c.to大写();}).join('');
-      case'alternating':var alt='';for(var i=0;i<raw.length;i++)alt+=i%2===0?raw[i].to小写():raw[i].to大写();return alt;
-      case'dot':return w.map(function(s){return s.to小写();}).join('.');
-      case'path':return w.map(function(s){return s.to小写();}).join('/');
-      case'constant':return w.map(function(s){return s.to大写();}).join('_');
-      case'slug':return w.map(function(s){return s.to小写();}).join('-').replace(/[^a-z0-9-]/g,'');
+      case'camel':return w.map(function(s,idx){return idx===0?s.toLowerCase():s[0].toUpperCase()+s.slice(1).toLowerCase();}).join('');
+      case'pascal':return w.map(function(s){return s[0].toUpperCase()+s.slice(1).toLowerCase();}).join('');
+      case'snake':return w.map(function(s){return s.toLowerCase();}).join('_');
+      case'kebab':return w.map(function(s){return s.toLowerCase();}).join('-');
+      case'upper':return w.map(function(s){return s.toUpperCase();}).join('_');
+      case'lower':return w.map(function(s){return s.toLowerCase();}).join(' ');
+      case'title':return w.map(function(s,i){var lower=s.toLowerCase();return i===0||!titleExceptions[lower]?s[0].toUpperCase()+s.slice(1).toLowerCase():lower;}).join(' ');
+      case'sentence':return w.map(function(s,i){return i===0?s[0].toUpperCase()+s.slice(1).toLowerCase():s.toLowerCase();}).join(' ');
+      case'toggle':return raw.split('').map(function(c){return c===c.toUpperCase()?c.toLowerCase():c.toUpperCase();}).join('');
+      case'alternating':var alt='';for(var i=0;i<raw.length;i++)alt+=i%2===0?raw[i].toLowerCase():raw[i].toUpperCase();return alt;
+      case'dot':return w.map(function(s){return s.toLowerCase();}).join('.');
+      case'path':return w.map(function(s){return s.toLowerCase();}).join('/');
+      case'constant':return w.map(function(s){return s.toUpperCase();}).join('_');
+      case'slug':return w.map(function(s){return s.toLowerCase();}).join('-').replace(/[^a-z0-9-]/g,'');
     }return '';}
 
   function updateAll(){
@@ -68,10 +68,10 @@
 
   i.addEventListener('input',updateAll);
   var btns=document.querySelectorAll('.case-btn');
-  for(var j=0;j<btns.length;j++){btns[j].addEventListener('click',function(){var w2=words(i.value);if(w2.length===0){setStatus('Enter text','error');return;}
+  for(var j=0;j<btns.length;j++){btns[j].addEventListener('click',function(){var w2=words(i.value);if(w2.length===0){setStatus('请输入文本','error');return;}
     o.textContent=convert(this.dataset.case,w2,i.value);setStatus('');});}
   document.getElementById('clearBtn').addEventListener('click',function(){i.value='';grid.innerHTML='';o.textContent='';setStatus('');i.focus();});
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('Copied');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
   updateAll();
 })();
 </script></body></html>

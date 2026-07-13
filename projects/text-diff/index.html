@@ -18,9 +18,9 @@
 .mode-select label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>文本差异对比</h1>
+<h1>文本对比</h1>
 <p class="tool-desc">Line-level, word-level, or character-level diff with highlighted additions and deletions.</p>
 <div class="diff-container">
 <div class="diff-pane"><label for="textA">Text A (Original)</label><textarea id="textA" class="input textarea" placeholder="Original text..." style="min-height:200px;"></textarea></div>
@@ -85,6 +85,6 @@
 
   document.getElementById('swapBtn').addEventListener('click',function(){var t=textA.value;textA.value=textB.value;textB.value=t;});
   document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';输出El.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent||输出El.innerText;if(t){copyToClipboard(t,this);setStatus('Copied');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent||输出El.innerText;if(t){copyToClipboard(t,this);setStatus('已复制');}});
 })();
 </script></body></html>

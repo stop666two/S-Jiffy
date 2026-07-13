@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Gravatar Generator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
@@ -10,8 +10,8 @@
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);font-size:var(--font-size-sm);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a></header>
-<main class="tool-workspace"><h1>Gravatar 头像</h1><p class="tool-desc">Email → MD5 hash → Gravatar URL with preview.</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Gravatar 查询</h1><p class="tool-desc">Email → MD5 hash → Gravatar URL with preview.</p>
 <div class="card">
 <div class="grav-row"><div class="field"><label>邮箱</label><input id="emailInput" class="input js-focus-input" type="email" placeholder="you@example.com" value="user@example.com"></div>
 <button id="generateBtn" class="btn btn-primary">生成</button></div>
@@ -52,7 +52,7 @@ var temp=d+rotateLeft(a, sTab[i])+K[i]+words[g];d=c;c=b;b=a;a=temp;}
 h0=(h0+a)&0xFFFFFFFF;h1=(h1+b)&0xFFFFFFFF;h2=(h2+c)&0xFFFFFFFF;h3=(h3+d)&0xFFFFFFFF;}
 return toHex(h0)+toHex(h1)+toHex(h2)+toHex(h3);}
 
-function generate(){var email=el.value.trim().to小写();if(!email){setStatus('Enter email','error');return;}
+function generate(){var email=el.value.trim().toLowerCase();if(!email){setStatus('Enter email','error');return;}
 var hash=md5Real(email);mh.textContent=hash;
 var size=document.getElementById('sizeSelect').value;
 var def=document.getElementById('defaultSelect').value;

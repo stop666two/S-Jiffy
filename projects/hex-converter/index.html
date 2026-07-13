@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -12,9 +12,9 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  </header>
+  <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>Hex RGB Decimal 转换</h1>
+    <h1>Hex/RGB/Decimal 转换</h1>
     <p class="tool-desc">十六进制、RGB 与十进制颜色值互转。</p>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <input id="hexInput" class="input js-focus-input" placeholder="#FF6600" style="width:140px;">
@@ -87,7 +87,7 @@
         var rgb = hexToRgb(hex);
         if (!rgb) { setStatus('无效 Hex 值', 'error'); return; }
         var dec = (rgb.r << 16) | (rgb.g << 8) | rgb.b;
-        输出El.textContent = 'Decimal: ' + dec + ' | Hex: #' + dec.toString(16).padStart(6, '0').to大写() + ' | RGB: (' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
+        输出El.textContent = 'Decimal: ' + dec + ' | Hex: #' + dec.toString(16).padStart(6, '0').toUpperCase() + ' | RGB: (' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
         setPreview(rgb.r, rgb.g, rgb.b);
         setStatus('');
       });

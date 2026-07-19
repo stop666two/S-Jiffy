@@ -90,7 +90,7 @@ document.getElementById('generateBtn').addEventListener('click',function(){
     if(hasBuild&&cfg.build)lines.push('    - name: Build','      run: '+cfg.build);
     if(hasDocker)lines.push('    - name: Docker build','      run: docker build -t ${{ github.repository }} .');
     if(testCmd!=='none')lines.push('    - name: Test','      run: '+testCmd);
-    if(hasDeploy){lines.push('    - name: Deploy','      run: '+dc.value.trim()||'echo deploy';}
+    if(hasDeploy){lines.push('    - name: Deploy','      run: '+dc.value.trim()||'echo deploy');}
     o.textContent=lines.join('\n');
   }else{
     var yml=['stages:','  - build','  - test'];

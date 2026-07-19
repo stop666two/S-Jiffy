@@ -40,12 +40,12 @@ function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value
 var hash;
 if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.toLowerCase()===target;
 rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match?'match':'no-match');
-rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
+      rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
 o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('错误: '+e.message,'error');});
 return;}
 var computed2=hash;var match2=computed2.toLowerCase()===target;
 rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match2?'match':'no-match');
-rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+computed2+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+target+'</code>';
+rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed2)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
 o.textContent=computed2;setStatus(match2?'Match!':'No match');}
 
 document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}

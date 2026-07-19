@@ -67,7 +67,7 @@ el.ld.textContent=ldVal+'%';el.cw.textContent=cwp+'%';
 var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];});
 var top=sorted.slice(0,15);var maxF=top.length>0?freq[top[0]]:1;
 var h='<table class="freq-table"><thead><tr><th>#</th><th>Word</th><th>计数</th><th>Distribution</th></tr></thead><tbody>';
-for(var i2=0;i2<top.length;i2++){var pct=(freq[top[i2]]/maxF*100).toFixed(0);h+='<tr><td>'+(i2+1)+'</td><td>'+top[i2]+'</td><td>'+freq[top[i2]]+'</td><td><div class="freq-bar" style="width:'+pct+'%"></div></td></tr>';}
+for(var i2=0;i2<top.length;i2++){var pct=(freq[top[i2]]/maxF*100).toFixed(0);h+='<tr><td>'+(i2+1)+'</td><td>'+htmlEscape(top[i2])+'</td><td>'+freq[top[i2]]+'</td><td><div class="freq-bar" style="width:'+pct+'%"></div></td></tr>';}
 h+='</tbody></table>';freqC.innerHTML=h;
 o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;
 }

@@ -119,7 +119,7 @@
           var html = '<table><thead><tr><th style="width:40px">#</th><th>Word</th><th style="width:60px">计数</th><th>Dist</th></tr></thead><tbody>';
           for (var i = 0; i < top.length; i++) {
             var pct = (freq[top[i]] / maxFreq * 100).toFixed(0);
-            html += '<tr><td>' + (i + 1) + '</td><td>' + top[i] + '</td><td>' + freq[top[i]] + '</td><td><div class="bar" style="width:' + pct + '%"></div></td></tr>';
+            html += '<tr><td>' + (i + 1) + '</td><td>' + htmlEscape(top[i]) + '</td><td>' + freq[top[i]] + '</td><td><div class="bar" style="width:' + pct + '%"></div></td></tr>';
           }
           html += '</tbody></table>';
           freqContainer.innerHTML = html;

@@ -35,7 +35,7 @@
       var fn=new (Function.prototype.bind.apply(Function,[null].concat(keys,['return ('+expr+')'])));
       var 结果=fn.apply(null,vals);输出El.textContent=expr+' = '+结果;
       history.unshift(expr+' = '+结果);if(history.length>10)history.pop();
-      historyList.innerHTML=history.map(function(h){return'<div style="padding:2px 0;border-bottom:1px solid var(--color-border);">'+h+'</div>';}).join('');
+      historyList.innerHTML=history.map(function(h){return'<div style="padding:2px 0;border-bottom:1px solid var(--color-border);">'+htmlEscape(h)+'</div>';}).join('');
       setStatus('');}
     catch(e){输出El.textContent='';setStatus('错误: '+e.message,'error');}}
 

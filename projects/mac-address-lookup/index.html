@@ -232,10 +232,10 @@
 
         var found = lookupOui(normalized);
         if (found) {
-          结果El.innerHTML = '<div class="mac-结果"><div><div class="mac-vendor">' + found.vendor + '</div><div class="mac-oui">OUI: ' + found.oui + ' · 完整 MAC: ' + normalized + '</div></div></div>';
+          结果El.innerHTML = '<div class="mac-结果"><div><div class="mac-vendor">' + found.vendor + '</div><div class="mac-oui">OUI: ' + found.oui + ' · 完整 MAC: ' + htmlEscape(normalized) + '</div></div></div>';
           setStatus('查询成功');
         } else {
-          结果El.innerHTML = '<div class="mac-empty">未找到厂商信息 (OUI: ' + normalized.substring(0, 8) + ')</div>';
+          结果El.innerHTML = '<div class="mac-empty">未找到厂商信息 (OUI: ' + htmlEscape(normalized.substring(0, 8)) + ')</div>';
           setStatus('未匹配到厂商', 'error');
         }
       });

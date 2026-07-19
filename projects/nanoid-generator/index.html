@@ -72,7 +72,7 @@
         if (count > 100) count = 100;
         var html = '';
         for (var i = 0; i < count; i++) {
-          html += '<span>' + nanoid(len, alpha) + '</span>';
+          html += '<span>' + htmlEscape(nanoid(len, alpha)) + '</span>';
         }
         输出El.innerHTML = html;
         setStatus('生成了 ' + count + ' 个 ID（长度 ' + len + '，字符集 ' + alpha.length + ' 种）');

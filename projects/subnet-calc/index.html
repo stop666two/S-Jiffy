@@ -127,7 +127,7 @@
         html += '<div class="info-item"><label>首可用 IP</label><span>' + toOctetStr(r.firstHost) + '</span></div>';
         html += '<div class="info-item"><label>末可用 IP</label><span>' + toOctetStr(r.lastHost) + '</span></div>';
         html += '<div class="info-item"><label>可用主机数</label><span>' + r.hostCount + '</span></div>';
-        html += '<div class="info-item"><label>CIDR</label><span>' + parts[0] + '/' + r.prefix + '</span></div>';
+        html += '<div class="info-item"><label>CIDR</label><span>' + htmlEscape(parts[0]) + '/' + r.prefix + '</span></div>';
         html += '</div>';
 
         html += renderBits('IP 地址二进制', r.ip, r.prefix, 'ip');

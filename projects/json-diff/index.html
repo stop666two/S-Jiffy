@@ -119,13 +119,13 @@
         for (var i = 0; i < diffs.length; i++) {
           var d = diffs[i];
           if (d.type === 'added') {
-            html += '<div class="diff-added"><span class="diff-path">+ ' + d.path + '</span> → ' + d.newVal + '</div>';
+            html += '<div class="diff-added"><span class="diff-path">+ ' + htmlEscape(d.path) + '</span> → ' + htmlEscape(d.newVal) + '</div>';
             added++;
           } else if (d.type === 'removed') {
-            html += '<div class="diff-removed"><span class="diff-path">- ' + d.path + '</span> → (已删除) 原值: ' + d.oldVal + '</div>';
+            html += '<div class="diff-removed"><span class="diff-path">- ' + htmlEscape(d.path) + '</span> → (已删除) 原值: ' + htmlEscape(d.oldVal) + '</div>';
             removed++;
           } else {
-            html += '<div class="diff-changed"><span class="diff-path">~ ' + d.path + '</span> ' + d.oldVal + ' → ' + d.newVal + '</div>';
+            html += '<div class="diff-changed"><span class="diff-path">~ ' + htmlEscape(d.path) + '</span> ' + htmlEscape(d.oldVal) + ' → ' + htmlEscape(d.newVal) + '</div>';
             changed++;
           }
         }

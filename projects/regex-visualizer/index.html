@@ -103,7 +103,7 @@
           } else if (token === '(' || token === ')' || token === '[' || token === ']' || token === '{' || token === '}') {
             html += '<code>' + token + '</code> 分组/量词标记<br>';
           } else {
-            html += '<code>' + token + '</code> 字面量<br>';
+            html += '<code>' + htmlEscape(token) + '</code> 字面量<br>';
           }
           i++;
         }
@@ -129,11 +129,11 @@
           var m;
           while ((m = re.exec(text)) !== null) {
             var info = '<span class="match-pos">[' + m.index + '-' + (m.index + m[0].length) + ']</span>';
-            info += '<span class="match-val">"' + m[0] + '"</span>';
+            info += '<span class="match-val">"' + htmlEscape(m[0]) + '"</span>';
             if (m.length > 1) {
               var gs = [];
               for (var i = 1; i < m.length; i++) {
-                gs.push('<span class="match-group">$' + i + '="' + (m[i] || '') + '"</span>');
+                gs.push('<span class="match-group">$' + i + '="' + htmlEscape(m[i] || '') + '"</span>');
               }
               info += ' ' + gs.join(' ');
             }

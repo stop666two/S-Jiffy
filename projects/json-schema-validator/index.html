@@ -66,8 +66,8 @@
         if (!schemaStr) { setStatus('请输入 JSON Schema', 'error'); return; }
 
         var data, schema;
-        try { data = JSON.parse(dataStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + e.message; setStatus('数据格式错误', 'error'); return; }
-        try { schema = JSON.parse(schemaStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + e.message; setStatus('Schema 格式错误', 'error'); return; }
+        try { data = JSON.parse(dataStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus('数据格式错误', 'error'); return; }
+        try { schema = JSON.parse(schemaStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus('Schema 格式错误', 'error'); return; }
 
         try {
           var ajv = new Ajv();
@@ -87,7 +87,7 @@
             setStatus('验证失败', 'error');
           }
         } catch (e) {
-          输出Text.innerHTML = '<span class="invalid-badge">错误</span> ' + e.message;
+          输出Text.innerHTML = '<span class="invalid-badge">错误</span> ' + htmlEscape(e.message);
           setStatus('验证出错', 'error');
         }
       });

@@ -86,7 +86,7 @@
 
         var html = '<div class="结果-grid">';
         html += '<div class="结果-item"><label>检测结果</label><span style="font-size:var(--font-size-base);font-weight:600;color:' + (prime ? 'var(--color-success)' : 'var(--color-error)') + '">' + (prime ? '是质数' : '不是质数') + '</span></div>';
-        html += '<div class="结果-item"><label>质因数分解</label><span>' + raw + ' = ' + factorStr + '</span></div>';
+        html += '<div class="结果-item"><label>质因数分解</label><span>' + htmlEscape(raw) + ' = ' + factorStr + '</span></div>';
         html += '<div class="结果-item"><label>因数数量</label><span>' + allFactors.length + ' 个</span></div>';
         html += '<div class="结果-item"><label>所有因数</label><span>' + allFactors.join(', ') + '</span></div>';
         html += '<div class="结果-item"><label>前一个质数</label><span>' + (nearest.prev !== null ? nearest.prev : '无') + '</span></div>';

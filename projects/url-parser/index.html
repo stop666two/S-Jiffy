@@ -61,17 +61,17 @@
         var r = parseURL(raw);
         if (!r) { 输出El.innerHTML = '<span style="color:var(--color-error)">无效 URL</span>'; setStatus('URL 格式错误', 'error'); return; }
         var html = '<dl class="url-结果">';
-        html += '<dt>协议 (Protocol)</dt><dd>' + r.protocol + '</dd>';
-        html += '<dt>主机 (Host)</dt><dd>' + r.host + '</dd>';
-        html += '<dt>主机名 (Hostname)</dt><dd>' + r.hostname + '</dd>';
-        html += '<dt>端口 (Port)</dt><dd>' + r.port + '</dd>';
-        html += '<dt>路径 (Path)</dt><dd>' + r.path + '</dd>';
-        html += '<dt>查询字符串 (Query)</dt><dd>' + r.query + '</dd>';
-        html += '<dt>哈希 (Hash)</dt><dd>' + r.hash + '</dd>';
+        html += '<dt>协议 (Protocol)</dt><dd>' + htmlEscape(r.protocol) + '</dd>';
+        html += '<dt>主机 (Host)</dt><dd>' + htmlEscape(r.host) + '</dd>';
+        html += '<dt>主机名 (Hostname)</dt><dd>' + htmlEscape(r.hostname) + '</dd>';
+        html += '<dt>端口 (Port)</dt><dd>' + htmlEscape(r.port) + '</dd>';
+        html += '<dt>路径 (Path)</dt><dd>' + htmlEscape(r.path) + '</dd>';
+        html += '<dt>查询字符串 (Query)</dt><dd>' + htmlEscape(r.query) + '</dd>';
+        html += '<dt>哈希 (Hash)</dt><dd>' + htmlEscape(r.hash) + '</dd>';
         if (r.params.length) {
           html += '<dt>查询参数</dt>';
           for (var i = 0; i < r.params.length; i++) {
-            html += '<dd>' + r.params[i].key + ' = ' + r.params[i].value + '</dd>';
+            html += '<dd>' + htmlEscape(r.params[i].key) + ' = ' + htmlEscape(r.params[i].value) + '</dd>';
           }
         }
         html += '</dl>';

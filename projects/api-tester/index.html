@@ -151,7 +151,7 @@
           else cls += 'status-5xx';
           var hText = '';
           res.headers.forEach(function (v, k) { hText += k + ': ' + v + '\n'; });
-          responseHeader.innerHTML = '<span class="' + cls + '">' + sc + ' ' + res.statusText + '</span> <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">' + elapsed + 'ms</span>';
+          responseHeader.innerHTML = '<span class="' + cls + '">' + sc + ' ' + htmlEscape(res.statusText) + '</span> <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">' + elapsed + 'ms</span>';
           respHeaders.textContent = hText;
           输出Text.textContent = sc + ' ' + res.statusText + '\n' + hText;
           return res.text();

@@ -46,7 +46,7 @@ cd.innerHTML='<div class="detail-row"><span class="key">HEX</span><span>'+hex+'<
 o.textContent=hex;}
 
 function renderHistory(){if(saved.length===0){hg.innerHTML='<span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">No saved colors</span>';return;}
-var html='';for(var i=0;i<saved.length;i++){html+='<div class="hist-swatch" style="background:'+saved[i]+'" data-color="'+saved[i]+'"></div>';}
+var html='';for(var i=0;i<saved.length;i++){          html+='<div class="hist-swatch" style="background:'+htmlEscape(saved[i])+'" data-color="'+htmlEscape(saved[i])+'"></div>';}
 hg.innerHTML=html;var sw=hg.querySelectorAll('.hist-swatch');for(var j=0;j<sw.length;j++){sw[j].addEventListener('click',function(){cp.value=this.dataset.color;renderDetail();});}}
 
 function save(){var hex=cp.value;if(saved.indexOf(hex)===-1){saved.unshift(hex);if(saved.length>20)saved.pop();localStorage.setItem('s-jiffy:colors',JSON.stringify(saved));renderHistory();setStatus('Saved '+hex);}}

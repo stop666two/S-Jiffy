@@ -1,4 +1,7 @@
 @echo off
+chcp 65001 >NUL 2>NUL
+:: Reset errorlevel after chcp (can fail on some systems)
+ver >NUL
 title S-Jiffy Dev Server
 echo.
 echo  ================================
@@ -40,5 +43,3 @@ if %errorlevel% equ 0 (
 echo.
 echo 关闭此窗口 / 按任意键 = 停止服务器
 pause >NUL
-
-:: Server auto-stops when this window closes (start /B)

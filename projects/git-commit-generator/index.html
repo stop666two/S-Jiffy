@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -68,9 +68,9 @@
       <button id="generateBtn" class="btn btn-primary">生成提交信息</button>
     </div>
 
-    <div class="输出-box" style="min-height:100px;">
+    <div class="output-box" style="min-height:100px;">
       <div id="previewArea" class="preview-card" style="background:transparent;border:none;padding:0;min-height:0;"></div>
-      <span id="输出Text" style="display:none;"></span>
+      <span id="outputText" style="display:none;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -87,7 +87,7 @@
       var issueInput = document.getElementById('issueInput');
       var breakingCheck = document.getElementById('breakingCheck');
       var previewArea = document.getElementById('previewArea');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var generateBtn = document.getElementById('generateBtn');
       var copyBtn = document.getElementById('copyBtn');
 
@@ -136,12 +136,12 @@
         var msg = generateMessage();
         if (!msg) { setStatus('请输入描述', 'error'); return; }
         previewArea.textContent = msg;
-        输出Text.textContent = msg;
+        outputText.textContent = msg;
         setStatus('已生成');
       });
 
       copyBtn.addEventListener('click', function () {
-        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
       });
 
       descInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generateBtn.click(); });

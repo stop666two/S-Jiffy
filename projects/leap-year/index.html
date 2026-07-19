@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>闰年检测 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.ly-list{font-family:var(--font-mono);font-size:var(--font-size-sm);color:var(--color-text-secondary)}</style></head>
 <body>
@@ -12,7 +12,7 @@
 <p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">前一个闰年: <span id="prevLeap">-</span></p>
 <p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">后一个闰年: <span id="nextLeap">-</span></p>
 </div>
-<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>
@@ -26,7 +26,7 @@ var 结果Title=document.getElementById('结果Title');
 var 结果Detail=document.getElementById('结果Detail');
 var prevLeap=document.getElementById('prevLeap');
 var nextLeap=document.getElementById('nextLeap');
-var 输出El=document.getElementById('输出Text');
+var 输出El=document.getElementById('outputText');
 function isLeap(y){return(y%4===0&&y%100!==0)||y%400===0;}
 function findPrev(y){for(var i=y-1;i>0;i--){if(isLeap(i))return i;}return null;}
 function findNext(y){for(var i=y+1;i<=9999;i++){if(isLeap(i))return i;}return null;}

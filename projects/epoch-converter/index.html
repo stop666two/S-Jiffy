@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Epoch Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
@@ -40,7 +40,7 @@
 <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
 <input id="dateInput" type="datetime-local" class="input" style="width:260px;"><button id="dateToTsBtn" class="btn btn-primary">转换</button></div>
 <div id="date结果" class="结果-line"></div></div>
-<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
@@ -79,7 +79,7 @@
   tsInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('tsToDateBtn').click();});
   updateClock();setInterval(updateClock,1000);
   document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
-  var o=document.getElementById('输出Text');
+  var o=document.getElementById('outputText');
   setInterval(function(){var now=Date.now();o.textContent=Math.floor(now/1000);},1000);
 })();
 </script></body></html>

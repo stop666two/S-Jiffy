@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -35,8 +35,8 @@
       </div>
     </div>
 
-    <div class="输出-box" style="min-height:120px;">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" style="min-height:120px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +47,7 @@
     (function () {
       var versionA = document.getElementById('versionA');
       var versionB = document.getElementById('versionB');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var compareBtn = document.getElementById('compareBtn');
       var swapBtn = document.getElementById('swapBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -98,7 +98,7 @@
         var a = versionA.value.trim();
         var b = versionB.value.trim();
         if (!a || !b) { setStatus('请输入两个版本号', 'error'); return; }
-        输出Text.innerHTML = buildHtml(a, b);
+        outputText.innerHTML = buildHtml(a, b);
         setStatus('');
       }
 
@@ -112,7 +112,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
       });
 
       versionA.addEventListener('keydown', function (e) { if (e.key === 'Enter') compareBtn.click(); });

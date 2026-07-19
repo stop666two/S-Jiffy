@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -37,8 +37,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
 
-    <div class="输出-box" style="margin-top:var(--space-3);min-height:80px;">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" style="margin-top:var(--space-3);min-height:80px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <ul id="errorList" class="error-list"></ul>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
@@ -50,7 +50,7 @@
     (function () {
       var dataInput = document.getElementById('dataInput');
       var schemaInput = document.getElementById('schemaInput');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var errorList = document.getElementById('errorList');
       var validateBtn = document.getElementById('validateBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -59,24 +59,24 @@
       validateBtn.addEventListener('click', function () {
         var dataStr = dataInput.value.trim();
         var schemaStr = schemaInput.value.trim();
-        输出Text.textContent = '';
+        outputText.textContent = '';
         errorList.innerHTML = '';
 
         if (!dataStr) { setStatus('请输入 JSON 数据', 'error'); return; }
         if (!schemaStr) { setStatus('请输入 JSON Schema', 'error'); return; }
 
         var data, schema;
-        try { data = JSON.parse(dataStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus('数据格式错误', 'error'); return; }
-        try { schema = JSON.parse(schemaStr); } catch (e) { 输出Text.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus('Schema 格式错误', 'error'); return; }
+        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus('数据格式错误', 'error'); return; }
+        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus('Schema 格式错误', 'error'); return; }
 
         try {
           var ajv = new Ajv();
           var valid = ajv.validate(schema, data);
           if (valid) {
-            输出Text.innerHTML = '<span class="valid-badge">✓ 有效</span> 数据符合 Schema 规范';
+            outputText.innerHTML = '<span class="valid-badge">✓ 有效</span> 数据符合 Schema 规范';
             setStatus('验证通过');
           } else {
-            输出Text.innerHTML = '<span class="invalid-badge">✗ 无效</span> 数据不符合 Schema 规范';
+            outputText.innerHTML = '<span class="invalid-badge">✗ 无效</span> 数据不符合 Schema 规范';
             var ul = errorList;
             for (var i = 0; i < ajv.errors.length; i++) {
               var err = ajv.errors[i];
@@ -87,7 +87,7 @@
             setStatus('验证失败', 'error');
           }
         } catch (e) {
-          输出Text.innerHTML = '<span class="invalid-badge">错误</span> ' + htmlEscape(e.message);
+          outputText.innerHTML = '<span class="invalid-badge">错误</span> ' + htmlEscape(e.message);
           setStatus('验证出错', 'error');
         }
       });
@@ -95,14 +95,14 @@
       clearBtn.addEventListener('click', function () {
         dataInput.value = '';
         schemaInput.value = '';
-        输出Text.textContent = '';
+        outputText.textContent = '';
         errorList.innerHTML = '';
         setStatus('');
         dataInput.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        var t = 输出Text.textContent;
+        var t = outputText.textContent;
         var errs = errorList.textContent;
         if (errs) t += '\n' + errs;
         if (t.trim()) { copyToClipboard(t, this); setStatus('已复制'); }

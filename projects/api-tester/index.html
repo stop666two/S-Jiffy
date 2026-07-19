@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -51,11 +51,11 @@
       <textarea id="bodyInput" class="input textarea" placeholder="请求体 (JSON)" style="min-height:140px;"></textarea>
     </div>
 
-    <div class="输出-box" id="responseBox" style="min-height:120px;">
+    <div class="output-box" id="responseBox" style="min-height:120px;">
       <div id="responseHeader"></div>
       <div id="respHeaders" style="margin-top:8px;"></div>
       <div id="respBody" style="margin-top:8px;"></div>
-      <span id="输出Text" style="display:none;"></span>
+      <span id="outputText" style="display:none;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -72,7 +72,7 @@
       var responseHeader = document.getElementById('responseHeader');
       var respHeaders = document.getElementById('respHeaders');
       var respBody = document.getElementById('respBody');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       var headerRows = [];
@@ -153,12 +153,12 @@
           res.headers.forEach(function (v, k) { hText += k + ': ' + v + '\n'; });
           responseHeader.innerHTML = '<span class="' + cls + '">' + sc + ' ' + htmlEscape(res.statusText) + '</span> <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">' + elapsed + 'ms</span>';
           respHeaders.textContent = hText;
-          输出Text.textContent = sc + ' ' + res.statusText + '\n' + hText;
+          outputText.textContent = sc + ' ' + res.statusText + '\n' + hText;
           return res.text();
         })
         .then(function (text) {
           respBody.textContent = text;
-          输出Text.textContent += '\n' + text;
+          outputText.textContent += '\n' + text;
           setStatus('请求完成');
         })
         .catch(function (err) {

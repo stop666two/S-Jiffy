@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SQL 查询生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.sqb-preview{font-family:var(--font-mono);font-size:var(--font-size-sm);background:var(--color-bg-secondary);padding:var(--space-3);border-radius:var(--radius-md);white-space:pre-wrap;margin-top:var(--space-2)}</style></head>
 <body>
@@ -15,7 +15,7 @@
 </div>
 </div>
 <div class="sqb-preview" id="sqlPreview">SELECT 语句将显示在此处</div>
-<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>
@@ -28,7 +28,7 @@ var limitVal=document.getElementById('limitVal');
 var generateBtn=document.getElementById('generateBtn');
 var copyBtn=document.getElementById('copyBtn');
 var sqlPreview=document.getElementById('sqlPreview');
-var 输出El=document.getElementById('输出Text');
+var 输出El=document.getElementById('outputText');
 function buildSQL(){
 var table=tableName.value.trim();
 if(!table){setStatus('请输入表名','error');return;}

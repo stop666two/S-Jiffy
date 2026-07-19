@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -27,8 +27,8 @@
       <textarea id="testText" class="input textarea" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
     </div>
 
-    <div class="输出-box" id="输出Container" style="min-height:100px;">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box" id="输出Container" style="min-height:100px;">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -39,7 +39,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), text = document.getElementById('testText'), o = document.getElementById('输出Text');
+      var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), text = document.getElementById('testText'), o = document.getElementById('outputText');
       document.getElementById('testBtn').addEventListener('click', function () {
         var p = pat.value.trim(), t = text.value;
         if (!p) { setStatus('请输入正则表达式', 'error'); return; }

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS 前缀检查器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.result-item { display:flex; align-items:center; gap:12px; padding:6px 0; border-bottom:1px solid var(--color-border); font-size:13px; }
+.result-item:last-child { border-bottom:none; }
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-ok { background:#dcfce7; color:#166534; }
+.badge-warn { background:#fef3c7; color:#92400e; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSS 前缀检查器</h1><p class="tool-desc">检查 CSS 属性是否需要浏览器厂商前缀</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="display: flex;
+user-select: none;
+appearance: none;
+backdrop-filter: blur(4px);
+transform: rotate(45deg);" style="min-height:160px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="checkBtn" class="btn btn-primary">检查前缀</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultArea" style="display:none;"><div id="resultList"></div></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+  var resultArea = document.getElementById('resultArea');
+  var resultList = document.getElementById('resultList');
+
+  var PREFIX_MAP = {
+    'appearance': ['-webkit-', '-moz-'],
+    'backdrop-filter': ['-webkit-'],
+    'background-clip': ['-webkit-'],
+    'box-decoration-break': ['-webkit-'],
+    'clip-path': ['-webkit-'],
+    'font-kerning': ['-webkit-'],
+    'hyphens': ['-webkit-', '-moz-', '-ms-'],
+    'initial-letter': ['-webkit-'],
+    'mask': ['-webkit-'],
+    'mask-image': ['-webkit-'],
+    'mask-clip': ['-webkit-'],
+    'mask-composite': ['-webkit-'],
+    'mask-origin': ['-webkit-'],
+    'mask-position': ['-webkit-'],
+    'mask-repeat': ['-webkit-'],
+    'mask-size': ['-webkit-'],
+    'overflow-scrolling': ['-webkit-', '-ms-'],
+    'print-color-adjust': ['-webkit-'],
+    'ruby-position': ['-webkit-'],
+    'scroll-behavior': ['-webkit-', '-moz-'],
+    'scroll-margin': ['-webkit-'],
+    'scroll-padding': ['-webkit-'],
+    'scroll-snap-align': ['-webkit-'],
+    'scroll-snap-stop': ['-webkit-'],
+    'scroll-snap-type': ['-webkit-', '-ms-'],
+    'shape-outside': ['-webkit-'],
+    'tab-size': ['-moz-'],
+    'text-align-last': ['-moz-'],
+    'text-combine-upright': ['-webkit-'],
+    'text-decoration-color': ['-webkit-', '-moz-'],
+    'text-decoration-line': ['-webkit-', '-moz-'],
+    'text-decoration-skip': ['-webkit-'],
+    'text-decoration-style': ['-webkit-', '-moz-'],
+    'text-emphasis': ['-webkit-'],
+    'text-emphasis-color': ['-webkit-'],
+    'text-emphasis-position': ['-webkit-'],
+    'text-emphasis-style': ['-webkit-'],
+    'text-orientation': ['-webkit-'],
+    'text-size-adjust': ['-webkit-', '-moz-', '-ms-'],
+    'touch-action': ['-ms-'],
+    'transform': ['-webkit-', '-moz-', '-ms-'],
+    'transform-origin': ['-webkit-', '-moz-', '-ms-'],
+    'transform-style': ['-webkit-', '-moz-', '-ms-'],
+    'transition': ['-webkit-', '-moz-', '-ms-'],
+    'transition-delay': ['-webkit-', '-moz-', '-ms-'],
+    'transition-duration': ['-webkit-', '-moz-', '-ms-'],
+    'transition-property': ['-webkit-', '-moz-', '-ms-'],
+    'transition-timing-function': ['-webkit-', '-moz-', '-ms-'],
+    'user-select': ['-webkit-', '-moz-', '-ms-'],
+    'writing-mode': ['-webkit-', '-ms-']
+  };
+
+  function getPrefixed(prop) {
+    return PREFIX_MAP[prop] || null;
+  }
+
+  function check() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 CSS', 'error'); return; }
+    var lines = text.split('\n');
+    var checks = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line || line.indexOf(':') === -1) continue;
+      var colonIdx = line.indexOf(':');
+      var prop = line.substring(0, colonIdx).trim();
+      var val = line.substring(colonIdx + 1).trim().replace(/;$/, '');
+      if (!prop) continue;
+      var prefixes = getPrefixed(prop);
+      checks.push({ property: prop, value: val, prefixes: prefixes });
+    }
+    if (checks.length === 0) { setStatus('未找到 CSS 属性', 'error'); return; }
+
+    resultArea.style.display = 'block';
+    var html = '';
+    var prefixedOutput = '';
+    for (var i = 0; i < checks.length; i++) {
+      var c = checks[i];
+      if (c.prefixes) {
+        html += '<div class="result-item"><span class="badge badge-warn">需前缀</span><code>' + htmlEscape(c.property) + '</code><span style="color:var(--color-text-secondary);font-size:12px;">' + c.prefixes.join(' ') + '</span></div>';
+        for (var j = 0; j < c.prefixes.length; j++) {
+          prefixedOutput += c.prefixes[j] + c.property + ': ' + c.value + ';\n';
+        }
+        prefixedOutput += c.property + ': ' + c.value + ';\n';
+      } else {
+        html += '<div class="result-item"><span class="badge badge-ok">无需前缀</span><code>' + htmlEscape(c.property) + '</code></div>';
+        prefixedOutput += c.property + ': ' + c.value + ';\n';
+      }
+    }
+    resultList.innerHTML = html;
+    outputEl.textContent = prefixedOutput;
+    setStatus('检查完成');
+  }
+
+  document.getElementById('checkBtn').addEventListener('click', check);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; resultArea.style.display = 'none'; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

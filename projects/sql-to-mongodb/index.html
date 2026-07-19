@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SQL → MongoDB - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>SQL → MongoDB</h1><p class="tool-desc">将 SQL 查询语句转换为 MongoDB 查询语法</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="SELECT id, name, age FROM users WHERE age > 18 AND status = 'active' ORDER BY age DESC LIMIT 10;" style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  function sqlToMongo(sql) {
+    sql = sql.trim().replace(/\s+/g, ' ').replace(/;$/, '');
+    var result = {};
+
+    var selectMatch = sql.match(/SELECT\s+(.*?)\s+FROM\s+(\w+)/i);
+    if (!selectMatch) return { error: '无法解析 SQL 语句' };
+
+    var fields = selectMatch[1].trim();
+    var collection = selectMatch[2].trim();
+
+    var project = {};
+    if (fields === '*') {
+      project = {};
+    } else {
+      var fieldList = fields.split(',').map(function (f) { return f.trim(); });
+      for (var i = 0; i < fieldList.length; i++) {
+        project[fieldList[i]] = 1;
+      }
+    }
+
+    var rest = sql.substring(sql.search(/FROM\s+\w+/i) + ('FROM ' + collection).length);
+
+    var whereMatch = rest.match(/WHERE\s+(.*?)(?:\s+ORDER\s+BY|\s+LIMIT|\s+GROUP\s+BY|\s+HAVING|\s*$)/i);
+    var filter = {};
+    if (whereMatch) {
+      var whereClause = whereMatch[1].trim();
+      filter = parseWhere(whereClause);
+    }
+
+    var sort = {};
+    var orderMatch = rest.match(/ORDER\s+BY\s+(.*?)(?:\s+LIMIT|\s+GROUP\s+BY|\s+HAVING|\s*$)/i);
+    if (orderMatch) {
+      var orderClause = orderMatch[1].trim();
+      var orderParts = orderClause.split(',').map(function (o) { return o.trim(); });
+      for (var i = 0; i < orderParts.length; i++) {
+        var part = orderParts[i];
+        var parts = part.split(/\s+/);
+        var field = parts[0];
+        var dir = parts.length > 1 && parts[1].toUpperCase() === 'DESC' ? -1 : 1;
+        sort[field] = dir;
+      }
+    }
+
+    var limit = 0;
+    var limitMatch = rest.match(/LIMIT\s+(\d+)/i);
+    if (limitMatch) limit = parseInt(limitMatch[1], 10);
+
+    var pipeline = [];
+    if (Object.keys(filter).length > 0) pipeline.push({ $match: filter });
+    if (Object.keys(project).length > 0 && fields !== '*') pipeline.push({ $project: project });
+    if (Object.keys(sort).length > 0) pipeline.push({ $sort: sort });
+    if (limit > 0) pipeline.push({ $limit: limit });
+
+    if (pipeline.length === 0) {
+      pipeline.push({ $match: {} });
+    }
+
+    var output = 'db.' + collection + '.aggregate(' + JSON.stringify(pipeline, null, 2) + ')';
+    return output;
+  }
+
+  function parseWhere(clause) {
+    var filter = {};
+    var orMatch = clause.match(/(.*?)\s+OR\s+(.*)/i);
+    if (orMatch) {
+      filter.$or = [parseSimpleWhere(orMatch[1].trim()), parseSimpleWhere(orMatch[2].trim())];
+      return filter;
+    }
+
+    var andParts = clause.split(/\s+AND\s+/i);
+    if (andParts.length > 1) {
+      var andConditions = [];
+      for (var i = 0; i < andParts.length; i++) {
+        var cond = parseSimpleWhere(andParts[i].trim());
+        if (cond) andConditions.push(cond);
+      }
+      if (andConditions.length === 1) return andConditions[0];
+      if (andConditions.length > 1) filter.$and = andConditions;
+      return filter;
+    }
+
+    return parseSimpleWhere(clause);
+  }
+
+  function parseSimpleWhere(expr) {
+    if (!expr) return {};
+    var opMatch = expr.match(/^(\w[\w.]*)\s*(=|!=|<>|>|<|>=|<=|IN|NOT\s+IN|LIKE|IS\s+NOT\s+NULL|IS\s+NULL)\s*(.*)$/i);
+    if (!opMatch) return {};
+
+    var field = opMatch[1].trim();
+    var op = opMatch[2].trim().toUpperCase().replace(/\s+/g, ' ');
+    var value = opMatch[3] ? opMatch[3].trim() : '';
+
+    var mongoVal = parseValue(value);
+    var result = {};
+
+    switch (op) {
+      case '=':
+        if (mongoVal === null) result[field] = { $eq: null };
+        else result[field] = mongoVal;
+        break;
+      case '!=':
+      case '<>':
+        if (mongoVal === null) result[field] = { $ne: null };
+        else result[field] = { $ne: mongoVal };
+        break;
+      case '>': result[field] = { $gt: mongoVal }; break;
+      case '<': result[field] = { $lt: mongoVal }; break;
+      case '>=': result[field] = { $gte: mongoVal }; break;
+      case '<=': result[field] = { $lte: mongoVal }; break;
+      case 'IN':
+        if (typeof mongoVal === 'string' && mongoVal.indexOf(',') >= 0) {
+          var inVals = mongoVal.replace(/^\(|\)$/g, '').split(',').map(function (v) { return parseValue(v.trim()); });
+          result[field] = { $in: inVals };
+        } else {
+          result[field] = { $in: [mongoVal] };
+        }
+        break;
+      case 'NOT IN':
+        if (typeof mongoVal === 'string') {
+          var ninVals = mongoVal.replace(/^\(|\)$/g, '').split(',').map(function (v) { return parseValue(v.trim()); });
+          result[field] = { $nin: ninVals };
+        }
+        break;
+      case 'LIKE':
+        var pattern = String(mongoVal);
+        if (pattern.indexOf('%') >= 0) {
+          pattern = pattern.replace(/%/g, '.*');
+          result[field] = { $regex: pattern, $options: 'i' };
+        } else {
+          result[field] = { $regex: '^' + pattern + '$', $options: 'i' };
+        }
+        break;
+      case 'IS NULL':
+        result[field] = { $eq: null };
+        break;
+      case 'IS NOT NULL':
+        result[field] = { $ne: null };
+        break;
+    }
+    return result;
+  }
+
+  function parseValue(val) {
+    if (val === undefined || val === null) return null;
+    val = val.trim();
+    if (val.toUpperCase() === 'NULL') return null;
+    if (val.toUpperCase() === 'TRUE') return true;
+    if (val.toUpperCase() === 'FALSE') return false;
+    if (/^'/.test(val) || /^"/.test(val)) return val.replace(/^['"](.*)['"]$/, '$1');
+    if (/^\(/.test(val)) return val;
+    if (/^\d+\.?\d*$/.test(val)) return Number(val);
+    return val;
+  }
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 SQL', 'error'); return; }
+    try {
+      var result = sqlToMongo(text);
+      if (result.error) { setStatus(result.error, 'error'); return; }
+      outputEl.textContent = result;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('转换出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

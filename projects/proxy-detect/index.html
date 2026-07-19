@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>代理检测 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.detect-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;}.detect-row:last-child{border:none;}.detect-label{color:var(--color-text-secondary);}.detect-val{font-family:var(--font-mono);font-weight:500;}.yes{color:var(--color-success);}.no{color:var(--color-text-disabled);}.unknown{color:#e37400;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>代理检测</h1><p class="tool-desc">分析浏览器环境，检测是否通过代理服务器连接网络</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary">开始检测</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="detectResults"></div><div id="detectSummary" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var detectBtn=document.getElementById('detectBtn'),resultCard=document.getElementById('resultCard'),detectResults=document.getElementById('detectResults'),detectSummary=document.getElementById('detectSummary'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+detectBtn.addEventListener('click',function(){
+  var html='';var proxySignals=[];var out='';
+  html+='<div class="detect-row"><span class="detect-label">User Agent</span><span class="detect-val" style="font-size:12px;">'+htmlEscape(navigator.userAgent)+'</span></div>';
+  out+='User Agent: '+navigator.userAgent+'\n';
+  html+='<div class="detect-row"><span class="detect-label">平台</span><span class="detect-val">'+htmlEscape(navigator.platform||'未知')+'</span></div>';
+  out+='平台: '+(navigator.platform||'未知')+'\n';
+  var langs=navigator.languages?navigator.languages.join(', '):navigator.language||'未知';
+  html+='<div class="detect-row"><span class="detect-label">语言</span><span class="detect-val">'+htmlEscape(langs)+'</span></div>';
+  var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(conn){
+    html+='<div class="detect-row"><span class="detect-label">网络类型</span><span class="detect-val">'+htmlEscape(conn.effectiveType||'未知')+'</span></div>';
+    html+='<div class="detect-row"><span class="detect-label">RTT</span><span class="detect-val">'+(conn.rtt||'未知')+'ms</span></div>';
+    html+='<div class="detect-row"><span class="detect-label">下行速度</span><span class="detect-val">'+(conn.downlink||'未知')+' Mbps</span></div>';
+    proxySignals.push({name:'Network Info API',available:true});
+  }else{
+    html+='<div class="detect-row"><span class="detect-label">Network Info API</span><span class="detect-val unknown">不可用</span></div>';
+    proxySignals.push({name:'Network Info API',available:false});
+  }
+  var viaHeaders=document.querySelectorAll('meta[http-equiv]');var proxyHeaders=false;
+  for(var i=0;i<viaHeaders.length;i++){var h=viaHeaders[i].getAttribute('http-equiv');if(h==='X-Forwarded-For'||h==='Via')proxyHeaders=true;}
+  html+='<div class="detect-row"><span class="detect-label">代理响应头 (meta)</span><span class="detect-val '+(proxyHeaders?'yes':'no')+'">'+(proxyHeaders?'可能存在':'未检测到')+'</span></div>';
+  var isTor=navigator.userAgent.indexOf('Tor')>=0||navigator.userAgent.indexOf('Onion')>=0;
+  html+='<div class="detect-row"><span class="detect-label">Tor 浏览器</span><span class="detect-val '+(isTor?'yes':'no')+'">'+(isTor?'疑似':'否')+'</span></div>';
+  var isVpnUA=navigator.userAgent.indexOf('VPN')>=0||navigator.userAgent.indexOf('Proxy')>=0;
+  html+='<div class="detect-row"><span class="detect-label">VPN/Proxy UA 标记</span><span class="detect-val '+(isVpnUA?'yes':'no')+'">'+(isVpnUA?'可能存在':'未检测到')+'</span></div>';
+  var timezone=new Date().getTimezoneOffset();
+  html+='<div class="detect-row"><span class="detect-label">时区偏移</span><span class="detect-val">UTC'+(timezone<=0?'+':'-')+Math.abs(timezone/60)+'</span></div>';
+  var ref=document.referrer||'(无)';
+  html+='<div class="detect-row"><span class="detect-label">来源页面</span><span class="detect-val" style="font-size:12px;">'+htmlEscape(ref)+'</span></div>';
+  var cookieEnabled=navigator.cookieEnabled;
+  html+='<div class="detect-row"><span class="detect-label">Cookie 启用</span><span class="detect-val '+(cookieEnabled?'yes':'no')+'">'+(cookieEnabled?'是':'否')+'</span></div>';
+  var hosts=location.hostname;
+  html+='<div class="detect-row"><span class="detect-label">当前主机</span><span class="detect-val">'+htmlEscape(hosts)+'</span></div>';
+  var protocol=location.protocol;
+  html+='<div class="detect-row"><span class="detect-label">协议</span><span class="detect-val">'+htmlEscape(protocol)+'</span></div>';
+  var score=0;if(isTor)score+=2;if(isVpnUA)score+=1;if(proxyHeaders)score+=1;if(!cookieEnabled)score+=1;
+  detectResults.innerHTML=html;
+  var summary='';
+  if(score>=3)summary='⚠️ 检测到多个代理/匿名化特征。';
+  else if(score>=1)summary='ℹ️ 部分特征可能与代理环境相关。';
+  else summary='✅ 未检测到明显代理特征。';
+  detectSummary.textContent=summary;
+  outputText.textContent=summary;resultCard.style.display='block';
+  setStatus('检测完成');
+});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>颜色 → Tailwind 色阶 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.color-swatch { display:inline-block; width:48px; height:48px; border-radius:6px; border:1px solid var(--color-border); margin:2px; }
+.swatch-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:12px; font-family:var(--font-mono); }
+.swatch-label { min-width:60px; color:var(--color-text-secondary); }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>颜色 → Tailwind 色阶</h1><p class="tool-desc">根据颜色值生成 Tailwind 色阶系统</p>
+<div class="card" style="display:flex;gap:16px;align-items:end;flex-wrap:wrap;">
+  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">颜色值</label><input id="colorInput" class="input" placeholder="#3b82f6" value="#3b82f6" style="width:160px;height:44px;"></div>
+  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">色相名称</label><input id="nameInput" class="input" placeholder="primary" value="primary" style="width:140px;height:44px;"></div>
+  <button id="generateBtn" class="btn btn-primary">生成色阶</button>
+</div>
+<div id="swatchArea" style="margin-bottom:24px;"></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var colorInput = document.getElementById('colorInput');
+  var nameInput = document.getElementById('nameInput');
+  var outputEl = document.getElementById('outputText');
+  var swatchArea = document.getElementById('swatchArea');
+
+  var SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
+  function hexToRgb(hex) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    return { r: parseInt(h.substring(0, 2), 16), g: parseInt(h.substring(2, 4), 16), b: parseInt(h.substring(4, 6), 16) };
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(function (x) { return Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0'); }).join('');
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; } else {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
+  }
+
+  function hslToRgb(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    var r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+      var hue2rgb = function (p, q, t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return { r: r * 255, g: g * 255, b: b * 255 };
+  }
+
+  function generateScale(baseHex) {
+    var base = hexToRgb(baseHex);
+    var baseHsl = rgbToHsl(base.r, base.g, base.b);
+    var scale = {};
+
+    var lightnessTargets = {
+      50: 97, 100: 93, 200: 86, 300: 74,
+      400: 60, 500: 48, 600: 38, 700: 28,
+      800: 18, 900: 10, 950: 5
+    };
+
+    for (var i = 0; i < SHADES.length; i++) {
+      var shade = SHADES[i];
+      var targetL = lightnessTargets[shade];
+      var saturation = baseHsl.s;
+      if (shade <= 200) saturation = Math.max(20, saturation * (0.5 + (shade / 200) * 0.5));
+      if (shade >= 800) saturation = Math.max(15, saturation * (0.4 + ((950 - shade) / 150) * 0.5));
+      if (shade === 500) saturation = baseHsl.s;
+      var rgb = hslToRgb(baseHsl.h, saturation, targetL);
+      scale[shade] = rgbToHex(rgb.r, rgb.g, rgb.b);
+    }
+    return scale;
+  }
+
+  function generate() {
+    var hex = colorInput.value.trim();
+    if (!/^#[0-9a-fA-F]{3,6}$/.test(hex)) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) hex = '#' + hex.replace('#', '');
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) { setStatus('请输入有效的十六进制颜色值', 'error'); return; }
+    }
+    var name = nameInput.value.trim() || 'primary';
+
+    try {
+      var scale = generateScale(hex);
+      var swatchHtml = '';
+      var output = '// Tailwind CSS v3 color scale: ' + name + '\n';
+      output += name + ': {\n';
+      for (var i = 0; i < SHADES.length; i++) {
+        var shade = SHADES[i];
+        var color = scale[shade];
+        swatchHtml += '<div class="swatch-row"><span class="swatch-label">' + name + '-' + shade + '</span><div class="color-swatch" style="background:' + color + '"></div><span style="color:var(--color-text-secondary)">' + color + '</span></div>';
+        output += '  ' + shade + ': ' + JSON.stringify(color) + ',\n';
+      }
+      output += '},';
+      swatchArea.innerHTML = swatchHtml;
+      outputEl.textContent = output;
+      setStatus('色阶生成完成');
+    } catch (e) {
+      setStatus('生成出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', generate);
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  colorInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
+  nameInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
+})();
+</script></body></html>

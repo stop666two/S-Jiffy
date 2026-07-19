@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>URL 模式匹配 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.test-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.test-row:last-child{border:none;}.match-yes{color:var(--color-success);font-weight:600;}.match-no{color:var(--color-error);}.pattern-info{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>URL 模式匹配</h1><p class="tool-desc">测试 URL 是否匹配 glob 模式（如 /api/*/users）或正则表达式</p>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">模式（支持 glob: * ? [abc] 或 /regex/ 格式）</label><input id="patternInput" class="input js-focus-input" placeholder="/api/*/users 或 /^\\/api\\/.*\\/users$/"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">测试 URL（每行一个）</label><textarea id="urlsInput" class="input textarea" placeholder="/api/v1/users&#10;/api/v2/users&#10;/admin/users" style="min-height:120px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="matchBtn" class="btn btn-primary">测试匹配</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="patternInfo" class="pattern-info"></div><div id="matchResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var patternInput=document.getElementById('patternInput'),urlsInput=document.getElementById('urlsInput'),matchBtn=document.getElementById('matchBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),patternInfo=document.getElementById('patternInfo'),matchResults=document.getElementById('matchResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function globToRegex(glob){
+  var reStr='^';var escaped='';
+  for(var i=0;i<glob.length;i++){
+    var c=glob[i];
+    if(c==='*'){if(i+1<glob.length&&glob[i+1]==='*'){i++;reStr+='.*';}else{reStr+='[^/]*';}}
+    else if(c==='?')reStr+='[^/]';
+    else if(c==='['){var close=glob.indexOf(']',i);if(close===-1)reStr+='\\[';else{reStr+=glob.substring(i,close+1);i=close;}}
+    else if(/[.+^${}()|\\]/.test(c))reStr+='\\'+c;
+    else reStr+=c;
+  }
+  reStr+='$';return new RegExp(reStr);
+}
+matchBtn.addEventListener('click',function(){
+  var pattern=patternInput.value.trim();var urlsStr=urlsInput.value.trim();
+  if(!pattern){setStatus('请输入模式','error');return;}
+  if(!urlsStr){setStatus('请输入测试 URL','error');return;}
+  var isRegex=false,regex;
+  if(pattern.length>2&&pattern[0]==='/'&&pattern[pattern.length-1]==='/'&&pattern.lastIndexOf('/')===0){
+    try{regex=new RegExp(pattern.slice(1,-1));isRegex=true;}catch(e){setStatus('正则表达式无效: '+e.message,'error');return;}
+  }else{
+    try{regex=globToRegex(pattern);}catch(e){setStatus('模式无效','error');return;}
+  }
+  var urls=urlsStr.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
+  var html='';var matched=0,total=urls.length;
+  for(var i=0;i<urls.length;i++){
+    var u=urls[i];var test=regex.test(u);
+    if(test)matched++;
+    html+='<div class="test-row"><span class="'+(test?'match-yes':'match-no')+'">'+(test?'✓':'✗')+'</span><span style="font-family:var(--font-mono);font-size:var(--font-size-sm);">'+htmlEscape(u)+'</span></div>';
+  }
+  patternInfo.textContent=(isRegex?'正则表达式':'Glob 模式')+' · 匹配 '+matched+'/'+total;
+  matchResults.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent='匹配: '+matched+'/'+total;
+  setStatus('测试完成');
+});
+clearBtn.addEventListener('click',function(){patternInput.value='';urlsInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');patternInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+urlsInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')matchBtn.click();});
+})();</script>
+</body></html>

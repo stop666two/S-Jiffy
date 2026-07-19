@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON → HTML 视图 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.json-tree{font-family:var(--font-mono);font-size:13px;line-height:1.6;}
+.json-tree .toggle{cursor:pointer;user-select:none;color:var(--color-text-disabled);margin-right:4px;}
+.json-tree .toggle:hover{color:var(--color-text-primary);}
+.json-tree .key{color:#881280;}
+.json-tree .string{color:#0B6610;}
+.json-tree .number{color:#1750B0;}
+.json-tree .bool{color:#B06F0B;}
+.json-tree .null{color:var(--color-text-disabled);}
+.json-tree .bracket{color:var(--color-text-disabled);}
+.json-tree ul{list-style:none;padding-left:20px;margin:0;}
+.json-tree li{margin:1px 0;}
+.json-tree .collapsed>ul{display:none;}
+.json-tree .count{font-size:11px;color:var(--color-text-disabled);margin-left:4px;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JSON → HTML 视图</h1><p class="tool-desc">将 JSON 数据渲染为可折叠的 HTML 树形视图。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"Alice","age":30,"skills":["JS","Python","Go"],"address":{"city":"NYC","zip":"10001"}}' style="min-height:140px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
+<button id="renderBtn" class="btn btn-primary">渲染</button>
+<button id="expandAllBtn" class="btn btn-secondary">全部展开</button>
+<button id="collapseAllBtn" class="btn btn-secondary">全部折叠</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div id="treeContainer" class="card json-tree"></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),tc=document.getElementById('treeContainer'),o=document.getElementById('outputText');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function render(val){
+  if(val===null)return'<span class="null">null</span>';
+  if(typeof val==='boolean')return'<span class="bool">'+val+'</span>';
+  if(typeof val==='number')return'<span class="number">'+val+'</span>';
+  if(typeof val==='string')return'<span class="string">"'+esc(val)+'"</span>';
+  if(Array.isArray(val)){
+    if(val.length===0)return'<span class="bracket">[</span><span class="bracket">]</span>';
+    var items=val.map(function(v,i){return'<li>'+render(v)+(i<val.length-1?',':'')+'</li>';}).join('');
+    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">[</span><span class="count">'+val.length+'项</span><ul>'+items+'</ul><span class="bracket">]</span>';
+  }
+  if(typeof val==='object'){
+    var keys=Object.keys(val);
+    if(keys.length===0)return'<span class="bracket">{</span><span class="bracket">}</span>';
+    var items=keys.map(function(k,i){
+      return'<li><span class="key">"'+esc(k)+'"</span>: '+render(val[k])+(i<keys.length-1?',':'');
+    }).join('');
+    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">{</span><span class="count">'+keys.length+'项</span><ul>'+items+'</ul><span class="bracket">}</span>';
+  }
+  return esc(String(val));
+}
+function toggleAll(expand){
+  var toggles=tc.querySelectorAll('.toggle');
+  for(var i=0;i<toggles.length;i++){
+    var li=toggles[i].parentNode;
+    if(expand)li.classList.remove('collapsed');else li.classList.add('collapsed');
+  }
+}
+document.getElementById('renderBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入 JSON','error');return;}
+  try{
+    var parsed=JSON.parse(text);
+    tc.innerHTML='<ul><li>'+render(parsed)+'</li></ul>';
+    o.textContent='JSON 已渲染（共 '+(Array.isArray(parsed)?parsed.length:Object.keys(parsed).length)+' 项）';
+    setStatus('');
+  }catch(e){tc.innerHTML='';o.textContent='';setStatus('JSON 解析失败: '+e.message,'error');}
+});
+document.getElementById('expandAllBtn').addEventListener('click',function(){toggleAll(true);setStatus('全部展开');});
+document.getElementById('collapseAllBtn').addEventListener('click',function(){toggleAll(false);setStatus('全部折叠');});
+document.getElementById('clearBtn').addEventListener('click',function(){i.value='';tc.innerHTML='';o.textContent='';setStatus('');i.focus();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

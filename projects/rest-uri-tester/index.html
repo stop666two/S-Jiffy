@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>REST URI 模板测试 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.param-row{padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:4px;font-size:var(--font-size-sm);display:flex;gap:8px;}.param-name{font-weight:600;color:var(--color-accent);}.param-val{color:var(--color-text-primary);}.match-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>REST URI 模板测试</h1><p class="tool-desc">测试 RESTful URI 模板（如 /users/:id/posts/:postId）与真实路径的匹配并提取参数</p>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">URI 模板（使用 :param 或 {param} 语法）</label><input id="patternInput" class="input js-focus-input" placeholder="/users/:id/posts/:postId"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">实际路径</label><input id="pathInput" class="input" placeholder="/users/42/posts/100"></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="testBtn" class="btn btn-primary">测试匹配</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="matchStatus"></div><div id="paramsList" style="margin-top:12px;"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var patternInput=document.getElementById('patternInput'),pathInput=document.getElementById('pathInput'),testBtn=document.getElementById('testBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),matchStatus=document.getElementById('matchStatus'),paramsList=document.getElementById('paramsList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function buildRegex(template){
+  var paramNames=[];var escaped=template.replace(/[.+?^${}()|[\]\\]/g,'\\$&');
+  var regexStr='^'+escaped.replace(/:(\w+)/g,function(m,name){paramNames.push(name);return'([^/]+)';}).replace(/\{(\w+)\}/g,function(m,name){paramNames.push(name);return'([^/]+)';})+'(?:\\/?)$';
+  return{regex:new RegExp(regexStr),names:paramNames};
+}
+testBtn.addEventListener('click',function(){
+  var tmpl=patternInput.value.trim();var actual=pathInput.value.trim();
+  if(!tmpl){setStatus('请输入 URI 模板','error');return;}
+  if(!actual){setStatus('请输入实际路径','error');return;}
+  var result=buildRegex(tmpl);var m=actual.match(result.regex);
+  if(!m){resultCard.style.display='block';matchStatus.innerHTML='<span style="color:var(--color-error);font-weight:600;">❌ 不匹配</span><p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:4px;">路径与模板不匹配</p>';paramsList.innerHTML='';outputText.textContent='不匹配';setStatus('不匹配','error');return;}
+  matchStatus.innerHTML='<span style="color:var(--color-success);font-weight:600;">✅ 匹配成功</span><p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:4px;">已提取 '+(m.length-1)+' 个参数</p>';
+  var pHtml='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:6px;">提取的参数：</div>';
+  var output='';
+  for(var i=0;i<result.names.length;i++){
+    var val=m[i+1];pHtml+='<div class="param-row"><span class="param-name">'+htmlEscape(result.names[i])+'</span><span class="param-val">= '+htmlEscape(val)+'</span></div>';
+    output+=result.names[i]+'='+val+' ';
+  }
+  paramsList.innerHTML=pHtml;resultCard.style.display='block';outputText.textContent=output.trim();setStatus('匹配成功');
+});
+clearBtn.addEventListener('click',function(){patternInput.value='';pathInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');patternInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+pathInput.addEventListener('keydown',function(e){if(e.key==='Enter')testBtn.click();});
+})();</script>
+</body></html>

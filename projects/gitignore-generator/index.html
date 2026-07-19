@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>.gitignore 生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+.cat-section{margin-bottom:var(--space-2);}
+.cat-section h3{font-size:var(--font-size-sm);font-weight:600;margin-bottom:6px;color:var(--color-text-secondary);}
+.cat-section label{display:flex;align-items:center;gap:6px;font-size:13px;padding:4px 0;cursor:pointer;}
+.cat-section input[type=checkbox]{accent-color:var(--color-text-primary);}
+@media(max-width:600px){.cat-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>.gitignore 生成</h1><p class="tool-desc">根据项目类型和技术栈选择，生成 .gitignore 模板。</p>
+<div class="cat-grid">
+<div class="card" style="margin-bottom:0;"><div class="cat-section"><h3>语言 / 框架</h3>
+<label><input type="checkbox" class="gitignore-cb" value="node"> Node.js</label><label><input type="checkbox" class="gitignore-cb" value="python"> Python</label><label><input type="checkbox" class="gitignore-cb" value="java"> Java</label><label><input type="checkbox" class="gitignore-cb" value="go"> Go</label><label><input type="checkbox" class="gitignore-cb" value="rust"> Rust</label><label><input type="checkbox" class="gitignore-cb" value="dotnet"> .NET</label><label><input type="checkbox" class="gitignore-cb" value="ruby"> Ruby</label><label><input type="checkbox" class="gitignore-cb" value="php"> PHP</label><label><input type="checkbox" class="gitignore-cb" value="swift"> Swift</label><label><input type="checkbox" class="gitignore-cb" value="kotlin"> Kotlin</label></div></div>
+<div class="card" style="margin-bottom:0;"><div class="cat-section"><h3>框架 / 工具</h3>
+<label><input type="checkbox" class="gitignore-cb" value="react"> React / Vue / Angular</label><label><input type="checkbox" class="gitignore-cb" value="django"> Django</label><label><input type="checkbox" class="gitignore-cb" value="rails"> Rails</label><label><input type="checkbox" class="gitignore-cb" value="flutter"> Flutter</label><label><input type="checkbox" class="gitignore-cb" value="android"> Android</label><label><input type="checkbox" class="gitignore-cb" value="ios"> iOS</label><label><input type="checkbox" class="gitignore-cb" value="docker"> Docker</label><label><input type="checkbox" class="gitignore-cb" value="terraform"> Terraform</label><label><input type="checkbox" class="gitignore-cb" value="unity"> Unity</label><label><input type="checkbox" class="gitignore-cb" value="arduino"> Arduino</label></div></div></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
+<button id="generateBtn" class="btn btn-primary">生成 .gitignore</button>
+<button id="clearBtn" class="btn btn-secondary">取消选择</button>
+</div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var o=document.getElementById('outputText');
+var templates={
+  node:'# Node.js\nnode_modules/\nnpm-debug.log*\nyarn-debug.log*\nyarn-error.log*\n.pnpm-store/\n*.tsbuildinfo\n.next/\n.cache/\ndist/\nbuild/',
+  python:'# Python\n__pycache__/\n*.py[cod]\n*.pyo\n*.egg-info/\ndist/\nbuild/\n.eggs/\n*.egg\n.venv/\nvenv/\nenv/\n*.whl\n.mypy_cache/\n.ruff_cache/',
+  java:'# Java\n*.class\n*.jar\n*.war\n*.nar\nbuild/\ntarget/\n.gradle/\n*.iml\n.idea/\n.settings/\n.classpath\n.project/',
+  go:'# Go\n*.exe\n*.test\n*.out\ngo.work\nvendor/\n/bin/\n/pkg/',
+  rust:'# Rust\n/target/\n**/*.rs.bk\nCargo.lock\n*.pdb',
+  dotnet:'# .NET\nbin/\nobj/\n*.user\n*.suo\n*.cache\n*.dll\n*.exe\npackages/\n.vs/',
+  ruby:'# Ruby\n*.gem\n.bundle/\nvendor/bundle/\n.bundled_gems\nGemfile.lock',
+  php:'# PHP\nvendor/\ncomposer.lock\n.phpunit.result.cache\n*.log',
+  swift:'# Swift\n*.xcodeproj/project.xcworkspace/\n*.xcworkspace/\nDerivedData/\n.build/\n/.build/',
+  kotlin:'# Kotlin\n*.class\n*.jar\nbuild/\n.gradle/\nlocal.properties',
+  react:'# React / Vue / Angular\nnode_modules/\ndist/\nbuild/\n*.js.map\n.env.local\n.env.*.local',
+  django:'# Django\n*.pyc\n__pycache__/\n*.sqlite3\nmedia/\nstaticfiles/\nstatic_root/',
+  rails:'# Rails\nlog/\ntmp/\n*.pid\n*.sqlite3\npublic/assets/\n.cache/',
+  flutter:'# Flutter\nbuild/\n.dart_tool/\n.packages\n.pub/\n*.iml\n.idea/\n*.lock',
+  android:'# Android\n*.apk\n*.aab\nlocal.properties\n.gradle/\nbuild/\n.idea/\n*.iml',
+  ios:'# iOS\n*.xcworkspace/xcuserdata/\nDerivedData/\n*.ipa\nPods/\n*.framework',
+  docker:'# Docker\n.docker/\n*.tar\n*.tar.gz',
+  terraform:'# Terraform\n*.tfstate\n*.tfstate.*\n.terraform/\ncrash.log\n*.tfvars',
+  unity:'# Unity\nLibrary/\nTemp/\nobj/\n*.csproj\n*.unityproj\n*.sln\n*.userprefs',
+  arduino:'# Arduino\nbuild/\n*.hex\n*.elf\n*.eep'
+};
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var cbs=document.querySelectorAll('.gitignore-cb:checked');
+  if(cbs.length===0){setStatus('请至少选择一个项目类型','error');return;}
+  var selected=[];
+  for(var i=0;i<cbs.length;i++)selected.push(cbs[i].value);
+  var lines=[];
+  lines.push('# .gitignore generated by S-Jiffy');
+  lines.push('# https://s-jiffy.app');
+  lines.push('');
+  selected.forEach(function(val){
+    if(templates[val]){lines.push(templates[val]);lines.push('');}
+  });
+  lines.push('# OS files\n.DS_Store\nThumbs.db\n*.swp\n*.swo\n*~\n');
+  lines.push('# Editor\n.idea/\n.vscode/\n*.sublime-*\n*.suo\n*.ntvs*\n');
+  o.textContent=lines.join('\n');
+  setStatus('已生成，包含 '+selected.length+' 个模板');
+});
+document.getElementById('clearBtn').addEventListener('click',function(){
+  var cbs=document.querySelectorAll('.gitignore-cb');for(var i=0;i<cbs.length;i++)cbs[i].checked=false;o.textContent='';setStatus('');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

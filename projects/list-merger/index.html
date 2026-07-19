@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>列表合并工具 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-2);}
+.action-btns{display:flex;gap:8px;margin-bottom:var(--space-3);flex-wrap:wrap;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>列表合并工具</h1><p class="tool-desc">合并两个列表，计算并集、交集、差集、去重合并结果。</p>
+<div class="two-cols"><div class="card" style="margin-bottom:0;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">列表 A（每行一项）</label><textarea id="listA" class="input textarea js-focus-input" placeholder="apple&#10;banana&#10;cherry" style="min-height:120px;"></textarea></div>
+<div class="card" style="margin-bottom:0;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">列表 B（每行一项）</label><textarea id="listB" class="input textarea" placeholder="banana&#10;cherry&#10;date" style="min-height:120px;"></textarea></div></div>
+<div class="action-btns">
+<button id="unionBtn" class="btn btn-primary">并集</button>
+<button id="intersectBtn" class="btn btn-secondary">交集</button>
+<button id="diffABtn" class="btn btn-secondary">差集 A - B</button>
+<button id="diffBBtn" class="btn btn-secondary">差集 B - A</button>
+<button id="mergeBtn" class="btn btn-secondary">合并去重</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var la=document.getElementById('listA'),lb=document.getElementById('listB'),o=document.getElementById('outputText');
+function getItems(el){return el.value.split('\n').map(function(s){return s.trim();}).filter(function(s){return s!=='';});}
+function show(lines){o.textContent=lines.join('\n');setStatus('共 '+lines.length+' 项');}
+document.getElementById('unionBtn').addEventListener('click',function(){
+  var a=getItems(la),b=getItems(lb);var all=a.concat(b);var seen={};var u=[];all.forEach(function(x){if(!seen[x]){seen[x]=true;u.push(x);}});show(u);
+});
+document.getElementById('intersectBtn').addEventListener('click',function(){
+  var a=getItems(la),b=getItems(lb);var setB={};b.forEach(function(x){setB[x]=true;});var inter=a.filter(function(x){return setB[x];});show(inter);
+});
+document.getElementById('diffABtn').addEventListener('click',function(){
+  var a=getItems(la),b=getItems(lb);var setB={};b.forEach(function(x){setB[x]=true;});var diff=a.filter(function(x){return!setB[x];});show(diff);
+});
+document.getElementById('diffBBtn').addEventListener('click',function(){
+  var a=getItems(la),b=getItems(lb);var setA={};a.forEach(function(x){setA[x]=true;});var diff=b.filter(function(x){return!setA[x];});show(diff);
+});
+document.getElementById('mergeBtn').addEventListener('click',function(){
+  var rows=getItems(la).concat(getItems(lb));var seen={};rows.forEach(function(r){seen[r]=(seen[r]||0)+1;});
+  var lines=[];for(var k in seen){lines.push(k+' ('+seen[k]+'次)');}show(lines);
+});
+document.getElementById('clearBtn').addEventListener('click',function(){la.value='';lb.value='';o.textContent='';setStatus('');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Markdown → JSX - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Markdown → JSX</h1><p class="tool-desc">将 Markdown 文本转换为 React JSX 代码</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="# Hello World\n\nThis is **bold** and *italic*.\n\n- Item 1\n- Item 2\n\n> A quote" style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  function escapeJSX(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function parseInline(text) {
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    text = text.replace(/`(.+?)`/g, '<code>$1</code>');
+    text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+    return text;
+  }
+
+  function convertLine(line, listType) {
+    var trimmed = line.trim();
+    if (!trimmed) return '';
+
+    if (/^#{1,6}\s/.test(trimmed)) {
+      var level = trimmed.match(/^(#+)/)[1].length;
+      var content = trimmed.replace(/^#+\s*/, '');
+      content = parseInline(content);
+      return '<h' + level + '>' + content + '</h' + level + '>';
+    }
+
+    if (/^```/.test(trimmed)) {
+      return '<pre><code>...</code></pre>';
+    }
+
+    if (/^>\s/.test(trimmed)) {
+      var quoteContent = trimmed.replace(/^>\s*/, '');
+      quoteContent = parseInline(quoteContent);
+      return '<blockquote><p>' + quoteContent + '</p></blockquote>';
+    }
+
+    if (/^[-*+]\s/.test(trimmed)) {
+      var liContent = trimmed.replace(/^[-*+]\s*/, '');
+      liContent = parseInline(liContent);
+      if (listType !== 'ul') return '';
+      return '<li>' + liContent + '</li>';
+    }
+
+    if (/^\d+[.)]\s/.test(trimmed)) {
+      var olContent = trimmed.replace(/^\d+[.)]\s*/, '');
+      olContent = parseInline(olContent);
+      return '<li>' + olContent + '</li>';
+    }
+
+    if (/^[-*_]{3,}$/.test(trimmed)) {
+      return '<hr />';
+    }
+
+    var pContent = parseInline(trimmed);
+    if (pContent) return '<p>' + pContent + '</p>';
+    return '';
+  }
+
+  function convert(md) {
+    var lines = md.split('\n');
+    var result = [];
+    var inCodeBlock = false;
+    var codeBuffer = [];
+    var inUl = false;
+    var inOl = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var trimmed = line.trim();
+
+      if (/^```/.test(trimmed)) {
+        if (inCodeBlock) {
+          var codeLang = codeBuffer[0] && codeBuffer[0].match(/^```(\w*)/);
+          codeBuffer.shift();
+          var codeContent = codeBuffer.join('\n');
+          codeContent = codeContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          if (codeLang && codeLang[1]) {
+            result.push('<pre><code className="language-' + codeLang[1] + '">{`' + codeContent + '`}</code></pre>');
+          } else {
+            result.push('<pre><code>{`' + codeContent + '`}</code></pre>');
+          }
+          codeBuffer = [];
+          inCodeBlock = false;
+        } else {
+          if (inUl) { result.push('</ul>'); inUl = false; }
+          if (inOl) { result.push('</ol>'); inOl = false; }
+          codeBuffer.push(trimmed);
+          inCodeBlock = true;
+        }
+        continue;
+      }
+
+      if (inCodeBlock) {
+        codeBuffer.push(line);
+        continue;
+      }
+
+      if (/^[-*+]\s/.test(trimmed)) {
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (!inUl) { result.push('<ul>'); inUl = true; }
+        result.push(convertLine(line, 'ul'));
+        continue;
+      }
+
+      if (/^\d+[.)]\s/.test(trimmed)) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (!inOl) { result.push('<ol>'); inOl = true; }
+        result.push(convertLine(line, 'ol'));
+        continue;
+      }
+
+      if (inUl) { result.push('</ul>'); inUl = false; }
+      if (inOl) { result.push('</ol>'); inOl = false; }
+
+      if (!trimmed) {
+        if (i > 0 && lines[i-1].trim() !== '') {
+          result.push('');
+        }
+        continue;
+      }
+
+      var conv = convertLine(line);
+      if (conv) result.push(conv);
+    }
+
+    if (inUl) result.push('</ul>');
+    if (inOl) result.push('</ol>');
+    if (inCodeBlock) {
+      var codeContent = codeBuffer.join('\n');
+      codeContent = codeContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      result.push('<pre><code>{`' + codeContent + '`}</code></pre>');
+    }
+
+    var jsx = 'import React from \'react\';\n\nfunction MarkdownContent() {\n  return (\n    <>\n' + result.map(function (r) { return '      ' + r; }).join('\n') + '\n    </>\n  );\n}\n\nexport default MarkdownContent;';
+    return jsx;
+  }
+
+  function doConvert() {
+    var text = inputEl.value;
+    if (!text.trim()) { setStatus('请输入 Markdown', 'error'); return; }
+    try {
+      var result = convert(text);
+      outputEl.textContent = result;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('转换出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', doConvert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

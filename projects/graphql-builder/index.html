@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>GraphQL 查询构建 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.field-row { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:13px; }
+.field-row input[type="text"] { flex:1; }
+.field-row input[type="checkbox"] { width:16px; height:16px; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>GraphQL 查询构建</h1><p class="tool-desc">可视化构建 GraphQL 查询和变更语句</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+  <div style="flex:1;min-width:120px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">操作类型</label><select id="opType" class="input" style="height:44px;"><option value="query">query</option><option value="mutation">mutation</option><option value="subscription">subscription</option></select></div>
+  <div style="flex:2;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">操作名称 (可选)</label><input id="opName" class="input" placeholder="GetUsers" style="height:44px;"></div>
+</div>
+<div class="card"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">字段列表 (每行一个，用点表示嵌套)</label><textarea id="fieldList" class="input textarea" placeholder="id
+name
+email
+profile.avatar
+profile.bio
+posts.id
+posts.title" style="min-height:140px;font-size:13px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <div style="flex:1;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">参数 (JSON)</label><input id="argsInput" class="input" placeholder='{"id": 1}' style="height:44px;font-size:13px;"></div>
+  <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" id="compactCheck" checked> 紧凑模式</label>
+</div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary">构建查询</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var opType = document.getElementById('opType');
+  var opName = document.getElementById('opName');
+  var fieldList = document.getElementById('fieldList');
+  var argsInput = document.getElementById('argsInput');
+  var compactCheck = document.getElementById('compactCheck');
+  var outputEl = document.getElementById('outputText');
+
+  function buildTree(fields) {
+    var root = {};
+    for (var i = 0; i < fields.length; i++) {
+      var parts = fields[i].trim().split('.');
+      var node = root;
+      for (var j = 0; j < parts.length; j++) {
+        var part = parts[j];
+        if (!part) continue;
+        if (!node[part]) node[part] = {};
+        node = node[part];
+      }
+    }
+    return root;
+  }
+
+  function renderField(node, indent, compact) {
+    var keys = Object.keys(node);
+    var result = '';
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var children = node[k];
+      var childKeys = Object.keys(children);
+      if (childKeys.length > 0) {
+        if (compact) {
+          result += ' '.repeat(indent) + k + ' { ';
+          if (childKeys.length <= 3) {
+            result += childKeys.join(' ');
+            result += ' }\n';
+          } else {
+            result += '\n';
+            result += renderField(children, indent + 2, compact);
+            result += ' '.repeat(indent) + '}\n';
+          }
+        } else {
+          result += ' '.repeat(indent) + k + ' {\n';
+          result += renderField(children, indent + 2, compact);
+          result += ' '.repeat(indent) + '}\n';
+        }
+      } else {
+        result += ' '.repeat(indent) + k + '\n';
+      }
+    }
+    return result;
+  }
+
+  function build() {
+    var type = opType.value;
+    var name = opName.value.trim();
+    var fieldsText = fieldList.value.trim();
+    var argsText = argsInput.value.trim();
+    var compact = compactCheck.checked;
+
+    if (!fieldsText) { setStatus('请输入字段列表', 'error'); return; }
+
+    var lines = fieldsText.split('\n').filter(function (l) { return l.trim(); });
+    var tree = buildTree(lines);
+    var fields = renderField(tree, 2, compact).trim();
+
+    var args = '';
+    if (argsText) {
+      try {
+        var parsedArgs = JSON.parse(argsText);
+        var argPairs = [];
+        for (var key in parsedArgs) {
+          var val = parsedArgs[key];
+          if (typeof val === 'string') argPairs.push(key + ': ' + JSON.stringify(val));
+          else argPairs.push(key + ': ' + JSON.stringify(val));
+        }
+        args = '(' + argPairs.join(', ') + ')';
+      } catch (e) {
+        setStatus('参数 JSON 格式错误', 'error');
+        return;
+      }
+    }
+
+    var result = type;
+    if (name) result += ' ' + name;
+    result += args ? args + ' ' : ' ';
+    result += '{\n' + fields + '\n}';
+
+    outputEl.textContent = result;
+    setStatus('查询构建完成');
+  }
+
+  document.getElementById('buildBtn').addEventListener('click', build);
+  document.getElementById('clearBtn').addEventListener('click', function () { fieldList.value = ''; argsInput.value = ''; outputEl.textContent = ''; setStatus(''); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

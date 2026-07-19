@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>熵值计算 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.stat-row:last-child{border:none;}.stat-label{color:var(--color-text-secondary);}.stat-val{font-weight:600;font-family:var(--font-mono);}.strength-box{padding:16px;text-align:center;border-radius:var(--radius-md);margin-top:var(--space-2);font-weight:600;}.strength-very-weak{background:#fce8e6;color:var(--color-error);}.strength-weak{background:#fef7e0;color:#e37400;}.strength-fair{background:#e8f0fe;color:#096bde;}.strength-strong{background:#e6f4ea;color:var(--color-success);}.strength-very-strong{background:#e6f4ea;color:#1b5e20;}.char-bar{display:flex;gap:1px;height:40px;align-items:flex-end;margin-top:var(--space-2);}.char-bar-item{flex:1;background:var(--color-accent);border-radius:1px 1px 0 0;min-width:2px;opacity:0.6;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>熵值计算</h1><p class="tool-desc">计算文本/密码的 Shannon 信息熵，评估复杂度</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算熵值的文本或密码..." style="min-height:80px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary">计算熵值</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="entropyStats"></div><div id="strengthBox" class="strength-box"></div><div id="charBar" class="char-bar"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var inputText=document.getElementById('inputText'),calcBtn=document.getElementById('calcBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),entropyStats=document.getElementById('entropyStats'),strengthBox=document.getElementById('strengthBox'),charBar=document.getElementById('charBar'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function shannonEntropy(str){
+  var freq={},len=str.length;
+  for(var i=0;i<len;i++){var c=str[i];freq[c]=(freq[c]||0)+1;}
+  var entropy=0;
+  for(var k in freq){var p=freq[k]/len;entropy-=p*Math.log2(p);}
+  return entropy;
+}
+function calcCharsetBits(str){
+  var hasLower=false,hasUpper=false,hasDigit=false,hasSpecial=false,hasUnicode=false;
+  for(var i=0;i<str.length;i++){
+    var c=str.charCodeAt(i);
+    if(c>=97&&c<=122)hasLower=true;
+    else if(c>=65&&c<=90)hasUpper=true;
+    else if(c>=48&&c<=57)hasDigit=true;
+    else if(c<128)hasSpecial=true;
+    else hasUnicode=true;
+  }
+  var bits=0;
+  if(hasLower)bits+=26;if(hasUpper)bits+=26;if(hasDigit)bits+=10;if(hasSpecial)bits+=33;if(hasUnicode)bits+=100;
+  return bits;
+}
+function guessTime(entropy){var perSec=1e9;var combos=Math.pow(2,entropy);var secs=combos/perSec;
+  if(secs<1)return'即时';if(secs<60)return Math.round(secs)+'秒';
+  var mins=secs/60;if(mins<60)return Math.round(mins)+'分钟';
+  var hrs=mins/60;if(hrs<24)return Math.round(hrs)+'小时';
+  var days=hrs/24;if(days<365)return Math.round(days)+'天';
+  var yrs=days/365;if(yrs<1000)return Math.round(yrs)+'年';
+  return '超过 '+Math.round(yrs/1000)+' 千年';
+}
+calcBtn.addEventListener('click',function(){
+  var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
+  var len=txt.length;var entropy=shannonEntropy(txt);var charsetBits=calcCharsetBits(txt);
+  var maxEntropy=Math.log2(charsetBits)*len;
+  var strength=entropy/len;
+  var cls,label;
+  if(strength<1.5){cls='strength-very-weak';label='非常弱';}
+  else if(strength<2.5){cls='strength-weak';label='弱';}
+  else if(strength<3.5){cls='strength-fair';label='一般';}
+  else if(strength<4.5){cls='strength-strong';label='强';}
+  else{cls='strength-very-strong';label='非常强';}
+  strengthBox.className='strength-box '+cls;strengthBox.textContent=label+' ('+entropy.toFixed(2)+' bits)';
+  var html='';
+  html+='<div class="stat-row"><span class="stat-label">字符长度</span><span class="stat-val">'+len+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">Shannon 熵</span><span class="stat-val">'+entropy.toFixed(4)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">每字符熵</span><span class="stat-val">'+strength.toFixed(4)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">字符集大小</span><span class="stat-val">'+charsetBits+' 种可能</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">最大熵</span><span class="stat-val">'+maxEntropy.toFixed(2)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">暴力破解估计</span><span class="stat-val">'+guessTime(entropy)+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">唯一字符数</span><span class="stat-val">'+new Set(txt).size+'</span></div>';
+  entropyStats.innerHTML=html;
+  var barHtml='';var freq={};for(var i=0;i<txt.length;i++){var c=txt[i];freq[c]=(freq[c]||0)+1;}
+  var maxFreq=0;for(var k in freq){if(freq[k]>maxFreq)maxFreq=freq[k];}
+  var keys=Object.keys(freq).sort();
+  for(var i=0;i<keys.length;i++){
+    var h=Math.round(freq[keys[i]]/maxFreq*100);
+    barHtml+='<div class="char-bar-item" style="height:'+Math.max(h,4)+'%;" title="'+htmlEscape(keys[i])+': '+freq[keys[i]]+'"></div>';
+  }
+  charBar.innerHTML=barHtml;
+  resultCard.style.display='block';
+  outputText.textContent='Shannon 熵: '+entropy.toFixed(2)+' bits';
+  setStatus('计算完成');
+});
+clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

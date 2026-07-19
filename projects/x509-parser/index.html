@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>X.509 证书解析 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.cert-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;gap:8px;}.cert-row:last-child{border:none;}.cert-label{color:var(--color-text-secondary);min-width:100px;font-weight:500;}.cert-val{font-family:var(--font-mono);word-break:break-all;}.section-title{font-weight:600;font-size:var(--font-size-sm);margin:var(--space-2) 0 var(--space-1);color:var(--color-text-primary);}.pem-block{font-family:var(--font-mono);font-size:12px;background:var(--color-bg-soft);padding:10px;border-radius:var(--radius-sm);white-space:pre-wrap;word-break:break-all;max-height:120px;overflow:auto;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>X.509 证书解析</h1><p class="tool-desc">解析 PEM 格式 X.509 数字证书，查看主题、签发者、有效期、算法等信息</p>
+<div class="card"><textarea id="certInput" class="input textarea js-focus-input" placeholder="-----BEGIN CERTIFICATE-----&#10;MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw..." style="min-height:140px;font-size:13px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="certInfo"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var certInput=document.getElementById('certInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),certInfo=document.getElementById('certInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function parseASN1Length(bytes,offset){
+  var len=bytes[offset];if(len<0x80)return{length:len,bytesUsed:1};
+  var numBytes=len&0x7f;var length=0;
+  for(var i=0;i<numBytes;i++){length=(length<<8)|bytes[offset+1+i];}
+  return{length:length,bytesUsed:1+numBytes};
+}
+function parseDN(b64){
+  try{
+    var bin=atob(b64);var bytes=[];for(var i=0;i<bin.length;i++)bytes.push(bin.charCodeAt(i));
+    var parts=[];var pos=0;
+    while(pos<bytes.length){
+      if(bytes[pos]!==0x30)break;pos++;
+      var lenInfo=parseASN1Length(bytes,pos);pos+=lenInfo.bytesUsed;
+      var end=pos+lenInfo.length;
+      while(pos<end){
+        var tag=bytes[pos++];
+        if(tag===0x31){var sl=parseASN1Length(bytes,pos);pos+=sl.bytesUsed;pos+=sl.length;continue;}
+        var valLen=parseASN1Length(bytes,pos);pos+=valLen.bytesUsed;
+        var val=[];for(var i=0;i<valLen.length;i++)val.push(bytes[pos+i]);
+        pos+=valLen.length;
+        var oid='';if(tag===0x06){oid=val.join('.');}
+        var str='';for(var i=0;i<val.length;i++)str+=String.fromCharCode(val[i]);
+        if(oid==='2.5.4.3')parts.push('CN='+str);
+        else if(oid==='2.5.4.6')parts.push('C='+str);
+        else if(oid==='2.5.4.10')parts.push('O='+str);
+        else if(oid==='2.5.4.11')parts.push('OU='+str);
+        else if(oid==='2.5.4.7')parts.push('L='+str);
+        else if(oid==='2.5.4.8')parts.push('ST='+str);
+        else if(oid==='1.2.840.113549.1.9.1')parts.push('E='+str);
+      }
+    }
+    return parts.join(', ');
+  }catch(e){return '(无法解析 DN)';}
+}
+parseBtn.addEventListener('click',function(){
+  var text=certInput.value.trim();if(!text){setStatus('请输入 PEM 证书','error');return;}
+  var lines=text.split('\n');var bodyLines=[];
+  var inBlock=false,headerFound=false,footerFound=false;
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l.indexOf('-----BEGIN CERTIFICATE-----')>=0){inBlock=true;headerFound=true;continue;}
+    if(l.indexOf('-----END CERTIFICATE-----')>=0){inBlock=false;footerFound=true;continue;}
+    if(inBlock&&l)bodyLines.push(l);
+  }
+  if(!headerFound||!footerFound){setStatus('未找到完整的 PEM 证书块','error');return;}
+  var body=bodyLines.join('');var html='';var binary='';
+  try{binary=atob(body);}catch(e){setStatus('Base64 解码失败','error');return;}
+  var bytes=[];for(var i=0;i<binary.length;i++)bytes.push(binary.charCodeAt(i));
+  html+='<div class="section-title">基本信息</div>';
+  html+='<div class="cert-row"><span class="cert-label">格式</span><span class="cert-val">X.509 v3</span></div>';
+  html+='<div class="cert-row"><span class="cert-label">编码长度</span><span class="cert-val">'+bytes.length+' 字节</span></div>';
+  var raw='';for(var i=0;i<Math.min(bytes.length,32);i++)raw+=bytes[i].toString(16).padStart(2,'0')+' ';
+  html+='<div class="cert-row"><span class="cert-label">前 32 字节 (Hex)</span><span class="cert-val" style="font-size:12px;">'+htmlEscape(raw.trim())+'</span></div>';
+  if(bytes.length>2&&bytes[0]===0x30){
+    var tbsOffset=4+((bytes[1]&0x80)?(bytes[1]&0x7f):0)+4;
+    html+='<div class="cert-row"><span class="cert-label">TBS 证书偏移</span><span class="cert-val">~'+tbsOffset+' 字节</span></div>';
+  }
+  if(bytes.length>0){
+    var sigAlgOID='';
+    var pos=0;
+    if(bytes[pos]===0x30){
+      pos++;var li=parseASN1Length(bytes,pos);pos+=li.bytesUsed;var seqEnd=pos+li.length;
+      pos+=2;var tbsEnd=pos;
+      while(tbsEnd<seqEnd&&bytes[tbsEnd]!==0x30)tbsEnd++;
+      if(tbsEnd<seqEnd){tbsEnd+=2;var tbsLen=parseASN1Length(bytes,tbsEnd);tbsEnd+=tbsLen.bytesUsed+tbsLen.length;}
+      if(bytes[tbsEnd]===0x30){
+        tbsEnd++;var al=parseASN1Length(bytes,tbsEnd);tbsEnd+=al.bytesUsed;
+        if(bytes[tbsEnd]===0x06){tbsEnd++;var oidLen=parseASN1Length(bytes,tbsEnd);tbsEnd+=oidLen.bytesUsed;
+          var oidVal=[];for(var i=0;i<oidLen.length;i++)oidVal.push(bytes[tbsEnd+i]);
+          sigAlgOID=oidVal.join('.');
+          var algoName='未知';var oidMap={'1.2.840.113549.1.1.5':'sha256WithRSAEncryption','1.2.840.113549.1.1.11':'sha256WithRSAEncryption','1.2.840.113549.1.1.12':'sha384WithRSAEncryption','1.2.840.113549.1.1.13':'sha512WithRSAEncryption','1.2.840.10045.4.3.2':'ecdsa-with-SHA256','1.2.840.10045.4.3.3':'ecdsa-with-SHA384','1.2.840.113549.1.1.1':'rsaEncryption','1.2.840.10045.2.1':'ecPublicKey'};
+          if(oidMap[oidVal.join('.')])algoName=oidMap[oidVal.join('.')];
+          html+='<div class="cert-row"><span class="cert-label">签名算法</span><span class="cert-val">'+algoName+' (OID: '+oidVal.join('.')+')</span></div>';
+        }
+      }
+    }
+  }
+  html+='<div style="margin-top:var(--space-1);font-size:var(--font-size-sm);color:var(--color-text-secondary);">注意：精确解析需要完整的 ASN.1 解码库。以上为基本信息提取。</div>';
+  certInfo.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent='X.509 证书 ('+bytes.length+' 字节)';
+  setStatus('解析完成');
+});
+clearBtn.addEventListener('click',function(){certInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');certInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>安全头检测 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.hdr-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;align-items:center;}.hdr-row:last-child{border:none;}.hdr-name{font-weight:600;font-family:var(--font-mono);}.hdr-val{font-family:var(--font-mono);color:var(--color-text-secondary);max-width:50%;word-break:break-all;}.present-yes{color:var(--color-success);}.present-no{color:var(--color-text-disabled);}.score-box{font-size:24px;font-weight:700;text-align:center;padding:16px;}.url-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>安全头检测</h1><p class="tool-desc">检测目标网站 HTTP 安全响应头配置情况（CSP, HSTS, XFO, XSS 保护等）</p>
+<div class="card"><div class="url-bar"><input id="urlInput" class="input js-focus-input" placeholder="https://example.com" style="flex:1;"><button id="checkBtn" class="btn btn-primary">检测</button></div></div>
+<div class="card" id="resultCard" style="display:none;"><div id="scoreDisplay" class="score-box"></div><div id="headersList"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var urlInput=document.getElementById('urlInput'),checkBtn=document.getElementById('checkBtn'),resultCard=document.getElementById('resultCard'),scoreDisplay=document.getElementById('scoreDisplay'),headersList=document.getElementById('headersList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var securityHeaders=[
+{name:'Strict-Transport-Security',desc:'HTTP 严格传输安全 (HSTS)',weight:2},{name:'Content-Security-Policy',desc:'内容安全策略 (CSP)',weight:3},{name:'X-Frame-Options',desc:'点击劫持保护',weight:2},{name:'X-Content-Type-Options',desc:'MIME 类型嗅探保护',weight:1},{name:'Referrer-Policy',desc:'引用来源策略',weight:1},{name:'Permissions-Policy',desc:'权限策略 (Feature-Policy)',weight:1},{name:'X-XSS-Protection',desc:'XSS 过滤 (已弃用)',weight:1},{name:'Cross-Origin-Opener-Policy',desc:'跨域开放者策略 (COOP)',weight:1},{name:'Cross-Origin-Resource-Policy',desc:'跨域资源策略 (CORP)',weight:1},{name:'Cross-Origin-Embedder-Policy',desc:'跨域嵌入者策略 (COEP)',weight:1}
+];
+checkBtn.addEventListener('click',function(){
+  var url=urlInput.value.trim();if(!url){setStatus('请输入 URL','error');return;}
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  resultCard.style.display='block';headersList.innerHTML='<div style="color:var(--color-text-secondary);padding:8px;">检测中...</div>';scoreDisplay.textContent='';
+  fetch(url,{method:'HEAD',mode:'cors'}).then(function(resp){
+    var html='';var score=0,maxScore=0;
+    for(var i=0;i<securityHeaders.length;i++){
+      var h=securityHeaders[i];maxScore+=h.weight;
+      var val=resp.headers.get(h.name);var present=val!==null&&val!==undefined;
+      if(present)score+=h.weight;
+      html+='<div class="hdr-row"><span><span class="hdr-name">'+htmlEscape(h.name)+'</span><span style="color:var(--color-text-secondary);margin-left:6px;">'+htmlEscape(h.desc)+'</span></span><span>';
+      if(present)html+='<span class="present-yes">✓</span> <span class="hdr-val">'+htmlEscape(val)+'</span>';
+      else html+='<span class="present-no">✗ 未设置</span>';
+      html+='</span></div>';
+    }
+    var existingHeadersHtml='<div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);"><div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:4px;">其他响应头</div>';
+    resp.headers.forEach(function(v,k){existingHeadersHtml+='<span style="font-size:11px;color:var(--color-text-disabled);margin-right:8px;">'+htmlEscape(k)+'</span>';});
+    existingHeadersHtml+='</div>';
+    headersList.innerHTML=html+existingHeadersHtml;
+    var pct=Math.round(score/maxScore*100);
+    scoreDisplay.innerHTML='安全头评分: <span style="color:'+(pct>=70?'var(--color-success)':pct>=40?'#e37400':'var(--color-error)')+';">'+pct+'/100</span>';
+    outputText.textContent='安全头评分: '+pct+'/100';
+    setStatus('检测完成');
+  }).catch(function(err){
+    headersList.innerHTML='<div style="color:var(--color-error);">请求失败: '+htmlEscape(err.message)+'<br><span style="font-size:12px;">注意：由于浏览器 CORS 限制，部分目标可能无法检测。请确保目标支持 CORS 或使用无 CORS 模式。</span></div>';
+    scoreDisplay.textContent='—';
+    setStatus('检测失败','error');
+  });
+});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+urlInput.addEventListener('keydown',function(e){if(e.key==='Enter')checkBtn.click();});
+})();</script>
+</body></html>

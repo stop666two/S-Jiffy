@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>数字转英文 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.num-controls{display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;}
+.example-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.example-chip{padding:4px 10px;border:1px solid var(--color-border);border-radius:999px;font-size:12px;cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:all .15s;}
+.example-chip:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>数字转英文</h1><p class="tool-desc">将 0-999999 范围内的阿拉伯数字转换为英文单词表示。</p>
+<div class="num-controls card" style="margin-bottom:var(--space-3);">
+<input id="numberInput" class="input js-focus-input" type="number" min="0" max="999999" placeholder="输入数字（0-999999）" style="width:200px;">
+<button id="convertBtn" class="btn btn-primary">转换</button>
+</div>
+<div class="example-chips">
+<button class="example-chip" data-n="0">0</button>
+<button class="example-chip" data-n="7">7</button>
+<button class="example-chip" data-n="13">13</button>
+<button class="example-chip" data-n="21">21</button>
+<button class="example-chip" data-n="42">42</button>
+<button class="example-chip" data-n="100">100</button>
+<button class="example-chip" data-n="256">256</button>
+<button class="example-chip" data-n="999">999</button>
+<button class="example-chip" data-n="1000">1000</button>
+<button class="example-chip" data-n="2048">2048</button>
+<button class="example-chip" data-n="65535">65,535</button>
+<button class="example-chip" data-n="100000">100,000</button>
+<button class="example-chip" data-n="999999">999,999</button>
+</div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var ni=document.getElementById('numberInput'),o=document.getElementById('outputText');
+var ones=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+var tens=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function convertWords(n){
+  if(n===0)return'zero';
+  if(n<0||n>999999)return'';
+  if(n<20)return ones[n];
+  if(n<100){var t=Math.floor(n/10),o=n%10;return tens[t]+(o?'-'+ones[o]:'');}
+  if(n<1000){var h=Math.floor(n/100),r=n%100;return ones[h]+' hundred'+(r?' '+convertWords(r):'');}
+  var th=Math.floor(n/1000),r2=n%1000;return convertWords(th)+' thousand'+(r2?' '+convertWords(r2):'');
+}
+document.getElementById('convertBtn').addEventListener('click',function(){
+  var val=ni.value.trim();if(!val){setStatus('请输入数字','error');return;}
+  var n=parseInt(val,10);
+  if(isNaN(n)||n<0||n>999999){setStatus('请输入 0-999999 之间的整数','error');o.textContent='';return;}
+  o.textContent=convertWords(n)+' ('+n.toLocaleString()+')';
+  setStatus('');
+});
+var chips=document.querySelectorAll('.example-chip');
+for(var i=0;i<chips.length;i++){chips[i].addEventListener('click',function(){ni.value=this.dataset.n;document.getElementById('convertBtn').click();});}
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

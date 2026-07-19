@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>文本换行工具 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.wrap-controls{display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;}
+.line-num{font-size:var(--font-size-xs);color:var(--color-text-disabled);display:inline-block;width:32px;text-align:right;margin-right:4px;user-select:none;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>文本换行工具</h1><p class="tool-desc">将文本按指定宽度自动换行（soft wrap / hard wrap）。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入需要换行的文本..." style="min-height:140px;"></textarea></div>
+<div class="wrap-controls">
+<input id="wrapWidth" class="input" type="number" value="40" min="4" max="200" style="width:80px;">
+<label style="font-size:var(--font-size-sm);">列宽</label>
+<select id="wrapMode" class="input" style="width:auto;min-width:100px;">
+  <option value="soft">Soft Wrap</option>
+  <option value="hard">Hard Wrap</option>
+</select>
+<button id="wrapBtn" class="btn btn-primary">换行</button>
+<button id="unwrapBtn" class="btn btn-secondary">取消换行</button>
+</div>
+<div style="margin-bottom:var(--space-2);"><span id="lineCount" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);"></span></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText'),lc=document.getElementById('lineCount');
+var wInput=document.getElementById('wrapWidth'),mode=document.getElementById('wrapMode');
+function hardWrap(text,width){
+  var lines=text.split('\n');var result=[];
+  for(var li=0;li<lines.length;li++){
+    var line=lines[li];
+    while(line.length>width){
+      var breakAt=width;
+      if(mode.value==='soft'){for(var j=width;j>0;j--){if(line[j]===' '){breakAt=j;break;}}}
+      result.push(line.substring(0,breakAt));
+      line=line.substring(breakAt).trim();
+    }
+    result.push(line);
+  }
+  return result.join('\n');
+}
+document.getElementById('wrapBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
+  var width=parseInt(wInput.value)||40;
+  if(width<4){setStatus('列宽不能小于 4','error');return;}
+  var wrapped=hardWrap(text,width);
+  o.textContent=wrapped;
+  var lines=wrapped.split('\n').length;
+  lc.textContent='共 '+lines+' 行';
+  setStatus('');
+});
+document.getElementById('unwrapBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
+  o.textContent=text.replace(/\n\s*/g,' ');
+  lc.textContent='';
+  setStatus('');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

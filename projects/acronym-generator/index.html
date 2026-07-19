@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>缩写生成器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.acro-controls{display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;}
+.output-variants{margin-top:var(--space-2);display:flex;flex-wrap:wrap;gap:8px;}
+.variant-chip{padding:6px 14px;border:1px solid var(--color-border);border-radius:999px;font-size:var(--font-size-sm);cursor:pointer;transition:all .15s;}
+.variant-chip:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>缩写生成器</h1><p class="tool-desc">从短语中提取每个单词的首字母生成缩写词（Acronym）。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="例如: World Health Organization&#10;As Soon As Possible&#10;JavaScript Object Notation" style="min-height:100px;"></textarea></div>
+<div class="acro-controls">
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="uppercase" type="checkbox" checked> 大写</label>
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="includeDigits" type="checkbox"> 包含数字</label>
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="skipWords" type="checkbox" checked> 跳过介词/冠词</label>
+<button id="generateBtn" class="btn btn-primary">生成</button>
+</div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div id="variants" class="output-variants"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText'),vr=document.getElementById('variants');
+var uc=document.getElementById('uppercase'),id=document.getElementById('includeDigits'),sw=document.getElementById('skipWords');
+var skipSet={'a':1,'an':1,'the':1,'and':1,'or':1,'but':1,'nor':1,'for':1,'yet':1,'so':1,'of':1,'in':1,'on':1,'at':1,'to':1,'by':1,'with':1,'from':1,'as':1,'into':1,'via':1,'per':1};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入短语','error');return;}
+  var words=text.match(/[a-zA-Z0-9]+/g);if(!words){setStatus('未找到可识别的单词','error');return;}
+  var filtered=words;
+  if(sw.checked)filtered=words.filter(function(w){return!skipSet[w.toLowerCase()];});
+  if(!id.checked)filtered=filtered.filter(function(w){return!/^\d+$/.test(w);});
+  if(filtered.length===0){setStatus('过滤后没有有效单词','error');o.textContent='';vr.innerHTML='';return;}
+  var acronym=filtered.map(function(w){return uc.checked?w[0].toUpperCase():w[0].toLowerCase();}).join('');
+  var acronymLower=filtered.map(function(w){return w[0].toLowerCase();}).join('');
+  var acronymUpper=filtered.map(function(w){return w[0].toUpperCase();}).join('');
+  var dots=filtered.map(function(w){return (uc.checked?w[0].toUpperCase():w[0].toLowerCase())+'.';}).join('');
+  o.textContent=acronym;
+  setStatus('缩写: '+acronym+'  ('+filtered.length+' 个单词)');
+  vr.innerHTML='<button class="variant-chip" data-v="'+esc(acronymUpper)+'">'+esc(acronymUpper)+'</button><button class="variant-chip" data-v="'+esc(acronymLower)+'">'+esc(acronymLower)+'</button><button class="variant-chip" data-v="'+esc(dots)+'">'+esc(dots)+'</button>';
+  var chips=vr.querySelectorAll('.variant-chip');
+  for(var i2=0;i2<chips.length;i2++){chips[i2].addEventListener('click',function(){o.textContent=this.dataset.v;setStatus('已选择: '+this.dataset.v);});}
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

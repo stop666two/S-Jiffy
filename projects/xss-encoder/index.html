@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>XSS 编码器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.enc-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.enc-row:last-child{border:none;}.enc-label{font-weight:600;margin-bottom:2px;color:var(--color-text-secondary);}.enc-val{font-family:var(--font-mono);word-break:break-all;font-size:13px;background:var(--color-bg-soft);padding:6px 10px;border-radius:var(--radius-sm);margin-top:2px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>XSS 编码器</h1><p class="tool-desc">将文本编码为 HTML 实体、JavaScript 字符串、URL、CSS 和属性等上下文的转义格式</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入需要编码的文本..." style="min-height:100px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="encodeBtn" class="btn btn-primary">编码</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="encResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var inputText=document.getElementById('inputText'),encodeBtn=document.getElementById('encodeBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),encResults=document.getElementById('encResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function htmlEncode(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function htmlAttrEncode(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function jsStringEncode(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\x00/g,'\\x00');}
+function urlEncode(s){return encodeURIComponent(s);}
+function cssEncode(s){return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/'/g,"\\'").replace(/[^\x20-\x7e]/g,function(c){return'\\'+c.charCodeAt(0).toString(16).toUpperCase()+' ';});}
+function xmlEncode(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+encodeBtn.addEventListener('click',function(){
+  var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
+  var encoders=[
+    {label:'HTML 实体编码',val:htmlEncode(txt)},
+    {label:'HTML 属性编码',val:htmlAttrEncode(txt)},
+    {label:'JavaScript 字符串',val:jsStringEncode(txt)},
+    {label:'URL 编码',val:urlEncode(txt)},
+    {label:'CSS 转义',val:cssEncode(txt)},
+    {label:'XML 实体编码',val:xmlEncode(txt)},
+    {label:'Base64 编码',val:btoa(unescape(encodeURIComponent(txt)))},
+    {label:'Unicode 转义 (\\uXXXX)',val:txt.split('').map(function(c){var n=c.charCodeAt(0);return n<128?c:'\\u'+n.toString(16).padStart(4,'0');}).join('')},
+    {label:'十六进制 (每字符)',val:txt.split('').map(function(c){return'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0');}).join('')},
+    {label:'八进制 (每字符)',val:txt.split('').map(function(c){return'\\'+c.charCodeAt(0).toString(8).padStart(3,'0');}).join('')}
+  ];
+  var html='';
+  for(var i=0;i<encoders.length;i++){
+    html+='<div class="enc-row"><div class="enc-label">'+htmlEscape(encoders[i].label)+'</div><div class="enc-val">'+htmlEscape(encoders[i].val)+'</div></div>';
+  }
+  encResults.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent=htmlEncode(txt);
+  setStatus('编码完成');
+});
+clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

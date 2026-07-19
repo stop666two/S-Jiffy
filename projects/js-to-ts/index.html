@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JavaScript → TypeScript - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JavaScript → TypeScript</h1><p class="tool-desc">将 JavaScript 代码转换为 TypeScript 添加类型</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="function greet(name) {\n  return 'Hello, ' + name;\n}\n\nconst age = 25;\nlet active = true;\nvar count = 0;\n\nfunction add(a, b) {\n  return a + b;\n}\n\nconst user = {\n  id: 1,\n  name: 'Alice'\n};" style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var JS_KEYWORDS = { let:1, const:1, var:1, function:1, if:1, else:1, for:1, while:1, do:1, switch:1, case:1, break:1, continue:1, return:1, try:1, catch:1, finally:1, throw:1, new:1, this:1, super:1, class:1, extends:1, import:1, export:1, from:1, of:1, in:1, typeof:1, instanceof:1, void:1, delete:1, async:1, await:1, yield:1, default:1, static:1, get:1, set:1, true:1, false:1, null:1, undefined:1, NaN:1, Infinity:1 };
+
+  function inferType(val) {
+    if (val === 'true' || val === 'false') return 'boolean';
+    if (/^-?\d+\.?\d*$/.test(val)) return 'number';
+    if (/^["'`]/.test(val)) return 'string';
+    if (val === 'null') return 'null';
+    if (val === 'undefined') return 'undefined';
+    if (/^\[/.test(val)) return 'any[]';
+    if (/^\{/.test(val)) return 'object';
+    if (/^\/(?!\*)/.test(val)) return 'RegExp';
+    return 'any';
+  }
+
+  function isNumericDefault(val) {
+    if (val === undefined || val === null) return false;
+    return /^-?\d+\.?\d*$/.test(String(val));
+  }
+
+  function convert() {
+    var text = inputEl.value;
+    if (!text.trim()) { setStatus('请输入 JavaScript', 'error'); return; }
+    var lines = text.split('\n');
+    var result = [];
+    var indentStack = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var trimmed = line.trim();
+      var indent = line.substring(0, line.length - trimmed.length);
+      if (!trimmed) { result.push(''); continue; }
+      if (trimmed.indexOf('//') === 0 || trimmed.indexOf('/*') === 0 || trimmed.indexOf('*') === 0) { result.push(line); continue; }
+
+      var commentIdx = trimmed.indexOf('//');
+      var codePart = commentIdx >= 0 ? trimmed.substring(0, commentIdx).trim() : trimmed;
+      var comment = commentIdx >= 0 ? trimmed.substring(commentIdx) : '';
+
+      if (/^(let|const|var)\s+/.test(codePart)) {
+        var declMatch = codePart.match(/^(let|const|var)\s+(\w[\w$]*)\s*(=\s*.*)?$/);
+        if (declMatch) {
+          var keyword = declMatch[1];
+          var varName = declMatch[2];
+          var rhs = declMatch[3] ? declMatch[3].substring(1).trim() : null;
+          var tsType = 'any';
+          if (rhs) {
+            tsType = inferType(rhs);
+            if (rhs === '[]') tsType = 'any[]';
+            if (/^\d+\s*\+\s*\d+/.test(rhs)) tsType = 'number';
+            if (/^\d+\s*-\s*\d+/.test(rhs)) tsType = 'number';
+            if (/^\d+\s*\*\s*\d+/.test(rhs)) tsType = 'number';
+          }
+          if (keyword === 'const' && rhs && tsType !== 'any') {
+            result.push(indent + 'const ' + varName + ': ' + tsType + ' = ' + rhs + (comment ? ' ' + comment : ''));
+          } else if (keyword === 'const') {
+            result.push(indent + 'const ' + varName + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+          } else if (keyword === 'var') {
+            result.push(indent + 'let ' + varName + ': ' + tsType + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+          } else {
+            result.push(indent + 'let ' + varName + ': ' + tsType + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+          }
+        } else {
+          result.push(line);
+        }
+        continue;
+      }
+
+      if (/^function\s+/.test(codePart)) {
+        var funcMatch = codePart.match(/^function\s+(\w[\w$]*)\s*\(([^)]*)\)\s*(:\s*\w[\w<>,[\]|\s]*)?\s*\{?$/);
+        if (funcMatch) {
+          var funcName = funcMatch[1];
+          var params = funcMatch[2].trim();
+          var hasReturnType = funcMatch[3];
+          var typedParams = [];
+          if (params) {
+            var paramList = params.split(',');
+            for (var j = 0; j < paramList.length; j++) {
+              var p = paramList[j].trim();
+              if (!p) continue;
+              if (p.indexOf(':') === -1) {
+                typedParams.push(p + ': any');
+              } else {
+                typedParams.push(p);
+              }
+            }
+          }
+          if (hasReturnType) {
+            result.push(indent + 'function ' + funcName + '(' + typedParams.join(', ') + ')' + hasReturnType + ' {');
+          } else {
+            result.push(indent + 'function ' + funcName + '(' + typedParams.join(', ') + '): any {');
+          }
+        } else {
+          result.push(line);
+        }
+        continue;
+      }
+
+      if (/^const\s+\w+\s*=\s*\(/.test(codePart) || /^const\s+\w+\s*=\s*function/.test(codePart) || /^const\s+\w+\s*=\s*async\s*\(/.test(codePart)) {
+        var arrowMatch = codePart.match(/^const\s+(\w[\w$]*)\s*=\s*(async\s*)?(?:function\s*)?\(([^)]*)\)\s*(?::\s*\w[\w<>,[\]|\s]*)?\s*=>?\s*\{?$/);
+        if (arrowMatch) {
+          var arrowName = arrowMatch[1];
+          var asyncKw = arrowMatch[2] || '';
+          var arrowParams = arrowMatch[3].trim();
+          var typedArrowParams = [];
+          if (arrowParams) {
+            var apList = arrowParams.split(',');
+            for (var j = 0; j < apList.length; j++) {
+              var ap = apList[j].trim();
+              if (!ap) continue;
+              if (ap.indexOf(':') === -1) typedArrowParams.push(ap + ': any');
+              else typedArrowParams.push(ap);
+            }
+          }
+          result.push(indent + 'const ' + arrowName + ': (' + typedArrowParams.join(', ') + ') => any = ' + asyncKw + '(' + typedArrowParams.join(', ') + ') => {');
+        } else {
+          result.push(line);
+        }
+        continue;
+      }
+
+      if (/^for\s*\(/.test(codePart)) {
+        var forMatch = codePart.match(/^for\s*\(\s*(let|var|const)?\s*(\w[\w$]*)\s*(=.*)?;\s*(.*);\s*(.*)\)/);
+        if (forMatch) {
+          var forKeyword = forMatch[1] || 'let';
+          var forVar = forMatch[2];
+          result.push(indent + 'for (' + forKeyword + ' ' + forVar + ': number =' + (forMatch[3] || ' 0') + '; ' + forMatch[4] + '; ' + forMatch[5] + ')');
+        } else {
+          result.push(line);
+        }
+        continue;
+      }
+
+      if (/^(catch\s*\()(\w+)(\))/.test(codePart)) {
+        result.push(line.replace(/^(catch\s*\()(\w+)(\))/, '$1$2: any$3'));
+        continue;
+      }
+
+      result.push(line);
+    }
+
+    outputEl.textContent = result.join('\n');
+    setStatus('转换完成');
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WebSocket 测试 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; max-height:300px; overflow-y:auto; }
+.log-entry { padding:4px 0; border-bottom:1px solid var(--color-border); font-size:12px; }
+.log-time { color:var(--color-text-disabled); margin-right:8px; }
+.log-in { color:#2563eb; }
+.log-out { color:#059669; }
+.log-system { color:var(--color-text-secondary); }
+.log-error { color:var(--color-error); }
+.connected { color:var(--color-success); font-weight:600; }
+.disconnected { color:var(--color-error); font-weight:600; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>WebSocket 测试</h1><p class="tool-desc">测试 WebSocket 连接发送和接收消息</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+  <div style="flex:1;min-width:240px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">WebSocket URL</label><input id="wsUrl" class="input" placeholder="wss://echo.websocket.org" value="wss://echo.websocket.org" style="height:44px;"></div>
+  <button id="connectBtn" class="btn btn-primary">连接</button>
+  <button id="disconnectBtn" class="btn btn-secondary" disabled>断开</button>
+</div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+  <div style="flex:1;min-width:240px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">消息</label><input id="msgInput" class="input" placeholder="输入要发送的消息" style="height:44px;"></div>
+  <button id="sendBtn" class="btn btn-primary" disabled>发送</button>
+  <button id="clearLogBtn" class="btn btn-secondary">清空日志</button>
+</div>
+<div class="output-box"><div id="logArea"></div><span id="outputText" style="display:none;"></span><button class="copy-btn" id="copyBtn">复制日志</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar">未连接</div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var wsUrl = document.getElementById('wsUrl');
+  var connectBtn = document.getElementById('connectBtn');
+  var disconnectBtn = document.getElementById('disconnectBtn');
+  var msgInput = document.getElementById('msgInput');
+  var sendBtn = document.getElementById('sendBtn');
+  var logArea = document.getElementById('logArea');
+  var outputEl = document.getElementById('outputText');
+  var statusBar = document.getElementById('statusBar');
+
+  var ws = null;
+  var connected = false;
+
+  function log(message, type) {
+    var now = new Date();
+    var time = now.toLocaleTimeString();
+    var div = document.createElement('div');
+    div.className = 'log-entry log-' + (type || 'system');
+    div.innerHTML = '<span class="log-time">[' + time + ']</span>' + htmlEscape(message);
+    logArea.appendChild(div);
+    logArea.scrollTop = logArea.scrollHeight;
+    outputEl.textContent = logArea.textContent || logArea.innerText;
+  }
+
+  function connect() {
+    var url = wsUrl.value.trim();
+    if (!url) { setStatus('请输入 WebSocket URL', 'error'); return; }
+    if (!/^wss?:\/\//.test(url)) { setStatus('URL 必须以 ws:// 或 wss:// 开头', 'error'); return; }
+    try {
+      ws = new WebSocket(url);
+      ws.onopen = function () {
+        connected = true;
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+        sendBtn.disabled = false;
+        statusBar.textContent = '已连接';
+        statusBar.className = 'tool-status connected';
+        log('已连接到 ' + url, 'system');
+        setStatus('连接成功');
+      };
+      ws.onmessage = function (e) {
+        log('收到: ' + e.data, 'in');
+        setStatus('收到消息');
+      };
+      ws.onerror = function (e) {
+        log('连接错误', 'error');
+        setStatus('连接错误', 'error');
+      };
+      ws.onclose = function (e) {
+        connected = false;
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        sendBtn.disabled = true;
+        statusBar.textContent = '已断开';
+        statusBar.className = 'tool-status disconnected';
+        log('连接已关闭 (code: ' + e.code + ')', 'system');
+        setStatus('连接已断开');
+        ws = null;
+      };
+    } catch (e) {
+      setStatus('连接失败: ' + e.message, 'error');
+    }
+  }
+
+  function disconnect() {
+    if (ws && connected) {
+      ws.close();
+    }
+  }
+
+  function send() {
+    var msg = msgInput.value.trim();
+    if (!msg) { setStatus('请输入消息', 'error'); return; }
+    if (ws && connected && ws.readyState === WebSocket.OPEN) {
+      ws.send(msg);
+      log('发送: ' + msg, 'out');
+      msgInput.value = '';
+      msgInput.focus();
+      setStatus('消息已发送');
+    } else {
+      setStatus('连接未建立', 'error');
+    }
+  }
+
+  function clearLog() {
+    logArea.innerHTML = '';
+    outputEl.textContent = '';
+    setStatus('日志已清空');
+  }
+
+  connectBtn.addEventListener('click', connect);
+  disconnectBtn.addEventListener('click', disconnect);
+  sendBtn.addEventListener('click', send);
+  clearLogBtn.addEventListener('click', clearLog);
+  msgInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var text = logArea.textContent || logArea.innerText;
+    if (text) { copyToClipboard(text, this); setStatus('日志已复制'); }
+  });
+})();
+</script></body></html>

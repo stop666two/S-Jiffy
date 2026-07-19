@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TLS 密码套件查询 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.suite-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.suite-row:last-child{border:none;}.suite-name{font-family:var(--font-mono);font-weight:600;}.suite-meta{color:var(--color-text-secondary);margin-left:8px;}.security-high{color:var(--color-success);}.security-medium{color:#e37400;}.security-low{color:var(--color-error);}.security-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;margin-left:6px;}.search-bar{margin-bottom:var(--space-2);}.count-info{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>TLS 密码套件查询</h1><p class="tool-desc">查询 TLS/SSL 密码套件名称、详情和安全等级</p>
+<div class="card"><div class="search-bar"><input id="searchInput" class="input js-focus-input" placeholder="搜索套件名称、关键词..."></div><div class="count-info" id="countInfo"></div><div id="suitesList"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var cipherSuites=[
+{name:'TLS_AES_128_GCM_SHA256',desc:'TLS 1.3 · AEAD · 128 位密钥',security:'high',rfc:'RFC 8446'},{name:'TLS_AES_256_GCM_SHA384',desc:'TLS 1.3 · AEAD · 256 位密钥',security:'high',rfc:'RFC 8446'},{name:'TLS_CHACHA20_POLY1305_SHA256',desc:'TLS 1.3 · AEAD · ChaCha20-Poly1305',security:'high',rfc:'RFC 8446'},{name:'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256',desc:'ECDHE + ECDSA · AEAD · 128 位',security:'high',rfc:'RFC 5289'},{name:'TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384',desc:'ECDHE + ECDSA · AEAD · 256 位',security:'high',rfc:'RFC 5289'},{name:'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256',desc:'ECDHE + RSA · AEAD · 128 位',security:'high',rfc:'RFC 5289'},{name:'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384',desc:'ECDHE + RSA · AEAD · 256 位',security:'high',rfc:'RFC 5289'},{name:'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256',desc:'ECDHE + ECDSA · ChaCha20-Poly1305',security:'high',rfc:'RFC 7905'},{name:'TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256',desc:'ECDHE + RSA · ChaCha20-Poly1305',security:'high',rfc:'RFC 7905'},{name:'TLS_DHE_RSA_WITH_AES_128_GCM_SHA256',desc:'DHE + RSA · 前向安全 · 128 位',security:'high',rfc:'RFC 5288'},{name:'TLS_DHE_RSA_WITH_AES_256_GCM_SHA384',desc:'DHE + RSA · 前向安全 · 256 位',security:'high',rfc:'RFC 5288'},{name:'TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256',desc:'ECDHE + ECDSA · CBC · 128 位',security:'medium',rfc:'RFC 5289'},{name:'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256',desc:'ECDHE + RSA · CBC · 128 位',security:'medium',rfc:'RFC 5289'},{name:'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384',desc:'ECDHE + ECDSA · CBC · 256 位',security:'medium',rfc:'RFC 5289'},{name:'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384',desc:'ECDHE + RSA · CBC · 256 位',security:'medium',rfc:'RFC 5289'},{name:'TLS_RSA_WITH_AES_128_GCM_SHA256',desc:'RSA 密钥交换 · AEAD · 128 位',security:'medium',rfc:'RFC 5288'},{name:'TLS_RSA_WITH_AES_256_GCM_SHA384',desc:'RSA 密钥交换 · AEAD · 256 位',security:'medium',rfc:'RFC 5288'},{name:'TLS_RSA_WITH_AES_128_CBC_SHA256',desc:'RSA 密钥交换 · CBC · 128 位',security:'medium',rfc:'RFC 5246'},{name:'TLS_RSA_WITH_AES_256_CBC_SHA256',desc:'RSA 密钥交换 · CBC · 256 位',security:'medium',rfc:'RFC 5246'},{name:'TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA',desc:'ECDHE + ECDSA · 3DES · 已弃用',security:'low',rfc:'RFC 4492'},{name:'TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA',desc:'ECDHE + RSA · 3DES · 已弃用',security:'low',rfc:'RFC 4492'},{name:'TLS_RSA_WITH_3DES_EDE_CBC_SHA',desc:'RSA · 3DES · 已弃用',security:'low',rfc:'RFC 5246'},{name:'TLS_RSA_WITH_RC4_128_SHA',desc:'RSA · RC4 · 不安全',security:'low',rfc:'RFC 5246'},{name:'TLS_RSA_WITH_NULL_SHA256',desc:'无加密 · 仅认证 · 不安全',security:'low',rfc:'RFC 5246'}];
+var searchInput=document.getElementById('searchInput'),countInfo=document.getElementById('countInfo'),suitesList=document.getElementById('suitesList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function render(q){
+  q=q.toLowerCase();var html='';var count=0;
+  for(var i=0;i<cipherSuites.length;i++){
+    var s=cipherSuites[i];if(q&&s.name.toLowerCase().indexOf(q)===-1&&s.desc.toLowerCase().indexOf(q)===-1&&s.security.indexOf(q)===-1)continue;
+    count++;var cls=s.security==='high'?'security-high':s.security==='medium'?'security-medium':'security-low';
+    var tagStyle=s.security==='high'?'background:#e6f4ea;color:var(--color-success)':s.security==='medium'?'background:#fef7e0;color:#e37400':'background:#fce8e6;color:var(--color-error)';
+    html+='<div class="suite-row"><span class="suite-name">'+htmlEscape(s.name)+'</span><span class="suite-meta">'+htmlEscape(s.desc)+'</span><span class="security-tag" style="'+tagStyle+'">'+s.security+'</span><span style="font-size:11px;color:var(--color-text-disabled);margin-left:6px;">'+s.rfc+'</span></div>';
+  }
+  suitesList.innerHTML=html||'<div style="color:var(--color-text-secondary);padding:8px;">无匹配套件</div>';
+  countInfo.textContent='共 '+count+' 个密码套件';
+  outputText.textContent='TLS 密码套件: '+count+' 个';
+  setStatus('');
+}
+render('');
+searchInput.addEventListener('input',function(){render(this.value);});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

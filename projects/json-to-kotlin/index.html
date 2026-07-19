@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON → Kotlin 数据类 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JSON → Kotlin 数据类</h1><p class="tool-desc">将 JSON 数据转换为 Kotlin data class</p>
+<div class="card"><textarea id="inputJson" class="input textarea js-focus-input" placeholder='{"id":1,"name":"Alice","email":"alice@example.com","roles":["admin"]}' style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputJson');
+  var outputEl = document.getElementById('outputText');
+
+  function capitalize(s) {
+    if (!s) return 'EmptyField';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function safeName(s) {
+    return s.replace(/[^a-zA-Z0-9_]/g, '_').replace(/^(\d)/, '_$1');
+  }
+
+  function kotlinType(val, depth) {
+    if (depth === undefined) depth = 0;
+    if (depth > 10) return 'Any';
+    if (val === null) return 'Any?';
+    if (typeof val === 'boolean') return 'Boolean';
+    if (typeof val === 'number') {
+      if (Number.isInteger(val)) {
+        if (val >= -2147483648 && val <= 2147483647) return 'Int';
+        return 'Long';
+      }
+      return 'Double';
+    }
+    if (typeof val === 'string') return 'String';
+    if (Array.isArray(val)) {
+      if (val.length === 0) return 'List<Any>';
+      var elem = kotlinType(val[0], depth + 1);
+      for (var i = 1; i < val.length; i++) {
+        if (kotlinType(val[i], depth + 1) !== elem) { elem = 'Any'; break; }
+      }
+      return 'List<' + elem + '>';
+    }
+    if (typeof val === 'object') return 'data class';
+    return 'Any';
+  }
+
+  var usedNames = {};
+  function uniqueName(base) {
+    var n = base; var i = 1;
+    while (usedNames[n]) { n = base + i; i++; }
+    usedNames[n] = true;
+    return n;
+  }
+
+  function generateDataClass(val, name, depth) {
+    if (depth === undefined) depth = 0;
+    if (depth > 10) return '';
+    if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+    var keys = Object.keys(val);
+    var result = 'data class ' + name + '(\n';
+    var fields = [];
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var v = val[k];
+      var propName = safeName(k);
+      propName = uniqueName(propName || 'field' + i);
+      var ktType = kotlinType(v, depth);
+      var typeStr;
+      if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+        var subName = uniqueName(capitalize(safeName(k)));
+        typeStr = subName;
+      } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+        var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+        typeStr = 'List<' + arrSubName + '>';
+      } else {
+        typeStr = ktType;
+      }
+      if (v === null) typeStr += '?';
+      var jsonName = k;
+      var annotation = '  @SerializedName(' + JSON.stringify(jsonName) + ')\n';
+      fields.push({ annotation: annotation, prop: propName, type: typeStr });
+    }
+    for (var i = 0; i < fields.length; i++) {
+      result += fields[i].annotation;
+      result += '  val ' + fields[i].prop + ': ' + fields[i].type;
+      if (i < fields.length - 1) result += ',';
+      result += '\n';
+    }
+    result += ')\n';
+    for (var i = 0; i < keys.length; i++) {
+      var v = val[keys[i]];
+      if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+        var subName = uniqueName(capitalize(safeName(keys[i])));
+        result += '\n' + generateDataClass(v, subName, depth + 1);
+      }
+      if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+        var arrSubName = uniqueName(capitalize(safeName(keys[i])) + 'Item');
+        result += '\n' + generateDataClass(v[0], arrSubName, depth + 1);
+      }
+    }
+    return result;
+  }
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 JSON', 'error'); return; }
+    try {
+      var parsed = JSON.parse(text);
+      usedNames = {};
+      var name = uniqueName('Root');
+      var result = 'import com.google.gson.annotations.SerializedName\n\n';
+      result += generateDataClass(parsed, name, 0);
+      outputEl.textContent = result;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('JSON 格式错误: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

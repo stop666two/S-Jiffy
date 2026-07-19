@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CORS 检测 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.header-item { padding:4px 0; border-bottom:1px solid var(--color-border); font-size:12px; }
+.header-key { font-weight:600; color:var(--color-text-primary); }
+.header-val { color:var(--color-text-secondary); }
+.result-badge { display:inline-block; padding:4px 12px; border-radius:4px; font-size:13px; font-weight:600; margin-bottom:12px; }
+.result-ok { background:#dcfce7; color:#166534; }
+.result-fail { background:#fef2f2; color:#991b1b; }
+.result-warn { background:#fef3c7; color:#92400e; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CORS 检测</h1><p class="tool-desc">检测目标 URL 的跨域资源共享配置</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+  <div style="flex:1;min-width:240px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">目标 URL</label><input id="urlInput" class="input" placeholder="https://api.example.com/data" value="https://jsonplaceholder.typicode.com/posts/1" style="height:44px;"></div>
+  <button id="checkBtn" class="btn btn-primary">检测 CORS</button>
+</div>
+<div class="card" id="resultCard" style="display:none;"><div id="resultBadge"></div><div id="corsHeaders"></div></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var urlInput = document.getElementById('urlInput');
+  var resultCard = document.getElementById('resultCard');
+  var resultBadge = document.getElementById('resultBadge');
+  var corsHeaders = document.getElementById('corsHeaders');
+  var outputEl = document.getElementById('outputText');
+
+  function checkCORS() {
+    var url = urlInput.value.trim();
+    if (!url) { setStatus('请输入 URL', 'error'); return; }
+    if (!/^https?:\/\//.test(url)) { setStatus('URL 必须以 http:// 或 https:// 开头', 'error'); return; }
+
+    resultCard.style.display = 'none';
+    setStatus('正在检测...');
+
+    var startTime = Date.now();
+    fetch(url, { mode: 'cors', headers: { 'Accept': 'application/json, text/plain, */*' } })
+      .then(function (response) {
+        var duration = Date.now() - startTime;
+        var headers = {};
+
+        var corsResponseHeaders = [
+          'access-control-allow-origin',
+          'access-control-allow-methods',
+          'access-control-allow-headers',
+          'access-control-allow-credentials',
+          'access-control-expose-headers',
+          'access-control-max-age',
+          'access-control-request-headers', 'access-control-request-method',
+          'timing-allow-origin'
+        ];
+
+        for (var i = 0; i < corsResponseHeaders.length; i++) {
+          var h = corsResponseHeaders[i];
+          var val = response.headers.get(h);
+          if (val !== null) {
+            headers[h] = val;
+          }
+        }
+
+        var status = response.status;
+        var statusText = response.statusText;
+        var corsOk = headers['access-control-allow-origin'] !== undefined;
+        var resultHtml = '';
+
+        if (corsOk) {
+          resultHtml += '<div class="result-badge result-ok">✓ CORS 已启用</div>';
+        } else {
+          resultHtml += '<div class="result-badge result-warn">⚠ 未检测到 CORS 头部</div>';
+        }
+
+        resultHtml += '<div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px;">';
+        resultHtml += 'HTTP ' + status + ' ' + htmlEscape(statusText) + ' · ' + duration + 'ms';
+        resultHtml += '</div>';
+
+        var headerKeys = Object.keys(headers);
+        if (headerKeys.length > 0) {
+          resultHtml += '<div style="font-weight:600;font-size:12px;margin-bottom:4px;">CORS 响应头:</div>';
+          for (var i = 0; i < headerKeys.length; i++) {
+            resultHtml += '<div class="header-item"><span class="header-key">' + htmlEscape(headerKeys[i]) + '</span>: <span class="header-val">' + htmlEscape(headers[headerKeys[i]]) + '</span></div>';
+          }
+        } else {
+          resultHtml += '<div style="font-size:12px;color:var(--color-text-secondary);">未发现 CORS 相关的响应头部。目标服务器可能未配置 CORS。</div>';
+        }
+
+        resultBadge.innerHTML = resultHtml;
+        corsHeaders.innerHTML = '<div class="header-item" style="margin-top:8px;"><span class="header-key">请求耗时</span>: <span class="header-val">' + duration + 'ms</span></div>';
+
+        var output = JSON.stringify(headers, null, 2);
+        if (!corsOk) output = '// CORS 未启用或无跨域头部\n' + output;
+        outputEl.textContent = output;
+        resultCard.style.display = 'block';
+        setStatus(corsOk ? 'CORS 检测完成 - 支持跨域' : 'CORS 检测完成 - 无跨域头部');
+      })
+      .catch(function (err) {
+        resultBadge.innerHTML = '<div class="result-badge result-fail">✗ CORS 请求失败</div>';
+        corsHeaders.innerHTML = '<div class="header-item"><span style="font-size:12px;color:var(--color-error);">' + htmlEscape(err.message) + '</span></div>';
+        outputEl.textContent = 'Error: ' + err.message;
+        resultCard.style.display = 'block';
+        setStatus('CORS 请求失败', 'error');
+      });
+  }
+
+  document.getElementById('checkBtn').addEventListener('click', checkCORS);
+  urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') checkCORS(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>IP 格式转换 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.val-row{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.val-row:last-child{border:none;}.val-row label{min-width:100px;color:var(--color-text-secondary);font-weight:500;}.val-row .val{font-family:var(--font-mono);word-break:break-all;color:var(--color-text-primary);}.v4-only{font-size:11px;color:var(--color-text-disabled);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>IP 格式转换</h1><p class="tool-desc">IPv4/IPv6 在十进制、十六进制、二进制、整数等格式间互相转换</p>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="ipInput" class="input js-focus-input" placeholder="192.168.1.1 或 ::1 或 3232235521" style="flex:1;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="ipResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var ipInput=document.getElementById('ipInput'),convertBtn=document.getElementById('convertBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),ipResults=document.getElementById('ipResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function isIPv4(s){var p=s.split('.');if(p.length!==4)return false;for(var i=0;i<4;i++){var n=parseInt(p[i],10);if(isNaN(n)||n<0||n>255||String(n)!==p[i])return false;}return true;}
+function parseIPv4(s){return s.split('.').map(function(o){return parseInt(o,10);});}
+function ipv4ToInt(octets){return((octets[0]<<24)+(octets[1]<<16)+(octets[2]<<8)+octets[3])>>>0;}
+function ipv4ToHex(octets){return'0x'+octets.map(function(o){return o.toString(16).padStart(2,'0');}).join('').toUpperCase();}
+function ipv4ToBin(octets){return octets.map(function(o){return o.toString(2).padStart(8,'0');}).join('.');}
+function expandIPv6(s){
+  if(s.indexOf('::')>=0){
+    var parts=s.split('::');var left=parts[0]?parts[0].split(':'):[];var right=parts[1]?parts[1].split(':'):[];
+    var fill=8-left.length-right.length;var mid=[];for(var i=0;i<fill;i++)mid.push('0');
+    return left.concat(mid).concat(right);
+  }
+  return s.split(':');
+}
+function compressIPv6(groups){
+  var longestStart=-1,longestLen=0,curStart=-1,curLen=0;
+  for(var i=0;i<=groups.length;i++){
+    if(i<groups.length&&groups[i]==='0'){if(curStart===-1)curStart=i;curLen++;}else{
+      if(curLen>longestLen){longestStart=curStart;longestLen=curLen;}
+      curStart=-1;curLen=0;
+    }
+  }
+  if(longestLen<=1){return groups.map(function(g){return g.replace(/^0+/,'')||'0';}).join(':');}
+  var p=[];for(var i=0;i<groups.length;i++){if(i===longestStart){p.push('');i+=longestLen-1;}else{p.push(groups[i].replace(/^0+/,'')||'0');}}
+  return p.join(':').replace(/:{3,}/,'::');
+}
+convertBtn.addEventListener('click',function(){
+  var v=ipInput.value.trim();if(!v){setStatus('请输入 IP 地址','error');return;}
+  var html='';var intVal,hexStr,binStr,octets;
+  if(isIPv4(v)){
+    octets=parseIPv4(v);intVal=ipv4ToInt(octets);
+    html+='<div class="val-row"><label>IPv4</label><span class="val">'+htmlEscape(v)+'</span></div>';
+    html+='<div class="val-row"><label>十进制整数</label><span class="val">'+intVal+'</span></div>';
+    html+='<div class="val-row"><label>十六进制</label><span class="val">0x'+intVal.toString(16).toUpperCase()+'</span></div>';
+    html+='<div class="val-row"><label>二进制</label><span class="val" style="font-size:12px;">'+ipv4ToBin(octets)+'</span></div>';
+    html+='<div class="val-row"><label>十六进制 (每字节)</label><span class="val">'+ipv4ToHex(octets)+'</span></div>';
+    html+='<div class="val-row"><label>IPv4 → IPv6</label><span class="val">::ffff:'+intVal.toString(16).replace(/(..)(..)$/,'$1:$2')+'</span></div>';
+    outputText.textContent='IPv4: '+v+' = '+intVal;
+  } else {
+    var cleaned=v.replace(/^\[|\]$/g,'');var groups;
+    try{groups=expandIPv6(cleaned);}catch(e){setStatus('IPv6 格式无效','error');return;}
+    if(groups.length!==8){setStatus('IPv6 格式无效','error');return;}
+    var hexStr=groups.join('').toUpperCase();
+    var compressed=compressIPv6(groups);
+    html+='<div class="val-row"><label>IPv6</label><span class="val">'+htmlEscape(v)+'</span></div>';
+    html+='<div class="val-row"><label>完整格式</label><span class="val">'+groups.join(':').toLowerCase()+'</span></div>';
+    html+='<div class="val-row"><label>压缩格式</label><span class="val">'+compressed.toLowerCase()+'</span></div>';
+    html+='<div class="val-row"><label>十六进制</label><span class="val" style="font-size:12px;">0x'+hexStr+'</span></div>';
+    html+='<div class="val-row"><label>组数</label><span class="val">8 组 · 128 位</span></div>';
+    outputText.textContent='IPv6: '+v+' → '+compressed.toLowerCase();
+  }
+  ipResults.innerHTML=html;resultCard.style.display='block';setStatus('转换完成');
+});
+clearBtn.addEventListener('click',function(){ipInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');ipInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+ipInput.addEventListener('keydown',function(e){if(e.key==='Enter')convertBtn.click();});
+})();</script>
+</body></html>

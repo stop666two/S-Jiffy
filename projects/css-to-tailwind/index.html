@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS → Tailwind - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.mapping-table { width:100%; border-collapse:collapse; font-size:var(--font-size-sm); }
+.mapping-table td, .mapping-table th { border:1px solid var(--color-border); padding:6px 10px; text-align:left; }
+.mapping-table th { background:var(--color-bg-soft); font-weight:600; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSS → Tailwind</h1><p class="tool-desc">将 CSS 属性转换为 Tailwind CSS 类名</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="display: flex;
+justify-content: center;
+align-items: center;
+padding: 16px;
+margin-top: 8px;
+background-color: #3b82f6;
+color: white;
+border-radius: 8px;" style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var CSS_MAP = {
+    'display': { 'flex': 'flex', 'block': 'block', 'inline-block': 'inline-block', 'inline': 'inline', 'grid': 'grid', 'inline-flex': 'inline-flex', 'none': 'hidden', 'contents': 'contents' },
+    'position': { 'relative': 'relative', 'absolute': 'absolute', 'fixed': 'fixed', 'sticky': 'sticky', 'static': 'static' },
+    'text-align': { 'left': 'text-left', 'center': 'text-center', 'right': 'text-right', 'justify': 'text-justify' },
+    'font-weight': { '100': 'font-thin', '200': 'font-extralight', '300': 'font-light', '400': 'font-normal', '500': 'font-medium', '600': 'font-semibold', '700': 'font-bold', '800': 'font-extrabold', '900': 'font-black' },
+    'text-transform': { 'uppercase': 'uppercase', 'lowercase': 'lowercase', 'capitalize': 'capitalize' },
+    'white-space': { 'nowrap': 'whitespace-nowrap', 'pre': 'whitespace-pre', 'pre-wrap': 'whitespace-pre-wrap', 'pre-line': 'whitespace-pre-line', 'normal': 'whitespace-normal' },
+    'overflow': { 'hidden': 'overflow-hidden', 'auto': 'overflow-auto', 'scroll': 'overflow-scroll', 'visible': 'overflow-visible' },
+    'float': { 'left': 'float-left', 'right': 'float-right', 'none': 'float-none' },
+    'clear': { 'left': 'clear-left', 'right': 'clear-right', 'both': 'clear-both', 'none': 'clear-none' },
+    'object-fit': { 'cover': 'object-cover', 'contain': 'object-contain', 'fill': 'object-fill', 'none': 'object-none', 'scale-down': 'object-scale-down' },
+    'visibility': { 'hidden': 'invisible', 'visible': 'visible', 'collapse': 'collapse' },
+    'flex-direction': { 'row': 'flex-row', 'row-reverse': 'flex-row-reverse', 'column': 'flex-col', 'column-reverse': 'flex-col-reverse' },
+    'flex-wrap': { 'wrap': 'flex-wrap', 'nowrap': 'flex-nowrap', 'wrap-reverse': 'flex-wrap-reverse' },
+    'align-items': { 'flex-start': 'items-start', 'flex-end': 'items-end', 'center': 'items-center', 'baseline': 'items-baseline', 'stretch': 'items-stretch' },
+    'justify-content': { 'flex-start': 'justify-start', 'flex-end': 'justify-end', 'center': 'justify-center', 'space-between': 'justify-between', 'space-around': 'justify-around', 'space-evenly': 'justify-evenly' },
+    'align-self': { 'auto': 'self-auto', 'flex-start': 'self-start', 'flex-end': 'self-end', 'center': 'self-center', 'stretch': 'self-stretch' },
+    'text-decoration': { 'underline': 'underline', 'line-through': 'line-through', 'none': 'no-underline' },
+    'font-style': { 'italic': 'italic', 'normal': 'not-italic' },
+    'cursor': { 'pointer': 'cursor-pointer', 'default': 'cursor-default', 'not-allowed': 'cursor-not-allowed', 'wait': 'cursor-wait', 'text': 'cursor-text', 'move': 'cursor-move', 'grab': 'cursor-grab' },
+    'list-style-type': { 'none': 'list-none', 'disc': 'list-disc', 'decimal': 'list-decimal' },
+    'outline-style': { 'none': 'outline-none' },
+    'background-repeat': { 'no-repeat': 'bg-no-repeat', 'repeat': 'bg-repeat', 'repeat-x': 'bg-repeat-x', 'repeat-y': 'bg-repeat-y' },
+    'background-size': { 'cover': 'bg-cover', 'contain': 'bg-contain' },
+    'background-attachment': { 'fixed': 'bg-fixed', 'scroll': 'bg-scroll', 'local': 'bg-local' },
+    'border-collapse': { 'collapse': 'border-collapse', 'separate': 'border-separate' }
+  };
+
+  var PX_PROPS = {
+    'padding': 'p', 'padding-top': 'pt', 'padding-right': 'pr', 'padding-bottom': 'pb', 'padding-left': 'pl',
+    'margin': 'm', 'margin-top': 'mt', 'margin-right': 'mr', 'margin-bottom': 'mb', 'margin-left': 'ml',
+    'gap': 'gap', 'row-gap': 'gap-y', 'column-gap': 'gap-x',
+    'top': 'top', 'right': 'right', 'bottom': 'bottom', 'left': 'left',
+    'inset': 'inset', 'width': 'w', 'height': 'h', 'min-width': 'min-w', 'min-height': 'min-h',
+    'max-width': 'max-w', 'max-height': 'max-h',
+    'border-radius': 'rounded', 'border-width': 'border', 'border-top-width': 'border-t', 'border-right-width': 'border-r',
+    'border-bottom-width': 'border-b', 'border-left-width': 'border-l',
+    'stroke-width': 'stroke', 'opacity': 'opacity',
+    'flex': 'flex', 'order': 'order', 'z-index': 'z'
+  };
+
+  var SPACING = { 0:'0', 1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9', 10:'10', 11:'11', 12:'12', 14:'14', 16:'16', 20:'20', 24:'24', 28:'28', 32:'32', 36:'36', 40:'40', 44:'44', 48:'48', 52:'52', 56:'56', 60:'60', 64:'64', 72:'72', 80:'80', 96:'96' };
+
+  function pxToTailwind(px) {
+    var num = parseInt(px, 10);
+    if (isNaN(num)) return null;
+    if (num <= 0) return '0';
+    if (SPACING[num] !== undefined) return String(num);
+    if (num % 4 === 0 && num <= 96) return String(num);
+    if (num % 2 === 0 && num <= 96) return '[' + px + ']';
+    return '[' + px + ']';
+  }
+
+  function convertProperty(prop, value) {
+    var key = prop.toLowerCase().trim();
+    var val = value.trim();
+
+    if (CSS_MAP[key] && CSS_MAP[key][val]) return CSS_MAP[key][val];
+
+    if (PX_PROPS[key]) {
+      var prefix = PX_PROPS[key];
+      var tw = pxToTailwind(val);
+      if (key === 'border-radius') {
+        if (val === '50%' || val === '9999px' || val === '999px') return 'rounded-full';
+        if (val === '0') return 'rounded-none';
+        if (tw) return 'rounded-' + tw;
+        return 'rounded-[' + val + ']';
+      }
+      if (key === 'opacity') {
+        var op = Math.round(parseFloat(val) * 100);
+        if (op === 100) return null;
+        var valid = {0:'0',5:'5',10:'10',20:'20',25:'25',30:'30',40:'40',50:'50',60:'60',70:'70',75:'75',80:'80',90:'90',95:'95',100:'100'};
+        var closest = Object.keys(valid).reduce(function (a, b) { return Math.abs(b - op) < Math.abs(a - op) ? b : a; });
+        if (valid[closest] !== undefined) return 'opacity-' + valid[closest];
+        return null;
+      }
+      if (tw !== null) return prefix + '-' + tw;
+      return prefix + '-[' + val + ']';
+    }
+
+    if (key === 'color') {
+      var c = val.toLowerCase();
+      if (c === 'white') return 'text-white';
+      if (c === 'black') return 'text-black';
+      if (c === 'transparent') return 'text-transparent';
+      return 'text-[' + val + ']';
+    }
+    if (key === 'background-color' || key === 'background') {
+      var c = val.toLowerCase();
+      if (c === 'white') return 'bg-white';
+      if (c === 'black') return 'bg-black';
+      if (c === 'transparent') return 'bg-transparent';
+      return 'bg-[' + val + ']';
+    }
+    if (key === 'border-color') {
+      var c = val.toLowerCase();
+      if (c === 'white') return 'border-white';
+      if (c === 'black') return 'border-black';
+      if (c === 'transparent') return 'border-transparent';
+      return 'border-[' + val + ']';
+    }
+    if (key === 'font-size') {
+      var sizes = { '12px':'text-xs','13px':'text-sm','14px':'text-sm','15px':'text-sm','16px':'text-base','18px':'text-lg','20px':'text-xl','24px':'text-2xl','30px':'text-3xl','36px':'text-4xl','48px':'text-5xl','60px':'text-6xl','72px':'text-7xl','96px':'text-8xl' };
+      if (sizes[val]) return sizes[val];
+      return 'text-[' + val + ']';
+    }
+    if (key === 'line-height') {
+      if (val === 'normal') return 'leading-normal';
+      if (val === 'none') return 'leading-none';
+      if (val === 'tight') return 'leading-tight';
+      if (val === 'snug') return 'leading-snug';
+      if (val === 'relaxed') return 'leading-relaxed';
+      if (val === 'loose') return 'leading-loose';
+      var lh = parseInt(val, 10);
+      if (!isNaN(lh)) {
+        var validLS = {3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10'};
+        if (validLS[lh]) return 'leading-' + lh;
+      }
+      return 'leading-[' + val + ']';
+    }
+    if (key === 'letter-spacing') {
+      var ls = val;
+      if (ls === 'normal') return 'tracking-normal';
+      if (ls === 'tight') return 'tracking-tight';
+      if (ls === 'tighter') return 'tracking-tighter';
+      if (ls === 'wide') return 'tracking-wide';
+      if (ls === 'wider') return 'tracking-wider';
+      if (ls === 'widest') return 'tracking-widest';
+      return 'tracking-[' + ls + ']';
+    }
+    if (key === 'text-shadow') {
+      return null;
+    }
+    if (key === 'box-shadow') {
+      if (val === 'none') return 'shadow-none';
+      if (val.indexOf('inset') >= 0) return null;
+      return 'shadow';
+    }
+    if (key === 'transition') {
+      if (val.indexOf('all') >= 0) return 'transition-all';
+      if (val.indexOf('opacity') >= 0) return 'transition-opacity';
+      if (val.indexOf('transform') >= 0) return 'transition-transform';
+      if (val.indexOf('colors') >= 0) return 'transition-colors';
+      return 'transition';
+    }
+    return null;
+  }
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 CSS', 'error'); return; }
+    var lines = text.split('\n');
+    var classes = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line || line.indexOf(':') === -1) continue;
+      var colonIdx = line.indexOf(':');
+      var prop = line.substring(0, colonIdx).trim();
+      var val = line.substring(colonIdx + 1).trim().replace(/;$/, '').trim();
+      if (!prop || !val) continue;
+      var tw = convertProperty(prop, val);
+      if (tw) {
+        if (classes.indexOf(tw) === -1) classes.push(tw);
+      } else {
+        classes.push('/* ' + prop + ': ' + val + ' (unmapped) */');
+      }
+    }
+    if (classes.length === 0) {
+      outputEl.textContent = '';
+      setStatus('未识别到可转换的 CSS 属性', 'error');
+      return;
+    }
+    outputEl.textContent = classes.join(' ');
+    setStatus('转换完成，生成 ' + classes.length + ' 个类名');
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

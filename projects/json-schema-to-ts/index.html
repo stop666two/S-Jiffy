@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON Schema → TypeScript - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JSON Schema → TypeScript</h1><p class="tool-desc">将 JSON Schema 转换为 TypeScript 接口定义</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{\n  "type": "object",\n  "properties": {\n    "id": { "type": "integer" },\n    "name": { "type": "string" },\n    "email": { "type": "string", "format": "email" },\n    "age": { "type": "integer", "minimum": 0 },\n    "tags": { "type": "array", "items": { "type": "string" } },\n    "address": {\n      "type": "object",\n      "properties": {\n        "city": { "type": "string" },\n        "zip": { "type": "string" }\n      },\n      "required": ["city"]\n    }\n  },\n  "required": ["id", "name", "email"]\n}' style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var schemaTypeMap = {
+    'string': 'string',
+    'integer': 'number',
+    'number': 'number',
+    'boolean': 'boolean',
+    'null': 'null',
+    'any': 'any'
+  };
+
+  function resolveRef(schema, defs) {
+    if (!schema || typeof schema !== 'object') return schema;
+    var ref = schema.$ref;
+    if (ref) {
+      var parts = ref.replace('#/', '').split('/');
+      var cur = defs || {};
+      for (var i = 0; i < parts.length; i++) {
+        if (cur[parts[i]]) cur = cur[parts[i]];
+        else return schema;
+      }
+      return cur;
+    }
+    return schema;
+  }
+
+  var usedNames = {};
+  var defsCache = {};
+
+  function uniqueName(base) {
+    var n = base; var i = 1;
+    while (usedNames[n]) { n = base + i; i++; }
+    usedNames[n] = true;
+    return n;
+  }
+
+  function schemaToTS(schema, name, depth, defs) {
+    if (depth === undefined) depth = 0;
+    if (depth > 15) return 'any';
+    if (schema === null || schema === undefined) return 'any';
+
+    var resolved = resolveRef(schema, defs);
+    if (resolved.$ref) resolved = resolveRef(resolved, defs);
+
+    var type = resolved.type;
+    var enumVals = resolved.enum;
+    var oneOf = resolved.oneOf;
+    var anyOf = resolved.anyOf;
+    var allOf = resolved.allOf;
+
+    if (enumVals && enumVals.length > 0) {
+      return enumVals.map(function (v) { return JSON.stringify(v); }).join(' | ');
+    }
+
+    if (oneOf || anyOf) {
+      var variants = oneOf || anyOf;
+      var types = [];
+      for (var i = 0; i < variants.length; i++) {
+        types.push(schemaToTS(variants[i], name + 'V' + i, depth + 1, defs));
+      }
+      return types.join(' | ');
+    }
+
+    if (allOf) {
+      var intersections = [];
+      for (var i = 0; i < allOf.length; i++) {
+        intersections.push(schemaToTS(allOf[i], name + 'A' + i, depth + 1, defs));
+      }
+      return intersections.join(' & ');
+    }
+
+    if (type === 'object' || (type === undefined && resolved.properties)) {
+      var props = resolved.properties;
+      var required = resolved.required || [];
+      if (!props) return 'Record<string, any>';
+
+      var propNames = Object.keys(props);
+      if (propNames.length === 0) return 'Record<string, any>';
+
+      var result = '{\n';
+      for (var i = 0; i < propNames.length; i++) {
+        var pn = propNames[i];
+        var pSchema = props[pn];
+        var pType = schemaToTS(pSchema, name + ucFirst(pn), depth + 1, defs);
+        var isRequired = required.indexOf(pn) >= 0;
+        result += '  ' + pn + (isRequired ? '' : '?') + ': ' + pType.split('\n').join('\n  ') + ';\n';
+      }
+      result += '}';
+      return result;
+    }
+
+    if (type === 'array') {
+      var items = resolved.items;
+      if (!items) return 'any[]';
+      var itemType = schemaToTS(items, name + 'Item', depth + 1, defs);
+      if (itemType.indexOf('{') >= 0 || itemType.indexOf('|') >= 0) {
+        return '(' + itemType + ')[]';
+      }
+      return itemType + '[]';
+    }
+
+    if (type === 'string' && resolved.enum) {
+      return resolved.enum.map(function (v) { return JSON.stringify(v); }).join(' | ');
+    }
+
+    if (type && schemaTypeMap[type]) return schemaTypeMap[type];
+    if (type === undefined && resolved.$ref) return 'any';
+
+    return 'any';
+  }
+
+  function ucFirst(s) {
+    if (!s) return 'Prop';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 JSON Schema', 'error'); return; }
+    try {
+      var schema = JSON.parse(text);
+      usedNames = {};
+      defsCache = schema.definitions || schema.$defs || {};
+
+      var title = schema.title || 'Root';
+      var interfaceName = title.replace(/\s+/g, '') || 'Root';
+      interfaceName = uniqueName(interfaceName);
+
+      var ts = schemaToTS(schema, interfaceName, 0, { definitions: defsCache });
+      if (ts.indexOf('{') === 0) {
+        var result = 'interface ' + interfaceName + ' ' + ts;
+      } else {
+        var result = 'type ' + interfaceName + ' = ' + ts + ';';
+      }
+      outputEl.textContent = result;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('解析出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

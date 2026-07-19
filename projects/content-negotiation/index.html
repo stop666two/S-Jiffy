@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>内容协商测试 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.result-row{padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:var(--font-size-sm);}.matched{background:#e6f4ea;border-color:var(--color-success);}.q-val{font-family:var(--font-mono);color:var(--color-text-secondary);}.served-tag{background:var(--color-success);color:#fff;padding:2px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>内容协商测试</h1><p class="tool-desc">根据 Accept 请求头和服务器可用内容类型，模拟 HTTP 内容协商过程</p>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">Accept 请求头</label><input id="acceptInput" class="input js-focus-input" placeholder="text/html, application/json;q=0.9, */*;q=0.1"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">服务器可用内容类型（每行一个）</label><textarea id="typesInput" class="input textarea" placeholder="text/html&#10;application/json&#10;application/xml&#10;text/plain" style="min-height:120px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="negotiateBtn" class="btn btn-primary">协商</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="negotiationResult"></div><div id="servedInfo" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var acceptInput=document.getElementById('acceptInput'),typesInput=document.getElementById('typesInput'),negBtn=document.getElementById('negotiateBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),negotiationResult=document.getElementById('negotiationResult'),servedInfo=document.getElementById('servedInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function parseAccept(header){
+  var items=[];if(!header)return items;
+  var parts=header.split(',');
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i].trim();if(!p)continue;
+    var params=p.split(';');var type=params[0].trim();var q=1.0;
+    for(var j=1;j<params.length;j++){
+      var kv=params[j].trim().split('=');
+      if(kv[0].trim()==='q')q=parseFloat(kv[1])||0;
+    }
+    items.push({type:type,q:q,original:p});
+  }
+  items.sort(function(a,b){return b.q-a.q;});
+  return items;
+}
+function typeMatch(pattern,actual){
+  if(pattern==='*/*')return true;
+  var pp=pattern.split('/');var ap=actual.split('/');
+  if(pp[0]==='*'&&pp[1]==='*')return true;
+  if(pp[0]==='*')return true;
+  if(pp[0]===ap[0]&&pp[1]==='*')return true;
+  return pattern===actual;
+}
+negBtn.addEventListener('click',function(){
+  var accept=acceptInput.value.trim();if(!accept){setStatus('请输入 Accept 头部','error');return;}
+  var typesStr=typesInput.value.trim();if(!typesStr){setStatus('请输入服务器可用类型','error');return;}
+  var serverTypes=typesStr.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
+  if(!serverTypes.length){setStatus('没有有效的服务器类型','error');return;}
+  var accepted=parseAccept(accept);var results=[];
+  for(var i=0;i<serverTypes.length;i++){
+    var st=serverTypes[i];var bestQ=0;
+    for(var j=0;j<accepted.length;j++){if(typeMatch(accepted[j].type,st)&&accepted[j].q>bestQ)bestQ=accepted[j].q;}
+    results.push({type:st,q:bestQ});
+  }
+  results.sort(function(a,b){return b.q-a.q;});
+  var html='';var served=results.length>0?results[0]:null;
+  for(var i=0;i<results.length;i++){
+    var r=results[i];var isServed=served&&r.type===served.type&&r.q>0;
+    html+='<div class="result-row'+(isServed?' matched':'')+'"><span>'+htmlEscape(r.type)+(isServed?' <span class="served-tag">已选</span>':'')+'</span><span class="q-val">q='+r.q.toFixed(3)+'</span></div>';
+  }
+  negotiationResult.innerHTML=html;resultCard.style.display='block';
+  if(served&&served.q>0){servedInfo.textContent='✅ 将提供: '+served.type+' (q='+served.q.toFixed(3)+')';outputText.textContent='选择: '+served.type;}
+  else{servedInfo.textContent='❌ 无匹配类型';outputText.textContent='无匹配';}
+  setStatus('协商完成');
+});
+clearBtn.addEventListener('click',function(){acceptInput.value='';typesInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');acceptInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+acceptInput.addEventListener('keydown',function(e){if(e.key==='Enter')negBtn.click();});
+})();</script>
+</body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Terraform 格式化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.edit-area{display:grid;grid-template-columns:1fr 1fr;gap:12px}textarea{font-family:var(--font-mono)!important;font-size:13px!important;line-height:1.5!important}.stat-row{display:flex;gap:16px;font-size:13px;color:var(--color-text-secondary);margin-bottom:var(--space-2)}.stat-row span{background:var(--color-bg-soft);padding:4px 12px;border-radius:999px}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Terraform 格式化</h1><p class="tool-desc">格式化 Terraform HCL 代码</p>
+<div class="card"><div class="stat-row"><button id="fmtBtn" class="btn btn-primary" style="margin-right:8px">格式化</button><button id="resetBtn" class="btn btn-secondary">重置示例</button></div>
+<div class="edit-area"><textarea id="inputCode" class="input textarea" placeholder="粘贴 Terraform HCL 代码..." style="min-height:300px">resource "aws_instance" "web" {
+  ami           = "ami-abc123"
+  instance_type = "t2.micro"
+  tags = {
+Name = "web-server"
+Environment = "production"
+}
+  subnet_id = "subnet-123"
+vpc_security_group_ids = ["sg-123","sg-456"]
+}</textarea><textarea id="outputCode" class="input textarea" placeholder="格式化结果" style="min-height:300px;background:var(--color-bg-soft)" readonly></textarea></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){var inputCode=document.getElementById('inputCode'),outputCode=document.getElementById('outputCode'),fmtBtn=document.getElementById('fmtBtn'),resetBtn=document.getElementById('resetBtn'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');var sample='resource "aws_instance" "web" {\n  ami           = "ami-abc123"\n  instance_type = "t2.micro"\n  tags = {\nName = "web-server"\nEnvironment = "production"\n}\n  subnet_id = "subnet-123"\nvpc_security_group_ids = ["sg-123","sg-456"]\n}';function fmt(){var code=inputCode.value;if(!code.trim()){setStatus('请输入 Terraform 代码','error');return}var lines=code.split('\n');var formatted=[];var indent=0;var inHereDoc=false;for(var i=0;i<lines.length;i++){var line=lines[i];var trimmed=line.trim();if(!trimmed){formatted.push('');continue}if(inHereDoc){formatted.push(line);if(trimmed===inHereDoc)inHereDoc=false;continue}if(trimmed.startsWith('<<')){var m=trimmed.match(/<<-?(\w+)/);if(m){inHereDoc=m[1];formatted.push(line);continue}}var openBraces=(trimmed.match(/\{/g)||[]).length;var closeBraces=(trimmed.match(/\}/g)||[]).length;var openParens=(trimmed.match(/\(/g)||[]).length;var closeParens=(trimmed.match(/\)/g)||[]).length;var openBrackets=(trimmed.match(/\[/g)||[]).length;var closeBrackets=(trimmed.match(/\]/g)||[]).length;var deductBraces=closeBraces-openBraces;var deductParens=closeParens-openParens;var deductBrackets=closeBrackets-openBrackets;var netDedent=deductBraces+deductParens+deductBrackets;if(netDedent>0){indent=Math.max(0,indent-netDedent)}var prefix='  '.repeat(indent);formatted.push(prefix+trimmed);if(openBraces>closeBraces)indent+=(openBraces-closeBraces);if(openParens>closeParens)indent+=(openParens-closeParens);if(openBrackets>closeBrackets)indent+=(openBrackets-closeBrackets)}outputCode.value=formatted.join('\n');var origLines=lines.length;var newLines=formatted.length;outputText.textContent='格式化完成 | '+origLines+' 行 → '+newLines+' 行';setStatus('格式化完成')}fmtBtn.addEventListener('click',fmt);resetBtn.addEventListener('click',function(){inputCode.value=sample;outputCode.value='';outputText.textContent=''});copyBtn.addEventListener('click',function(){if(outputCode.value){copyToClipboard(outputCode.value,this);setStatus('已复制')}})})();</script>
+</body></html>

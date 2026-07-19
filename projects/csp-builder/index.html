@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSP 策略构建器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.dir-group{margin-bottom:var(--space-2);padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}.dir-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;}.dir-header input[type=checkbox]{width:18px;height:18px;cursor:pointer;}.dir-name{font-weight:600;font-family:var(--font-mono);font-size:var(--font-size-sm);}.dir-desc{font-size:12px;color:var(--color-text-secondary);margin-left:8px;}.source-input{margin-left:26px;display:flex;gap:6px;align-items:center;}.source-input input{flex:1;}.source-tag{display:inline-block;background:var(--color-bg-soft);padding:2px 8px;border-radius:3px;font-size:12px;margin:2px;border:1px solid var(--color-border);}.source-tag .remove{cursor:pointer;margin-left:4px;color:var(--color-error);font-weight:600;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSP 策略构建器</h1><p class="tool-desc">可视化构建 Content Security Policy 策略字符串</p>
+<div class="card" id="builderArea"></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="generateBtn" class="btn btn-primary">生成策略</button><button id="resetBtn" class="btn btn-secondary">重置</button></div>
+<div class="output-box"><span id="outputText" style="white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var directives=[
+{name:'default-src',desc:'默认资源加载源',sources:["'self'","'none'"],custom:true},
+{name:'script-src',desc:'JavaScript 脚本源',sources:["'self'","'unsafe-inline'","'unsafe-eval'","'strict-dynamic'","'nonce'"],hasNonce:true,hasHash:true,custom:true},
+{name:'style-src',desc:'CSS 样式源',sources:["'self'","'unsafe-inline'","'strict-dynamic'"],hasNonce:true,hasHash:true,custom:true},
+{name:'img-src',desc:'图片源',sources:["'self'","data:","blob:"],custom:true},
+{name:'connect-src',desc:'API/XHR/WebSocket 连接源',sources:["'self'"],custom:true},
+{name:'font-src',desc:'字体源',sources:["'self'","data:"],custom:true},
+{name:'frame-src',desc:'iframe 嵌入源',sources:["'self'","'none'"],custom:true},
+{name:'frame-ancestors',desc:'允许嵌入的父页面',sources:["'self'","'none'"],custom:true},
+{name:'object-src',desc:'<object>/<embed>/<applet> 源',sources:["'self'","'none'"],custom:true},
+{name:'media-src',desc:'音视频源',sources:["'self'"],custom:true},
+{name:'manifest-src',desc:'Web App Manifest 源',sources:["'self'"],custom:true},
+{name:'worker-src',desc:'Web Worker / Service Worker 源',sources:["'self'","blob:"],custom:true},
+{name:'base-uri',desc:'<base> 标签允许的 URL',sources:["'self'","'none'"],custom:true},
+{name:'form-action',desc:'表单提交目标',sources:["'self'","'none'"],custom:true},
+{name:'report-uri',desc:'报告违规的 URL（已弃用，推荐 report-to）',custom:true,noPresets:true},
+{name:'report-to',desc:'报告端点组名',custom:true,noPresets:true},
+{name:'upgrade-insecure-requests',desc:'将 HTTP 自动升级为 HTTPS',flag:true},
+{name:'block-all-mixed-content',desc:'阻止混合内容加载',flag:true}
+];
+var builderArea=document.getElementById('builderArea'),generateBtn=document.getElementById('generateBtn'),resetBtn=document.getElementById('resetBtn'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var state={};
+function initBuilder(){
+  var html='';
+  for(var i=0;i<directives.length;i++){
+    var d=directives[i];var id='dir_'+i;
+    state[id]={checked:false,sources:d.sources?d.sources.slice():[],customSource:'',nonce:'',hash:''};
+    html+='<div class="dir-group" id="group_'+i+'">';
+    html+='<div class="dir-header"><input type="checkbox" id="'+id+'_cb"><span class="dir-name">'+htmlEscape(d.name)+'</span><span class="dir-desc">'+htmlEscape(d.desc)+'</span></div>';
+    html+='<div id="'+id+'_body" style="display:none;">';
+    if(d.flag){
+      html+='<div style="font-size:12px;color:var(--color-text-secondary);margin-left:26px;">标记指令，启用即生效</div>';
+    }else if(d.noPresets){
+      html+='<div class="source-input"><input class="input" id="'+id+'_custom" placeholder="输入值..." style="height:36px;"><button class="btn btn-secondary addSrcBtn" data-idx="'+i+'" style="height:36px;min-width:auto;padding:0 12px;">添加</button></div>';
+    }else{
+      html+='<div style="margin-left:26px;margin-bottom:4px;font-size:12px;color:var(--color-text-secondary);">预设源（点击切换）：</div>';
+      html+='<div style="margin-left:26px;" id="'+id+'_presets"></div>';
+      if(d.hasNonce)html+='<div class="source-input" style="margin-top:4px;"><span style="font-size:12px;color:var(--color-text-secondary);">Nonce:</span><input class="input" id="'+id+'_nonce" placeholder="nonce 值" style="height:32px;width:120px;"></div>';
+      if(d.hasHash)html+='<div class="source-input" style="margin-top:4px;"><span style="font-size:12px;color:var(--color-text-secondary);">Hash:</span><input class="input" id="'+id+'_hash" placeholder="'sha256-...'" style="height:32px;flex:1;"></div>';
+      html+='<div class="source-input" style="margin-top:4px;"><input class="input" id="'+id+'_custom" placeholder="自定义源..." style="height:36px;"><button class="btn btn-secondary addSrcBtn" data-idx="'+i+'" style="height:36px;min-width:auto;padding:0 12px;">添加</button></div>';
+    }
+    html+='<div id="'+id+'_tags" style="margin-left:26px;margin-top:4px;"></div>';
+    html+='</div></div>';
+  }
+  builderArea.innerHTML=html;
+  for(var i=0;i<directives.length;i++){var d=directives[i];var id='dir_'+i;
+    (function(idx,dirId){
+      var cb=document.getElementById(dirId+'_cb');
+      cb.addEventListener('change',function(){var body=document.getElementById(dirId+'_body');body.style.display=this.checked?'block':'none';state[dirId].checked=this.checked;if(!this.checked)updateOutput();});
+      if(d.sources&&!d.noPresets){
+        var presetsEl=document.getElementById(dirId+'_presets');
+        for(var j=0;j<d.sources.length;j++){(function(src){
+          var btn=document.createElement('button');btn.className='btn btn-secondary';btn.textContent=src;
+          btn.style.cssText='height:28px;min-width:auto;padding:0 8px;margin:2px;font-size:12px;';
+          var active=state[dirId].sources.indexOf(src)>=0;
+          if(active){btn.style.background='var(--color-accent)';btn.style.color='#fff';}
+          btn.addEventListener('click',function(){
+            var idx=state[dirId].sources.indexOf(src);
+            if(idx>=0){state[dirId].sources.splice(idx,1);this.style.background='';this.style.color='';}
+            else{state[dirId].sources.push(src);this.style.background='var(--color-accent)';this.style.color='#fff';}
+            updateTags(dirId);updateOutput();
+          });
+          presetsEl.appendChild(btn);
+        })(d.sources[j]);}
+      }
+      var addBtns=document.querySelectorAll('.addSrcBtn[data-idx="'+idx+'"]');
+      for(var k=0;k<addBtns.length;k++){addBtns[k].addEventListener('click',function(){
+        var custom=document.getElementById(dirId+'_custom');var v=custom.value.trim();
+        if(v&&state[dirId].sources.indexOf(v)<0){state[dirId].sources.push(v);updateTags(dirId);updateOutput();custom.value='';}
+      });}
+      var customInput=document.getElementById(dirId+'_custom');
+      if(customInput)customInput.addEventListener('keydown',function(e){if(e.key==='Enter'){var v=this.value.trim();if(v&&state[dirId].sources.indexOf(v)<0){state[dirId].sources.push(v);updateTags(dirId);updateOutput();this.value='';}}});
+    })(i,id);
+    updateTags(id);
+  }
+  updateOutput();
+}
+function updateTags(id){
+  var tagsEl=document.getElementById(id+'_tags');var dIdx=parseInt(id.split('_')[1]);
+  var d=directives[dIdx];if(d.flag||d.noPresets)return;
+  var html='';
+  for(var i=0;i<state[id].sources.length;i++){
+    var s=state[id].sources[i];
+    html+='<span class="source-tag">'+htmlEscape(s)+'<span class="remove" data-idx="'+dIdx+'" data-src="'+htmlEscape(s)+'">✕</span></span>';
+  }
+  tagsEl.innerHTML=html;
+  var rems=tagsEl.querySelectorAll('.remove');
+  for(var i=0;i<rems.length;i++){rems[i].addEventListener('click',function(){
+    var did=parseInt(this.getAttribute('data-idx'));var src=this.getAttribute('data-src');
+    var sid='dir_'+did;var idx=state[sid].sources.indexOf(src);
+    if(idx>=0){state[sid].sources.splice(idx,1);updateTags(sid);updateOutput();}
+  });}
+}
+function updateOutput(){
+  var parts=[];
+  for(var i=0;i<directives.length;i++){
+    var id='dir_'+i;var d=directives[i];if(!state[id].checked)continue;
+    if(d.flag){parts.push(d.name);continue;}
+    var sources=state[id].sources.slice();
+    if(d.hasNonce){var nonce=document.getElementById(id+'_nonce');if(nonce&&nonce.value.trim())sources.push("'nonce-"+nonce.value.trim()+"'");}
+    if(d.hasHash){var hash=document.getElementById(id+'_hash');if(hash&&hash.value.trim())sources.push("'"+hash.value.trim()+"'");}
+    if(d.noPresets){var custom=document.getElementById(id+'_custom');if(custom&&custom.value.trim())sources=sources.concat(custom.value.trim());}
+    if(sources.length>0)parts.push(d.name+' '+sources.join(' '));
+    else parts.push(d.name);
+  }
+  outputText.textContent=parts.join('; ');
+  setStatus(parts.length+' 条指令');
+}
+generateBtn.addEventListener('click',updateOutput);
+resetBtn.addEventListener('click',function(){
+  for(var i=0;i<directives.length;i++){
+    var id='dir_'+i;var d=directives[i];
+    document.getElementById(id+'_cb').checked=false;
+    document.getElementById(id+'_body').style.display='none';
+    state[id]={checked:false,sources:d.sources?d.sources.slice():[],customSource:'',nonce:'',hash:''};
+    if(d.sources&&!d.noPresets&&!d.flag)updateTags(id);
+  }
+  outputText.textContent='';setStatus('');
+});
+initBuilder();
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

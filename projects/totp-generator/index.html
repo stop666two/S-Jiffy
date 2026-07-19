@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TOTP 验证码生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.code-display{font-size:48px;font-weight:700;font-family:var(--font-mono);text-align:center;padding:24px;letter-spacing:8px;color:var(--color-text-primary);}.progress-bar{height:4px;background:var(--color-border);border-radius:2px;margin-top:12px;overflow:hidden;}.progress-fill{height:100%;background:var(--color-success);transition:width 1s linear;border-radius:2px;}.time-display{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:8px;}.info-row{padding:4px 0;font-size:var(--font-size-sm);display:flex;gap:8px;}.info-label{color:var(--color-text-secondary);min-width:80px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>TOTP 验证码生成</h1><p class="tool-desc">基于 RFC 6238 的时间型一次性密码生成器（Base32 密钥 + SHA-1）</p>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="secretInput" class="input js-focus-input" placeholder="BASE32 密钥 (如 JBSWY3DPEHPK3PXP)" style="flex:1;max-width:400px;"><select id="digitsSelect" class="input" style="width:80px;"><option value="6">6 位</option><option value="8">8 位</option></select><button id="generateBtn" class="btn btn-primary">生成</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="codeDisplay" class="code-display">------</div><div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:100%;"></div></div><div id="timeDisplay" class="time-display"></div><div style="margin-top:var(--space-2);border-top:1px solid var(--color-border);padding-top:var(--space-2);"><div class="info-row"><span class="info-label">算法</span><span>HMAC-SHA1</span></div><div class="info-row"><span class="info-label">时间步长</span><span>30 秒</span></div><div class="info-row"><span class="info-label">当前时间</span><span id="currentTime"></span></div><div class="info-row"><span class="info-label">剩余</span><span id="remainingTime"></span></div></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var secretInput=document.getElementById('secretInput'),digitsSelect=document.getElementById('digitsSelect'),generateBtn=document.getElementById('generateBtn'),resultCard=document.getElementById('resultCard'),codeDisplay=document.getElementById('codeDisplay'),progressFill=document.getElementById('progressFill'),timeDisplay=document.getElementById('timeDisplay'),currentTime=document.getElementById('currentTime'),remainingTime=document.getElementById('remainingTime'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var timer=null;
+function base32ToBytes(s){
+  var alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';s=s.replace(/[^A-Z2-7]/gi,'').toUpperCase();
+  var bits='';for(var i=0;i<s.length;i++){var idx=alphabet.indexOf(s[i]);if(idx>=0)bits+=idx.toString(2).padStart(5,'0');}
+  var bytes=[];for(var i=0;i+7<bits.length;i+=8)bytes.push(parseInt(bits.substr(i,8),2));
+  return bytes;
+}
+function hmacSha1(keyBytes,msg){
+  var blockSize=64;
+  if(keyBytes.length>blockSize){keyBytes=sha1(keyBytes);}
+  if(keyBytes.length<blockSize){var k=[];for(var i=0;i<keyBytes.length;i++)k.push(keyBytes[i]);for(var i=k.length;i<blockSize;i++)k.push(0);keyBytes=k;}
+  var oKeyPad=[];var iKeyPad=[];
+  for(var i=0;i<blockSize;i++){oKeyPad.push(keyBytes[i]^0x5c);iKeyPad.push(keyBytes[i]^0x36);}
+  var inner=sha1(iKeyPad.concat(msg));
+  var outer=sha1(oKeyPad.concat(inner));
+  return outer;
+}
+function sha1(msg){
+  function rotl(n,b){return((n<<b)|(n>>>(32-b)))>>>0;}
+  function toInt32(b,i){return((b[i]<<24)|(b[i+1]<<16)|(b[i+2]<<8)|b[i+3])>>>0;}
+  function toBytes(w){var r=[];for(var i=0;i<w.length;i++){r.push((w[i]>>>24)&0xff);r.push((w[i]>>>16)&0xff);r.push((w[i]>>>8)&0xff);r.push(w[i]&0xff);}return r;}
+  var ml=msg.length*8;var m=msg.slice();m.push(0x80);
+  while((m.length*8)%512!==448)m.push(0);
+  for(var i=0;i<8;i++)m.push((ml>>>(56-i*8))&0xff);
+  var h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0;
+  for(var i=0;i<m.length;){var w=[];
+    for(var t=0;t<16;t++){w[t]=toInt32(m,i);i+=4;}
+    for(var t=16;t<80;t++){w[t]=rotl(w[t-3]^w[t-8]^w[t-14]^w[t-16],1);}
+    var a=h0,b=h1,c=h2,d=h3,e=h4;
+    for(var t=0;t<80;t++){
+      var f,k;if(t<20){f=(b&c)|((~b)&d);k=0x5A827999;}
+      else if(t<40){f=b^c^d;k=0x6ED9EBA1;}
+      else if(t<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC;}
+      else{f=b^c^d;k=0xCA62C1D6;}
+      var temp=(rotl(a,5)+f+e+k+w[t])>>>0;e=d;d=c;c=rotl(b,30)>>>0;b=a;a=temp;
+    }
+    h0=(h0+a)>>>0;h1=(h1+b)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;h4=(h4+e)>>>0;
+  }
+  return toBytes([h0,h1,h2,h3,h4]);
+}
+function generateTOTP(secret,digits){
+  var key=base32ToBytes(secret);if(key.length===0)return null;
+  var now=Math.floor(Date.now()/1000);var counter=Math.floor(now/30);
+  var msg=[];for(var i=7;i>=0;i--)msg.push((counter>>>(i*8))&0xff);
+  var hmac=hmacSha1(key,msg);
+  var offset=hmac[19]&0xf;
+  var code=((hmac[offset]&0x7f)<<24)|((hmac[offset+1]&0xff)<<16)|((hmac[offset+2]&0xff)<<8)|(hmac[offset+3]&0xff);
+  var mod=Math.pow(10,digits);code=code%mod;
+  return String(code).padStart(digits,'0');
+}
+function updateCode(){
+  var secret=secretInput.value.trim();if(!secret){return;}
+  var digits=parseInt(digitsSelect.value);
+  var code=generateTOTP(secret,digits);
+  if(code===null){codeDisplay.textContent='密钥无效';return;}
+  codeDisplay.textContent=code;
+  var now=Math.floor(Date.now()/1000);var remain=30-(now%30);
+  progressFill.style.width=(remain/30*100)+'%';
+  var d=new Date();
+  currentTime.textContent=d.toLocaleTimeString();
+  remainingTime.textContent=remain+' 秒';
+  outputText.textContent=code;
+}
+var codeTimer=null;
+generateBtn.addEventListener('click',function(){
+  var secret=secretInput.value.trim();if(!secret){setStatus('请输入 Base32 密钥','error');return;}
+  if(codeTimer)clearInterval(codeTimer);
+  resultCard.style.display='block';updateCode();
+  codeTimer=setInterval(updateCode,1000);
+  setStatus('已生成');
+});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+secretInput.addEventListener('keydown',function(e){if(e.key==='Enter')generateBtn.click();});
+})();</script>
+</body></html>

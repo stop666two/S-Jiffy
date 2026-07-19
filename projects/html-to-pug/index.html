@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML → Pug - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>HTML → Pug</h1><p class="tool-desc">将 HTML 代码转换为 Pug/Jade 模板语法</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='<div class="container">\n  <h1 id="title">Hello World</h1>\n  <p>Welcome to my site</p>\n  <ul>\n    <li>Item 1</li>\n    <li>Item 2</li>\n  </ul>\n</div>' style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var SELF_CLOSING = { area:1,base:1,br:1,col:1,embed:1,hr:1,img:1,input:1,link:1,meta:1,param:1,source:1,track:1,wbr:1 };
+
+  function html2pug(html) {
+    var lines = html.split('\n');
+    var indent = 0;
+    var result = [];
+    var tagStack = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var trimmed = line.trim();
+      if (!trimmed) continue;
+
+      var current = 0;
+      while (current < line.length && (line.charAt(current) === ' ' || line.charAt(current) === '\t')) current++;
+      var depth = Math.floor(current / 2);
+
+      var openTagMatch = trimmed.match(/^<(\w[\w-]*)([^>]*)>/);
+      var closeTagMatch = trimmed.match(/^<\/(\w[\w-]*)>/);
+      var selfClosingMatch = trimmed.match(/^<(\w[\w-]*)([^>]*)\/>/);
+
+      if (selfClosingMatch) {
+        var tagName = selfClosingMatch[1];
+        var attrStr = selfClosingMatch[2].trim();
+        var pugLine = '| '.repeat(depth > 0 ? depth : 0) + tagName + '()';
+        result.push(pugLine);
+        continue;
+      }
+
+      if (closeTagMatch) {
+        tagStack.pop();
+        continue;
+      }
+
+      if (openTagMatch) {
+        var tag = openTagMatch[1];
+        var attrs = openTagMatch[2].trim();
+
+        var idMatch = attrs.match(/id="([^"]*)"/);
+        var classMatch = attrs.match(/class="([^"]*)"/);
+        var otherAttrs = attrs.replace(/id="[^"]*"/g, '').replace(/class="[^"]*"/g, '').trim();
+
+        var pugTag = tag;
+        if (idMatch) pugTag += '#' + idMatch[1];
+        if (classMatch) {
+          var classes = classMatch[1].split(/\s+/);
+          for (var c = 0; c < classes.length; c++) {
+            if (classes[c]) pugTag += '.' + classes[c];
+          }
+        }
+
+        var remainingAttrs = {};
+        var attrRegex = /(\w[\w-]*)\s*=\s*"([^"]*)"/g;
+        var attrMatch;
+        while ((attrMatch = attrRegex.exec(otherAttrs)) !== null) {
+          remainingAttrs[attrMatch[1]] = attrMatch[2];
+        }
+        var attrPairs = Object.keys(remainingAttrs);
+        var attrPart = '';
+        if (attrPairs.length > 0) {
+          var pairs = [];
+          for (var a = 0; a < attrPairs.length; a++) {
+            pairs.push(attrPairs[a] + ': "' + remainingAttrs[attrPairs[a]].replace(/"/g, '\\"') + '"');
+          }
+          attrPart = '(' + pairs.join(', ') + ')';
+        }
+
+        var padding = '';
+        for (var p = 0; p < depth; p++) padding += '  ';
+        result.push(padding + pugTag + attrPart);
+
+        var contentMatch = trimmed.match(/^<(\w[\w-]*)[^>]*>([^<]*)<\//);
+        if (!contentMatch && !SELF_CLOSING[tag]) {
+          tagStack.push(tag);
+        }
+      } else {
+        if (tagStack.length > 0) {
+          var padding = '';
+          for (var p = 0; p < depth + 1; p++) padding += '  ';
+          result.push(padding + '| ' + trimmed);
+        }
+      }
+    }
+
+    return result.join('\n');
+  }
+
+  function convert() {
+    var text = inputEl.value;
+    if (!text.trim()) { setStatus('请输入 HTML', 'error'); return; }
+    try {
+      var result = html2pug(text);
+      outputEl.textContent = result;
+      setStatus('转换完成');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('转换出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

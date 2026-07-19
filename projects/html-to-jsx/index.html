@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML → JSX - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>HTML → JSX</h1><p class="tool-desc">将 HTML 标签转换为 React JSX 语法</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='<div class="container"><h1>Hello</h1><img src="img.png" alt=""><br><input type="text" disabled></div>' style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var SELF_CLOSING = {
+    area:1,base:1,br:1,col:1,embed:1,hr:1,img:1,input:1,link:1,meta:1,param:1,source:1,track:1,wbr:1
+  };
+
+  var SVG_ATTR_MAP = {
+    'clip-path': 'clipPath', 'clip-rule': 'clipRule', 'fill-opacity': 'fillOpacity',
+    'fill-rule': 'fillRule', 'font-family': 'fontFamily', 'font-size': 'fontSize',
+    'font-weight': 'fontWeight', 'stroke-dasharray': 'strokeDasharray',
+    'stroke-linecap': 'strokeLinecap', 'stroke-linejoin': 'strokeLinejoin',
+    'stroke-width': 'strokeWidth', 'stroke-opacity': 'strokeOpacity',
+    'text-anchor': 'textAnchor', 'viewBox': 'viewBox', 'xmlns': 'xmlns'
+  };
+
+  var ATTR_MAP = {
+    'class': 'className', 'for': 'htmlFor', 'maxlength': 'maxLength',
+    'readonly': 'readOnly', 'autofocus': 'autoFocus', 'autocomplete': 'autoComplete',
+    'tabindex': 'tabIndex', 'colspan': 'colSpan', 'rowspan': 'rowSpan',
+    'contenteditable': 'contentEditable', 'crossorigin': 'crossOrigin',
+    'datetime': 'dateTime', 'formaction': 'formAction', 'formenctype': 'formEncType',
+    'formmethod': 'formMethod', 'formnovalidate': 'formNoValidate',
+    'formtarget': 'formTarget', 'frameborder': 'frameBorder',
+    'inputmode': 'inputMode', 'ismap': 'isMap', 'novalidate': 'noValidate',
+    'playsinline': 'playsInline', 'srcdoc': 'srcDoc', 'srclang': 'srcLang',
+    'srcset': 'srcSet', 'usemap': 'useMap', 'enctype': 'encType',
+    'checked': 'defaultChecked', 'value': 'defaultValue',
+    'scrolling': 'scrolling', 'seamless': 'seamless',
+    'shape': 'shape', 'coords': 'coords'
+  };
+
+  var BOOLEAN_PROPS = { disabled:1,checked:1,selected:1,readOnly:1,multiple:1,required:1,autofocus:1,hidden:1,defer:1,async:1,ismap:1,novalidate:1,playsinline:1 };
+
+  function convertStyleString(style) {
+    if (!style) return '';
+    var parts = style.split(';');
+    var result = {};
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i].trim();
+      if (!p) continue;
+      var colonIdx = p.indexOf(':');
+      if (colonIdx === -1) continue;
+      var key = p.substring(0, colonIdx).trim();
+      var val = p.substring(colonIdx + 1).trim();
+      if (!key) continue;
+      var jsKey = key.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+      result[jsKey] = val;
+    }
+    return JSON.stringify(result);
+  }
+
+  function convertAttr(name, value, isSvg) {
+    var attrName = name.toLowerCase();
+    var mapped = isSvg ? (SVG_ATTR_MAP[attrName] || attrName) : (ATTR_MAP[attrName] || attrName);
+    var isBoolean = BOOLEAN_PROPS[mapped] || BOOLEAN_PROPS[attrName];
+    if (value === '' || value === undefined || value === null) {
+      if (isBoolean) return ' ' + mapped;
+      return '';
+    }
+    if (attrName === 'style') {
+      return ' style={' + convertStyleString(value) + '}';
+    }
+    var escaped = value.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    if (isBoolean) {
+      return ' ' + mapped + '={' + (attrName === 'checked' || attrName === 'selected' ? 'true' : 'true') + '}';
+    }
+    return ' ' + mapped + '="' + escaped + '"';
+  }
+
+  var svgTags = { svg:1,circle:1,ellipse:1,g:1,line:1,path:1,polygon:1,polyline:1,rect:1,text:1,tspan:1,use:1,defs:1,clipPath:1,linearGradient:1,radialGradient:1,stop:1,image:1,mask:1,pattern:1,marker:1,symbol:1,foreignObject:1 };
+
+  function parseTag(input, start) {
+    if (start >= input.length || input.charAt(start) !== '<') return null;
+    var isEnd = input.charAt(start + 1) === '/';
+    var idx = isEnd ? start + 2 : start + 1;
+    var tagName = '';
+    while (idx < input.length && /[a-zA-Z0-9:-]/.test(input.charAt(idx))) {
+      tagName += input.charAt(idx);
+      idx++;
+    }
+    var attrs = {};
+    var isSvg = !!svgTags[tagName.toLowerCase()] || tagName.toLowerCase() === 'svg';
+    while (idx < input.length) {
+      var c = input.charAt(idx);
+      if (c === '>') { idx++; break; }
+      if (c === '/' && input.charAt(idx + 1) === '>') { idx += 2; var selfClosing = true; return { tag: tagName, attrs: attrs, end: idx, selfClosing: selfClosing, isEnd: false, isSvg: isSvg }; }
+      if (/\s/.test(c) && c !== '\n') { idx++; continue; }
+      if (c === '<') break;
+      if (c === '\n') { idx++; continue; }
+      var attrName = '';
+      while (idx < input.length && /[a-zA-Z0-9:-]/.test(input.charAt(idx))) {
+        attrName += input.charAt(idx);
+        idx++;
+      }
+      while (idx < input.length && input.charAt(idx) !== '=' && input.charAt(idx) !== '>' && input.charAt(idx) !== '/' && !(/\s/.test(input.charAt(idx)) && input.charAt(idx) !== '\n')) { idx++; }
+      if (input.charAt(idx) === '=') {
+        idx++;
+        var quote = input.charAt(idx);
+        var attrVal = '';
+        if (quote === '"' || quote === "'") {
+          idx++;
+          while (idx < input.length && input.charAt(idx) !== quote) {
+            attrVal += input.charAt(idx);
+            idx++;
+          }
+          if (idx < input.length) idx++;
+        } else {
+          while (idx < input.length && !/\s/.test(input.charAt(idx)) && input.charAt(idx) !== '>' && input.charAt(idx) !== '/') {
+            attrVal += input.charAt(idx);
+            idx++;
+          }
+        }
+        attrs[attrName] = attrVal;
+      } else if (input.charAt(idx) === '>' || (input.charAt(idx) === '/' && input.charAt(idx + 1) === '>')) {
+        attrs[attrName] = '';
+      } else {
+        attrs[attrName] = '';
+      }
+    }
+    if (isEnd) return { tag: tagName, end: idx, isEnd: true };
+    return { tag: tagName, attrs: attrs, end: idx, selfClosing: false, isEnd: false, isSvg: isSvg };
+  }
+
+  function convertHTML(input) {
+    var result = '';
+    var i = 0;
+    while (i < input.length) {
+      if (input.charAt(i) === '<') {
+        var parsed = parseTag(input, i);
+        if (!parsed) { result += input.charAt(i); i++; continue; }
+        if (parsed.isEnd) {
+          result += '</' + parsed.tag + '>';
+          i = parsed.end;
+          continue;
+        }
+        var tag = parsed.tag;
+        var attrs = parsed.attrs;
+        var selfClosing = parsed.selfClosing || !!SELF_CLOSING[tag.toLowerCase()];
+        var isSvg = parsed.isSvg;
+        result += '<' + tag;
+        var attrKeys = Object.keys(attrs);
+        for (var j = 0; j < attrKeys.length; j++) {
+          var k = attrKeys[j];
+          result += convertAttr(k, attrs[k], isSvg);
+        }
+        if (selfClosing) {
+          result += ' />';
+        } else {
+          result += '>';
+        }
+        i = parsed.end;
+      } else {
+        result += input.charAt(i);
+        i++;
+      }
+    }
+    return result;
+  }
+
+  function convert() {
+    var text = inputEl.value;
+    if (!text.trim()) { setStatus('请输入 HTML', 'error'); return; }
+    try {
+      var result = convertHTML(text);
+      outputEl.textContent = result;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('转换出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

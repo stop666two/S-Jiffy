@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTTP 方法测试 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>table{width:100%;border-collapse:collapse;font-size:var(--font-size-sm);}th{text-align:left;padding:10px 12px;background:var(--color-bg-soft);border-bottom:2px solid var(--color-border);font-weight:600;}td{padding:10px 12px;border-bottom:1px solid var(--color-border);}tr:hover td{background:var(--color-bg-soft);}.badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;}.badge-yes{background:#e6f4ea;color:var(--color-success);}.badge-no{background:#fce8e6;color:var(--color-error);}.badge-maybe{background:#fef7e0;color:#e37400;}.method-cell{font-weight:600;font-family:var(--font-mono);}.search-row{margin-bottom:var(--space-2);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>HTTP 方法速查表</h1><p class="tool-desc">HTTP 请求方法及其属性参考，支持搜索过滤</p>
+<div class="card"><div class="search-row"><input id="searchInput" class="input js-focus-input" placeholder="搜索方法名或描述..."></div>
+<div style="overflow-x:auto;"><table><thead><tr><th>方法</th><th>描述</th><th>幂等</th><th>安全</th><th>可缓存</th><th>支持 Body</th></tr></thead><tbody id="methodsBody"></tbody></table></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var methods=[{name:'GET',desc:'请求指定的资源。用于获取数据，不改变服务器状态。',idempotent:true,safe:true,cacheable:true,hasBody:false},{name:'HEAD',desc:'类似 GET 但只返回响应头，不返回响应体。用于检查资源是否存在或获取元数据。',idempotent:true,safe:true,cacheable:true,hasBody:false},{name:'POST',desc:'向指定资源提交数据。用于创建资源或触发操作，每次请求可能产生不同的结果。',idempotent:false,safe:false,cacheable:true,hasBody:true},{name:'PUT',desc:'用请求体替换目标资源。如果资源不存在则创建。多次调用结果相同。',idempotent:true,safe:false,cacheable:false,hasBody:true},{name:'DELETE',desc:'删除指定的资源。',idempotent:true,safe:false,cacheable:false,hasBody:false},{name:'PATCH',desc:'对资源进行部分修改。与 PUT 不同，它只应用增量变更。',idempotent:false,safe:false,cacheable:false,hasBody:true},{name:'OPTIONS',desc:'查询目标资源支持的 HTTP 方法。用于 CORS 预检请求。',idempotent:true,safe:true,cacheable:false,hasBody:false},{name:'TRACE',desc:'回显服务器收到的请求。用于调试和诊断。',idempotent:true,safe:true,cacheable:false,hasBody:false},{name:'CONNECT',desc:'建立到目标服务器的隧道连接。用于 HTTPS 代理。',idempotent:false,safe:false,cacheable:false,hasBody:false},{name:'PATCH',desc:'对资源进行部分修改。与 PUT 不同，它只应用增量变更。',idempotent:false,safe:false,cacheable:false,hasBody:true}];
+function badge(v){if(v===true)return'<span class="badge badge-yes">✓</span>';if(v===false)return'<span class="badge badge-no">✗</span>';return'<span class="badge badge-maybe">~</span>';}
+function render(filter){
+  var q=filter?filter.toLowerCase():'';var html='';var shown=0;
+  for(var i=0;i<methods.length;i++){
+    var m=methods[i];if(q&&m.name.toLowerCase().indexOf(q)===-1&&m.desc.toLowerCase().indexOf(q)===-1)continue;
+    shown++;html+='<tr><td class="method-cell">'+htmlEscape(m.name)+'</td><td>'+htmlEscape(m.desc)+'</td><td>'+badge(m.idempotent)+'</td><td>'+badge(m.safe)+'</td><td>'+badge(m.cacheable)+'</td><td>'+badge(m.hasBody)+'</td></tr>';
+  }
+  document.getElementById('methodsBody').innerHTML=html;
+  if(!filter){var deduped=[];var seen={};for(var i=0;i<methods.length;i++){if(!seen[methods[i].name]){seen[methods[i].name]=true;deduped.push(methods[i]);}}}
+  document.getElementById('outputText').textContent='共 '+(shown)+' 个方法';
+  setStatus(shown+' 个方法显示');
+}
+render('');
+document.getElementById('searchInput').addEventListener('input',function(){render(this.value);});
+document.getElementById('copyBtn').addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

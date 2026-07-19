@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>多语言字符串转义 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.lang-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--space-2);}.lang-btn{padding:6px 16px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:var(--font-size-sm);background:var(--color-bg);transition:all 0.15s;font-family:var(--font-mono);}.lang-btn:hover{border-color:var(--color-accent);}.lang-btn.active{background:var(--color-accent);color:#fff;border-color:var(--color-accent);}.esc-result{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.esc-result:last-child{border:none;}.esc-label{color:var(--color-text-secondary);font-weight:500;margin-bottom:2px;}.esc-val{font-family:var(--font-mono);word-break:break-all;background:var(--color-bg-soft);padding:6px 10px;border-radius:var(--radius-sm);margin-top:2px;font-size:13px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>多语言字符串转义</h1><p class="tool-desc">将文本转义为 JavaScript / Python / Java / PHP / SQL 等语言格式</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入需要转义的文本..." style="min-height:80px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="escapeBtn" class="btn btn-primary">转义</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="escapeResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var inputText=document.getElementById('inputText'),escapeBtn=document.getElementById('escapeBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),escapeResults=document.getElementById('escapeResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var languages=[
+{id:'js',name:'JavaScript',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\x00/g,'\\0');}},
+{id:'python',name:'Python',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\x00/g,'\\x00');}},
+{id:'java',name:'Java',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\x00/g,'\\0');}},
+{id:'php',name:'PHP',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\$/g,'\\$');}},
+{id:'sql',name:'SQL (MySQL)',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\x00/g,'\\0').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\x1a/g,'\\Z');}},
+{id:'html',name:'HTML 实体',escape:function(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}},
+{id:'url',name:'URL 编码',escape:function(s){return encodeURIComponent(s);}},
+{id:'yaml',name:'YAML',escape:function(s){if(/[:\-#{}[\],&*?|<>=!%@`]/.test(s)||/^[0-9]/.test(s)||/["']/.test(s))return'"'+s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n')+'"';return s;}},
+{id:'xml',name:'XML',escape:function(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}},
+{id:'csharp',name:'C#',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t');}},
+{id:'ruby',name:'Ruby',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\#/g,'\\#').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t');}}
+];
+escapeBtn.addEventListener('click',function(){
+  var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
+  var html='';
+  for(var i=0;i<languages.length;i++){
+    var lang=languages[i];var escaped=lang.escape(txt);
+    html+='<div class="esc-result"><div class="esc-label">'+htmlEscape(lang.name)+'</div><div class="esc-val">'+htmlEscape(escaped)+'</div></div>';
+  }
+  escapeResults.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent=languages[0].escape(txt);
+  setStatus('转义完成');
+});
+clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Markdown 表格生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.table-designer{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3);}
+@media(max-width:600px){.table-designer{grid-template-columns:1fr;}}
+.dim-controls{display:flex;gap:8px;align-items:center;margin-bottom:var(--space-2);}
+.cell-grid{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;}
+.cell-grid table{width:100%;border-collapse:collapse;font-size:13px;}
+.cell-grid td{border:1px solid var(--color-border);padding:0;}
+.cell-grid td input{width:100%;border:none;padding:6px 8px;font-size:13px;outline:none;box-sizing:border-box;background:transparent;}
+.cell-grid td input:focus{background:var(--color-bg-soft);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Markdown 表格生成</h1><p class="tool-desc">可视化设计表格并生成 Markdown 格式表格语法。</p>
+<div class="table-designer">
+<div class="card" style="margin-bottom:0;"><div class="dim-controls"><span style="font-size:var(--font-size-sm);">行:</span><input id="rowCount" class="input" type="number" value="4" min="1" max="20" style="width:60px;"><span style="font-size:var(--font-size-sm);">列:</span><input id="colCount" class="input" type="number" value="4" min="1" max="10" style="width:60px;"><button id="resizeBtn" class="btn btn-secondary" style="height:36px;min-width:auto;">更新</button></div>
+<div id="cellGrid" class="cell-grid"></div></div>
+<div class="card" style="margin-bottom:0;">
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">对齐方式:</label>
+<select id="alignSelect" class="input" style="margin-bottom:var(--space-2);">
+  <option value="default">默认</option>
+  <option value="left">左对齐 :--</option>
+  <option value="center">居中 :-:</option>
+  <option value="right">右对齐 --:</option>
+</select>
+<button id="generateBtn" class="btn btn-primary" style="width:100%;">生成 Markdown</button>
+</div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var rc=document.getElementById('rowCount'),cc=document.getElementById('colCount'),cg=document.getElementById('cellGrid');
+var al=document.getElementById('alignSelect'),o=document.getElementById('outputText');
+function buildGrid(rows,cols){
+  var html='<table><tbody>';
+  for(var r=0;r<rows;r++){html+='<tr>';for(var c=0;c<cols;c++){html+='<td><input id="cell_'+r+'_'+c+'" value="'+(r===0&&c<4?['名称','数量','价格','备注'][c]||'':'')+'" placeholder="..."></td>';}html+='</tr>';}
+  html+='</tbody></table>';cg.innerHTML=html;
+}
+function cells(rows,cols){
+  var data=[];for(var r=0;r<rows;r++){var row=[];for(var c=0;c<cols;c++){var inp=document.getElementById('cell_'+r+'_'+c);row.push(inp?inp.value:'');}data.push(row);}return data;
+}
+function esc(str){return String(str).replace(/[|\\]/g,'\\$&');}
+document.getElementById('resizeBtn').addEventListener('click',function(){var r=parseInt(rc.value)||3,c=parseInt(cc.value)||3;buildGrid(r,c);setStatus('');});
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var rows=parseInt(rc.value)||3,cols=parseInt(cc.value)||3;
+  var data=cells(rows,cols);
+  if(data.length===0||data[0].length===0){setStatus('表格为空','error');return;}
+  var alignMap={default:':---',left:':---',center:':--:',right:'---:'};
+  var sep=alignMap[al.value]||':---';
+  var lines=[];
+  lines.push('| '+data[0].map(function(v){return esc(v||' ');}).join(' | ')+' |');
+  lines.push('| '+data[0].map(function(){return sep;}).join(' | ')+' |');
+  for(var r=1;r<data.length;r++){lines.push('| '+data[r].map(function(v){return esc(v||' ');}).join(' | ')+' |');}
+  o.textContent=lines.join('\n');
+  setStatus('Markdown 表格已生成');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+buildGrid(4,4);
+})();</script>
+</body></html>

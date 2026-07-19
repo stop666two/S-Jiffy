@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>docker-compose 片段 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.service-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+.service-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);cursor:pointer;transition:all .15s;text-align:center;}
+.service-card:hover{border-color:var(--color-text-primary);}
+.service-card.selected{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.service-card .icon{font-size:24px;margin-bottom:4px;}
+.service-card .sname{font-size:var(--font-size-sm);font-weight:600;}
+.service-card .sdesc{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+@media(max-width:600px){.service-grid,.param-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>docker-compose 片段</h1><p class="tool-desc">选择服务类型，生成常用 docker-compose 服务配置片段。</p>
+<div class="service-grid">
+<div class="service-card" data-service="nginx"><div class="icon">🌐</div><div class="sname">Nginx</div><div class="sdesc">Web Server / Reverse Proxy</div></div>
+<div class="service-card" data-service="postgres"><div class="icon">🗄️</div><div class="sname">PostgreSQL</div><div class="sdesc">关系型数据库</div></div>
+<div class="service-card" data-service="redis"><div class="icon">⚡</div><div class="sname">Redis</div><div class="sdesc">缓存 / 消息队列</div></div>
+<div class="service-card" data-service="mysql"><div class="icon">🐬</div><div class="sname">MySQL</div><div class="sdesc">关系型数据库</div></div>
+<div class="service-card" data-service="mongo"><div class="icon">🍃</div><div class="sname">MongoDB</div><div class="sdesc">NoSQL 数据库</div></div>
+<div class="service-card" data-service="rabbitmq"><div class="icon">🐇</div><div class="sname">RabbitMQ</div><div class="sdesc">消息队列</div></div></div>
+<div id="paramArea" class="param-grid"></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);"><button id="generateBtn" class="btn btn-primary">生成片段</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var pa=document.getElementById('paramArea'),o=document.getElementById('outputText');
+var currentService='nginx';
+var paramDefs={
+  nginx:[{key:'port',label:'宿主机端口',val:'8080'},{key:'volume',label:'挂载配置目录',val:'./nginx.conf:/etc/nginx/conf.d/default.conf'}],
+  postgres:[{key:'port',label:'宿主机端口',val:'5432'},{key:'password',label:'POSTGRES_PASSWORD',val:'mysecretpassword'},{key:'db',label:'POSTGRES_DB',val:'mydb'}],
+  redis:[{key:'port',label:'宿主机端口',val:'6379'},{key:'password',label:'密码（可选）',val:''},{key:'persistent',label:'持久化存储',val:'yes'}],
+  mysql:[{key:'port',label:'宿主机端口',val:'3306'},{key:'password',label:'MYSQL_ROOT_PASSWORD',val:'rootpassword'},{key:'db',label:'MYSQL_DATABASE',val:'mydb'}],
+  mongo:[{key:'port',label:'宿主机端口',val:'27017'},{key:'user',label:'MONGO_INITDB_ROOT_USERNAME',val:'admin'},{key:'password',label:'MONGO_INITDB_ROOT_PASSWORD',val:'password'}],
+  rabbitmq:[{key:'port',label:'AMQP 端口',val:'5672'},{key:'uiPort',label:'管理界面端口',val:'15672'},{key:'user',label:'RABBITMQ_DEFAULT_USER',val:'guest'},{key:'password',label:'RABBITMQ_DEFAULT_PASS',val:'guest'}]
+};
+function buildParams(service){
+  var defs=paramDefs[service]||[];var h='';
+  defs.forEach(function(d,i){h+='<div class="card" style="margin-bottom:0;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">'+d.label+'</label><input id="param_'+i+'" class="input" value="'+d.val+'"></div>';});
+  pa.innerHTML=h;
+}
+var cards=document.querySelectorAll('.service-card');
+for(var ci=0;ci<cards.length;ci++){cards[ci].addEventListener('click',function(){
+  cards.forEach(function(c){c.classList.remove('selected');});this.classList.add('selected');
+  currentService=this.dataset.service;buildParams(currentService);o.textContent='';setStatus('');
+});}
+var composeTemplates={
+  nginx:function(v){return'  nginx:\n    image: nginx:alpine\n    container_name: nginx\n    ports:\n      - "'+v[0]+':80"\n    volumes:\n      - '+v[1]+'\n    restart: unless-stopped';},
+  postgres:function(v){var lines='  postgres:\n    image: postgres:16-alpine\n    container_name: postgres\n    ports:\n      - "'+v[0]+':5432"\n    environment:\n      POSTGRES_PASSWORD: '+v[1]+'\n      POSTGRES_DB: '+v[2]+'\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    restart: unless-stopped';return lines;},
+  redis:function(v){var lines='  redis:\n    image: redis:7-alpine\n    container_name: redis\n    ports:\n      - "'+v[0]+':6379"';if(v[1])lines+='\n    command: redis-server --requirepass '+v[1];if(v[2]==='yes')lines+='\n    volumes:\n      - redisdata:/data';lines+='\n    restart: unless-stopped';return lines;},
+  mysql:function(v){return'  mysql:\n    image: mysql:8.0\n    container_name: mysql\n    ports:\n      - "'+v[0]+':3306"\n    environment:\n      MYSQL_ROOT_PASSWORD: '+v[1]+'\n      MYSQL_DATABASE: '+v[2]+'\n    volumes:\n      - mysqldata:/var/lib/mysql\n    restart: unless-stopped';},
+  mongo:function(v){return'  mongo:\n    image: mongo:7\n    container_name: mongo\n    ports:\n      - "'+v[0]+':27017"\n    environment:\n      MONGO_INITDB_ROOT_USERNAME: '+v[1]+'\n      MONGO_INITDB_ROOT_PASSWORD: '+v[2]+'\n    volumes:\n      - mongodata:/data/db\n    restart: unless-stopped';},
+  rabbitmq:function(v){return'  rabbitmq:\n    image: rabbitmq:3-management-alpine\n    container_name: rabbitmq\n    ports:\n      - "'+v[0]+':5672"\n      - "'+v[1]+':15672"\n    environment:\n      RABBITMQ_DEFAULT_USER: '+v[2]+'\n      RABBITMQ_DEFAULT_PASS: '+v[3]+'\n    restart: unless-stopped';}
+};
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var vals=[];var defs=paramDefs[currentService]||[];
+  for(var i=0;i<defs.length;i++){var el=document.getElementById('param_'+i);vals.push(el?el.value:'');}
+  var tpl=composeTemplates[currentService];
+  if(tpl){o.textContent='version: "3.8"\n\nservices:\n'+tpl(vals);setStatus('docker-compose 片段已生成');}
+  else{setStatus('未知服务类型','error');}
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+buildParams('nginx');cards[0].classList.add('selected');
+})();</script>
+</body></html>

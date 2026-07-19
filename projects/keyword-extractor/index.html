@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>关键词提取 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.keyword-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-2);}
+.keyword-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--color-border);border-radius:999px;font-size:13px;}
+.keyword-tag .freq{color:var(--color-text-disabled);font-size:11px;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>关键词提取</h1><p class="tool-desc">从文本中提取高频关键词和词组（基础 TF 算法）。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本，自动提取关键词..." style="min-height:180px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:8px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;">
+<input id="topN" class="input" type="number" value="20" min="1" max="100" style="width:80px;" title="提取数量">
+<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">个</span>
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="skipStopwords" type="checkbox" checked> 过滤停用词</label>
+<button id="extractBtn" class="btn btn-primary">提取</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="keyword-list" id="keywordList"></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText'),kl=document.getElementById('keywordList');
+var nInput=document.getElementById('topN'),sw=document.getElementById('skipStopwords');
+var stopwords={'the':1,'a':1,'an':1,'is':1,'are':1,'was':1,'were':1,'be':1,'been':1,'being':1,'have':1,'has':1,'had':1,'do':1,'does':1,'did':1,'will':1,'would':1,'could':1,'should':1,'may':1,'might':1,'can':1,'shall':1,'to':1,'of':1,'in':1,'for':1,'on':1,'with':1,'at':1,'by':1,'from':1,'as':1,'into':1,'through':1,'during':1,'before':1,'after':1,'above':1,'below':1,'between':1,'out':1,'off':1,'over':1,'under':1,'again':1,'further':1,'then':1,'once':1,'here':1,'there':1,'when':1,'where':1,'why':1,'how':1,'all':1,'each':1,'every':1,'both':1,'few':1,'more':1,'most':1,'other':1,'some':1,'such':1,'no':1,'nor':1,'not':1,'only':1,'own':1,'same':1,'so':1,'than':1,'too':1,'very':1,'just':1,'because':1,'but':1,'and':1,'or':1,'if':1,'while':1,'although':1,'this':1,'that':1,'these':1,'those':1,'it':1,'its':1,'he':1,'she':1,'they':1,'we':1,'you':1,'i':1,'me':1,'him':1,'her':1,'us':1,'them':1,'my':1,'your':1,'his':1,'her':1,'our':1,'their':1,'its':1,'mine':1,'yours':1,'his':1,'hers':1,'ours':1,'theirs':1,'what':1,'which':1,'who':1,'whom':1,'about':1,'up':1,'down':1,'also':1,'well':1,'any':1,'been':1,'get':1,'got':1,'like':1,'make':1,'made':1,'said':1,'much':1,'many':1,'some':1,'such':1,'even':1,'still':1,'back':1,'over':1,'new':1,'one':1,'two':1,'first':1,'last':1,'does':1,'doing':1,'done':1,'being':1,'am':1,'are':1,'was':1,'were':1,'been':1,'being':1,'的':1,'了':1,'在':1,'是':1,'我':1,'有':1,'和':1,'就':1,'不':1,'人':1,'都':1,'一':1,'个':1,'上':1,'也':1,'很':1,'到':1,'说':1,'要':1,'去':1,'你':1,'会':1,'着':1,'没':1,'看':1,'好':1,'自己':1,'这':1,'他':1,'她':1,'它':1,'们':1,'那':1,'对':1,'为':1,'能':1,'下':1,'过':1,'出':1,'来':1,'里':1,'与':1,'中':1,'大':1,'小':1,'多':1,'少':1,'而':1,'但':1,'以':1,'之':1,'所':1,'其':1,'被':1,'把':1,'让':1,'向':1,'从':1};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.getElementById('extractBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
+  var n=parseInt(nInput.value)||20;
+  var words=text.toLowerCase().match(/[a-z\u4e00-\u9fff]+/g);if(!words){setStatus('未找到有效词汇','error');return;}
+  if(sw.checked){words=words.filter(function(w){return w.length>1&&!stopwords[w];});}
+  if(words.length===0){setStatus('过滤后无有效词汇','error');return;}
+  var freq={};words.forEach(function(w){freq[w]=(freq[w]||0)+1;});
+  var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,n);
+  var total=words.length;
+  var lines=[];var tags=[];
+  sorted.forEach(function(w,i){
+    var pct=(freq[w]/total*100).toFixed(1);
+    lines.push((i+1)+'. '+w+' ('+freq[w]+'次, '+pct+'%)');
+    tags.push('<span class="keyword-tag">'+esc(w)+' <span class="freq">'+freq[w]+'</span></span>');
+  });
+  o.textContent=lines.join('\n');
+  kl.innerHTML=tags.join('');
+  setStatus('共提取 '+sorted.length+' 个关键词');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

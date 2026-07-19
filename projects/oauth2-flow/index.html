@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>OAuth2 授权流程 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.flow-card{padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-2);cursor:pointer;transition:all 0.15s;}.flow-card:hover{border-color:var(--color-accent);}.flow-card.active{border-color:var(--color-accent);background:var(--color-bg-soft);}.flow-title{font-weight:600;font-size:var(--font-size-sm);}.flow-desc{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:4px;}.flow-detail{font-size:var(--font-size-sm);padding:var(--space-2);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:var(--space-2);white-space:pre-wrap;}.step-num{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;background:var(--color-accent);color:#fff;border-radius:50%;font-size:12px;font-weight:600;margin-right:6px;flex-shrink:0;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>OAuth2 授权流程</h1><p class="tool-desc">OAuth 2.0 授权类型和流程交互式参考</p>
+<div class="card" id="flowsList"></div>
+<div class="card" id="flowDetail" style="display:none;"><div id="flowDetailContent"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var flows=[
+{title:'授权码 (Authorization Code)',desc:'最常用的授权流程，适用于服务端应用。客户端先获取授权码，再交换访问令牌。',steps:['用户访问客户端应用','客户端将用户重定向到授权服务器（/?response_type=code&client_id=...）','用户登录并授权','授权服务器将授权码通过回调 URL 返回给客户端','客户端使用授权码向令牌端点请求访问令牌','授权服务器返回 access_token（和 refresh_token）','客户端使用令牌访问受保护资源'],useCase:'服务端 Web 应用、原生应用（结合 PKCE）',tokenEndpoint:'POST /token (grant_type=authorization_code)',note:'最安全的流程，支持 refresh_token。建议配合 PKCE 使用。'},
+{title:'隐式流 (Implicit)',desc:'简化版流程，直接返回 access_token，不经过授权码。适用于纯前端应用。',steps:['用户访问客户端应用','客户端将用户重定向到授权服务器（/?response_type=token&client_id=...）','用户登录并授权','授权服务器将 access_token 通过 URL 片段（#）返回','客户端从 URL 中提取令牌','客户端使用令牌访问受保护资源'],useCase:'SPA 单页应用（较老的方式）',tokenEndpoint:'无需服务端令牌端点（URL 片段直接返回令牌）',note:'不推荐使用。access_token 暴露在 URL 中，安全性较低。建议改用授权码 + PKCE。'},
+{title:'客户端凭证 (Client Credentials)',desc:'用于服务器到服务器的通信，不需要用户授权。客户端用自己的凭证直接获取令牌。',steps:['客户端（服务端应用）使用自己的 client_id 和 client_secret 向令牌端点请求','授权服务器验证客户端身份','授权服务器返回 access_token','客户端使用令牌访问受保护资源'],useCase:'服务端 API 通信、后台服务、定时任务',tokenEndpoint:'POST /token (grant_type=client_credentials)',note:'没有用户参与，只适用于受信任的客户端。令牌权限范围有限。'},
+{title:'密码凭证 (Resource Owner Password Credentials)',desc:'用户直接向客户端提供用户名和密码，客户端用这些凭证换取令牌。',steps:['用户在客户端输入用户名和密码','客户端将用户凭证发送到令牌端点','授权服务器验证用户身份','授权服务器返回 access_token','客户端使用令牌访问受保护资源'],useCase:'高度信任的客户端（如官方应用）、旧系统迁移',tokenEndpoint:'POST /token (grant_type=password)',note:'不推荐使用。客户端会接触到用户密码。建议迁移到授权码流程。'},
+{title:'授权码 + PKCE (Authorization Code + PKCE)',desc:'改进的授权码流程，用于公共客户端（SPA、移动应用），防止授权码拦截攻击。',steps:['客户端生成 code_verifier 和 code_challenge','用户访问客户端应用','客户端将 code_challenge 和重定向 URL 一起发送到授权服务器','用户登录并授权','授权服务器将授权码通过回调 URL 返回','客户端使用授权码 + code_verifier 向令牌端点请求','授权服务器验证 code_verifier 是否匹配 code_challenge','授权服务器返回 access_token','客户端使用令牌访问受保护资源'],useCase:'SPA 单页应用、移动应用、原生应用',tokenEndpoint:'POST /token (grant_type=authorization_code + code_verifier)',note:'推荐用于公共客户端。PKCE 可以有效防止授权码拦截攻击。'},
+{title:'设备授权 (Device Authorization)',desc:'适用于无浏览器设备（智能电视、CLI 工具等）的授权流程。',steps:['设备向授权服务器请求设备码','授权服务器返回 device_code、user_code 和验证 URL','设备显示 user_code 和验证 URL','用户在另一设备的浏览器中访问验证 URL','设备轮询令牌端点检查用户是否完成授权','用户授权后，设备获取 access_token'],useCase:'智能电视、CLI 工具、物联网设备',tokenEndpoint:'POST /token (grant_type=urn:ietf:params:oauth:grant-type:device_code)',note:'适合输入能力有限的设备。用户体验较复杂但必要。'}
+];
+var flowsList=document.getElementById('flowsList'),flowDetail=document.getElementById('flowDetail'),flowDetailContent=document.getElementById('flowDetailContent'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var activeIdx=-1;
+function renderFlows(){
+  var html='';
+  for(var i=0;i<flows.length;i++){
+    var f=flows[i];
+    html+='<div class="flow-card'+(i===activeIdx?' active':'')+'" data-idx="'+i+'"><div class="flow-title">'+htmlEscape(f.title)+'</div><div class="flow-desc">'+htmlEscape(f.desc)+'</div></div>';
+  }
+  flowsList.innerHTML=html;
+  var cards=flowsList.querySelectorAll('.flow-card');
+  for(var i=0;i<cards.length;i++){cards[i].addEventListener('click',function(){showFlow(parseInt(this.getAttribute('data-idx')));});}
+}
+function showFlow(idx){
+  activeIdx=idx;renderFlows();var f=flows[idx];
+  var html='<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);"><strong>适用场景：</strong>'+htmlEscape(f.useCase)+'</div>';
+  html+='<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);"><strong>令牌端点：</strong>'+htmlEscape(f.tokenEndpoint)+'</div>';
+  html+='<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);"><strong>注意：</strong>'+htmlEscape(f.note)+'</div>';
+  html+='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:var(--space-1);">流程步骤：</div>';
+  for(var i=0;i<f.steps.length;i++){html+='<div style="display:flex;align-items:flex-start;padding:4px 0;font-size:var(--font-size-sm);"><span class="step-num">'+(i+1)+'</span><span>'+htmlEscape(f.steps[i])+'</span></div>';}
+  flowDetailContent.innerHTML=html;flowDetail.style.display='block';
+  outputText.textContent=f.title;
+  setStatus('');
+}
+renderFlows();
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

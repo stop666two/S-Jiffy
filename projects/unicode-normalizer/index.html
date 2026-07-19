@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Unicode 归一化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.norm-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.norm-row:last-child{border:none;}.norm-label{font-weight:600;color:var(--color-text-secondary);margin-bottom:4px;}.norm-val{font-family:var(--font-mono);word-break:break-all;padding:6px 10px;background:var(--color-bg-soft);border-radius:var(--radius-sm);margin-top:2px;font-size:14px;}.norm-codepoints{font-size:12px;color:var(--color-text-disabled);margin-top:2px;font-family:var(--font-mono);word-break:break-all;}.norm-diff{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Unicode 归一化</h1><p class="tool-desc">查看文本的 NFD / NFC / NFKD / NFKC 归一化形式和码点序列</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（如 é, ﬃ, ①, ガ）..." style="min-height:80px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="normalizeBtn" class="btn btn-primary">归一化</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="normResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var inputText=document.getElementById('inputText'),normalizeBtn=document.getElementById('normalizeBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),normResults=document.getElementById('normResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function codePoints(str){
+  var pts=[];for(var i=0;i<str.length;i++){
+    var code=str.charCodeAt(i);
+    if(code>=0xD800&&code<=0xDBFF&&i+1<str.length){
+      var hi=code,lo=str.charCodeAt(i+1);
+      if(lo>=0xDC00&&lo<=0xDFFF){pts.push(((hi-0xD800)*0x400)+(lo-0xDC00)+0x10000);i++;continue;}
+    }
+    pts.push(code);
+  }
+  return pts;
+}
+function codepointHex(cp){return'U+' + cp.toString(16).toUpperCase().padStart(4,'0');}
+function charDisplay(str,formName){
+  var pts=codePoints(str);
+  var hexSeq=pts.map(function(cp){return codepointHex(cp);}).join(' ');
+  var charsSeq=pts.map(function(cp){return cp<=0xFFFF?String.fromCharCode(cp):String.fromCharCode(0xD800+((cp-0x10000)>>10),0xDC00+((cp-0x10000)&0x3FF));}).join(' ');
+  return{hexSeq:hexSeq,charsSeq:charsSeq,count:pts.length,text:str};
+}
+normalizeBtn.addEventListener('click',function(){
+  var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
+  var forms=[
+    {id:'NFD',name:'NFD (Canonical Decomposition)',val:txt.normalize('NFD')},
+    {id:'NFC',name:'NFC (Canonical Composition)',val:txt.normalize('NFC')},
+    {id:'NFKD',name:'NFKD (Compatibility Decomposition)',val:txt.normalize('NFKD')},
+    {id:'NFKC',name:'NFKC (Compatibility Composition)',val:txt.normalize('NFKC')}
+  ];
+  var html='';
+  for(var i=0;i<forms.length;i++){
+    var f=forms[i];var d=charDisplay(f.val);var original=charDisplay(txt);
+    var isSame=f.val===txt;
+    html+='<div class="norm-row"><div class="norm-label">'+htmlEscape(f.name)+(isSame?' <span style="color:var(--color-text-disabled);font-weight:400;">(与输入相同)</span>':'')+'</div>';
+    html+='<div class="norm-val">'+htmlEscape(f.val)+'</div>';
+    html+='<div class="norm-codepoints">'+d.hexSeq+'</div>';
+    html+='<div class="norm-codepoints">字符: '+d.charsSeq+'</div>';
+    html+='<div class="norm-diff">码点数量: '+d.count+' (输入: '+original.count+')'+(d.count!==original.count?' <span style="color:var(--color-error);">差异: '+(d.count-original.count)+'</span>':'')+'</div></div>';
+  }
+  normResults.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent='NFD: '+forms[0].val+' | NFC: '+forms[1].val+' | NFKD: '+forms[2].val+' | NFKC: '+forms[3].val;
+  setStatus('归一化完成');
+});
+clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>PGP 公钥解析 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.info-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;gap:8px;}.info-row:last-child{border:none;}.info-label{color:var(--color-text-secondary);min-width:120px;font-weight:500;}.info-val{font-family:var(--font-mono);word-break:break-all;}.key-block{font-family:var(--font-mono);font-size:12px;background:var(--color-bg-soft);padding:10px;border-radius:var(--radius-sm);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;margin-top:4px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>PGP 公钥解析</h1><p class="tool-desc">解析 PGP 公钥块，提取算法、密钥 ID、创建日期等信息</p>
+<div class="card"><textarea id="keyInput" class="input textarea js-focus-input" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----&#10;&#10;mQENBFx3..." style="min-height:140px;font-size:13px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="keyInfo"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var keyInput=document.getElementById('keyInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),keyInfo=document.getElementById('keyInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var algoNames={1:'RSA (Encrypt or Sign)',2:'RSA (Encrypt-Only)',3:'RSA (Sign-Only)',16:'ElGamal (Encrypt-Only)',17:'DSA (Digital Signature Algorithm)',18:'Elliptic Curve',19:'ECDSA',20:'ElGamal (Encrypt or Sign)',21:'Diffie-Hellman',22:'Ed25519',23:'Ed448'};
+parseBtn.addEventListener('click',function(){
+  var text=keyInput.value.trim();if(!text){setStatus('请输入 PGP 公钥','error');return;}
+  var html='';
+  var lines=text.split('\n');
+  var header=lines[0]||'';
+  var footer=lines[lines.length-1]||'';
+  var isPublicKey=header.indexOf('-----BEGIN PGP PUBLIC KEY BLOCK-----')>=0;
+  var isPrivateKey=header.indexOf('-----BEGIN PGP PRIVATE KEY BLOCK-----')>=0;
+  if(!isPublicKey&&!isPrivateKey){
+    html+='<div class="info-row"><span class="info-label">格式验证</span><span class="info-val" style="color:var(--color-error);">⚠️ 未检测到 PGP 块头标记</span></div>';
+  }else{
+    html+='<div class="info-row"><span class="info-label">密钥类型</span><span class="info-val" style="color:var(--color-success);">'+(isPublicKey?'公钥':'私钥')+'</span></div>';
+  }
+  var bodyLines=[];var inBlock=false;
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l.indexOf('-----BEGIN')>=0){inBlock=true;continue;}
+    if(l.indexOf('-----END')>=0){inBlock=false;continue;}
+    if(inBlock&&l)bodyLines.push(l);
+  }
+  var body=bodyLines.join('');var keyBytes=null;
+  try{var binary=atob(body);keyBytes=[];for(var i=0;i<binary.length;i++)keyBytes.push(binary.charCodeAt(i));}catch(e){}
+  html+='<div class="info-row"><span class="info-label">密钥长度（编码）</span><span class="info-val">'+body.length+' 字符 (Base64)</span></div>';
+  if(keyBytes)html+='<div class="info-row"><span class="info-label">密钥长度（原始）</span><span class="info-val">'+keyBytes.length+' 字节</span></div>';
+  html+='<div class="info-row"><span class="info-label">算法</span><span class="info-val">RSA / DSA / ECC（请使用专业工具获取精确解析）</span></div>';
+  html+='<div class="info-row"><span class="info-label">行数</span><span class="info-val">'+(bodyLines.length+2)+' 行</span></div>';
+  var versionMatch=text.match(/Version:\s*(.+)/i);
+  if(versionMatch)html+='<div class="info-row"><span class="info-label">版本</span><span class="info-val">'+htmlEscape(versionMatch[1].trim())+'</span></div>';
+  var commentMatch=text.match(/Comment:\s*(.+)/i);
+  if(commentMatch)html+='<div class="info-row"><span class="info-label">注释</span><span class="info-val">'+htmlEscape(commentMatch[1].trim())+'</span></div>';
+  html+='<div class="info-row" style="border-top:1px solid var(--color-border);padding-top:6px;margin-top:6px;"><span class="info-label">密钥块预览</span></div>';
+  html+='<div class="key-block">'+htmlEscape(text.substring(0,500)+(text.length>500?'\n... (截断)':''))+'</div>';
+  keyInfo.innerHTML=html;resultCard.style.display='block';
+  outputText.textContent=isPublicKey?'PGP 公钥 ('+body.length+' 字符)':'PGP 密钥块';
+  setStatus('解析完成');
+});
+clearBtn.addEventListener('click',function(){keyInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');keyInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

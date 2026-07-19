@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SRI 哈希生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.result-item{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.result-item:last-child{border:none;}.algo-label{font-weight:600;color:var(--color-text-secondary);margin-bottom:2px;}.algo-hash{font-family:var(--font-mono);word-break:break-all;font-size:13px;background:var(--color-bg-soft);padding:6px 10px;border-radius:var(--radius-sm);}.sri-tag{font-family:var(--font-mono);font-size:13px;word-break:break-all;background:var(--color-bg-soft);padding:8px 12px;border-radius:var(--radius-sm);margin-top:4px;border:1px solid var(--color-border);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>SRI 哈希生成</h1><p class="tool-desc">通过 URL 获取文件内容，生成 Subresource Integrity 完整性哈希（SHA-384/SHA-512/SHA-256）</p>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="urlInput" class="input js-focus-input" placeholder="https://cdn.example.com/script.js" style="flex:1;"><button id="generateBtn" class="btn btn-primary">生成 SRI</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="sriResults"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var urlInput=document.getElementById('urlInput'),generateBtn=document.getElementById('generateBtn'),resultCard=document.getElementById('resultCard'),sriResults=document.getElementById('sriResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+generateBtn.addEventListener('click',function(){
+  var url=urlInput.value.trim();if(!url){setStatus('请输入 URL','error');return;}
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  resultCard.style.display='block';sriResults.innerHTML='<div style="color:var(--color-text-secondary);padding:8px;">获取内容中...</div>';
+  fetch(url).then(function(resp){if(!resp.ok)throw new Error('HTTP '+resp.status);return resp.text();}).then(async function(text){
+    var encoder=new TextEncoder();var data=encoder.encode(text);
+    var algorithms=['SHA-256','SHA-384','SHA-512'];
+    var algoNames={256:'sha256-',384:'sha384-',512:'sha512-'};
+    var html='';var firstSRI='';
+    for(var i=0;i<algorithms.length;i++){
+      var hashBuffer=await crypto.subtle.digest(algorithms[i],data);
+      var hashArray=Array.from(new Uint8Array(hashBuffer));
+      var hashHex=hashArray.map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+      var hashB64=btoa(String.fromCharCode.apply(null,hashArray));
+      var sri=algoNames[algorithms[i].split('-')[1]]+hashB64;
+      if(i===0)firstSRI=sri;
+      html+='<div class="result-item"><div class="algo-label">'+algorithms[i]+'</div><div class="algo-hash">'+htmlEscape(hashHex)+'</div></div>';
+      html+='<div class="result-item"><div class="algo-label">完整性属性</div><div class="sri-tag">integrity="'+htmlEscape(sri)+'"</div></div>';
+    }
+    html+='<div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);">内容长度: '+text.length+' 字符</div>';
+    sriResults.innerHTML=html;
+    outputText.textContent=firstSRI;
+    setStatus('SRI 哈希生成完成');
+  }).catch(function(err){
+    sriResults.innerHTML='<div style="color:var(--color-error);">获取失败: '+htmlEscape(err.message)+'<br><span style="font-size:12px;">注意：CORS 限制可能导致无法获取资源。尝试使用同源 URL 或支持 CORS 的 CDN。</span></div>';
+    setStatus('获取失败','error');
+  });
+});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+urlInput.addEventListener('keydown',function(e){if(e.key==='Enter')generateBtn.click();});
+})();</script>
+</body></html>

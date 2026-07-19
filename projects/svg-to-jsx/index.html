@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SVG → JSX - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>SVG → JSX</h1><p class="tool-desc">将 SVG 代码转换为 React JSX 组件</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n  <circle cx="12" cy="12" r="10"/>\n  <path d="M12 8v4l3 3"/>\n</svg>' style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  var SVG_ATTR_MAP = {
+    'accent-height': 'accentHeight', 'alignment-baseline': 'alignmentBaseline',
+    'arabic-form': 'arabicForm', 'baseline-shift': 'baselineShift',
+    'cap-height': 'capHeight', 'clip-path': 'clipPath', 'clip-rule': 'clipRule',
+    'color-interpolation': 'colorInterpolation', 'color-interpolation-filters': 'colorInterpolationFilters',
+    'color-profile': 'colorProfile', 'color-rendering': 'colorRendering',
+    'dominant-baseline': 'dominantBaseline', 'enable-background': 'enableBackground',
+    'fill-opacity': 'fillOpacity', 'fill-rule': 'fillRule',
+    'flood-color': 'floodColor', 'flood-opacity': 'floodOpacity',
+    'font-family': 'fontFamily', 'font-size': 'fontSize', 'font-size-adjust': 'fontSizeAdjust',
+    'font-stretch': 'fontStretch', 'font-style': 'fontStyle', 'font-variant': 'fontVariant',
+    'font-weight': 'fontWeight', 'glyph-name': 'glyphName', 'glyph-orientation-horizontal': 'glyphOrientationHorizontal',
+    'glyph-orientation-vertical': 'glyphOrientationVertical', 'horiz-adv-x': 'horizAdvX',
+    'horiz-origin-x': 'horizOriginX', 'image-rendering': 'imageRendering',
+    'letter-spacing': 'letterSpacing', 'lighting-color': 'lightingColor',
+    'marker-end': 'markerEnd', 'marker-mid': 'markerMid', 'marker-start': 'markerStart',
+    'mask-type': 'maskType', 'overline-position': 'overlinePosition',
+    'overline-thickness': 'overlineThickness', 'paint-order': 'paintOrder',
+    'panose-1': 'panose1', 'pointer-events': 'pointerEvents',
+    'rendering-intent': 'renderingIntent', 'shape-rendering': 'shapeRendering',
+    'stop-color': 'stopColor', 'stop-opacity': 'stopOpacity',
+    'strikethrough-position': 'strikethroughPosition', 'strikethrough-thickness': 'strikethroughThickness',
+    'stroke-dasharray': 'strokeDasharray', 'stroke-dashoffset': 'strokeDashoffset',
+    'stroke-linecap': 'strokeLinecap', 'stroke-linejoin': 'strokeLinejoin',
+    'stroke-miterlimit': 'strokeMiterlimit', 'stroke-opacity': 'strokeOpacity',
+    'stroke-width': 'strokeWidth', 'text-anchor': 'textAnchor',
+    'text-decoration': 'textDecoration', 'text-rendering': 'textRendering',
+    'underline-position': 'underlinePosition', 'underline-thickness': 'underlineThickness',
+    'unicode-bidi': 'unicodeBidi', 'unicode-range': 'unicodeRange',
+    'units-per-em': 'unitsPerEm', 'v-alphabetic': 'vAlphabetic',
+    'v-hanging': 'vHanging', 'v-ideographic': 'vIdeographic', 'v-mathematical': 'vMathematical',
+    'vector-effect': 'vectorEffect', 'vert-adv-y': 'vertAdvY', 'vert-origin-x': 'vertOriginX',
+    'vert-origin-y': 'vertOriginY', 'viewBox': 'viewBox',
+    'word-spacing': 'wordSpacing', 'writing-mode': 'writingMode',
+    'x-height': 'xHeight', 'xlink:actuate': 'xlinkActuate', 'xlink:arcrole': 'xlinkArcrole',
+    'xlink:href': 'xlinkHref', 'xlink:role': 'xlinkRole', 'xlink:show': 'xlinkShow',
+    'xlink:title': 'xlinkTitle', 'xlink:type': 'xlinkType', 'xml:base': 'xmlBase',
+    'xml:lang': 'xmlLang', 'xml:space': 'xmlSpace', 'xmlns:xlink': 'xmlnsXlink'
+  };
+
+  var SELF_CLOSING_SVG = { circle:1,ellipse:1,line:1,path:1,polygon:1,polyline:1,rect:1,use:1,img:1,image:1,stop:1,br:1,hr:1,input:1,meta:1,link:1 };
+
+  function convertAttr(name, value) {
+    var jsxName = SVG_ATTR_MAP[name] || name;
+    if (value === '' || value === undefined || value === null) {
+      if (jsxName === 'viewBox') return ' viewBox="0 0 24 24"';
+      return ' ' + jsxName + '=""';
+    }
+    if (jsxName === 'style') {
+      return ' style={{}}';
+    }
+    var escaped = value.replace(/"/g, '&quot;');
+    return ' ' + jsxName + '="' + escaped + '"';
+  }
+
+  function convertSVG(svgText) {
+    var result = '';
+    var i = 0;
+    var inTag = false;
+
+    while (i < svgText.length) {
+      if (svgText.charAt(i) === '<') {
+        inTag = true;
+        var tagEnd = svgText.indexOf('>', i);
+        if (tagEnd === -1) { result += svgText.substring(i); break; }
+
+        var tagContent = svgText.substring(i, tagEnd + 1);
+        var isClosing = tagContent.indexOf('</') === 0;
+        var isSelfClosing = tagContent.indexOf('/>') >= 0;
+
+        if (isClosing) {
+          result += tagContent;
+        } else {
+          var tagNameMatch = tagContent.match(/^<\s*(\w[\w-]*)/);
+          if (tagNameMatch) {
+            var tagName = tagNameMatch[1];
+            var isSvgSelfClosing = isSelfClosing || !!SELF_CLOSING_SVG[tagName];
+            var attrsStr = tagContent.substring(tagNameMatch[0].length, tagContent.length - (isSelfClosing ? 2 : 1)).trim();
+            result += '<' + tagName;
+
+            var attrRegex = /(\w[\w:-]*)\s*=\s*"([^"]*)"/g;
+            var attrMatch;
+            var usedAttrs = {};
+            while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+              result += convertAttr(attrMatch[1], attrMatch[2]);
+              usedAttrs[attrMatch[1]] = true;
+            }
+
+            var otherAttrs = attrsStr.replace(attrRegex, '').trim();
+            if (otherAttrs && otherAttrs.indexOf('=') === -1 && otherAttrs.indexOf('<') === -1) {
+              var bools = otherAttrs.split(/\s+/);
+              for (var b = 0; b < bools.length; b++) {
+                if (bools[b]) result += ' ' + bools[b] + '={true}';
+              }
+            }
+
+            if (isSvgSelfClosing) {
+              result += ' />';
+            } else {
+              result += '>';
+            }
+          } else {
+            result += tagContent;
+          }
+        }
+        i = tagEnd + 1;
+      } else {
+        result += svgText.charAt(i);
+        i++;
+      }
+    }
+    return result;
+  }
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 SVG', 'error'); return; }
+    try {
+      var jsx = convertSVG(text);
+      var componentName = 'SvgIcon';
+      var output = 'import React from \'react\';\n\nconst ' + componentName + ' = (props) => (\n  ' + jsx.replace(/\n/g, '\n  ') + '\n);\n\nexport default ' + componentName + ';';
+      outputEl.textContent = output;
+      setStatus('转换成功');
+    } catch (e) {
+      outputEl.textContent = '';
+      setStatus('转换出错: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

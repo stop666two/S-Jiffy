@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JWT 签名验证 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.jwt-part{padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;font-size:var(--font-size-sm);}.jwt-part-label{font-weight:600;color:var(--color-text-secondary);margin-bottom:2px;}.jwt-part-val{font-family:var(--font-mono);word-break:break-all;font-size:13px;}.jwt-part-header{background:#e8f0fe;}.jwt-part-payload{background:#e6f4ea;}.jwt-part-signature{background:#fce8e6;}.verify-result{padding:12px;border-radius:var(--radius-md);font-weight:600;text-align:center;font-size:var(--font-size-base);}.verify-ok{background:#e6f4ea;color:var(--color-success);}.verify-fail{background:#fce8e6;color:var(--error);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JWT 签名验证</h1><p class="tool-desc">验证 JWT Token 的 HMAC 签名（HS256/HS384/HS512），解析 Header 和 Payload</p>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">JWT Token</label><textarea id="jwtInput" class="input textarea js-focus-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..." style="min-height:60px;"></textarea></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">密钥 (Secret)</label><input id="secretInput" class="input" placeholder="your-secret-key"></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="verifyBtn" class="btn btn-primary">验证</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="verifyResult" class="verify-result"></div><div style="margin-top:var(--space-2);"><div class="jwt-part jwt-part-header"><div class="jwt-part-label">Header</div><div id="headerVal" class="jwt-part-val">—</div></div><div class="jwt-part jwt-part-payload"><div class="jwt-part-label">Payload</div><div id="payloadVal" class="jwt-part-val">—</div></div><div class="jwt-part jwt-part-signature"><div class="jwt-part-label">签名</div><div id="signatureVal" class="jwt-part-val">—</div></div></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var jwtInput=document.getElementById('jwtInput'),secretInput=document.getElementById('secretInput'),verifyBtn=document.getElementById('verifyBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),verifyResult=document.getElementById('verifyResult'),headerVal=document.getElementById('headerVal'),payloadVal=document.getElementById('payloadVal'),signatureVal=document.getElementById('signatureVal'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+function base64UrlDecode(s){
+  s=s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4)s+='=';
+  try{return decodeURIComponent(atob(s).split('').map(function(c){return'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));}catch(e){return atob(s);}
+}
+function base64UrlToBytes(s){
+  s=s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4)s+='=';
+  var binary=atob(s);var bytes=[];for(var i=0;i<binary.length;i++)bytes.push(binary.charCodeAt(i));
+  return bytes;
+}
+function bytesToHex(bytes){var h='';for(var i=0;i<bytes.length;i++)h+=bytes[i].toString(16).padStart(2,'0');return h;}
+async function hmacSign(algorithm,data,keyBytes){
+  var algName=algorithm==='HS256'?'SHA-256':algorithm==='HS384'?'SHA-384':'SHA-512';
+  var key=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:algName},false,['sign']);
+  var sig=await crypto.subtle.sign('HMAC',key,data);
+  return new Uint8Array(sig);
+}
+verifyBtn.addEventListener('click',async function(){
+  var jwt=jwtInput.value.trim();var secret=secretInput.value;
+  if(!jwt){setStatus('请输入 JWT Token','error');return;}
+  if(!secret){setStatus('请输入密钥','error');return;}
+  var parts=jwt.split('.');
+  if(parts.length!==3){setStatus('JWT 格式无效，应有 3 个部分','error');return;}
+  resultCard.style.display='block';
+  try{
+    var headerStr=base64UrlDecode(parts[0]);var header=JSON.parse(headerStr);
+    headerVal.textContent=JSON.stringify(header,null,2);
+  }catch(e){headerVal.textContent='解析失败: '+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent='Header 解析失败';setStatus('Header 解析失败','error');return;}
+  try{
+    var payloadStr=base64UrlDecode(parts[1]);var payload=JSON.parse(payloadStr);
+    payloadVal.textContent=JSON.stringify(payload,null,2);
+  }catch(e){payloadVal.textContent='解析失败: '+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent='Payload 解析失败';setStatus('Payload 解析失败','error');return;}
+  signatureVal.textContent=base64UrlDecode(parts[2]);
+  var algorithm=header.alg||'HS256';
+  if(algorithm!=='HS256'&&algorithm!=='HS384'&&algorithm!=='HS512'){
+    verifyResult.className='verify-result verify-fail';
+    verifyResult.textContent='仅支持 HMAC 算法 (HS256/HS384/HS512)';
+    setStatus('算法不支持','error');return;
+  }
+  try{
+    var data=new TextEncoder().encode(parts[0]+'.'+parts[1]);
+    var keyBytes=new TextEncoder().encode(secret);
+    var expectedSig=await hmacSign(algorithm,data,keyBytes);
+    var actualSigBytes=base64UrlToBytes(parts[2]);
+    var match=expectedSig.length===actualSigBytes.length;
+    if(match){for(var i=0;i<expectedSig.length;i++){if(expectedSig[i]!==actualSigBytes[i]){match=false;break;}}}
+    if(match){
+      verifyResult.className='verify-result verify-ok';verifyResult.textContent='✅ 签名验证通过';
+      outputText.textContent='JWT 签名有效 · '+algorithm;
+      setStatus('验证通过');
+    }else{
+      verifyResult.className='verify-result verify-fail';verifyResult.textContent='❌ 签名不匹配';
+      outputText.textContent='JWT 签名无效';
+      setStatus('验证失败','error');
+    }
+  }catch(e){
+    verifyResult.className='verify-result verify-fail';verifyResult.textContent='验证错误: '+e.message;
+    setStatus('验证错误','error');
+  }
+});
+clearBtn.addEventListener('click',function(){jwtInput.value='';secretInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');jwtInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

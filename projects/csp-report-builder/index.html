@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSP 报告配置生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.field-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.field-row:last-child{border:none;}.field-label{font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;display:block;}.field-hint{font-size:11px;color:var(--color-text-disabled);margin-top:2px;}.output-json{font-family:var(--font-mono);font-size:13px;white-space:pre-wrap;word-break:break-all;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSP 报告配置生成</h1><p class="tool-desc">生成 CSP report-uri / report-to 端点配置 JSON</p>
+<div class="card"><div class="field-row"><label class="field-label">报告组名称</label><input id="groupName" class="input" value="default" style="height:36px;"></div>
+<div class="field-row"><label class="field-label">report-uri (将被弃用，建议使用 report-to)</label><input id="reportUri" class="input" placeholder="https://example.com/csp-report" style="height:36px;"></div>
+<div class="field-row"><label class="field-label">report-to 端点 URL</label><input id="endpointUrl" class="input" placeholder="https://example.com/csp-reports" style="height:36px;"></div>
+<div class="field-row"><label class="field-label">优先级 (priority, 可选)</label><input id="endpointPriority" class="input" type="number" value="1" style="height:36px;width:120px;"></div>
+<div class="field-row"><label class="field-label">权重 (weight, 可选，用于负载均衡)</label><input id="endpointWeight" class="input" type="number" value="1" style="height:36px;width:120px;"></div>
+<div class="field-row"><label class="field-label">CSP 指令示例（会自动添加 report-uri/report-to）</label><textarea id="cspExample" class="input textarea" placeholder="default-src 'self'; script-src 'self'" style="min-height:60px;"></textarea></div>
+</div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="generateBtn" class="btn btn-primary">生成配置</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" class="output-json"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var groupName=document.getElementById('groupName'),reportUri=document.getElementById('reportUri'),endpointUrl=document.getElementById('endpointUrl'),endpointPriority=document.getElementById('endpointPriority'),endpointWeight=document.getElementById('endpointWeight'),cspExample=document.getElementById('cspExample'),generateBtn=document.getElementById('generateBtn'),clearBtn=document.getElementById('clearBtn'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+generateBtn.addEventListener('click',function(){
+  var group=groupName.value.trim()||'default';
+  var rUri=reportUri.value.trim();
+  var eUrl=endpointUrl.value.trim();
+  var pri=parseInt(endpointPriority.value)||1;
+  var wgt=parseInt(endpointWeight.value)||1;
+  var csp=cspExample.value.trim();
+  var config={};
+  if(rUri)config['report-uri']=rUri;
+  if(eUrl){
+    config['report-to']={group:group,max_age:10886400,endpoints:[{url:eUrl}].filter(function(e){return e.url;})};
+    if(config['report-to'].endpoints.length===0)delete config['report-to'];
+    else{if(pri&&pri!==1)config['report-to'].endpoints[0].priority=pri;if(wgt&&wgt!==1)config['report-to'].endpoints[0].weight=wgt;}
+  }
+  var ReportToHeader=[];
+  if(eUrl&&group){
+    var endpointObj={url:eUrl};if(pri!==1)endpointObj.priority=pri;if(wgt!==1)endpointObj.weight=wgt;
+    ReportToHeader.push({group:group,max_age:10886400,endpoints:[endpointObj],include_subdomains:true});
+  }
+  var output={};
+  if(csp)output['Content-Security-Policy']=csp+(rUri?'; report-uri '+rUri:'')+(group?'; report-to '+group:'');
+  else output['Content-Security-Policy']="default-src 'self'"+(rUri?'; report-uri '+rUri:'')+(group?'; report-to '+group:'');
+  if(ReportToHeader.length>0)output['Report-To']=ReportToHeader;
+  if(rUri)output['report-uri (deprecated)']=rUri;
+  var jsonStr=JSON.stringify(output,null,2);
+  outputText.textContent=jsonStr;
+  setStatus('配置已生成');
+});
+clearBtn.addEventListener('click',function(){groupName.value='default';reportUri.value='';endpointUrl.value='';endpointPriority.value='1';endpointWeight.value='1';cspExample.value='';outputText.textContent='';setStatus('');});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>OAuth Token 解码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.section-label { font-size:var(--font-size-xs); color:var(--color-text-secondary); font-weight:600; margin-top:var(--space-2); margin-bottom:4px; }
+.token-part { background:var(--color-bg); border:1px solid var(--color-border); border-radius:6px; padding:12px; margin-bottom:8px; font-size:12px; overflow-x:auto; white-space:pre-wrap; word-break:break-all; }
+.part-header { font-weight:600; margin-bottom:4px; font-size:12px; }
+.part-header.header-part { color:#2563eb; }
+.part-header.payload-part { color:#059669; }
+.part-header.signature-part { color:#9333ea; }
+pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-size:12px; line-height:1.4; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>OAuth Token 解码</h1><p class="tool-desc">解码 OAuth 2.0 JWT Token 查看载荷</p>
+<div class="card"><textarea id="tokenInput" class="input textarea js-focus-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" style="min-height:120px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="decodeBtn" class="btn btn-primary">解码</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div id="resultArea"></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var tokenInput = document.getElementById('tokenInput');
+  var resultArea = document.getElementById('resultArea');
+  var outputEl = document.getElementById('outputText');
+
+  function base64UrlDecode(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    try {
+      return decodeURIComponent(atob(str).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    } catch (e) {
+      return atob(str);
+    }
+  }
+
+  function formatTimestamp(ts) {
+    if (!ts) return '';
+    var d = new Date(ts * 1000);
+    return d.toLocaleString() + ' (' + ts + ')';
+  }
+
+  function decode() {
+    var token = tokenInput.value.trim();
+    if (!token) { setStatus('请输入 JWT Token', 'error'); return; }
+    var parts = token.split('.');
+    if (parts.length !== 3) { setStatus('无效的 JWT 格式，需要 header.payload.signature 结构', 'error'); return; }
+
+    try {
+      var headerRaw = base64UrlDecode(parts[0]);
+      var payloadRaw = base64UrlDecode(parts[1]);
+
+      var header = JSON.parse(headerRaw);
+      var payload = JSON.parse(payloadRaw);
+
+      var html = '';
+      html += '<div class="section-label">HEADER</div>';
+      html += '<div class="token-part"><div class="part-header header-part">算法: ' + htmlEscape(header.alg || 'unknown') + ' · 类型: ' + htmlEscape(header.typ || 'JWT') + '</div><pre class="json-display">' + htmlEscape(JSON.stringify(header, null, 2)) + '</pre></div>';
+
+      html += '<div class="section-label">PAYLOAD</div>';
+      html += '<div class="token-part"><div class="part-header payload-part">载荷内容</div>';
+
+      var knownFields = ['sub','iss','aud','exp','nbf','iat','jti','name','email','roles','scope','client_id','user_id'];
+      var claims = [];
+      for (var i = 0; i < knownFields.length; i++) {
+        if (payload[knownFields[i]] !== undefined) {
+          var display = knownFields[i] + ': ';
+          if (knownFields[i] === 'exp' || knownFields[i] === 'nbf' || knownFields[i] === 'iat') {
+            display += formatTimestamp(payload[knownFields[i]]);
+          } else {
+            display += JSON.stringify(payload[knownFields[i]]);
+          }
+          claims.push(display);
+        }
+      }
+      if (claims.length > 0) {
+        html += '<div style="margin-bottom:8px;font-size:12px;line-height:1.6;color:var(--color-text-secondary);">';
+        html += claims.join('<br>');
+        html += '</div>';
+      }
+
+      html += '<pre class="json-display">' + htmlEscape(JSON.stringify(payload, null, 2)) + '</pre></div>';
+
+      html += '<div class="section-label">SIGNATURE</div>';
+      html += '<div class="token-part"><div class="part-header signature-part">签名 (Base64)</div><pre class="json-display">' + htmlEscape(parts[2].substring(0, 40) + '...') + '</pre></div>';
+
+      html += '<div class="section-label">元信息</div>';
+      var metaHtml = '<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;">';
+      metaHtml += 'Token 长度: ' + token.length + ' 字符<br>';
+      var payloadSize = new Blob([payloadRaw]).size;
+      metaHtml += 'Payload 大小: 约 ' + payloadSize + ' 字节<br>';
+      if (payload.exp) {
+        var expDate = new Date(payload.exp * 1000);
+        var now = Date.now();
+        if (expDate.getTime() > now) {
+          metaHtml += '过期时间: ' + expDate.toLocaleString() + ' (有效)';
+        } else {
+          metaHtml += '过期时间: ' + expDate.toLocaleString() + ' <span style="color:var(--color-error)">(已过期)</span>';
+        }
+      }
+      metaHtml += '</div>';
+      html += '<div class="token-part">' + metaHtml + '</div>';
+
+      resultArea.innerHTML = html;
+      outputEl.textContent = 'Header:\n' + JSON.stringify(header, null, 2) + '\n\nPayload:\n' + JSON.stringify(payload, null, 2) + '\n\nSignature: ' + parts[2];
+      setStatus('解码成功');
+    } catch (e) {
+      resultArea.innerHTML = '';
+      outputEl.textContent = '';
+      setStatus('解码失败: ' + e.message, 'error');
+    }
+  }
+
+  document.getElementById('decodeBtn').addEventListener('click', decode);
+  document.getElementById('clearBtn').addEventListener('click', function () { tokenInput.value = ''; resultArea.innerHTML = ''; outputEl.textContent = ''; setStatus(''); tokenInput.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

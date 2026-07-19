@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>K8s 资源生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+.form-grid .card{margin-bottom:0;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>K8s 资源生成</h1><p class="tool-desc">输入名称、镜像、端口等信息，生成 Kubernetes Deployment + Service YAML。</p>
+<div class="form-grid">
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">资源名称</label><input id="resName" class="input" value="my-app" placeholder="my-app"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">命名空间</label><input id="namespace" class="input" value="default" placeholder="default"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">容器镜像</label><input id="image" class="input" value="nginx:alpine" placeholder="nginx:alpine"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">容器端口</label><input id="containerPort" class="input" type="number" value="80" placeholder="80"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">副本数</label><input id="replicas" class="input" type="number" value="2" min="1" max="100"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">Service 端口</label><input id="svcPort" class="input" type="number" value="80" placeholder="80"></div>
+<div class="card" style="grid-column:1/-1;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">环境变量（KEY=VALUE, 每行一条）</label><textarea id="envVars" class="input textarea" placeholder="NODE_ENV=production&#10;LOG_LEVEL=info" style="min-height:60px;"></textarea></div></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
+<select id="outputFormat" class="input" style="width:auto;min-width:100px;">
+  <option value="both">Deployment + Service</option>
+  <option value="deploy">仅 Deployment</option>
+  <option value="service">仅 Service</option>
+</select>
+<button id="generateBtn" class="btn btn-primary">生成 YAML</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var nameEl=document.getElementById('resName'),nsEl=document.getElementById('namespace'),imgEl=document.getElementById('image');
+var portEl=document.getElementById('containerPort'),repEl=document.getElementById('replicas'),svcPortEl=document.getElementById('svcPort');
+var envEl=document.getElementById('envVars'),fmt=document.getElementById('outputFormat'),o=document.getElementById('outputText');
+function buildDeployment(name,ns,image,port,replicas,envArr){
+  var lines=['apiVersion: apps/v1','kind: Deployment','metadata:','  name: '+name,'  namespace: '+ns,'spec:','  replicas: '+replicas,'  selector:','    matchLabels:','      app: '+name,'  template:','    metadata:','      labels:','        app: '+name,'    spec:','      containers:','      - name: '+name,'        image: '+image,'        ports:','        - containerPort: '+port];
+  if(envArr.length>0){lines.push('        env:');envArr.forEach(function(e){lines.push('        - name: '+e.key);lines.push('          value: '+e.val);});}
+  return lines.join('\n');
+}
+function buildService(name,ns,port,svcPort){
+  return 'apiVersion: v1\nkind: Service\nmetadata:\n  name: '+name+'-svc\n  namespace: '+ns+'\nspec:\n  selector:\n    app: '+name+'\n  ports:\n  - port: '+svcPort+'\n    targetPort: '+port+'\n    protocol: TCP\n  type: ClusterIP';
+}
+function esc(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var name=nameEl.value.trim()||'my-app',ns=nsEl.value.trim()||'default',image=imgEl.value.trim()||'nginx:alpine';
+  var port=parseInt(portEl.value)||80,replicas=parseInt(repEl.value)||2,svcPort=parseInt(svcPortEl.value)||80;
+  var envText=envEl.value.trim();var envArr=[];
+  if(envText){envText.split('\n').filter(function(l){return l.trim();}).forEach(function(l){var eq=l.indexOf('=');if(eq>0){envArr.push({key:l.substring(0,eq).trim(),val:l.substring(eq+1).trim()});}});}
+  var outFmt=fmt.value;
+  if(outFmt==='deploy'||outFmt==='both')o.textContent=buildDeployment(name,ns,image,port,replicas,envArr);
+  if(outFmt==='both')o.textContent+='\n---\n';
+  if(outFmt==='service'||outFmt==='both')o.textContent+=buildService(name,ns,port,svcPort);
+  setStatus('K8s 资源 YAML 已生成');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

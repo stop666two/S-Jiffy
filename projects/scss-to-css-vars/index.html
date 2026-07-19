@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SCSS → CSS 变量 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.output-box { font-family: var(--font-mono); font-size: 13px; }</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>SCSS → CSS 变量</h1><p class="tool-desc">将 SCSS 变量转换为 CSS 自定义属性</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="$primary-color: #3b82f6;
+$font-size-base: 16px;
+$spacing-unit: 8px;
+$border-radius: 4px;
+$font-stack: 'Helvetica', sans-serif;" style="min-height:200px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+
+  function convert() {
+    var text = inputEl.value.trim();
+    if (!text) { setStatus('请输入 SCSS 变量', 'error'); return; }
+    var lines = text.split('\n');
+    var vars = [];
+    var usedPrefix = null;
+    var prefixMatch = text.match(/^\$([a-zA-Z][\w-]*?)(-prefix|-base|-color|-size|-spacing)/m);
+    if (prefixMatch) {
+      usedPrefix = prefixMatch[1].replace(/-[a-z]+$/, '');
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line || line.indexOf('//') === 0 || line.indexOf('/*') === 0) continue;
+      var commentIdx = line.indexOf('//');
+      var cleanLine = commentIdx >= 0 ? line.substring(0, commentIdx).trim() : line;
+      if (cleanLine.charAt(0) !== '$') continue;
+      var colonIdx = cleanLine.indexOf(':');
+      if (colonIdx === -1) continue;
+      var scssName = cleanLine.substring(0, colonIdx).trim();
+      var scssVal = cleanLine.substring(colonIdx + 1).trim().replace(/;$/, '').trim();
+      if (!scssName || !scssVal) continue;
+      var varName = scssName.substring(1);
+      var cssVarName = varName.replace(/_/g, '-');
+      vars.push({ scss: scssName, cssName: '--' + cssVarName, value: scssVal, hasDefault: varName.indexOf('default') >= 0 });
+    }
+
+    if (vars.length === 0) { setStatus('未找到 SCSS 变量', 'error'); return; }
+
+    var result = ':root {\n';
+    for (var i = 0; i < vars.length; i++) {
+      result += '  ' + vars[i].cssName + ': ' + vars[i].value + ';\n';
+    }
+    result += '}\n\n';
+    result += '// Usage: var(' + vars[0].cssName + ')\n';
+    for (var i = 0; i < vars.length; i++) {
+      result += '// SCSS: $' + vars[i].cssName.substring(2) + '  →  CSS: var(' + vars[i].cssName + ')\n';
+    }
+
+    outputEl.textContent = result;
+    setStatus('转换完成，共 ' + vars.length + ' 个变量');
+  }
+
+  document.getElementById('convertBtn').addEventListener('click', convert);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

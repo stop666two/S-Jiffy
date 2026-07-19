@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Cookie 解析 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.cookie-table { width:100%; border-collapse:collapse; font-size:12px; }
+.cookie-table th { background:var(--color-bg-soft); text-align:left; padding:8px 10px; border:1px solid var(--color-border); font-weight:600; }
+.cookie-table td { padding:8px 10px; border:1px solid var(--color-border); vertical-align:top; }
+.cookie-table .attr-name { color:var(--color-text-secondary); font-weight:500; }
+.cookie-table .attr-val { color:var(--color-text-primary); }
+.warning-text { color:var(--color-error); font-size:12px; }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Cookie 解析</h1><p class="tool-desc">解析和格式化 HTTP Cookie 字符串</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="sessionId=abc123; Path=/; HttpOnly; Secure; SameSite=Lax
+theme=dark; Max-Age=3600
+token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析 Cookie</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div id="cookieTableContainer"></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var inputEl = document.getElementById('inputText');
+  var tableContainer = document.getElementById('cookieTableContainer');
+  var outputEl = document.getElementById('outputText');
+
+  var COOKIE_ATTRS = {
+    'path': { name: 'Path', desc: '限定 Cookie 的 URL 路径' },
+    'domain': { name: 'Domain', desc: '限定 Cookie 的域名' },
+    'max-age': { name: 'Max-Age', desc: 'Cookie 最大存活秒数' },
+    'expires': { name: 'Expires', desc: 'Cookie 过期时间' },
+    'secure': { name: 'Secure', desc: '仅通过 HTTPS 发送' },
+    'httponly': { name: 'HttpOnly', desc: '禁止 JavaScript 访问' },
+    'samesite': { name: 'SameSite', desc: '跨站请求策略: Strict/Lax/None' },
+    'priority': { name: 'Priority', desc: 'Cookie 优先级: Low/Medium/High' },
+    'partitioned': { name: 'Partitioned', desc: '分区存储 (CHIPS)' }
+  };
+
+  var SAMESITE_VALUES = { strict: 'Strict', lax: 'Lax', none: 'None' };
+
+  function parseCookieLine(line) {
+    line = line.trim();
+    if (!line || line.indexOf('//') === 0) return null;
+
+    var parts = line.split(';');
+    var name = '';
+    var value = '';
+    var attrs = {};
+    var errors = [];
+
+    var firstEq = parts[0].indexOf('=');
+    if (firstEq === -1) {
+      errors.push('缺少等号，不是有效的 Cookie 键值对');
+      return { name: parts[0].trim(), value: '', attrs: attrs, errors: errors, raw: line };
+    }
+
+    name = parts[0].substring(0, firstEq).trim();
+    value = parts[0].substring(firstEq + 1).trim();
+
+    if (value.indexOf('"') === 0 && value.lastIndexOf('"') === value.length - 1 && value.length > 1) {
+      value = value.substring(1, value.length - 1);
+    }
+
+    for (var i = 1; i < parts.length; i++) {
+      var attr = parts[i].trim();
+      if (!attr) continue;
+      var eqIdx = attr.indexOf('=');
+      var attrName, attrVal;
+      if (eqIdx === -1) {
+        attrName = attr.toLowerCase();
+        attrVal = true;
+      } else {
+        attrName = attr.substring(0, eqIdx).toLowerCase();
+        attrVal = attr.substring(eqIdx + 1).trim();
+        if (attrVal.indexOf('"') === 0 && attrVal.lastIndexOf('"') === attrVal.length - 1) {
+          attrVal = attrVal.substring(1, attrVal.length - 1);
+        }
+      }
+      attrs[attrName] = attrVal;
+    }
+
+    return { name: name, value: value, attrs: attrs, errors: errors.length > 0 ? errors : null, raw: line };
+  }
+
+  function parse() {
+    var text = inputEl.value;
+    if (!text.trim()) { setStatus('请输入 Cookie 字符串', 'error'); return; }
+
+    var lines = text.split('\n');
+    var parsedCookies = [];
+    for (var i = 0; i < lines.length; i++) {
+      var c = parseCookieLine(lines[i]);
+      if (c) parsedCookies.push(c);
+    }
+
+    if (parsedCookies.length === 0) { setStatus('未解析到有效的 Cookie', 'error'); return; }
+
+    var html = '';
+    for (var ci = 0; ci < parsedCookies.length; ci++) {
+      var cookie = parsedCookies[ci];
+      html += '<div class="card" style="padding:var(--space-2);margin-bottom:12px;">';
+      html += '<table class="cookie-table">';
+      html += '<tr><th colspan="2" style="font-size:13px;">Cookie #' + (ci + 1) + ': ' + htmlEscape(cookie.name) + '</th></tr>';
+      html += '<tr><td class="attr-name" style="width:100px;">名称</td><td class="attr-val"><strong>' + htmlEscape(cookie.name) + '</strong></td></tr>';
+      html += '<tr><td class="attr-name">值</td><td class="attr-val" style="word-break:break-all;">' + htmlEscape(cookie.value.length > 100 ? cookie.value.substring(0, 100) + '...' : cookie.value) + '</td></tr>';
+
+      var attrKeys = Object.keys(cookie.attrs);
+      if (attrKeys.length > 0) {
+        for (var j = 0; j < attrKeys.length; j++) {
+          var ak = attrKeys[j];
+          var av = cookie.attrs[ak];
+          var attrInfo = COOKIE_ATTRS[ak];
+          var displayName = attrInfo ? attrInfo.name : ak;
+          var displayVal;
+          if (av === true) {
+            displayVal = '<span style="color:var(--color-success);font-weight:600;">✓ 已设置</span>';
+          } else if (ak === 'samesite' && SAMESITE_VALUES[av.toLowerCase()]) {
+            displayVal = SAMESITE_VALUES[av.toLowerCase()];
+          } else if (ak === 'max-age') {
+            var secs = parseInt(av, 10);
+            if (!isNaN(secs)) {
+              var hours = Math.floor(secs / 3600);
+              var mins = Math.floor((secs % 3600) / 60);
+              displayVal = av + ' 秒 (' + hours + 'h ' + mins + 'm)';
+            } else {
+              displayVal = av;
+            }
+          } else {
+            displayVal = av;
+          }
+          var desc = attrInfo ? '<br><span style="font-size:11px;color:var(--color-text-disabled);">' + attrInfo.desc + '</span>' : '';
+          html += '<tr><td class="attr-name">' + htmlEscape(displayName) + '</td><td class="attr-val">' + htmlEscape(String(displayVal)) + desc + '</td></tr>';
+        }
+      } else {
+        html += '<tr><td class="attr-name">属性</td><td style="color:var(--color-text-disabled);font-size:12px;">无属性 (仅键值对)</td></tr>';
+      }
+
+      if (cookie.errors) {
+        for (var e = 0; e < cookie.errors.length; e++) {
+          html += '<tr><td class="attr-name warning-text">⚠</td><td class="warning-text">' + htmlEscape(cookie.errors[e]) + '</td></tr>';
+        }
+      }
+      html += '</table></div>';
+    }
+
+    tableContainer.innerHTML = html;
+
+    var output = '';
+    for (var ci = 0; ci < parsedCookies.length; ci++) {
+      var c = parsedCookies[ci];
+      output += 'Name: ' + c.name + '\nValue: ' + c.value + '\n';
+      var aKeys = Object.keys(c.attrs);
+      for (var j = 0; j < aKeys.length; j++) {
+        var ak = aKeys[j];
+        var av = c.attrs[ak];
+        var attrInfo = COOKIE_ATTRS[ak];
+        var displayName = attrInfo ? attrInfo.name : ak;
+        output += displayName + ': ' + (av === true ? 'true' : av) + '\n';
+      }
+      output += '\n';
+    }
+    outputEl.textContent = output.trim();
+    setStatus('解析完成，共 ' + parsedCookies.length + ' 个 Cookie');
+  }
+
+  document.getElementById('parseBtn').addEventListener('click', parse);
+  document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; tableContainer.innerHTML = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+})();
+</script></body></html>

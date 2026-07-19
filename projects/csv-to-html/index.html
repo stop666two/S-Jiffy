@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSV → HTML 表格 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.table-wrap{overflow-x:auto;margin-top:var(--space-2);}
+.table-wrap table{width:100%;border-collapse:collapse;font-size:13px;}
+.table-wrap th,.table-wrap td{padding:8px 12px;border:1px solid var(--color-border);text-align:left;white-space:nowrap;}
+.table-wrap th{background:var(--color-bg-soft);font-weight:600;position:sticky;top:0;}
+.table-wrap tr:nth-child(even){background:var(--color-bg-soft);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSV → HTML 表格</h1><p class="tool-desc">将 CSV 文本数据转换为可视化的 HTML 表格。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="name,age,email&#10;Alice,30,alice@example.com&#10;Bob,25,bob@example.com" style="min-height:140px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;">
+<button id="convertBtn" class="btn btn-primary">转换</button>
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="hasHeader" type="checkbox" checked> 首行为表头</label>
+<input id="delimiterInput" class="input" value="," style="width:60px;" placeholder="分隔符" title="分隔符">
+</div>
+<div id="tableContainer" class="table-wrap card"></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText'),tc=document.getElementById('tableContainer');
+var hdr=document.getElementById('hasHeader'),delim=document.getElementById('delimiterInput');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function parseCSVLine(text,delim){
+  var result=[],cur='',inQ=false;
+  for(var i=0;i<text.length;i++){
+    var ch=text[i];
+    if(inQ){if(ch==='"'){if(i+1<text.length&&text[i+1]==='"'){cur+='"';i++;}else{inQ=false;}}else{cur+=ch;}}
+    else{if(ch==='"'){inQ=true;}else if(ch===delim){result.push(cur.trim());cur='';}else if(ch==='\r'){}else if(ch==='\n'){break;}else{cur+=ch;}}
+  }
+  result.push(cur.trim());return result;
+}
+document.getElementById('convertBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入 CSV','error');return;}
+  var d=delim.value||',';
+  if(d==='\\t')d='\t';
+  var lines=text.split('\n').filter(function(l){return l.trim();});
+  if(lines.length<1){setStatus('数据为空','error');return;}
+  var data=lines.map(function(l){return parseCSVLine(l,d);});
+  var start=hdr.checked?1:0;
+  var headers=hdr.checked?data[0]:data[0].map(function(_,idx){return'Column '+(idx+1);});
+  var html='<table><thead><tr>'+headers.map(function(h){return'<th>'+esc(h)+'</th>';}).join('')+'</tr></thead><tbody>';
+  for(var r=start;r<data.length;r++){
+    html+='<tr>'+headers.map(function(_,ci){return'<td>'+esc(data[r][ci]||'')+'</td>';}).join('')+'</tr>';
+  }
+  html+='</tbody></table>';
+  tc.innerHTML=html;
+  o.textContent='表格已生成，共 '+(data.length-start)+' 行数据';
+  setStatus('');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

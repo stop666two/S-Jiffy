@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TSV → JSON - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.action-bar{display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>TSV → JSON</h1><p class="tool-desc">将 TSV（制表符分隔）数据转换为 JSON 数组对象格式。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Name	Age	City&#10;Alice	30	New York&#10;Bob	25	London&#10;Charlie	35	Tokyo" style="min-height:160px;"></textarea></div>
+<div class="action-bar">
+<button id="convertBtn" class="btn btn-primary">转换到 JSON</button>
+<label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="hasHeader" type="checkbox" checked> 首行为表头</label>
+<select id="quoteStyle" class="input" style="width:auto;min-width:80px;">
+  <option value="double">双引号</option>
+  <option value="single">单引号</option>
+</select>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText');
+var hdr=document.getElementById('hasHeader'),qs=document.getElementById('quoteStyle');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.getElementById('convertBtn').addEventListener('click',function(){
+  var text=i.value;if(!text.trim()){setStatus('请输入 TSV 数据','error');return;}
+  var lines=text.split('\n').filter(function(l){return l.trim();});
+  if(lines.length<2){setStatus('至少需要 2 行数据','error');return;}
+  var header,start;
+  if(hdr.checked){
+    header=lines[0].split('\t').map(function(s){return s.trim();});
+    start=1;
+  }else{
+    header=lines[0].split('\t').map(function(_,i){return'col'+(i+1);});
+    start=0;
+  }
+  var result=[];
+  for(var r=start;r<lines.length;r++){
+    var vals=lines[r].split('\t').map(function(s){return s.trim();});
+    var row={};header.forEach(function(h,i){row[h]=vals[i]||'';});
+    result.push(row);
+  }
+  var json=qs.value==='single'?JSON.stringify(result,null,2).replace(/"([^"]+)":/g,"'$1':").replace(/"([^"]*?)"/g,"'$1'"):JSON.stringify(result,null,2);
+  o.textContent=json;
+  setStatus('已生成 '+result.length+' 条记录');
+});
+document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

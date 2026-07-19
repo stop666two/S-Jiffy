@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Cache-Control 分析 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.directive-item{padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;font-size:var(--font-size-sm);}.directive-name{font-weight:600;color:var(--color-text-primary);}.directive-desc{color:var(--color-text-secondary);margin-top:2px;}.directive-val{color:var(--color-accent);font-weight:600;}.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;margin-left:6px;}.tag-req{background:#e8f0fe;color:#096bde;}.tag-resp{background:#fce8e6;color:var(--color-error);}.tag-both{background:#e6f4ea;color:var(--color-success);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>Cache-Control 分析</h1><p class="tool-desc">解析 HTTP Cache-Control 头部，解释每个指令的含义</p>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="cacheInput" class="input js-focus-input" placeholder="public, max-age=3600, must-revalidate" style="flex:1;"><button id="parseBtn" class="btn btn-primary">解析</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="parsedList"></div><div id="summaryBox" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var input=document.getElementById('cacheInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),parsedList=document.getElementById('parsedList'),summaryBox=document.getElementById('summaryBox'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var directiveDB={ 'max-age':{desc:'响应可以被缓存的最长时间（秒）。超过此时间后，缓存必须向源服务器重新验证。',tag:'both'},'s-maxage':{desc:'共享缓存（如 CDN、代理）的最大存活时间（秒），优先级高于 max-age。仅适用于公共缓存。',tag:'resp'},'public':{desc:'任何缓存（包括共享缓存）都可以缓存此响应。即使响应通常要求身份验证。',tag:'resp'},'private':{desc:'响应只能由浏览器私有缓存存储，共享缓存（如 CDN）不得缓存。',tag:'resp'},'no-cache':{desc:'缓存必须先向源服务器验证资源的有效性，才能提供给客户端。每次都需要条件请求。',tag:'both'},'no-store':{desc:'任何缓存都不得存储此请求或响应的任何部分。完全禁止缓存。',tag:'both'},'no-transform':{desc:'中间代理或 CDN 不得对资源内容进行任何转换（如压缩、转码）。',tag:'both'},'must-revalidate':{desc:'一旦缓存过期，必须向源服务器验证后才能使用。即使代理服务器不可用也不得使用过期缓存。',tag:'resp'},'proxy-revalidate':{desc:'共享缓存（代理）在资源过期后必须向源服务器重新验证。私有浏览器缓存不受此影响。',tag:'resp'},'immutable':{desc:'资源内容不会改变，过期前无需重新验证。适用于带有指纹的静态资源。',tag:'resp'},'stale-while-revalidate':{desc:'在指定时间内，缓存可以立即返回过期的响应，同时在后台异步重新验证。格式: stale-while-revalidate=<seconds>',tag:'resp'},'stale-if-error':{desc:'如果源服务器返回错误，在指定时间内允许使用过期缓存响应。格式: stale-if-error=<seconds>',tag:'resp'},'must-understand':{desc:'缓存必须理解并遵守响应中所有缓存指令的要求，否则不得存储响应。',tag:'resp'},'no-cache="..."':{desc:'指定响应中哪些字段在验证前不能使用。no-cache="Set-Cookie" 表示 Set-Cookie 字段不能直接使用。',tag:'resp'},'no-store="..."':{desc:'指定响应中哪些字段不能被存储。',tag:'resp'},'min-fresh':{desc:'客户端要求响应在指定秒数内仍然是新鲜的。格式: min-fresh=<seconds>',tag:'req'},'max-stale':{desc:'客户端愿意接受超过过期时间的响应。可指定最大超期秒数。格式: max-stale[=<seconds>]',tag:'req'},'only-if-cached':{desc:'客户端只接受已缓存的内容，不从源服务器加载。若缓存中没有则返回 504。',tag:'req'},'stale-if-error':'same with response'};
+var dirDescriptions = {
+  'max-age': '响应可以被缓存的最长时间（秒）。超过此时间后，缓存必须向源服务器重新验证。',
+  's-maxage': '共享缓存（如 CDN、代理）的最大存活时间（秒），优先级高于 max-age。仅适用于公共缓存。',
+  'public': '任何缓存（包括共享缓存）都可以缓存此响应。即使响应通常要求身份验证。',
+  'private': '响应只能由浏览器私有缓存存储，共享缓存（如 CDN）不得缓存。',
+  'no-cache': '缓存必须先向源服务器验证资源的有效性，才能提供给客户端。每次都需要条件请求。',
+  'no-store': '任何缓存都不得存储此请求或响应的任何部分。完全禁止缓存。',
+  'no-transform': '中间代理或 CDN 不得对资源内容进行任何转换（如压缩、转码）。',
+  'must-revalidate': '一旦缓存过期，必须向源服务器验证后才能使用。即使代理服务器不可用也不得使用过期缓存。',
+  'proxy-revalidate': '共享缓存（代理）在资源过期后必须向源服务器重新验证。私有浏览器缓存不受此影响。',
+  'immutable': '资源内容不会改变，过期前无需重新验证。适用于带有指纹的静态资源。',
+  'stale-while-revalidate': '在指定时间内，缓存可以立即返回过期的响应，同时在后台异步重新验证。',
+  'stale-if-error': '如果源服务器返回错误，在指定时间内允许使用过期缓存响应。',
+  'must-understand': '缓存必须理解并遵守响应中所有缓存指令的要求，否则不得存储响应。'
+};
+parseBtn.addEventListener('click',function(){
+  var v=input.value.trim();if(!v){setStatus('请输入 Cache-Control 头部值','error');return;}
+  var parts=v.split(',').map(function(p){return p.trim();});
+  var html='',summaries=[],dirs=[];
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];if(!p)continue;
+    var eqIdx=p.indexOf('=');
+    var name=eqIdx>=0?p.substring(0,eqIdx).trim():p.trim();
+    var val=eqIdx>=0?p.substring(eqIdx+1).trim():null;
+    name=name.toLowerCase();
+    var desc=dirDescriptions[name]||'自定义或未识别的指令';
+    var tag='both';if(name==='s-maxage'||name==='public'||name==='private'||name==='must-revalidate'||name==='proxy-revalidate'||name==='immutable'||name==='stale-while-revalidate'||name==='stale-if-error')tag='resp';
+    if(name==='min-fresh'||name==='max-stale'||name==='only-if-cached')tag='req';
+    var tagHtml=tag==='req'?'<span class="tag tag-req">请求</span>':tag==='resp'?'<span class="tag tag-resp">响应</span>':'<span class="tag tag-both">通用</span>';
+    var valHtml=val?'<span class="directive-val"> = '+htmlEscape(val)+'</span>':'';
+    html+='<div class="directive-item"><div><span class="directive-name">'+htmlEscape(name)+'</span>'+valHtml+tagHtml+'</div><div class="directive-desc">'+htmlEscape(desc)+'</div></div>';
+    dirs.push({name:name,val:val});
+  }
+  if(dirs.length===0){setStatus('未找到有效指令','error');return;}
+  parsedList.innerHTML=html;resultCard.style.display='block';
+  var s='';if(dirs.some(function(d){return d.name==='no-store';}))s+='⚠️ no-store 存在：响应不会被缓存。';
+  else if(dirs.some(function(d){return d.name==='no-cache';}))s+='⚠️ no-cache 存在：需要每次验证。';
+  else if(dirs.some(function(d){return d.name==='public'||d.name==='private';}))s+='✅ 缓存范围已指定。';
+  else s+='ℹ️ 无显式缓存范围。';
+  var ma=dirs.filter(function(d){return d.name==='max-age';});
+  if(ma.length&&ma[0].val)s+=' 缓存有效期：'+ma[0].val+'秒。';
+  summaryBox.textContent=s;
+  outputText.textContent=parts.join(', ');
+  setStatus('解析完成');
+});
+clearBtn.addEventListener('click',function(){input.value='';resultCard.style.display='none';parsedList.innerHTML='';summaryBox.textContent='';outputText.textContent='';setStatus('');input.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+input.addEventListener('keydown',function(e){if(e.key==='Enter')parseBtn.click();});
+})();</script>
+</body></html>

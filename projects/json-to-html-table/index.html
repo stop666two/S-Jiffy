@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON → HTML 表格 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.table-wrap{overflow-x:auto;margin-top:var(--space-2);}
+.table-wrap table{width:100%;border-collapse:collapse;font-size:13px;}
+.table-wrap th,.table-wrap td{padding:8px 12px;border:1px solid var(--color-border);text-align:left;white-space:nowrap;}
+.table-wrap th{background:var(--color-bg-soft);font-weight:600;position:sticky;top:0;}
+.table-wrap tr:nth-child(even){background:var(--color-bg-soft);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>JSON → HTML 表格</h1><p class="tool-desc">将 JSON 数组数据转换为 HTML 表格，自动提取表头。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='[{ "name": "Alice", "role": "Engineer", "age": 30 }, { "name": "Bob", "role": "Designer", "age": 25 }]' style="min-height:140px;"></textarea></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
+<button id="generateBtn" class="btn btn-primary">生成表格</button>
+<button id="fullPageBtn" class="btn btn-secondary">新标签页打开</button>
+</div>
+<div id="tableContainer" class="table-wrap card"></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var i=document.getElementById('inputText'),o=document.getElementById('outputText'),tc=document.getElementById('tableContainer');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function buildTable(data){
+  if(!Array.isArray(data)||data.length===0)return'<p style="color:var(--color-text-secondary);font-size:13px;">空数组或无数据</p>';
+  var headers=Object.keys(data[0]);
+  var html='<table><thead><tr>'+headers.map(function(h){return'<th>'+esc(h)+'</th>';}).join('')+'</tr></thead><tbody>';
+  data.forEach(function(row){html+='<tr>'+headers.map(function(h){var v=row[h];if(typeof v==='object')v=JSON.stringify(v);return'<td>'+esc(v===undefined?'':v)+'</td>';}).join('')+'</tr>';});
+  html+='</tbody></table>';
+  return html;
+}
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入 JSON','error');return;}
+  try{
+    var data=JSON.parse(text);
+    if(!Array.isArray(data)){var arr=[];for(var k in data){if(data.hasOwnProperty(k))arr.push({key:k,value:data[k]});}data=arr;}
+    tc.innerHTML=buildTable(data);
+    o.textContent='表格已生成，共 '+(Array.isArray(data)?data.length:0)+' 行';
+    setStatus('');
+  }catch(e){tc.innerHTML='';o.textContent='';setStatus('JSON 解析失败: '+e.message,'error');}
+});
+document.getElementById('fullPageBtn').addEventListener('click',function(){
+  var text=i.value.trim();if(!text){setStatus('请输入 JSON','error');return;}
+  try{
+    var data=JSON.parse(text);if(!Array.isArray(data))throw new Error('需要数组');
+    var w=window.open('','_blank');
+    if(!w){setStatus('请允许弹窗','error');return;}
+    var headers=Object.keys(data[0]);
+    var htm='<html><head><meta charset="UTF-8"><title>JSON Table</title><style>body{font-family:system-ui,sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{padding:8px 12px;border:1px solid #ddd;text-align:left;}th{background:#f5f5f5;}</style></head><body>'+buildTable(data)+'</body></html>';
+    w.document.write(htm);w.document.close();
+    setStatus('已在新窗口打开');
+  }catch(e){setStatus('JSON 解析失败: '+e.message,'error');}
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

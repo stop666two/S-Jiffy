@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTTP 请求头构建 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.output-box { font-family: var(--font-mono); font-size: 13px; }
+.header-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--color-border); }
+.header-row input[type="text"] { height:36px; font-size:13px; padding:0 10px; border:1px solid #ddd; border-radius:4px; outline:none; }
+.header-row input[type="text"]:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
+.header-row .del-btn { background:none; border:none; color:var(--color-text-disabled); cursor:pointer; font-size:18px; padding:4px; }
+.header-row .del-btn:hover { color:var(--color-error); }
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>HTTP 请求头构建</h1><p class="tool-desc">可视化构建 HTTP 请求头部信息</p>
+<div class="card"><div id="headerList"></div><button id="addHeaderBtn" class="btn btn-secondary" style="margin-top:8px;height:36px;font-size:13px;">+ 添加头部</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary">生成头部字符串</button><button id="clearBtn" class="btn btn-secondary">清空全部</button><span style="font-size:12px;color:var(--color-text-secondary);align-self:center;">预设: </span>
+<select id="presetSelect" class="input" style="width:auto;height:auto;padding:6px 10px;font-size:12px;display:inline-block;width:140px;">
+  <option value="custom">自定义</option>
+  <option value="json">JSON API</option>
+  <option value="form">表单提交</option>
+  <option value="auth">Bearer Auth</option>
+  <option value="graphql">GraphQL</option>
+  <option value="upload">文件上传</option>
+</select></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function () {
+  var headerList = document.getElementById('headerList');
+  var outputEl = document.getElementById('outputText');
+  var presetSelect = document.getElementById('presetSelect');
+
+  var PRESETS = {
+    json: [
+      { key: 'Content-Type', val: 'application/json' },
+      { key: 'Accept', val: 'application/json' }
+    ],
+    form: [
+      { key: 'Content-Type', val: 'application/x-www-form-urlencoded' }
+    ],
+    auth: [
+      { key: 'Authorization', val: 'Bearer <token>' },
+      { key: 'Content-Type', val: 'application/json' }
+    ],
+    graphql: [
+      { key: 'Content-Type', val: 'application/json' },
+      { key: 'Accept', val: 'application/graphql-response+json' }
+    ],
+    upload: [
+      { key: 'Content-Type', val: 'multipart/form-data' },
+      { key: 'Accept', val: '*/*' }
+    ]
+  };
+
+  function renderHeaders() {
+    var rows = headerList.querySelectorAll('.header-row');
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      var keyInput = rows[i].querySelector('input:first-child');
+      var valInput = rows[i].querySelector('input:nth-child(2)');
+      if (keyInput && valInput) {
+        html += '<div class="header-row"><input type="text" placeholder="Header-Name" value="' + htmlEscape(keyInput.value) + '" style="width:200px;"><input type="text" placeholder="Value" value="' + htmlEscape(valInput.value) + '" style="flex:1;"><button class="del-btn" onclick="this.parentElement.remove();updateOutput();">×</button></div>';
+      }
+    }
+    headerList.innerHTML = html;
+  }
+
+  var addHeaderRow = function (key, val) {
+    var div = document.createElement('div');
+    div.className = 'header-row';
+    div.innerHTML = '<input type="text" placeholder="Header-Name" value="' + htmlEscape(key || '') + '" style="width:200px;"><input type="text" placeholder="Value" value="' + htmlEscape(val || '') + '" style="flex:1;"><button class="del-btn">×</button>';
+    div.querySelector('.del-btn').addEventListener('click', function () { div.remove(); updateOutput(); });
+    var inputs = div.querySelectorAll('input');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('input', updateOutput);
+    }
+    headerList.appendChild(div);
+    return div;
+  };
+
+  function updateOutput() {
+    var rows = headerList.querySelectorAll('.header-row');
+    var lines = [];
+    for (var i = 0; i < rows.length; i++) {
+      var keyInput = rows[i].querySelector('input:first-child');
+      var valInput = rows[i].querySelector('input:nth-child(2)');
+      if (keyInput && valInput && keyInput.value.trim()) {
+        lines.push(keyInput.value.trim() + ': ' + valInput.value);
+      }
+    }
+    outputEl.textContent = lines.join('\n');
+  }
+
+  function applyPreset(preset) {
+    if (preset === 'custom') return;
+    headerList.innerHTML = '';
+    var headers = PRESETS[preset];
+    if (headers) {
+      for (var i = 0; i < headers.length; i++) {
+        addHeaderRow(headers[i].key, headers[i].val);
+      }
+    }
+    updateOutput();
+  }
+
+  document.getElementById('addHeaderBtn').addEventListener('click', function () { addHeaderRow('', ''); });
+  document.getElementById('buildBtn').addEventListener('click', updateOutput);
+  document.getElementById('clearBtn').addEventListener('click', function () { headerList.innerHTML = ''; outputEl.textContent = ''; setStatus(''); });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  presetSelect.addEventListener('change', function () { applyPreset(this.value); });
+
+  addHeaderRow('Content-Type', 'application/json');
+  addHeaderRow('Accept', 'application/json');
+  addHeaderRow('Authorization', 'Bearer ');
+})();
+</script></body></html>

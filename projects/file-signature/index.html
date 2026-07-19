@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>文件魔术签名 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.search-bar{display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;}
+.sig-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:var(--space-2);}
+.sig-table th,.sig-table td{padding:6px 10px;border:1px solid var(--color-border);text-align:left;}
+.sig-table th{background:var(--color-bg-soft);font-weight:600;position:sticky;top:0;}
+.sig-table tr:hover{background:var(--color-bg-soft);}
+.hex-bytes{font-family:var(--font-mono);font-size:11px;color:var(--color-accent);}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>文件魔术签名</h1><p class="tool-desc">查询常见文件类型的文件头魔术数字（Magic Bytes / File Signatures）。</p>
+<div class="search-bar card" style="margin-bottom:var(--space-3);">
+<input id="searchInput" class="input js-focus-input" placeholder="搜索文件类型或扩展名，如 PDF、JPEG、PNG..." style="flex:1;min-width:200px;">
+<select id="categoryFilter" class="input" style="width:auto;min-width:120px;">
+  <option value="">全部类别</option>
+  <option value="image">图片</option>
+  <option value="document">文档</option>
+  <option value="archive">压缩包</option>
+  <option value="media">媒体</option>
+  <option value="executable">可执行文件</option>
+  <option value="other">其他</option>
+</select>
+</div>
+<div style="overflow-x:auto;max-height:400px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius-md);" id="tableWrap">
+<table class="sig-table" id="sigTable"><thead><tr><th>扩展名</th><th>文件类型</th><th>魔术字节 (Hex)</th><th>ASCII</th><th>偏移</th></tr></thead><tbody id="sigBody"></tbody></table></div>
+<div class="output-box" style="margin-top:var(--space-2);"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var signatures=[
+  {ext:'PNG',type:'PNG 图片',cat:'image',hex:'89 50 4E 47 0D 0A 1A 0A',ascii:'‰PNG....',offset:0},
+  {ext:'JPEG',type:'JPEG 图片',cat:'image',hex:'FF D8 FF E0',ascii:'ÿØÿà',offset:0},
+  {ext:'JPEG',type:'JPEG 图片 (Exif)',cat:'image',hex:'FF D8 FF E1',ascii:'ÿØÿá',offset:0},
+  {ext:'GIF',type:'GIF 图片',cat:'image',hex:'47 49 46 38 39 61',ascii:'GIF89a',offset:0},
+  {ext:'GIF',type:'GIF 图片 (v87)',cat:'image',hex:'47 49 46 38 37 61',ascii:'GIF87a',offset:0},
+  {ext:'BMP',type:'BMP 位图',cat:'image',hex:'42 4D',ascii:'BM',offset:0},
+  {ext:'WEBP',type:'WebP 图片',cat:'image',hex:'52 49 46 46 ?? ?? ?? ?? 57 45 42 50',ascii:'RIFF....WEBP',offset:0},
+  {ext:'ICO',type:'ICO 图标',cat:'image',hex:'00 00 01 00',ascii:'....',offset:0},
+  {ext:'SVG',type:'SVG 矢量图',cat:'image',hex:'3C 73 76 67',ascii:'<svg',offset:0},
+  {ext:'TIFF',type:'TIFF 图片 (LE)',cat:'image',hex:'49 49 2A 00',ascii:'II*.',offset:0},
+  {ext:'TIFF',type:'TIFF 图片 (BE)',cat:'image',hex:'4D 4D 00 2A',ascii:'MM.*',offset:0},
+  {ext:'PDF',type:'PDF 文档',cat:'document',hex:'25 50 44 46',ascii:'%PDF',offset:0},
+  {ext:'DOC',type:'Word 文档 (旧)',cat:'document',hex:'D0 CF 11 E0 A1 B1 1A E1',ascii:'ÐÏ.à¡±.á',offset:0},
+  {ext:'DOCX',type:'Word 文档',cat:'document',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'XLS',type:'Excel 工作表 (旧)',cat:'document',hex:'D0 CF 11 E0 A1 B1 1A E1',ascii:'ÐÏ.à¡±.á',offset:0},
+  {ext:'XLSX',type:'Excel 工作表',cat:'document',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'PPT',type:'PowerPoint (旧)',cat:'document',hex:'D0 CF 11 E0 A1 B1 1A E1',ascii:'ÐÏ.à¡±.á',offset:0},
+  {ext:'PPTX',type:'PowerPoint',cat:'document',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'RTF',type:'RTF 文档',cat:'document',hex:'7B 5C 72 74 66',ascii:'{\\rtf',offset:0},
+  {ext:'EPUB',type:'EPUB 电子书',cat:'document',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'ZIP',type:'ZIP 压缩包',cat:'archive',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'ZIP',type:'ZIP 空/自解压',cat:'archive',hex:'50 4B 05 06',ascii:'PK..',offset:0},
+  {ext:'RAR',type:'RAR 压缩包',cat:'archive',hex:'52 61 72 21 1A 07 00',ascii:'Rar!...',offset:0},
+  {ext:'RAR5',type:'RAR v5 压缩包',cat:'archive',hex:'52 61 72 21 1A 07 01',ascii:'Rar!...',offset:0},
+  {ext:'7Z',type:'7-Zip 压缩包',cat:'archive',hex:'37 7A BC AF 27 1C',ascii:'7z..\'..',offset:0},
+  {ext:'TAR',type:'TAR 归档',cat:'archive',hex:'75 73 74 61 72',ascii:'ustar',offset:257},
+  {ext:'GZ',type:'GZip 压缩',cat:'archive',hex:'1F 8B 08',ascii:'...',offset:0},
+  {ext:'BZ2',type:'BZip2 压缩',cat:'archive',hex:'42 5A 68',ascii:'BZh',offset:0},
+  {ext:'XZ',type:'XZ 压缩',cat:'archive',hex:'FD 37 7A 58 5A 00',ascii:'.7zXZ.',offset:0},
+  {ext:'MP3',type:'MP3 音频 (ID3)',cat:'media',hex:'49 44 33',ascii:'ID3',offset:0},
+  {ext:'MP3',type:'MP3 音频',cat:'media',hex:'FF FB',ascii:'ÿû',offset:0},
+  {ext:'WAV',type:'WAV 音频',cat:'media',hex:'52 49 46 46 ?? ?? ?? ?? 57 41 56 45',ascii:'RIFF....WAVE',offset:0},
+  {ext:'FLAC',type:'FLAC 音频',cat:'media',hex:'66 4C 61 43 00 00 00 22',ascii:'fLaC.."',offset:0},
+  {ext:'OGG',type:'OGG 音频/视频',cat:'media',hex:'4F 67 67 53',ascii:'OggS',offset:0},
+  {ext:'M4A',type:'M4A 音频',cat:'media',hex:'00 00 00 20 66 74 79 70',ascii:'... ftyp',offset:0},
+  {ext:'MP4',type:'MP4 视频',cat:'media',hex:'00 00 00 18 66 74 79 70',ascii:'...ftyp',offset:0},
+  {ext:'AVI',type:'AVI 视频',cat:'media',hex:'52 49 46 46 ?? ?? ?? ?? 41 56 49 20',ascii:'RIFF....AVI ',offset:0},
+  {ext:'MKV',type:'MKV 视频',cat:'media',hex:'1A 45 DF A3',ascii:'.Eß£',offset:0},
+  {ext:'MOV',type:'MOV 视频',cat:'media',hex:'00 00 00 14 66 74 79 70 71 74 20 20',ascii:'....ftypqt  ',offset:0},
+  {ext:'WEBM',type:'WebM 视频',cat:'media',hex:'1A 45 DF A3',ascii:'.Eß£',offset:0},
+  {ext:'EXE',type:'Windows PE 可执行',cat:'executable',hex:'4D 5A',ascii:'MZ',offset:0},
+  {ext:'ELF',type:'ELF 可执行文件',cat:'executable',hex:'7F 45 4C 46',ascii:'.ELF',offset:0},
+  {ext:'Mach-O',type:'Mach-O 二进制 (ARM64)',cat:'executable',hex:'CF FA ED FE',ascii:'Ïúíþ',offset:0},
+  {ext:'Mach-O',type:'Mach-O 二进制 (x86_64)',cat:'executable',hex:'FE ED FA CE',ascii:'þíúÎ',offset:0},
+  {ext:'DLL',type:'DLL 动态链接库',cat:'executable',hex:'4D 5A',ascii:'MZ',offset:0},
+  {ext:'APK',type:'Android APK',cat:'archive',hex:'50 4B 03 04',ascii:'PK..',offset:0},
+  {ext:'ISO',type:'ISO 光盘镜像',cat:'archive',hex:'43 44 30 30 31',ascii:'CD001',offset:32769},
+  {ext:'TORRENT',type:'BitTorrent 文件',cat:'other',hex:'64 38 3A 61 6E 6E 6F 75 6E 63 65',ascii:'d8:announce',offset:0},
+  {ext:'SQLITE',type:'SQLite 数据库',cat:'other',hex:'53 51 4C 69 74 65 20 66 6F 72 6D 61 74 20 33 00',ascii:'SQLite format 3.',offset:0},
+  {ext:'JAVA',type:'Java class 文件',cat:'other',hex:'CA FE BA BE',ascii:'Êþº¾',offset:0},
+  {ext:'DEX',type:'Dalvik EXE (Android)',cat:'other',hex:'64 65 78 0A 30 33 35 00',ascii:'dex.035.',offset:0},
+  {ext:'MBR',type:'MBR 引导扇区',cat:'other',hex:'55 AA',ascii:'Uª',offset:510},
+  {ext:'PSD',type:'Photoshop PSD',cat:'image',hex:'38 42 50 53',ascii:'8BPS',offset:0},
+  {ext:'TTF',type:'TrueType 字体',cat:'other',hex:'00 01 00 00 00',ascii:'.....',offset:0},
+  {ext:'OTF',type:'OpenType 字体',cat:'other',hex:'4F 54 54 4F',ascii:'OTTO',offset:0},
+  {ext:'WASM',type:'WebAssembly 二进制',cat:'other',hex:'00 61 73 6D',ascii:'.asm',offset:0},
+  {ext:'CRX',type:'Chrome 扩展',cat:'other',hex:'43 72 32 34',ascii:'Cr24',offset:0},
+  {ext:'FLV',type:'Flash 视频',cat:'media',hex:'46 4C 56 01',ascii:'FLV.',offset:0},
+  {ext:'SWF',type:'Flash SWF (压缩)',cat:'media',hex:'43 57 53',ascii:'CWS',offset:0},
+  {ext:'SWF',type:'Flash SWF (未压缩)',cat:'media',hex:'46 57 53',ascii:'FWS',offset:0},
+];
+var si=document.getElementById('searchInput'),cf=document.getElementById('categoryFilter'),sb=document.getElementById('sigBody'),o=document.getElementById('outputText');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function render(filter,category){
+  var filtered=signatures.filter(function(s){
+    if(category&&s.cat!==category)return false;
+    if(!filter)return true;
+    var f=filter.toLowerCase();
+    return s.ext.toLowerCase().indexOf(f)!==-1||s.type.toLowerCase().indexOf(f)!==-1||s.hex.indexOf(f)!==-1;
+  });
+  if(filtered.length===0){sb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--color-text-disabled);padding:24px;">未找到匹配的签名</td></tr>';o.textContent='';return;}
+  sb.innerHTML=filtered.map(function(s){return'<tr><td>'+esc(s.ext)+'</td><td>'+esc(s.type)+'</td><td class="hex-bytes">'+esc(s.hex)+'</td><td style="font-size:11px;">'+esc(s.ascii)+'</td><td>'+s.offset+'</td></tr>';}).join('');
+  o.textContent='共 '+filtered.length+' 条签名';
+}
+function update(){render(si.value.trim(),cf.value);}
+si.addEventListener('input',update);cf.addEventListener('change',update);
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+update();
+})();</script>
+</body></html>

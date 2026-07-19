@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CI/CD 配置助手 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+.form-grid .card{margin-bottom:0;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.platform-chips{display:flex;gap:8px;margin-bottom:var(--space-3);}
+.platform-chip{padding:8px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all .15s;font-size:14px;text-align:center;min-width:120px;}
+.platform-chip:hover{border-color:var(--color-text-primary);}
+.platform-chip.selected{border-color:var(--color-text-primary);background:var(--color-bg-soft);font-weight:600;}
+.platform-chip .sub{font-size:11px;color:var(--color-text-disabled);font-weight:400;display:block;}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CI/CD 配置助手</h1><p class="tool-desc">选择平台和语言，生成 GitHub Actions 或 GitLab CI 基础工作流文件。</p>
+<div class="platform-chips">
+<div class="platform-chip selected" data-platform="github"><div>GitHub Actions</div><span class="sub">.github/workflows/</span></div>
+<div class="platform-chip" data-platform="gitlab"><div>GitLab CI</div><span class="sub">.gitlab-ci.yml</span></div>
+</div>
+<div class="form-grid">
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">语言 / 环境</label>
+<select id="language" class="input">
+  <option value="node">Node.js</option>
+  <option value="python">Python</option>
+  <option value="go">Go</option>
+  <option value="java">Java</option>
+  <option value="rust">Rust</option>
+  <option value="dotnet">.NET</option>
+  <option value="docker">Docker</option>
+  <option value="static">Static Site</option>
+</select></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">触发分支</label><input id="branch" class="input" value="main" placeholder="main"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">Node 版本 / Go 版本等</label><input id="version" class="input" value="20" placeholder="20"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">命令</label>
+<select id="commands" class="input">
+  <option value="npm">npm test</option>
+  <option value="yarn">yarn test</option>
+  <option value="pnpm">pnpm test</option>
+  <option value="pip">pytest</option>
+  <option value="go">go test ./...</option>
+  <option value="maven">mvn test</option>
+  <option value="gradle">gradle test</option>
+  <option value="cargo">cargo test</option>
+  <option value="dotnet">dotnet test</option>
+  <option value="make">make test</option>
+</select></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">额外步骤（可选）</label>
+<label style="display:block;font-size:12px;"><input type="checkbox" id="stepLint"> Lint 检查</label>
+<label style="display:block;font-size:12px;"><input type="checkbox" id="stepBuild"> Build 构建</label>
+<label style="display:block;font-size:12px;"><input type="checkbox" id="stepDeploy"> Deploy 部署</label>
+<label style="display:block;font-size:12px;"><input type="checkbox" id="stepDocker"> Docker 构建</label></div>
+<div class="card" style="grid-column:1/-1;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">部署脚本（用于 Deploy 步骤）</label>
+<input id="deployCmd" class="input" value="echo 'Deploying...'" placeholder="deploy command"></div></div>
+<button id="generateBtn" class="btn btn-primary" style="margin-bottom:var(--space-3);">生成配置文件</button>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var platform='github',lang=document.getElementById('language'),br=document.getElementById('branch'),ver=document.getElementById('version');
+var cmds=document.getElementById('commands'),dc=document.getElementById('deployCmd'),o=document.getElementById('outputText');
+var sLint=document.getElementById('stepLint'),sBuild=document.getElementById('stepBuild'),sDeploy=document.getElementById('stepDeploy'),sDocker=document.getElementById('stepDocker');
+var chips=document.querySelectorAll('.platform-chip');
+for(var ci=0;ci<chips.length;ci++){chips[ci].addEventListener('click',function(){
+  chips.forEach(function(c){c.classList.remove('selected');});this.classList.add('selected');platform=this.dataset.platform;o.textContent='';setStatus('');
+});}
+var langConfigs={
+  node:{name:'Node.js',setup:'node',verPrefix:'node-',install:'npm ci',lint:'npm run lint',build:'npm run build',test:'npm test'},
+  python:{name:'Python',setup:'python',verPrefix:'python-',install:'pip install -r requirements.txt',lint:'flake8 .',build:'',test:'pytest'},
+  go:{name:'Go',setup:'go',verPrefix:'go-',install:'',lint:'golangci-lint run',build:'go build ./...',test:'go test ./...'},
+  java:{name:'Java',setup:'java',verPrefix:'',install:'',lint:'',build:'mvn package -DskipTests',test:'mvn test'},
+  rust:{name:'Rust',setup:'rust',verPrefix:'',install:'',lint:'cargo clippy',build:'cargo build',test:'cargo test'},
+  dotnet:{name:'.NET',setup:'dotnet',verPrefix:'dotnet-',install:'dotnet restore',lint:'',build:'dotnet build',test:'dotnet test'},
+  docker:{name:'Docker',setup:'docker',verPrefix:'',install:'',lint:'',build:'docker build .',test:''},
+  static:{name:'Static Site',setup:'node',verPrefix:'node-',install:'npm ci',lint:'',build:'npm run build',test:''}
+};
+document.getElementById('generateBtn').addEventListener('click',function(){
+  var cfg=langConfigs[lang.value]||langConfigs.node;
+  var branch=br.value.trim()||'main',version=ver.value.trim()||'20';
+  var hasLint=sLint.checked,hasBuild=sBuild.checked,hasDeploy=sDeploy.checked,hasDocker=sDocker.checked;
+  var testCmd=cmds.options[cmds.selectedIndex].value;
+  if(platform==='github'){
+    var lines=['name: CI','on:','  push:','    branches: ['+branch+']','  pull_request:','    branches: ['+branch+']','jobs:','  build:','    runs-on: ubuntu-latest','    steps:','    - uses: actions/checkout@v4'];
+    if(cfg.setup==='node'){lines.push('    - uses: actions/setup-node@v4','      with:','        node-version: '+version);}
+    else if(cfg.setup==='python'){lines.push('    - uses: actions/setup-python@v5','      with:','        python-version: '+version);}
+    else if(cfg.setup==='go'){lines.push('    - uses: actions/setup-go@v5','      with:','        go-version: '+version);}
+    else if(cfg.setup==='java'){lines.push('    - uses: actions/setup-java@v4','      with:','        distribution: temurin','        java-version: '+version);}
+    if(cfg.install)lines.push('    - name: Install dependencies','      run: '+cfg.install);
+    if(hasLint&&cfg.lint)lines.push('    - name: Lint','      run: '+cfg.lint);
+    if(hasBuild&&cfg.build)lines.push('    - name: Build','      run: '+cfg.build);
+    if(hasDocker)lines.push('    - name: Docker build','      run: docker build -t ${{ github.repository }} .');
+    if(testCmd!=='none')lines.push('    - name: Test','      run: '+testCmd);
+    if(hasDeploy){lines.push('    - name: Deploy','      run: '+dc.value.trim()||'echo deploy';}
+    o.textContent=lines.join('\n');
+  }else{
+    var yml=['stages:','  - build','  - test'];
+    if(hasDeploy)yml.splice(2,0,'  - deploy');
+    yml.push('');
+    yml.push(cfg.name.toLowerCase()+'-build:');
+    yml.push('  stage: build');
+    yml.push('  image: '+(cfg.setup==='node'?'node:'+version:cfg.setup==='python'?'python:'+version:cfg.setup==='go'?'golang:'+version:'ubuntu:latest'));
+    yml.push('  script:');
+    if(cfg.install)yml.push('    - '+cfg.install);
+    if(hasLint&&cfg.lint)yml.push('    - '+cfg.lint);
+    if(hasBuild&&cfg.build)yml.push('    - '+cfg.build);
+    if(hasDocker)yml.push('    - docker build -t $CI_REGISTRY_IMAGE .');
+    yml.push('  only:');
+    yml.push('    - '+branch);
+    yml.push('');
+    yml.push(cfg.name.toLowerCase()+'-test:');
+    yml.push('  stage: test');
+    yml.push('  script:');
+    yml.push('    - '+testCmd);
+    yml.push('  only:');
+    yml.push('    - '+branch);
+    if(hasDeploy){yml.push('');yml.push('deploy:');yml.push('  stage: deploy');yml.push('  script:');yml.push('    - '+(dc.value.trim()||'echo deploy'));yml.push('  only:');yml.push('    - '+branch);}
+    o.textContent=yml.join('\n');
+  }
+  setStatus((platform==='github'?'GitHub Actions':'GitLab CI')+' 配置已生成');
+});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+})();</script>
+</body></html>

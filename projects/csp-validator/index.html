@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSP 策略验证 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.issue-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;gap:8px;align-items:flex-start;}.issue-row:last-child{border:none;}.issue-level{padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap;}.issue-error{background:#fce8e6;color:var(--color-error);}.issue-warning{background:#fef7e0;color:#e37400;}.issue-info{background:#e8f0fe;color:#096bde;}.issue-msg{color:var(--color-text-primary);word-break:break-all;}.summary-box{display:flex;gap:12px;margin-bottom:var(--space-2);}.summary-item{flex:1;text-align:center;padding:8px;border-radius:var(--radius-sm);font-size:var(--font-size-sm);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>CSP 策略验证</h1><p class="tool-desc">验证 Content-Security-Policy 策略字符串语法，检查常见问题和安全隐患</p>
+<div class="card"><textarea id="cspInput" class="input textarea js-focus-input" placeholder="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src *" style="min-height:80px;"></textarea></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="validateBtn" class="btn btn-primary">验证</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div class="summary-box" id="summaryBox"></div><div id="issuesList"></div><div id="parsedPolicy" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var cspInput=document.getElementById('cspInput'),validateBtn=document.getElementById('validateBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),summaryBox=document.getElementById('summaryBox'),issuesList=document.getElementById('issuesList'),parsedPolicy=document.getElementById('parsedPolicy'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+var knownDirectives=['default-src','script-src','script-src-elem','script-src-attr','style-src','style-src-elem','style-src-attr','img-src','font-src','connect-src','media-src','object-src','frame-src','frame-ancestors','worker-src','manifest-src','base-uri','form-action','report-uri','report-to','navigate-to','prefetch-src','plugin-types','sandbox','upgrade-insecure-requests','block-all-mixed-content','require-sri-for','require-trusted-types-for','trusted-types'];
+var knownSources=["'self'","'none'","'strict-dynamic'","'unsafe-inline'","'unsafe-eval'","'unsafe-hashes'","'unsafe-allow-redirects'","'report-sample'","'wasm-unsafe-eval'","data:","blob:","mediastream:","filesystem:"];
+validateBtn.addEventListener('click',function(){
+  var policy=cspInput.value.trim();if(!policy){setStatus('请输入 CSP 策略','error');return;}
+  var issues=[];var directiveCount=0;
+  var directives=policy.split(';').map(function(d){return d.trim();}).filter(function(d){return d;});
+  for(var di=0;di<directives.length;di++){
+    var parts=directives[di].split(/\s+/);var dirName=parts[0].toLowerCase();
+    directiveCount++;
+    if(dirName.indexOf(' ')>-1){issues.push({level:'error',msg:'指令名包含空格: "'+htmlEscape(dirName)+'"。指令名不能有空格。'});continue;}
+    if(knownDirectives.indexOf(dirName)===-1&&!dirName.startsWith('report-')){issues.push({level:'warning',msg:'未知或不常见的指令: "'+htmlEscape(dirName)+'"'});}
+    if(dirName==='report-uri'||dirName==='report-to')continue;
+    var sources=parts.slice(1);
+    if(sources.length===0&&['upgrade-insecure-requests','block-all-mixed-content','sandbox'].indexOf(dirName)===-1&&dirName!=='report-uri'&&dirName!=='report-to'){
+      issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 没有指定任何源'});
+    }
+    for(var si=0;si<sources.length;si++){
+      var src=sources[si];
+      if(src==="'unsafe-inline'"&&(dirName==='script-src'||dirName==='script-src-elem'||dirName==='style-src'||dirName==='style-src-elem')){
+        issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 使用了 '+htmlEscape(src)+'，请考虑使用 nonce 或 hash 作为替代'});
+      }
+      if(src==="'unsafe-eval'"&&dirName.indexOf('script')>=0){issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 使用了 '+htmlEscape(src)+'，允许 eval() 会降低安全性'});}
+      if(src==='*'&&dirName!=='img-src'&&dirName!=='media-src'&&dirName!=='connect-src'){
+        issues.push({level:'info',msg:'指令 "'+htmlEscape(dirName)+'" 使用了通配符 *'});
+      }
+      if(src.indexOf("'nonce-")===0&&src.length<=8){issues.push({level:'error',msg:'指令 "'+htmlEscape(dirName)+'" 的 nonce 值无效: '+htmlEscape(src)});}
+      if(src.indexOf("'sha")===0&&src.length<=7){issues.push({level:'error',msg:'指令 "'+htmlEscape(dirName)+'" 的 hash 值无效: '+htmlEscape(src)});}
+      if(src.indexOf("'")===0&&knownSources.indexOf(src)===-1&&src.indexOf("'nonce-")!==0&&src.indexOf("'sha")!==0){issues.push({level:'info',msg:'未知的特殊源: '+htmlEscape(src)});}
+    }
+    if(dirName==='script-src'||dirName==='default-src'){
+      var hasNonceOrHash=sources.some(function(s){return s.indexOf("'nonce-")===0||s.indexOf("'sha")===0;});
+      var hasStrictDynamic=sources.indexOf("'strict-dynamic'")>=0;
+      if(hasStrictDynamic&&!hasNonceOrHash&&sources.indexOf("'unsafe-inline'")===-1){issues.push({level:'info',msg:'strict-dynamic 需要 nonce 或 hash 配合使用'});}
+    }
+  }
+  if(directiveCount===0){issues.push({level:'error',msg:'未解析到任何 CSP 指令'});}
+  var errors=issues.filter(function(i){return i.level==='error';}).length;
+  var warnings=issues.filter(function(i){return i.level==='warning';}).length;
+  var infos=issues.filter(function(i){return i.level==='info';}).length;
+  var cls=errors>0?'var(--color-error)':warnings>0?'#e37400':'var(--color-success)';
+  summaryBox.innerHTML='<div class="summary-item" style="background:'+(errors>0?'#fce8e6':'#e6f4ea')+';color:'+(errors>0?'var(--color-error)':'var(--color-success)')+';">错误: '+errors+'</div><div class="summary-item" style="background:'+(warnings>0?'#fef7e0':'#e6f4ea')+';color:'+(warnings>0?'#e37400':'var(--color-success)')+';">警告: '+warnings+'</div><div class="summary-item" style="background:#e8f0fe;color:#096bde;">信息: '+infos+'</div><div class="summary-item" style="background:var(--color-bg-soft);color:var(--color-text-secondary);">指令: '+directiveCount+'</div>';
+  var issuesHtml='';
+  for(var i=0;i<issues.length;i++){
+    var lvl=issues[i].level;var lvlCls=lvl==='error'?'issue-error':lvl==='warning'?'issue-warning':'issue-info';
+    issuesHtml+='<div class="issue-row"><span class="issue-level '+lvlCls+'">'+lvl+'</span><span class="issue-msg">'+issues[i].msg+'</span></div>';
+  }
+  issuesList.innerHTML=issuesHtml||'<div style="padding:8px;color:var(--color-success);font-weight:600;">✅ 未发现明显问题</div>';
+  parsedPolicy.innerHTML='已解析 '+directiveCount+' 条指令';
+  outputText.textContent=errors>0?'验证失败: '+errors+' 个错误':'验证通过';
+  resultCard.style.display='block';
+  setStatus(errors>0?'发现错误':'验证完成');
+});
+clearBtn.addEventListener('click',function(){cspInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');cspInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+})();</script>
+</body></html>

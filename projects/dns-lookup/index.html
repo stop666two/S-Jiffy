@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DNS 查询 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.record-row{display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.record-row:last-child{border:none;}.record-type{font-weight:600;min-width:50px;color:var(--color-accent);}.record-ttl{color:var(--color-text-disabled);font-size:11px;}.record-data{font-family:var(--font-mono);word-break:break-all;}.status-badge{padding:4px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;display:inline-block;}.status-ok{background:#e6f4ea;color:var(--color-success);}.status-err{background:#fce8e6;color:var(--color-error);}.loading{color:var(--color-text-secondary);padding:12px;text-align:center;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>DNS 查询</h1><p class="tool-desc">通过 DNS-over-HTTPS (DoH) 查询域名 A/AAAA/MX/TXT/CNAME 等记录</p>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="domainInput" class="input js-focus-input" placeholder="example.com" style="flex:1;max-width:300px;"><select id="typeSelect" class="input" style="width:100px;"><option value="A">A</option><option value="AAAA">AAAA</option><option value="MX">MX</option><option value="TXT">TXT</option><option value="CNAME">CNAME</option><option value="NS">NS</option><option value="SOA">SOA</option><option value="ALL">ALL</option></select><button id="lookupBtn" class="btn btn-primary">查询</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="dnsStatus"></div><div id="recordsList" style="margin-top:8px;"></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var domainInput=document.getElementById('domainInput'),typeSelect=document.getElementById('typeSelect'),lookupBtn=document.getElementById('lookupBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),dnsStatus=document.getElementById('dnsStatus'),recordsList=document.getElementById('recordsList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
+lookupBtn.addEventListener('click',function(){
+  var domain=domainInput.value.trim();if(!domain){setStatus('请输入域名','error');return;}
+  var type=typeSelect.value;var types=type==='ALL'?['A','AAAA','MX','TXT','CNAME','NS','SOA']:[type];
+  dnsStatus.innerHTML='<div class="loading">查询中...</div>';recordsList.innerHTML='';resultCard.style.display='block';
+  var allHtml='';var allOutput='';var completed=0;var hasError=false;
+  function doQuery(t){
+    var url='https://dns.google/resolve?name='+encodeURIComponent(domain)+'&type='+t;
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      var html='';
+      if(data.Status!==0){html+='<div style="color:var(--color-error);">DNS 查询失败 (Status: '+data.Status+')</div>';hasError=true;}
+      else if(!data.Answer||data.Answer.length===0){html+='<div style="color:var(--color-text-secondary);">无 '+t+' 记录</div>';}
+      else{
+        for(var i=0;i<data.Answer.length;i++){
+          var a=data.Answer[i];
+          html+='<div class="record-row"><span class="record-type">'+htmlEscape(a.type)+'</span><span class="record-data">'+htmlEscape(a.data)+'</span><span class="record-ttl">TTL: '+a.TTL+'s</span></div>';
+          allOutput+=a.type+' '+a.data+'\n';
+        }
+      }
+      allHtml+=html;completed++;
+      if(completed===types.length){
+        recordsList.innerHTML=allHtml;
+        dnsStatus.innerHTML='<span class="status-badge status-ok">✅ '+domain+'</span>';
+        outputText.textContent=allOutput||'无记录';
+        setStatus('查询完成');
+      }
+    }).catch(function(err){
+      allHtml+='<div style="color:var(--color-error);">'+t+' 查询失败: '+htmlEscape(err.message)+'</div>';hasError=true;completed++;
+      if(completed===types.length){
+        recordsList.innerHTML=allHtml;
+        dnsStatus.innerHTML='<span class="status-badge '+(hasError?'status-err':'status-ok')+'">'+domain+'</span>';
+        setStatus(hasError?'部分查询失败':'查询完成');
+      }
+    });
+  }
+  for(var i=0;i<types.length;i++)doQuery(types[i]);
+});
+clearBtn.addEventListener('click',function(){domainInput.value='';typeSelect.value='A';resultCard.style.display='none';outputText.textContent='';setStatus('');domainInput.focus();});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+domainInput.addEventListener('keydown',function(e){if(e.key==='Enter')lookupBtn.click();});
+})();</script>
+</body></html>

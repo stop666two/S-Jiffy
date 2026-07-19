@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>字符串相似度 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-2);}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+.stat-item{padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center;}
+.stat-item .stat-value{font-size:var(--font-size-xl);font-weight:600;display:block;}
+.stat-item .stat-label{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.highlight{background:#fff3cd;padding:0 2px;border-radius:2px;}
+@media(max-width:600px){.two-cols,.result-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>字符串相似度</h1><p class="tool-desc">计算两段文本的 Levenshtein 编辑距离与相似度百分比。</p>
+<div class="two-cols"><div class="card" style="margin-bottom:0;"><textarea id="textA" class="input textarea js-focus-input" placeholder="输入文本 A..." style="min-height:140px;"></textarea></div>
+<div class="card" style="margin-bottom:0;"><textarea id="textB" class="input textarea" placeholder="输入文本 B..." style="min-height:140px;"></textarea></div></div>
+<div class="result-grid"><div class="stat-item"><span class="stat-value" id="distanceVal">—</span><span class="stat-label">编辑距离</span></div>
+<div class="stat-item"><span class="stat-value" id="similarityVal">—</span><span class="stat-label">相似度</span></div>
+<div class="stat-item"><span class="stat-value" id="lenA">—</span><span class="stat-label">文本 A 长度</span></div>
+<div class="stat-item"><span class="stat-value" id="lenB">—</span><span class="stat-label">文本 B 长度</span></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>(function(){
+var ta=document.getElementById('textA'),tb=document.getElementById('textB');
+var dEl=document.getElementById('distanceVal'),sEl=document.getElementById('similarityVal');
+var lA=document.getElementById('lenA'),lB=document.getElementById('lenB');
+var o=document.getElementById('outputText');
+function levenshtein(a,b){
+  var m=a.length,n=b.length;
+  var dp=[];for(var i=0;i<=m;i++){dp[i]=[i];}
+  for(var j=0;j<=n;j++){dp[0][j]=j;}
+  for(var i=1;i<=m;i++){for(var j=1;j<=n;j++){var cost=a[i-1]===b[j-1]?0:1;dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+cost);}}
+  return dp[m][n];
+}
+function update(){
+  var a=ta.value,b=tb.value;
+  lA.textContent=a.length;lB.textContent=b.length;
+  if(!a&&!b){dEl.textContent='—';sEl.textContent='—';o.textContent='';return;}
+  var dist=levenshtein(a,b);
+  var maxLen=Math.max(a.length,b.length);
+  var sim=maxLen===0?100:Math.round((1-dist/maxLen)*10000)/100;
+  dEl.textContent=dist;
+  sEl.textContent=sim+'%';
+  o.textContent='Levenshtein 距离: '+dist+' | 相似度: '+sim+'% | 长度: '+a.length+' / '+b.length;
+}
+ta.addEventListener('input',update);tb.addEventListener('input',update);
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+update();
+})();</script>
+</body></html>

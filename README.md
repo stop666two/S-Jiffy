@@ -8,7 +8,7 @@
 
 ## 📦 项目概览
 
-S-Jiffy 是一个纯静态、零依赖的 Web 工具集，包含 **461 个** 即用型在线工具，覆盖编解码、加密哈希、文本处理、颜色转换、网络计算、随机生成、代码生成、DevOps、编程辅助、安全工具等全领域。所有工具均为单页 HTML，无需构建、无需服务端、无需注册。
+S-Jiffy 是一个纯静态、零依赖的 Web 工具集，包含 **460 个** 即用型在线工具，覆盖编解码、加密哈希、文本处理、颜色转换、网络计算、随机生成、代码生成、DevOps、编程辅助、安全工具等全领域。所有工具均为单页 HTML，无需构建、无需服务端、无需注册。
 
 ## ✨ 核心特性
 
@@ -41,7 +41,7 @@ node server.js
 npx serve .
 ```
 
-## 📋 工具总览（461 个）
+## 📋 工具总览（460 个）
 
 ### 编解码 (20)
 Base64 · Base32 · Base36 · Base45 · Base58 · Base62 · Base85 · Base91 · Base92 · Ascii85 · UUencode · Quoted-Printable · Bencode · Punycode · Morse 码 · Braille · Leetspeak · QR 码读取 · 图片转 Base64 · Data URI 生成
@@ -117,7 +117,7 @@ S-Jiffy/
 ├── assets/
 │   ├── css/global.css  # 全局样式
 │   └── js/global.js    # 全局 JS（工具函数/弹窗/历史记录）
-├── projects/           # 461 个工具，每个独立目录
+├── projects/           # 460 个工具，每个独立目录
 │   ├── age-calculator/
 │   ├── base64/
 │   ├── json-to-go/

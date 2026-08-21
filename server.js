@@ -28,11 +28,19 @@ http.createServer(function (req, res) {
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Cache-Control', 'no-cache');
 
-  var url = decodeURIComponent(req.url.split('?')[0]);
+  var rawUrl = req.url.split('?')[0];
+  var url;
+  try {
+    url = decodeURIComponent(rawUrl);
+  } catch (e) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('400 Bad Request');
+    return;
+  }
   if (url === '/') url = '/index.html';
-  var filePath = path.join(__dirname, url);
+  var filePath = path.resolve(__dirname, '.' + url);
 
-  if (filePath.indexOf(__dirname) !== 0) {
+  if (filePath !== __dirname && filePath.indexOf(__dirname + path.sep) !== 0) {
     res.writeHead(403); res.end('403');
     return;
   }

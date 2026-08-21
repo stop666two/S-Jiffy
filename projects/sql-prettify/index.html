@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SQL Prettify - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -20,8 +21,8 @@
       <button id="formatBtn" class="btn btn-primary">格式化</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -35,7 +36,7 @@
       var inputSql = document.getElementById('inputSql');
       var formatBtn = document.getElementById('formatBtn');
       var clearBtn = document.getElementById('clearBtn');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       var keywords = [
@@ -60,50 +61,50 @@
 
       function formatSQL(sql) {
         var uc = sql.toUpperCase();
-        var 结果 = sql;
+        var result = sql;
 
         for (var i = 0; i < keywords.length; i++) {
           var kw = keywords[i];
           var re = new RegExp('\\b' + kw + '\\b', 'gi');
-          结果 = 结果.replace(re, kw);
+          result = result.replace(re, kw);
         }
 
-        结果 = 结果.replace(/\s*\(\s*/g, ' (');
-        结果 = 结果.replace(/\s*\)\s*/g, ') ');
-        结果 = 结果.replace(/\s*,\s*/g, ', ');
+        result = result.replace(/\s*\(\s*/g, ' (');
+        result = result.replace(/\s*\)\s*/g, ') ');
+        result = result.replace(/\s*,\s*/g, ', ');
 
         for (var j = 0; j < majorKeywords.length; j++) {
           var mkw = majorKeywords[j];
           var mkRe = new RegExp('\\b' + mkw + '\\b', 'g');
-          结果 = 结果.replace(mkRe, '\n' + mkw);
+          result = result.replace(mkRe, '\n' + mkw);
         }
 
-        结果 = 结果.replace(/ AND /gi, '\n  AND ');
-        结果 = 结果.replace(/ OR /gi, '\n  OR ');
+        result = result.replace(/ AND /gi, '\n  AND ');
+        result = result.replace(/ OR /gi, '\n  OR ');
 
-        结果 = 结果.replace(/\n\s*\n/g, '\n');
-        结果 = 结果.trim();
+        result = result.replace(/\n\s*\n/g, '\n');
+        result = result.trim();
 
-        return 结果;
+        return result;
       }
 
       formatBtn.addEventListener('click', function () {
         var sql = inputSql.value.trim();
         if (!sql) { setStatus('请输入 SQL 语句', 'error'); return; }
         var formatted = formatSQL(sql);
-        输出El.textContent = formatted;
+        outputEl.textContent = formatted;
         setStatus('');
       });
 
       clearBtn.addEventListener('click', function () {
         inputSql.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputSql.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

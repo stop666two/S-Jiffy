@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OTP Generator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .otp-display { text-align:center; padding:var(--space-3) 0; }
@@ -39,8 +40,8 @@
         </div>
       </div>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -57,7 +58,7 @@
       var otpPrev = document.getElementById('otpPrev');
       var otpNext = document.getElementById('otpNext');
       var otpRefreshBtn = document.getElementById('otpRefreshBtn');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       var timerId = null;
@@ -119,12 +120,12 @@
           }
           h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
         }
-        var 结果 = [];
+        var result = [];
         for (var i = 0; i < 20; i++) {
           var word = [h0, h1, h2, h3, h4][i >>> 2];
-          结果.push((word >>> (24 - (i % 4) * 8)) & 0xFF);
+          result.push((word >>> (24 - (i % 4) * 8)) & 0xFF);
         }
-        return 结果;
+        return result;
       }
 
       function updateOTP() {
@@ -152,7 +153,7 @@
           otpNext.textContent = next;
           otpCountdown.textContent = remaining + 's';
 
-          输出El.textContent = '当前: ' + cur + ' | 剩余: ' + remaining + 's';
+          outputEl.textContent = '当前: ' + cur + ' | 剩余: ' + remaining + 's';
         } catch (e) {
           otpCurrent.textContent = '------';
           setStatus('密钥无效', 'error');

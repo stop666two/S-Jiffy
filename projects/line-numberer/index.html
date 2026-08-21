@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行号添加器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ln-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -50,7 +51,7 @@
       var startNum = document.getElementById('startNum');
       var formatStr = document.getElementById('formatStr');
       var numberBtn = document.getElementById('numberBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function numberLines() {
@@ -59,19 +60,19 @@
         var lines = text.split('\n');
         var start = parseInt(startNum.value, 10) || 1;
         var fmt = formatStr.value || '{n}. ';
-        var 结果 = [];
+        var result = [];
         for (var i = 0; i < lines.length; i++) {
           var n = start + i;
-          结果.push(fmt.replace('{n}', n) + lines[i]);
+          result.push(fmt.replace('{n}', n) + lines[i]);
         }
-        输出El.textContent = 结果.join('\n');
+        outputEl.textContent = result.join('\n');
         setStatus('已添加行号，共 ' + lines.length + ' 行');
       }
 
       numberBtn.addEventListener('click', numberLines);
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

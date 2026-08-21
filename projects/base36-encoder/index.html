@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Base36 编解码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -22,8 +23,8 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
       <button id="swapBtn" class="btn btn-secondary">交换</button>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -35,7 +36,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var encodeBtn = document.getElementById('encodeBtn');
       var decodeBtn = document.getElementById('decodeBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -53,7 +54,7 @@
         }
         if (hex === '') return '';
         var bigInt = hex;
-        var 结果 = '';
+        var result = '';
         var base36Chars = '0123456789abcdefghijklmnopqrstuvwxyz';
         while (bigInt.length > 0 && bigInt !== '0') {
           var remainder = 0;
@@ -63,10 +64,10 @@
             next += Math.floor(remainder / 36).toString(16);
             remainder = remainder % 36;
           }
-          结果 = base36Chars[remainder] + 结果;
+          result = base36Chars[remainder] + result;
           bigInt = next.replace(/^0+/, '') || '0';
         }
-        return 结果 || '0';
+        return result || '0';
       }
 
       function base36Decode(str) {
@@ -100,22 +101,22 @@
       encodeBtn.addEventListener('click', function () {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        输出El.textContent = base36Encode(text);
+        outputEl.textContent = base36Encode(text);
         setStatus('');
       });
 
       decodeBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 Base36 文本', 'error'); return; }
-        var 结果 = base36Decode(text);
-        if (结果 === null) { setStatus('Base36 格式无效', 'error'); return; }
-        输出El.textContent = 结果;
+        var result = base36Decode(text);
+        if (result === null) { setStatus('Base36 格式无效', 'error'); return; }
+        outputEl.textContent = result;
         setStatus('');
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      swapBtn.addEventListener('click', function () { var tmp = inputEl.value; inputEl.value = 输出El.textContent; 输出El.textContent = tmp; });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      swapBtn.addEventListener('click', function () { var tmp = inputEl.value; inputEl.value = outputEl.textContent; outputEl.textContent = tmp; });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 转 Markdown - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HTML 转 Markdown - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .split-pane{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:300px}@media(max-width:700px){.split-pane{grid-template-columns:1fr}}.split-pane textarea{height:300px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.split-pane textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -22,7 +23,7 @@ var htmlInput=document.getElementById('htmlInput');
 var md输出=document.getElementById('md输出');
 var convertBtn=document.getElementById('convertBtn');
 var clearBtn=document.getElementById('clearBtn');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 
 function htmlToMd(html){
@@ -65,15 +66,15 @@ return text;
 
 function convert(){
 var html=htmlInput.value;
-if(!html){md输出.value='';输出El.textContent='';setStatus('请输入 HTML','error');return;}
+if(!html){md输出.value='';outputEl.textContent='';setStatus('请输入 HTML','error');return;}
 var md=htmlToMd(html);
 md输出.value=md;
-输出El.textContent='转换完成，共 '+md.length+' 字符';
+outputEl.textContent='转换完成，共 '+md.length+' 字符';
 setStatus('');
 }
 
 convertBtn.addEventListener('click',convert);
-clearBtn.addEventListener('click',function(){htmlInput.value='';md输出.value='';输出El.textContent='';setStatus('');htmlInput.focus();});
+clearBtn.addEventListener('click',function(){htmlInput.value='';md输出.value='';outputEl.textContent='';setStatus('');htmlInput.focus();});
 copyBtn.addEventListener('click',function(){if(md输出.value){copyToClipboard(md输出.value,copyBtn);setStatus('已复制');}});
 htmlInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')convert();});
 })();</script></body></html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GCD/LCM 计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .gl-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -29,7 +30,7 @@
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function gcd(a, b) {
@@ -90,16 +91,16 @@
         l = lcm(l, nums[i]);
       }
 
-      var 输出 = '数字: ' + nums.join(', ') + '\n';
-      输出 += '共 ' + nums.length + ' 个数字\n';
-      输出 += '\n最大公约数 (GCD): ' + g + '\n';
-      输出 += '最小公倍数 (LCM): ' + l + '\n';
+      var output = '数字: ' + nums.join(', ') + '\n';
+      output += '共 ' + nums.length + ' 个数字\n';
+      output += '\n最大公约数 (GCD): ' + g + '\n';
+      output += '最小公倍数 (LCM): ' + l + '\n';
 
-      输出 += '\n--- 质因数分解 ---\n';
+      output += '\n--- 质因数分解 ---\n';
       for (var i = 0; i < nums.length; i++) {
         var pf = primeFactors(nums[i]);
         if (pf.length === 0) {
-          输出 += nums[i] + ' = ' + nums[i] + ' (质数)\n';
+          output += nums[i] + ' = ' + nums[i] + ' (质数)\n';
         } else {
           var fc = factorCount(pf);
           var partsArr = [];
@@ -107,16 +108,16 @@
           for (var k = 0; k < keys.length; k++) {
             partsArr.push(keys[k] + (fc[keys[k]] > 1 ? '^' + fc[keys[k]] : ''));
           }
-          输出 += nums[i] + ' = ' + partsArr.join(' × ') + '\n';
+          output += nums[i] + ' = ' + partsArr.join(' × ') + '\n';
         }
       }
 
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus('计算完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>比例计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -38,7 +39,7 @@
     var dEl = document.getElementById('dVal');
     var simplifyChk = document.getElementById('simplifyChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function gcd(a, b) {
@@ -71,43 +72,43 @@
         if (isNaN(vals[i]) && i !== emptyIdx) { setStatus('请填写有效的数字', 'error'); return; }
       }
 
-      var 结果;
+      var result;
       if (emptyIdx === 0) {
-        结果 = (vals[1] * vals[2]) / vals[3];
+        result = (vals[1] * vals[2]) / vals[3];
       } else if (emptyIdx === 1) {
-        结果 = (vals[0] * vals[3]) / vals[2];
+        result = (vals[0] * vals[3]) / vals[2];
       } else if (emptyIdx === 2) {
-        结果 = (vals[0] * vals[3]) / vals[1];
+        result = (vals[0] * vals[3]) / vals[1];
       } else {
-        结果 = (vals[1] * vals[2]) / vals[0];
+        result = (vals[1] * vals[2]) / vals[0];
       }
 
-      if (!isFinite(结果) || isNaN(结果)) { setStatus('计算错误，请检查输入', 'error'); return; }
+      if (!isFinite(result) || isNaN(result)) { setStatus('计算错误，请检查输入', 'error'); return; }
 
       var labels = ['A', 'B', 'C', 'D'];
-      var 输出 = '';
+      var output = '';
       var full = [aEl.value.trim(), bEl.value.trim(), cEl.value.trim(), dEl.value.trim()];
-      full[emptyIdx] = '' + parseFloat(结果.toFixed(6));
-      输出 = 'A : B = C : D\n';
-      输出 += full[0] + ' : ' + full[1] + ' = ' + full[2] + ' : ' + full[3] + '\n';
-      输出 += '\n' + labels[emptyIdx] + ' = ' + parseFloat(结果.toFixed(6));
+      full[emptyIdx] = '' + parseFloat(result.toFixed(6));
+      output = 'A : B = C : D\n';
+      output += full[0] + ' : ' + full[1] + ' = ' + full[2] + ' : ' + full[3] + '\n';
+      output += '\n' + labels[emptyIdx] + ' = ' + parseFloat(result.toFixed(6));
 
       if (simplifyChk.checked) {
         var allVals = full.map(function(v) { return Math.round(parseFloat(v)); });
         if (allVals.every(function(v) { return v > 0; })) {
           var g = gcd(allVals[0], gcd(allVals[1], gcd(allVals[2], allVals[3])));
           if (g > 1) {
-            输出 += '\n\n化简比例:\n' + allVals.map(function(v){return v/g;}).join(' : ');
+            output += '\n\n化简比例:\n' + allVals.map(function(v){return v/g;}).join(' : ');
           }
         }
       }
 
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus('计算完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

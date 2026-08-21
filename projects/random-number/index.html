@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机数生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rn-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -48,7 +49,7 @@
       var countEl = document.getElementById('countVal');
       var repeatEl = document.getElementById('allowRepeat');
       var generateBtn = document.getElementById('generateBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function generate() {
@@ -67,10 +68,10 @@
           return;
         }
 
-        var 结果 = [];
+        var result = [];
         if (allowRepeat) {
           for (var i = 0; i < count; i++) {
-            结果.push(Math.floor(Math.random() * range) + min);
+            result.push(Math.floor(Math.random() * range) + min);
           }
         } else {
           var pool = [];
@@ -81,17 +82,17 @@
             pool[i] = pool[j];
             pool[j] = tmp;
           }
-          结果 = pool.slice(0, count);
+          result = pool.slice(0, count);
         }
 
-        输出El.textContent = 结果.join('\n');
+        outputEl.textContent = result.join('\n');
         setStatus('已生成 ' + count + ' 个随机数');
       }
 
       generateBtn.addEventListener('click', generate);
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

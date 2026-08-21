@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 骰子 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .dd-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -14,7 +15,7 @@
     .dice-btn:hover { background:var(--color-text-primary);color:#fff; }
     .dice-btn.adv { border-color:#27ae60; }
     .dice-btn.dis { border-color:#e74c3c; }
-    .dice-结果 { font-size:48px;font-weight:700;text-align:center;margin:var(--space-3) 0; }
+    .dice-result { font-size:48px;font-weight:700;text-align:center;margin:var(--space-3) 0; }
     .dice-detail { font-size:14px;color:var(--color-text-secondary);text-align:center; }
   </style>
 </head>
@@ -38,7 +39,7 @@
         <button class="dice-btn adv" data-sides="20" data-adv="1">D20 优势</button>
         <button class="dice-btn dis" data-sides="20" data-adv="-1">D20 劣势</button>
       </div>
-      <div class="dice-结果" id="dice结果">-</div>
+      <div class="dice-result" id="dice结果">-</div>
       <div class="dice-detail" id="diceDetail"></div>
     </div>
     <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
@@ -49,7 +50,7 @@
     var countEl = document.getElementById('diceCount');
     var dice结果 = document.getElementById('dice结果');
     var diceDetail = document.getElementById('diceDetail');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function rollDie(sides) {
@@ -83,14 +84,14 @@
       dice结果.textContent = sum;
       var label = adv > 0 ? '(优势) ' : adv < 0 ? '(劣势) ' : '';
       diceDetail.textContent = label + allRolls.join('\n');
-      输出El.textContent = 'D' + sides + ': ' + allRolls.join(', ') + ' | 总和: ' + sum;
+      outputEl.textContent = 'D' + sides + ': ' + allRolls.join(', ') + ' | 总和: ' + sum;
       setStatus('已掷骰');
     };
 
     var btns = document.querySelectorAll('.dice-btn');
     for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', btnHandler);
 
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

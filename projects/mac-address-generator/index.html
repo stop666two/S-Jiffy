@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MAC 地址生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -32,8 +33,8 @@
       <button id="generateBtn" class="btn btn-primary">生成</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -47,7 +48,7 @@
     var sepEl = document.getElementById('sepSelect');
     var caseEl = document.getElementById('caseSelect');
     var countEl = document.getElementById('countInput');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     function randomByte() { return Math.floor(Math.random() * 256); }
     function toHex(n) { var h = n.toString(16); return h.length === 1 ? '0' + h : h; }
     function generateMac() {
@@ -68,11 +69,11 @@
       if (n < 1) n = 1; if (n > 100) n = 100;
       var arr = [];
       for (var i = 0; i < n; i++) arr.push(generateMac());
-      输出El.textContent = arr.join('\n');
+      outputEl.textContent = arr.join('\n');
       setStatus('已生成 ' + n + ' 个 MAC 地址');
     });
-    document.getElementById('clearBtn').addEventListener('click', function() { 输出El.textContent = ''; setStatus(''); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
+    document.getElementById('clearBtn').addEventListener('click', function() { outputEl.textContent = ''; setStatus(''); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

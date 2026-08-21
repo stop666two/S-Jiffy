@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPv4 Subnet Calculator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .subnet-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
@@ -28,7 +29,7 @@
         <button id="calcBtn" class="btn btn-primary">计算</button>
       </div>
     </div>
-    <div class="card" id="结果Card">
+    <div class="card" id="resultCard">
       <div class="subnet-grid" id="subnetGrid"></div>
     </div>
     <div class="output-box">
@@ -46,7 +47,7 @@
       var cidrInput = document.getElementById('cidrInput');
       var calcBtn = document.getElementById('calcBtn');
       var subnetGrid = document.getElementById('subnetGrid');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function ipToNum(ip) {
@@ -68,21 +69,21 @@
         var input = cidrInput.value.trim();
         var parts = input.split('/');
         if (parts.length !== 2) {
-          输出El.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
+          outputEl.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
           setStatus('', 'error');
           return;
         }
         var ipStr = parts[0];
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          输出El.textContent = '子网掩码位数必须在 0 — 32 之间';
+          outputEl.textContent = '子网掩码位数必须在 0 — 32 之间';
           setStatus('', 'error');
           return;
         }
 
         var ipNum = ipToNum(ipStr);
         if (isNaN(ipNum) || ipNum === 0) {
-          输出El.textContent = '无效的 IP 地址';
+          outputEl.textContent = '无效的 IP 地址';
           setStatus('', 'error');
           return;
         }
@@ -112,7 +113,7 @@
         subnetGrid.appendChild(fillItem('可用主机数', hosts.toLocaleString()));
         subnetGrid.appendChild(fillItem('主机范围', (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
 
-        输出El.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
+        outputEl.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
         setStatus('');
       }
 
@@ -120,7 +121,7 @@
       cidrInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') calculate(); });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

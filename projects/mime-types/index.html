@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MIME Types - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .mime-search { display:flex; gap:12px; margin-bottom:var(--space-3); }
@@ -35,8 +36,8 @@
         </table>
       </div>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -50,7 +51,7 @@
       var mimeSearch = document.getElementById('mimeSearch');
       var clearSearchBtn = document.getElementById('clearSearchBtn');
       var mimeTbody = document.getElementById('mimeTbody');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       var mimeData = [
@@ -88,7 +89,7 @@
           mimeTbody.appendChild(tr);
           count++;
         }
-        输出El.textContent = '共 ' + count + ' 条记录' + (match ? '（匹配 "' + filter + '"）' : '');
+        outputEl.textContent = '共 ' + count + ' 条记录' + (match ? '（匹配 "' + filter + '"）' : '');
       }
 
       mimeSearch.addEventListener('input', function () { render(this.value); });
@@ -100,7 +101,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

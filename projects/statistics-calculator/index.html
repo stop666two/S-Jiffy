@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>统计计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .sc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -45,7 +46,7 @@
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function generate() {
@@ -106,12 +107,12 @@
       document.getElementById('varVal').textContent = variance.toFixed(4);
       document.getElementById('stdVal').textContent = stddev.toFixed(4);
 
-      输出El.textContent = 'Sum=' + sum.toFixed(4) + ', Count=' + count + ', Mean=' + mean.toFixed(4) + ', Median=' + median.toFixed(4) + ', Mode=' + mode + ', Min=' + min + ', Max=' + max + ', Range=' + range.toFixed(4) + ', Var=' + variance.toFixed(4) + ', StdDev=' + stddev.toFixed(4);
+      outputEl.textContent = 'Sum=' + sum.toFixed(4) + ', Count=' + count + ', Mean=' + mean.toFixed(4) + ', Median=' + median.toFixed(4) + ', Mode=' + mode + ', Min=' + min + ', Max=' + max + ', Range=' + range.toFixed(4) + ', Var=' + variance.toFixed(4) + ', StdDev=' + stddev.toFixed(4);
       setStatus('统计完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

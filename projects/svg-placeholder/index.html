@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SVG 占位图生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .svg-preview { display: flex; justify-content: center; align-items: center; padding: var(--space-3); background: repeating-conic-gradient(var(--color-bg-soft) 0% 25%, #fff 0% 50%) 0 0 / 20px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); min-height: 200px; }
@@ -57,7 +58,7 @@
     var tcPicker = document.getElementById('textColorPicker');
     var textEl = document.getElementById('textInput');
     var previewEl = document.getElementById('previewContainer');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     function generateSvg() {
       var w = parseInt(wEl.value) || 800;
       var h = parseInt(hEl.value) || 400;
@@ -72,7 +73,7 @@
       svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="' + fontSize + '" fill="' + tc + '">' + escapeXml(txt) + '</text>';
       svg += '</svg>';
       previewEl.innerHTML = svg;
-      输出El.textContent = svg;
+      outputEl.textContent = svg;
       setStatus('SVG 已生成 (' + w + ' x ' + h + ')');
     }
     function escapeXml(s) {
@@ -85,7 +86,7 @@
     tcEl.addEventListener('input', function() { tcPicker.value = this.value; });
     wEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === wEl.defaultValue + ' x ' + hEl.defaultValue) textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
     hEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === '800 x 400') textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('SVG 代码已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('SVG 代码已复制'); } });
     generateSvg();
   })();</script>
 </body>

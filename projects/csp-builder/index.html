@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSP 策略构建器 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSP 策略构建器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.dir-group{margin-bottom:var(--space-2);padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}.dir-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;}.dir-header input[type=checkbox]{width:18px;height:18px;cursor:pointer;}.dir-name{font-weight:600;font-family:var(--font-mono);font-size:var(--font-size-sm);}.dir-desc{font-size:12px;color:var(--color-text-secondary);margin-left:8px;}.source-input{margin-left:26px;display:flex;gap:6px;align-items:center;}.source-input input{flex:1;}.source-tag{display:inline-block;background:var(--color-bg-soft);padding:2px 8px;border-radius:3px;font-size:12px;margin:2px;border:1px solid var(--color-border);}.source-tag .remove{cursor:pointer;margin-left:4px;color:var(--color-error);font-weight:600;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>CSP 策略构建器</h1><p class="tool-desc">可视化构建 Content Security Policy 策略字符串</p>
@@ -49,7 +50,7 @@ function initBuilder(){
       html+='<div style="margin-left:26px;margin-bottom:4px;font-size:12px;color:var(--color-text-secondary);">预设源（点击切换）：</div>';
       html+='<div style="margin-left:26px;" id="'+id+'_presets"></div>';
       if(d.hasNonce)html+='<div class="source-input" style="margin-top:4px;"><span style="font-size:12px;color:var(--color-text-secondary);">Nonce:</span><input class="input" id="'+id+'_nonce" placeholder="nonce 值" style="height:32px;width:120px;"></div>';
-      if(d.hasHash)html+='<div class="source-input" style="margin-top:4px;"><span style="font-size:12px;color:var(--color-text-secondary);">Hash:</span><input class="input" id="'+id+'_hash" placeholder="'sha256-...'" style="height:32px;flex:1;"></div>';
+      if(d.hasHash)html+='<div class="source-input" style="margin-top:4px;"><span style="font-size:12px;color:var(--color-text-secondary);">Hash:</span><input class="input" id="'+id+'_hash" placeholder="\'sha256-...\'" style="height:32px;flex:1;"></div>';
       html+='<div class="source-input" style="margin-top:4px;"><input class="input" id="'+id+'_custom" placeholder="自定义源..." style="height:36px;"><button class="btn btn-secondary addSrcBtn" data-idx="'+i+'" style="height:36px;min-width:auto;padding:0 12px;">添加</button></div>';
     }
     html+='<div id="'+id+'_tags" style="margin-left:26px;margin-top:4px;"></div>';

@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HMAC Verify - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HMAC Verify - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .hrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .hrow label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
-.结果-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;}
-.结果-badge.ok{background:#e8f5e9;color:#2e7d32;}
-.结果-badge.fail{background:#ffebee;color:#c62828;}
+.result-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;}
+.result-badge.ok{background:#e8f5e9;color:#2e7d32;}
+.result-badge.fail{background:#ffebee;color:#c62828;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -22,7 +23,7 @@
 </div>
 <div class="card">
 <div class="hrow"><label>Expected HMAC</label><input id="expectedInput" class="input" placeholder="Paste the expected HMAC to verify" style="flex:1;min-width:200px;"></div>
-<div style="text-align:center;margin-top:var(--space-2);"><span id="verifyBadge" class="结果-badge" style="display:none;"></span></div>
+<div style="text-align:center;margin-top:var(--space-2);"><span id="verifyBadge" class="result-badge" style="display:none;"></span></div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
@@ -40,7 +41,7 @@ crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:al
 return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(text));}).then(function(sig){var computed=fm.value==='hex'?hex(sig):b64(sig);
 o.textContent=computed;
 var expected=ei.value.trim();if(expected){var match=computed.toLowerCase()===expected.toLowerCase();
-vb.style.display='inline-block';vb.textContent=match?'VERIFIED ✓':'FAILED ✗';vb.className='结果-badge '+(match?'ok':'fail');
+vb.style.display='inline-block';vb.textContent=match?'VERIFIED ✓':'FAILED ✗';vb.className='result-badge '+(match?'ok':'fail');
 setStatus(match?'Verified!':'Verification failed');}else{vb.style.display='none';setStatus('HMAC computed');}}).catch(function(e){setStatus('错误: '+e.message,'error');});}
 
 document.getElementById('calcBtn').addEventListener('click',compute);

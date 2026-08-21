@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>回文检测器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .tp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
     .tp-row .field { flex:1; min-width:100px; }
     .tp-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .pal-结果 { font-size:var(--font-size-lg); font-weight:600; margin:var(--space-2) 0; }
+    .pal-result { font-size:var(--font-size-lg); font-weight:600; margin:var(--space-2) 0; }
   </style>
 </head>
 <body>
@@ -26,9 +27,9 @@
         <label style="display:flex;align-items:center;gap:8px;"><input id="ignoreNonAlphaChk" type="checkbox" checked> 忽略非字母数字</label>
       </div>
       <div><button id="genBtn" class="btn btn-primary">检查</button></div>
-      <div class="pal-结果" id="pal结果"></div>
+      <div class="pal-result" id="pal结果"></div>
     </div>
-    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -38,7 +39,7 @@
     var ignoreNonAlphaChk = document.getElementById('ignoreNonAlphaChk');
     var genBtn = document.getElementById('genBtn');
     var pal结果 = document.getElementById('pal结果');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function longestPalindrome(s) {
@@ -80,18 +81,18 @@
       pal结果.textContent = isPal ? '✓ 是回文' : '✗ 不是回文';
       pal结果.style.color = isPal ? 'var(--color-success)' : 'var(--color-error)';
 
-      var 输出 = '原始文本: ' + text + '\n';
-      输出 += '处理后文本: ' + (clean || '(空)') + '\n';
-      输出 += '是否回文: ' + (isPal ? '是' : '否') + '\n';
-      输出 += '最长回文子串: "' + longest + '" (长度: ' + longest.length + ')\n';
-      if (isPal) 输出 += '\n反转后: ' + reversed;
+      var output = '原始文本: ' + text + '\n';
+      output += '处理后文本: ' + (clean || '(空)') + '\n';
+      output += '是否回文: ' + (isPal ? '是' : '否') + '\n';
+      output += '最长回文子串: "' + longest + '" (length: ' + longest.length + ')\n';
+      if (isPal) output += '\n反转后: ' + reversed;
 
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus('检查完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

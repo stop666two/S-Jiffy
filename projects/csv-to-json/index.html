@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSV JSON 互转 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,7 +35,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var toJsonBtn = document.getElementById('toJsonBtn');
       var toCsvBtn = document.getElementById('toCsvBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -83,16 +84,16 @@
         var headers = lines[0].split(',').map(function (h) {
           return h.trim().replace(/^"|"$/g, '');
         });
-        var 结果 = [];
+        var result = [];
         for (var i = 1; i < lines.length; i++) {
           var vals = lines[i].split(',').map(function (v) { return v.trim().replace(/^"|"$/g, ''); });
           var row = {};
           for (var j = 0; j < headers.length; j++) {
             row[headers[j]] = vals[j] || '';
           }
-          结果.push(row);
+          result.push(row);
         }
-        return 结果;
+        return result;
       }
 
       function jsonToCsv(json) {
@@ -117,10 +118,10 @@
         if (!text) { setStatus('请输入 CSV 内容', 'error'); return; }
         try {
           var parsed = csvToJson(text);
-          输出El.textContent = JSON.stringify(parsed, null, 2);
+          outputEl.textContent = JSON.stringify(parsed, null, 2);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('CSV 解析失败: ' + e.message, 'error');
         }
       });
@@ -130,16 +131,16 @@
         if (!text) { setStatus('请输入 JSON 内容', 'error'); return; }
         try {
           var parsed = JSON.parse(text);
-          输出El.textContent = jsonToCsv(parsed);
+          outputEl.textContent = jsonToCsv(parsed);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('JSON 解析失败: ' + e.message, 'error');
         }
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

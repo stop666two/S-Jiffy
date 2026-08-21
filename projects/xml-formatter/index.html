@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XML Formatter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,7 +35,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
 
       function formatXml(xml, minify) {
         var parser = new DOMParser();
@@ -51,7 +52,7 @@
 
       function formatXmlString(str) {
         var indent = 0;
-        var 结果 = [];
+        var result = [];
         var pad = '  ';
         // Normalize: remove whitespace between tags
         str = str.replace(/>\s*</g, '>\n<');
@@ -63,7 +64,7 @@
           if (line.indexOf('</') === 0) {
             indent--;
           }
-          结果.push(pad.repeat(Math.max(0, indent)) + line);
+          result.push(pad.repeat(Math.max(0, indent)) + line);
           // opening tag (not self-closing)
           if (line.indexOf('<?') === 0) {
             // no indent change
@@ -77,17 +78,17 @@
             indent++;
           }
         }
-        return 结果.join('\n');
+        return result.join('\n');
       }
 
       document.getElementById('formatBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 XML', 'error'); return; }
         try {
-          输出El.textContent = formatXml(text, false);
+          outputEl.textContent = formatXml(text, false);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('XML 格式错误', 'error');
         }
       });
@@ -96,16 +97,16 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 XML', 'error'); return; }
         try {
-          输出El.textContent = formatXml(text, true);
+          outputEl.textContent = formatXml(text, true);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('XML 格式错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

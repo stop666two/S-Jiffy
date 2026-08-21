@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WiFi QR 码生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     #qrcode { display: inline-block; padding: var(--space-2); background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
@@ -58,7 +59,7 @@
     var encEl = document.getElementById('encryptSelect');
     var hiddenEl = document.getElementById('hiddenCheck');
     var qrEl = document.getElementById('qrcode');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     function generate() {
       var ssid = ssidEl.value.trim();
       if (!ssid) { setStatus('请输入 SSID', 'error'); return; }
@@ -68,7 +69,7 @@
       var wifiStr = 'WIFI:S:' + ssid + ';T:' + enc + ';P:' + pwd + ';' + hidden + ';';
       qrEl.innerHTML = '';
       new QRCode(qrEl, { text: wifiStr, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M });
-      输出El.textContent = wifiStr;
+      outputEl.textContent = wifiStr;
       setStatus('WiFi 二维码已生成');
     }
     document.getElementById('generateBtn').addEventListener('click', generate);

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>组合与排列 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .cp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -34,7 +35,7 @@
     var nEl = document.getElementById('nVal');
     var rEl = document.getElementById('rVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var nprEl = document.getElementById('nprFormula');
     var ncrEl = document.getElementById('ncrFormula');
     var copyBtn = document.getElementById('copyBtn');
@@ -49,20 +50,20 @@
 
     function permutation(n, r) {
       if (r > n || n < 0 || r < 0) return 0;
-      var 结果 = 1;
-      for (var i = n; i > n - r; i--) 结果 *= i;
-      return 结果;
+      var result = 1;
+      for (var i = n; i > n - r; i--) result *= i;
+      return result;
     }
 
     function combination(n, r) {
       if (r > n || n < 0 || r < 0) return 0;
       if (r === 0 || r === n) return 1;
       r = Math.min(r, n - r);
-      var 结果 = 1;
+      var result = 1;
       for (var i = 1; i <= r; i++) {
-        结果 = 结果 * (n - r + i) / i;
+        result = result * (n - r + i) / i;
       }
-      return Math.round(结果);
+      return Math.round(result);
     }
 
     function generate() {
@@ -79,12 +80,12 @@
       nprEl.innerHTML = 'P(' + n + ', ' + r + ') = ' + n + '! / (' + n + ' - ' + r + ')! = ' + npr.toLocaleString();
       ncrEl.innerHTML = 'C(' + n + ', ' + r + ') = ' + n + '! / (' + r + '! × (' + n + ' - ' + r + ')!) = ' + ncr.toLocaleString();
 
-      输出El.textContent = 'nPr = ' + npr.toLocaleString() + '\nnCr = ' + ncr.toLocaleString();
+      outputEl.textContent = 'nPr = ' + npr.toLocaleString() + '\nnCr = ' + ncr.toLocaleString();
       setStatus('计算完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

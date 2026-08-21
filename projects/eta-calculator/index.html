@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ETA Calculator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .eta-grid { display:grid; gap:var(--space-3); }
@@ -52,14 +53,14 @@
       var etaRate = document.getElementById('etaRate');
       var etaUnit = document.getElementById('etaUnit');
       var calcBtn = document.getElementById('calcBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       calcBtn.addEventListener('click', function () {
         var amount = parseFloat(etaAmount.value);
         var rate = parseFloat(etaRate.value);
         if (isNaN(amount) || isNaN(rate) || rate <= 0) {
-          输出El.textContent = '请输入有效的正数';
+          outputEl.textContent = '请输入有效的正数';
           setStatus('', 'error');
           return;
         }
@@ -85,21 +86,21 @@
           unitLabel = '天';
         }
 
-        var 结果 = (raw).toFixed(2);
+        var result = (raw).toFixed(2);
         var human = '';
         if (raw >= 86400 && unit === 'seconds') human = (raw / 86400).toFixed(2) + ' 天';
         else if (raw >= 3600 && unit === 'seconds') human = (raw / 3600).toFixed(2) + ' 小时';
         else if (raw >= 3600 && unit === 'minutes') human = (raw / 60).toFixed(2) + ' 小时';
         else if (raw >= 1440 && unit === 'minutes') human = (raw / 1440).toFixed(2) + ' 天';
         else if (raw >= 24 && unit === 'hours') human = (raw / 24).toFixed(2) + ' 天';
-        else human = 结果 + ' ' + unitLabel;
+        else human = result + ' ' + unitLabel;
 
-        输出El.textContent = amount + ' ÷ ' + rate + ' = ' + human;
+        outputEl.textContent = amount + ' ÷ ' + rate + ' = ' + human;
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

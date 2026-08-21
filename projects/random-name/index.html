@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机姓名生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rn-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -45,7 +46,7 @@
     var genderEl = document.getElementById('genderSel');
     var natEl = document.getElementById('nationalitySel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var cnSurnames = ['王','李','张','刘','陈','杨','黄','赵','周','吴','徐','孙','马','朱','胡','郭','何','高','林','罗'];
@@ -70,7 +71,7 @@
       if (count > 1000) count = 1000;
       var gender = genderEl.value;
       var nat = natEl.value;
-      var 结果 = [];
+      var result = [];
 
       for (var i = 0; i < count; i++) {
         var g = gender;
@@ -82,23 +83,23 @@
         if (nat === 'cn') {
           var surname = pick(cnSurnames);
           var given = g === 'male' ? pick(cnMale) : pick(cnFemale);
-          结果.push(surname + given);
+          result.push(surname + given);
         } else if (nat === 'jp') {
           var surname = pick(jpSurnames);
           var given = g === 'male' ? pick(jpMale) : pick(jpFemale);
-          结果.push(surname + ' ' + given);
+          result.push(surname + ' ' + given);
         } else {
           var first = g === 'male' ? pick(enMaleFirst) : pick(enFemaleFirst);
           var last = pick(enLast);
-          结果.push(first + ' ' + last);
+          result.push(first + ' ' + last);
         }
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个姓名');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

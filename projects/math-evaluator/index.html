@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Math Evaluator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Math Evaluator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.math-input{position:relative;}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -22,27 +23,27 @@
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){
-  var exprInput=document.getElementById('exprInput'),输出El=document.getElementById('outputText'),historyList=document.getElementById('historyList');
+  var exprInput=document.getElementById('exprInput'),outputEl=document.getElementById('outputText'),historyList=document.getElementById('historyList');
   var history=[];
 
   function evaluate(){
-    var expr=exprInput.value.trim();if(!expr){输出El.textContent='';return;}
+    var expr=exprInput.value.trim();if(!expr){outputEl.textContent='';return;}
     try{
       var scope={abs:Math.abs,ceil:Math.ceil,floor:Math.floor,round:Math.round,sqrt:Math.sqrt,cbrt:Math.cbrt,pow:Math.pow,exp:Math.exp,log:Math.log,log2:Math.log2,log10:Math.log10,log1p:Math.log1p,sign:Math.sign,trunc:Math.trunc,
         sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,atan2:Math.atan2,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,asinh:Math.asinh,acosh:Math.acosh,atanh:Math.atanh,
         min:Math.min,max:Math.max,PI:Math.PI,E:Math.E,LN2:Math.LN2,LN10:Math.LN10,SQRT2:Math.SQRT2,random:Math.random};
       var keys=[],vals=[];for(var k in scope){if(scope.hasOwnProperty(k)){keys.push(k);vals.push(scope[k]);}}
       var fn=new (Function.prototype.bind.apply(Function,[null].concat(keys,['return ('+expr+')'])));
-      var 结果=fn.apply(null,vals);输出El.textContent=expr+' = '+结果;
-      history.unshift(expr+' = '+结果);if(history.length>10)history.pop();
+      var result=fn.apply(null,vals);outputEl.textContent=expr+' = '+result;
+      history.unshift(expr+' = '+result);if(history.length>10)history.pop();
       historyList.innerHTML=history.map(function(h){return'<div style="padding:2px 0;border-bottom:1px solid var(--color-border);">'+htmlEscape(h)+'</div>';}).join('');
       setStatus('');}
-    catch(e){输出El.textContent='';setStatus('错误: '+e.message,'error');}}
+    catch(e){outputEl.textContent='';setStatus('错误: '+e.message,'error');}}
 
   evalBtn.addEventListener('click',evaluate);
   exprInput.addEventListener('keydown',function(e){if(e.key==='Enter')evaluate();});
-  clearBtn.addEventListener('click',function(){exprInput.value='';输出El.textContent='';setStatus('');exprInput.focus();});
-  copyBtn.addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
+  clearBtn.addEventListener('click',function(){exprInput.value='';outputEl.textContent='';setStatus('');exprInput.focus();});
+  copyBtn.addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
   evaluate();
 })();
 </script></body></html>

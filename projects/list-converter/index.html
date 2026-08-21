@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>列表格式转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .lc-options { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
@@ -32,7 +33,7 @@
         </select>
       </label>
       <label>输出格式:
-        <select id="输出Format">
+        <select id="outputFormat">
           <option value="comma">逗号分隔</option>
           <option value="newline" selected>换行分隔</option>
           <option value="numbered">编号列表 (1. )</option>
@@ -56,9 +57,9 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var inFmt = document.getElementById('inputFormat');
-      var outFmt = document.getElementById('输出Format');
+      var outFmt = document.getElementById('outputFormat');
 
       function parseItems(text, format) {
         var items = [];
@@ -116,13 +117,13 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入内容', 'error'); return; }
         var parsed = parseItems(text, inFmt.value);
-        if (parsed.length === 0) { 输出El.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
-        输出El.textContent = formatItems(parsed, outFmt.value);
+        if (parsed.length === 0) { outputEl.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
+        outputEl.textContent = formatItems(parsed, outFmt.value);
         setStatus('共 ' + parsed.length + ' 项');
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

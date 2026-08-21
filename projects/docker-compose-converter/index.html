@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Docker Compose 转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .dc-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -91,7 +92,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var imageEl = document.getElementById('imageInput');
       var nameEl = document.getElementById('nameInput');
       var portsEl = document.getElementById('portsInput');
@@ -201,7 +202,7 @@
           }
         }
 
-        输出El.textContent = lines.join('\n');
+        outputEl.textContent = lines.join('\n');
         setStatus('已生成 docker-compose.yml');
       });
 
@@ -210,10 +211,10 @@
         envEl.value = ''; networkEl.value = ''; restartEl.value = ''; commandEl.value = '';
         detachChk.checked = false; ttyChk.checked = false; interactiveChk.checked = false;
         rmChk.checked = false; privilegedChk.checked = false;
-        extraEl.value = ''; 输出El.textContent = ''; setStatus(''); imageEl.focus();
+        extraEl.value = ''; outputEl.textContent = ''; setStatus(''); imageEl.focus();
       });
 
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Temperature Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Temperature Converter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .temp-grid{display:grid;gap:var(--space-2);}
 .temp-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
@@ -31,7 +32,7 @@
 <script>
 (function() {
   var cIn=document.getElementById('celsiusInput'),fIn=document.getElementById('fahrenheitInput'),kIn=document.getElementById('kelvinInput');
-  var allTemps=document.getElementById('allTemps'),输出El=document.getElementById('outputText');
+  var allTemps=document.getElementById('allTemps'),outputEl=document.getElementById('outputText');
   var updating=false;
   var units=[{id:'celsius',label:'°C',name:'Celsius'},{id:'fahrenheit',label:'°F',name:'Fahrenheit'},{id:'kelvin',label:'K',name:'Kelvin'},{id:'rankine',label:'°R',name:'Rankine'},{id:'delisle',label:'°De',name:'Delisle'},{id:'newton',label:'°N',name:'Newton'},{id:'reaumur',label:'°Ré',name:'Réaumur'},{id:'romer',label:'°Rø',name:'Rømer'}];
   function round(v){return Math.round(v*10000)/10000;}
@@ -54,13 +55,13 @@
     var html='';
     units.forEach(function(u){html+='<div class="temp-card"><div class="tc-label">'+u.name+' ('+u.label+')</div><div class="tc-value">'+round(vals[u.id])+'</div></div>';});
     allTemps.innerHTML=html;
-    输出El.textContent=round(vals.celsius)+' °C = '+round(vals.fahrenheit)+' °F = '+round(vals.kelvin)+' K';
+    outputEl.textContent=round(vals.celsius)+' °C = '+round(vals.fahrenheit)+' °F = '+round(vals.kelvin)+' K';
     updating=false;
   }
   cIn.addEventListener('input',function(){updateAll('celsius',parseFloat(this.value)||0);});
   fIn.addEventListener('input',function(){updateAll('fahrenheit',parseFloat(this.value)||0);});
   kIn.addEventListener('input',function(){updateAll('kelvin',parseFloat(this.value)||0);});
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});
   updateAll('celsius',100);
 })();
 </script></body></html>

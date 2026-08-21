@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bencode 编解码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .mode-toggle { display:flex; gap:12px; margin-bottom:var(--space-3); }
@@ -38,7 +39,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var encodeBtn = document.getElementById('encodeBtn');
       var decodeBtn = document.getElementById('decodeBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -119,11 +120,11 @@
         try {
           var parsed = JSON.parse(text);
           decodePos = 0;
-          var 结果 = bencodeEncode(parsed);
-          输出El.textContent = 结果;
+          var result = bencodeEncode(parsed);
+          outputEl.textContent = result;
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('编码失败：请输入有效 JSON', 'error');
         }
       }
@@ -134,20 +135,20 @@
         try {
           decodeStr = text;
           decodePos = 0;
-          var 结果 = bencodeDecode();
-          if (结果 === null) throw new Error('Empty');
-          输出El.textContent = JSON.stringify(结果, null, 2);
+          var result = bencodeDecode();
+          if (result === null) throw new Error('Empty');
+          outputEl.textContent = JSON.stringify(result, null, 2);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('解码失败：Bencode 格式错误', 'error');
         }
       }
 
       encodeBtn.addEventListener('click', encode);
       decodeBtn.addEventListener('click', decode);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

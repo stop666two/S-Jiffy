@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本解包器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .tu-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -38,7 +39,7 @@ to be unwrapped.</textarea></div>
     var collapseChk = document.getElementById('collapseChk');
     var trimChk = document.getElementById('trimChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function generate() {
@@ -47,20 +48,20 @@ to be unwrapped.</textarea></div>
       var collapse = collapseChk.checked;
       var doTrim = trimChk.checked;
 
-      var 结果 = text.replace(/[\r\n]+/g, ' ');
+      var result = text.replace(/[\r\n]+/g, ' ');
       if (collapse) {
-        结果 = 结果.replace(/\s+/g, ' ');
+        result = result.replace(/\s+/g, ' ');
       }
       if (doTrim) {
-        结果 = 结果.trim();
+        result = result.trim();
       }
 
-      输出El.textContent = 结果;
-      setStatus('解包完成，共 ' + 结果.length + ' 字符');
+      outputEl.textContent = result;
+      setStatus('解包完成，共 ' + result.length + ' 字符');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sunrise/Sunset - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sunrise/Sunset - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .ss-grid{display:grid;gap:var(--space-2);}
 .ss-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);text-align:center;}
@@ -54,7 +55,7 @@ var sunset=t+HA+lngHour/24;if(sunset<0)sunset+=24;if(sunset>=24)sunset-=24;
 var noon=(sunrise+sunset)/2;var dayLen=sunset-sunrise;
 var civStart=sunrise-(90-96)/15;var civEnd=sunset+(90-96)/15;
 
-return{sunrise:sunrise,sunset:sunset,day长度：dayLen,solarNoon:noon,civilStart:civStart,civilEnd:civEnd};}
+return{sunrise:sunrise,sunset:sunset,dayLength:dayLen,solarNoon:noon,civilStart:civStart,civilEnd:civEnd};}
 
 function calc(){var lat=parseFloat(la.value)||0,lng=parseFloat(ln.value)||0;var date=da.value;
 var r=calcSun(lat,lng,date);if(!r){setStatus('Sun never rises/sets at this location','error');return;}

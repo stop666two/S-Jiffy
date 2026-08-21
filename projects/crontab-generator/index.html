@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crontab Generator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .cron-grid { display:grid; gap:var(--space-2); max-width:500px; }
@@ -48,7 +49,7 @@
       var cronMonth = document.getElementById('cronMonth');
       var cronWeekday = document.getElementById('cronWeekday');
       var cronPreview = document.getElementById('cronPreview');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       var presets = [
@@ -72,7 +73,7 @@
         ];
         var expr = parts.join(' ');
         cronPreview.textContent = expr;
-        输出El.textContent = expr;
+        outputEl.textContent = expr;
         setStatus('');
       }
 
@@ -82,7 +83,7 @@
       }
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text && text !== '* * * * *') {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Ipsum 按词生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
-.lorem-输出{min-height:200px;resize:vertical;font-family:var(--font-family);font-size:15px;line-height:1.8;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.word-count{font-size:13px;color:var(--color-text-secondary)}
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Ipsum 按词生成 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
+.lorem-output{min-height:200px;resize:vertical;font-family:var(--font-family);font-size:15px;line-height:1.8;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.word-count{font-size:13px;color:var(--color-text-secondary)}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Lorem Ipsum 单词</h1><p class="tool-desc">按指定单词数量生成 Lorem Ipsum 占位文本。</p>
@@ -11,10 +12,10 @@
 <button id="generateBtn" class="btn btn-primary">生成</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<textarea id="lorem输出" class="lorem-输出 js-focus-input" readonly placeholder="生成的 Lorem Ipsum 文本将显示在此..."></textarea>
+<textarea id="lorem输出" class="lorem-output js-focus-input" readonly placeholder="生成的 Lorem Ipsum 文本将显示在此..."></textarea>
 <div class="word-count" id="wordCountDisplay"></div>
 </div>
-<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>(function(){
@@ -26,7 +27,7 @@ var lorem输出=document.getElementById('lorem输出');
 var generateBtn=document.getElementById('generateBtn');
 var clearBtn=document.getElementById('clearBtn');
 var wordCountDisplay=document.getElementById('wordCountDisplay');
-var 输出El=document.getElementById('输出Text');
+var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 
 function capitalizeFirst(s){
@@ -39,7 +40,7 @@ for(var i=0;i<count;i++){
 var idx=Math.floor(Math.random()*wordPool.length);
 words.push(wordPool[idx]);
 }
-var 结果='';
+var result='';
 var sentence=[];
 for(var i=0;i<words.length;i++){
 sentence.push(words[i]);
@@ -47,12 +48,12 @@ if(sentence.length>=5+Math.floor(Math.random()*8)||i===words.length-1){
 if(sentence.length>0){
 var s=sentence.join(' ').trim();
 if(!/[.!?]$/.test(s))s+='.';
-结果+=capitalizeFirst(s)+' ';
+result+=capitalizeFirst(s)+' ';
 sentence=[];
 }
 }
 }
-return 结果.trim();
+return result.trim();
 }
 
 function generate(){
@@ -62,12 +63,12 @@ var text=generateLorem(n);
 lorem输出.value=text;
 var actualCount=text.split(/\s+/).length;
 wordCountDisplay.textContent='实际生成: '+actualCount+' 个词';
-输出El.textContent='生成了 '+actualCount+' 个词';
+outputEl.textContent='生成了 '+actualCount+' 个词';
 setStatus('');
 }
 
 generateBtn.addEventListener('click',generate);
-clearBtn.addEventListener('click',function(){lorem输出.value='';wordCountDisplay.textContent='';输出El.textContent='';setStatus('');});
+clearBtn.addEventListener('click',function(){lorem输出.value='';wordCountDisplay.textContent='';outputEl.textContent='';setStatus('');});
 copyBtn.addEventListener('click',function(){if(lorem输出.value){copyToClipboard(lorem输出.value,copyBtn);setStatus('已复制');}});
 wordCountInput.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
 generate();

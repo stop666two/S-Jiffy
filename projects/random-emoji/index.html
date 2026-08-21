@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机 Emoji 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .re-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -43,7 +44,7 @@
     var countEl = document.getElementById('countVal');
     var catEl = document.getElementById('catSel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var emojis = {
@@ -72,18 +73,18 @@
         pool = emojis[cat] || emojis['smileys'];
       }
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var b = new Uint8Array(1);
         crypto.getRandomValues(b);
-        结果.push(pool[b[0] % pool.length]);
+        result.push(pool[b[0] % pool.length]);
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个 Emoji');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

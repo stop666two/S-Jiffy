@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>泡泡字 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>泡泡字 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>气泡文字</h1><p class="tool-desc">将文本转换为 ⓑⓤⓑⓑⓛⓔ 圆圈/方框/括号风格。</p>
@@ -22,7 +23,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var convertBtn=document.getElementById('convertBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
@@ -54,10 +55,10 @@ return r;
 convertBtn.addEventListener('click',function(){
 var t=inputEl.value;
 if(!t){setStatus('请输入文本','error');return;}
-输出El.textContent=convert(t);
+outputEl.textContent=convert(t);
 setStatus('');
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

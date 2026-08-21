@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机 Hex 颜色生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .hc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -43,7 +44,7 @@
     var hashChk = document.getElementById('hashChk');
     var modeEl = document.getElementById('modeSel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function cryptoByte() {
@@ -92,23 +93,23 @@
       var useHash = hashChk.checked;
       var mode = modeEl.value;
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var c = generateColor(mode);
-        结果.push(useHash ? c : c.substring(1));
+        result.push(useHash ? c : c.substring(1));
       }
       var html = '';
-      for (var i = 0; i < 结果.length; i++) {
-        var c = useHash ? 结果[i] : '#' + 结果[i];
-        html += '<span class="color-swatch" style="background:' + c + ';"></span>' + 结果[i] + '\n';
+      for (var i = 0; i < result.length; i++) {
+        var c = useHash ? result[i] : '#' + result[i];
+        html += '<span class="color-swatch" style="background:' + c + ';"></span>' + result[i] + '\n';
       }
-      输出El.innerHTML = html;
+      outputEl.innerHTML = html;
       setStatus('已生成 ' + count + ' 个颜色');
     }
 
     genBtn.addEventListener('click', generate);
     copyBtn.addEventListener('click', function() {
-      var text = 输出El.textContent;
+      var text = outputEl.textContent;
       if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
     });
   })();</script>

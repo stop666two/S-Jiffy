@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Zalgo 文本 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.zalgo-preview{font-size:var(--font-size-lg);padding:var(--space-3);background:var(--color-bg-secondary);border-radius:var(--radius-md);margin-top:var(--space-2);word-break:break-all;line-height:1.8}</style></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Zalgo 文本 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.zalgo-preview{font-size:var(--font-size-lg);padding:var(--space-3);background:var(--color-bg-secondary);border-radius:var(--radius-md);margin-top:var(--space-2);word-break:break-all;line-height:1.8}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Zalgo 文字</h1><p class="tool-desc">将文本转化为 Zalgo 鬼畜风格，可调节上/下/双向注入强度。</p>
@@ -22,7 +23,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var convertBtn=document.getElementById('convertBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
@@ -55,13 +56,13 @@ var t=inputEl.value;
 if(!t){setStatus('请输入文本','error');return;}
 var l=parseInt(intensity.value);
 var m=modeSelect.value;
-var 结果=zalgo(t,l,m);
-输出El.textContent=结果;
+var result=zalgo(t,l,m);
+outputEl.textContent=result;
 previewArea.style.display='block';
-previewArea.textContent=结果;
+previewArea.textContent=result;
 setStatus('');
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';previewArea.style.display='none';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';previewArea.style.display='none';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

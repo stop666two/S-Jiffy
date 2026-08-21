@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>模运算计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .mc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -40,7 +41,7 @@
     var showPowChk = document.getElementById('showPowChk');
     var powRow = document.getElementById('powRow');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     showPowChk.addEventListener('change', function() {
@@ -63,14 +64,14 @@
     }
 
     function modPow(base, exp, mod) {
-      var 结果 = 1;
+      var result = 1;
       base = base % mod;
       while (exp > 0) {
-        if (exp % 2 === 1) 结果 = (结果 * base) % mod;
+        if (exp % 2 === 1) result = (result * base) % mod;
         exp = Math.floor(exp / 2);
         base = (base * base) % mod;
       }
-      return 结果;
+      return result;
     }
 
     function generate() {
@@ -81,28 +82,28 @@
 
       var modVal = ((a % b) + b) % b;
       var inv = modInverse(a, b);
-      var 输出 = 'a = ' + a + ', b = ' + b + '\n';
-      输出 += '\na mod b = ' + a + ' % ' + b + ' = ' + modVal + '\n';
-      输出 += '\n模逆元: ' + a + '⁻¹ mod ' + b + ' = ';
+      var output = 'a = ' + a + ', b = ' + b + '\n';
+      output += '\na mod b = ' + a + ' % ' + b + ' = ' + modVal + '\n';
+      output += '\n模逆元: ' + a + '⁻¹ mod ' + b + ' = ';
       if (inv === null) {
-        输出 += '不存在（gcd(' + a + ', ' + b + ') = ' + gcd(a, b) + ' ≠ 1）';
+        output += '不存在（gcd(' + a + ', ' + b + ') = ' + gcd(a, b) + ' ≠ 1）';
       } else {
-        输出 += inv + ' (验证: ' + a + ' × ' + inv + ' % ' + b + ' = ' + (a * inv % b) + ')';
+        output += inv + ' (验证: ' + a + ' × ' + inv + ' % ' + b + ' = ' + (a * inv % b) + ')';
       }
 
       if (showPowChk.checked) {
         var exp = parseInt(expEl.value, 10) || 0;
         if (exp < 0) exp = 0;
         var pow结果 = modPow(a, exp, b);
-        输出 += '\n\n模幂运算: ' + a + '^' + exp + ' mod ' + b + ' = ' + pow结果;
+        output += '\n\n模幂运算: ' + a + '^' + exp + ' mod ' + b + ' = ' + pow结果;
       }
 
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus('计算完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Number Formatter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Number Formatter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .nf-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .nf-row .field{flex:1;min-width:160px;}
 .nf-row label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;}
-.nf-结果s{display:grid;gap:var(--space-2);}
+.nf-results{display:grid;gap:var(--space-2);}
 .nf-item{display:flex;justify-content:space-between;padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);}
 .nf-item .key{color:var(--color-text-secondary);font-size:var(--font-size-sm);}
 .nf-item .val{font-weight:500;font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;text-align:right;max-width:60%;}
@@ -21,14 +22,14 @@
 <div class="field"><label for="langSelect">Language</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
 <button id="formatBtn" class="btn btn-primary">格式化</button>
 </div>
-<div class="nf-结果s">
-<div class="nf-item"><span class="key">Locale format</span><span class="val" id="结果Comma">-</span></div>
-<div class="nf-item"><span class="key">Percentage</span><span class="val" id="结果Percent">-</span></div>
-<div class="nf-item"><span class="key">Ordinal</span><span class="val" id="结果Ordinal">-</span></div>
-<div class="nf-item"><span class="key">In Words</span><span class="val" id="结果Words">-</span></div>
-<div class="nf-item"><span class="key">Roman</span><span class="val" id="结果Roman">-</span></div>
-<div class="nf-item"><span class="key">Scientific</span><span class="val" id="结果Sci">-</span></div>
-<div class="nf-item"><span class="key">Currency</span><span class="val" id="结果Currency">-</span></div>
+<div class="nf-results">
+<div class="nf-item"><span class="key">Locale format</span><span class="val" id="resultComma">-</span></div>
+<div class="nf-item"><span class="key">Percentage</span><span class="val" id="resultPercent">-</span></div>
+<div class="nf-item"><span class="key">Ordinal</span><span class="val" id="resultOrdinal">-</span></div>
+<div class="nf-item"><span class="key">In Words</span><span class="val" id="resultWords">-</span></div>
+<div class="nf-item"><span class="key">Roman</span><span class="val" id="resultRoman">-</span></div>
+<div class="nf-item"><span class="key">Scientific</span><span class="val" id="resultSci">-</span></div>
+<div class="nf-item"><span class="key">Currency</span><span class="val" id="resultCurrency">-</span></div>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -37,8 +38,8 @@
 <script>
 (function(){
   var inputNum=document.getElementById('inputNum'),langSelect=document.getElementById('langSelect');
-  var res={comma:document.getElementById('结果Comma'),percent:document.getElementById('结果Percent'),ordinal:document.getElementById('结果Ordinal'),words:document.getElementById('结果Words'),roman:document.getElementById('结果Roman'),sci:document.getElementById('结果Sci'),currency:document.getElementById('结果Currency')};
-  var 输出El=document.getElementById('outputText');
+  var res={comma:document.getElementById('resultComma'),percent:document.getElementById('resultPercent'),ordinal:document.getElementById('resultOrdinal'),words:document.getElementById('resultWords'),roman:document.getElementById('resultRoman'),sci:document.getElementById('resultSci'),currency:document.getElementById('resultCurrency')};
+  var outputEl=document.getElementById('outputText');
 
   var onesEn=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
   var tensEn=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
@@ -86,8 +87,8 @@
     return w.trim();}
 
   function ordinalSuffix(n){var j=n%10,k=n%100;if(j===1&&k!==11)return n+'st';if(j===2&&k!==12)return n+'nd';if(j===3&&k!==13)return n+'rd';return n+'th';}
-  function toRoman(n){if(n<=0||n>3999)return'N/A';var vals=[1000,900,500,400,100,90,50,40,10,9,5,4,1],chars=['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'],结果='';
-    for(var i=0;i<vals.length;i++){while(n>=vals[i]){结果+=chars[i];n-=vals[i];}}return 结果;}
+  function toRoman(n){if(n<=0||n>3999)return'N/A';var vals=[1000,900,500,400,100,90,50,40,10,9,5,4,1],chars=['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'],result='';
+    for(var i=0;i<vals.length;i++){while(n>=vals[i]){result+=chars[i];n-=vals[i];}}return result;}
 
   function format(){
     var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus('Enter a valid number','error');return;}
@@ -106,13 +107,13 @@
     res.sci.textContent=val.toExponential(6);
     var sym={en:'$',cn:'¥',jp:'¥',fr:'€',de:'€'}[lang]||'$';
     res.currency.textContent=sym+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    输出El.textContent=res.comma.textContent+' | '+res.words.textContent;
+    outputEl.textContent=res.comma.textContent+' | '+res.words.textContent;
     setStatus('Formatted');}
 
   formatBtn.addEventListener('click',format);
   inputNum.addEventListener('keydown',function(e){if(e.key==='Enter')format();});
   langSelect.addEventListener('change',format);
-  copyBtn.addEventListener('click',function(){var t=输出El.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
+  copyBtn.addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
   format();
 })();
 </script></body></html>

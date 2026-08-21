@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chmod Calculator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .chmod-table { width:100%; border-collapse:collapse; margin-bottom:var(--space-3); }
@@ -71,7 +72,7 @@
         ow: document.getElementById('ow'),
         ox: document.getElementById('ox')
       };
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function update() {
@@ -90,7 +91,7 @@
         }
 
         var sym = toSymbol(u) + toSymbol(g) + toSymbol(o);
-        输出El.textContent = octal + ' (' + sym + ')';
+        outputEl.textContent = octal + ' (' + sym + ')';
         setStatus('chmod ' + octal + ' ' + sym);
       }
 
@@ -101,7 +102,7 @@
       }
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

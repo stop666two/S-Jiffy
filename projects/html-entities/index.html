@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTML Entities - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,7 +35,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var escapeBtn = document.getElementById('escapeBtn');
       var unescapeBtn = document.getElementById('unescapeBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -54,26 +55,26 @@
       escapeBtn.addEventListener('click', function () {
         var text = inputEl.value;
         if (!text) { setStatus('请输入内容', 'error'); return; }
-        输出El.textContent = escapeHtml(text);
+        outputEl.textContent = escapeHtml(text);
         setStatus('');
       });
 
       unescapeBtn.addEventListener('click', function () {
         var text = inputEl.value;
         if (!text) { setStatus('请输入内容', 'error'); return; }
-        输出El.textContent = unescapeHtml(text);
+        outputEl.textContent = unescapeHtml(text);
         setStatus('');
       });
 
       clearBtn.addEventListener('click', function () {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

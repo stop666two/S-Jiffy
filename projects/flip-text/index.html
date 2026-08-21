@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>翻转文本 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>翻转文本 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>翻转文字</h1><p class="tool-desc">将文本翻转、镜像或反转，生成 upside-down / mirror / reverse 效果。</p>
@@ -22,7 +23,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var convertBtn=document.getElementById('convertBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
@@ -30,7 +31,7 @@ var flipMap={
 'A':'\u0250','B':'q','C':'\u0254','D':'p','E':'\u01DD','F':'\u025F','G':'\u0253','H':'\u0265','I':'\u0131','J':'\u027E','K':'\u029E','L':'\u006C','M':'\u026F','N':'u','O':'o','P':'d','Q':'b','R':'\u0279','S':'s','T':'\u0287','U':'n','V':'\u028C','W':'\u028D','X':'x','Y':'\u028E','Z':'z',
 'a':'\u0250','b':'q','c':'\u0254','d':'p','e':'\u01DD','f':'\u025F','g':'\u0253','h':'\u0265','i':'\u0131','j':'\u027E','k':'\u029E','l':'\u006C','m':'\u026F','n':'u','o':'o','p':'d','q':'b','r':'\u0279','s':'s','t':'\u0287','u':'n','v':'\u028C','w':'\u028D','x':'x','y':'\u028E','z':'z',
 '0':'0','1':'\u0196','2':'\u05E9','3':'3','4':'\u152D','5':'\u1E25','6':'9','7':'\u1E19','8':'8','9':'6',
-','':'\u2018','.':'\u02D9','!':'\u00A1','?':'\u00BF',"'":',','"':'\u201E','<':'>','>':'<','[':']',']':'[','{':'}','}':'{','(':')',')':'(','&':'&','_':'\u203E'
+',':'\u2018','.':'\u02D9','!':'\u00A1','?':'\u00BF',"'":',','"':'\u201E','<':'>','>':'<','[':']',']':'[','{':'}','}':'{','(':')',')':'(','&':'&','_':'\u203E'
 };
 function flip(text){
 var r='';
@@ -61,12 +62,12 @@ convertBtn.addEventListener('click',function(){
 var t=inputEl.value;
 if(!t){setStatus('请输入文本','error');return;}
 var mode=getMode();
-if(mode==='flip')输出El.textContent=flip(t);
-else if(mode==='mirror')输出El.textContent=mirror(t);
-else 输出El.textContent=reverse(t);
+if(mode==='flip')outputEl.textContent=flip(t);
+else if(mode==='mirror')outputEl.textContent=mirror(t);
+else outputEl.textContent=reverse(t);
 setStatus('');
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UUID v6 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .u6-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -28,7 +29,7 @@
       <div><button id="genBtn" class="btn btn-primary">生成</button></div>
       <div class="hex-breakdown" id="breakdown"></div>
     </div>
-    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -37,7 +38,7 @@
     var upperChk = document.getElementById('upperChk');
     var genBtn = document.getElementById('genBtn');
     var breakdown = document.getElementById('breakdown');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function hex8(v) { var s = v.toString(16); while (s.length < 8) s = '0' + s; return s; }
@@ -87,12 +88,12 @@
       if (count > 100) count = 100;
       var upper = upperChk.checked;
 
-      var 结果 = [];
+      var result = [];
       var breakHtml = '';
       for (var i = 0; i < count; i++) {
         var uuid = generateUUIDv6();
         if (upper) uuid = uuid.toUpperCase();
-        结果.push(uuid);
+        result.push(uuid);
 
         if (i === 0) {
           var p = parseHex(uuid);
@@ -107,12 +108,12 @@
       }
 
       breakdown.innerHTML = breakHtml;
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个 UUID v6');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

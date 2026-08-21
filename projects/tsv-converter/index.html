@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TSV · CSV · JSON - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TSV · CSV · JSON - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .format-opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .format-opt label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
-.输出-format{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:var(--space-2);}
-.输出-format label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
+.output-format{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.output-format label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -15,7 +16,7 @@
 <label>Input format</label>
 <select id="inFormat" class="input" style="width:auto;"><option value="auto">Auto-detect</option><option value="tsv">TSV</option><option value="csv">CSV</option><option value="json">JSON</option></select>
 </div>
-<div class="输出-format"><label><input type="radio" name="outFmt" value="tsv" checked> TSV</label><label><input type="radio" name="outFmt" value="csv"> CSV</label><label><input type="radio" name="outFmt" value="json"> JSON</label><label><input type="radio" name="outFmt" value="markdown"> Markdown</label></div>
+<div class="output-format"><label><input type="radio" name="outFmt" value="tsv" checked> TSV</label><label><input type="radio" name="outFmt" value="csv"> CSV</label><label><input type="radio" name="outFmt" value="json"> JSON</label><label><input type="radio" name="outFmt" value="markdown"> Markdown</label></div>
 <div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
 <button id="convertBtn" class="btn btn-primary">转换</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
@@ -50,8 +51,8 @@ var headers=Object.keys(arr[0]);rows=[headers];for(var r=0;r<arr.length;r++){var
 rows.push(rw);}}catch(e){setStatus('无效 JSON','error');return;}}else{rows=parseTable(t,delim);}
 if(rows.length<2){setStatus('Need header + data rows','error');return;}
 var fmt=document.querySelector('input[name="outFmt"]:checked').value;
-var 结果='';switch(fmt){case'tsv':结果=toTSV(rows);break;case'csv':结果=toCSV(rows);break;case'json':结果=toJSON(rows);break;case'markdown':结果=toMarkdown(rows);break;}
-o.textContent=结果;setStatus('Converted '+(rows.length-1)+' rows');}
+var result='';switch(fmt){case'tsv':result=toTSV(rows);break;case'csv':result=toCSV(rows);break;case'json':result=toJSON(rows);break;case'markdown':result=toMarkdown(rows);break;}
+o.textContent=result;setStatus('Converted '+(rows.length-1)+' rows');}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});

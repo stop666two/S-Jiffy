@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>数据存储单位转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ds-grid { display:grid; gap:var(--space-3); }
@@ -53,7 +54,7 @@
       var inputGB = document.getElementById('inputGB');
       var inputTB = document.getElementById('inputTB');
       var inputPB = document.getElementById('inputPB');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -68,7 +69,7 @@
         inputGB.value = r(b / 1073741824);
         inputTB.value = r(b / 1099511627776);
         inputPB.value = r(b / 1125899906842624);
-        输出El.textContent = b + ' B = ' + inputKB.value + ' KB = ' + inputMB.value + ' MB = ' + inputGB.value + ' GB';
+        outputEl.textContent = b + ' B = ' + inputKB.value + ' KB = ' + inputMB.value + ' MB = ' + inputGB.value + ' GB';
         updating = false;
       }
 
@@ -86,7 +87,7 @@
       inputPB.addEventListener('input', function() { fromPB(parseFloat(this.value) || 0); });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

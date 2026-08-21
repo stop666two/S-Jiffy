@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS 选择器测试 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .html-preview { font-size:13px; line-height:1.6; padding:var(--space-2); background:#fff; border:1px solid var(--color-border); border-radius:var(--radius-md); max-height:400px; overflow:auto; white-space:pre-wrap; word-break:break-all; font-family:var(--font-mono); }
@@ -35,8 +36,8 @@
       <textarea id="htmlInput" class="input textarea" placeholder="<div><p class='foo'>Hello</p><p class='bar'>World</p></div>" style="min-height:200px;font-family:var(--font-mono);font-size:13px;"></textarea>
     </div>
 
-    <div class="输出-box" style="min-height:100px;">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" style="min-height:100px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
 
@@ -51,7 +52,7 @@
     (function () {
       var selectorInput = document.getElementById('selectorInput');
       var htmlInput = document.getElementById('htmlInput');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var htmlPreview = document.getElementById('htmlPreview');
       var previewBox = document.getElementById('previewBox');
       var testBtn = document.getElementById('testBtn');
@@ -61,7 +62,7 @@
       testBtn.addEventListener('click', function () {
         var selector = selectorInput.value.trim();
         var html = htmlInput.value.trim();
-        输出Text.textContent = '';
+        outputText.textContent = '';
         htmlPreview.innerHTML = '';
         previewBox.style.display = 'none';
 
@@ -77,16 +78,16 @@
           var totalEls = body.querySelectorAll('*').length;
           var matchCount = matched.length;
 
-          输出Text.textContent = '匹配结果: ' + matchCount + ' / ' + totalEls + ' 个元素';
+          outputText.textContent = '匹配结果: ' + matchCount + ' / ' + totalEls + ' 个元素';
 
           if (matchCount > 0) {
-            输出Text.textContent += '\n\n匹配的元素:';
+            outputText.textContent += '\n\n匹配的元素:';
             for (var i = 0; i < matched.length; i++) {
               var el = matched[i];
               var tag = el.tagName.toLowerCase();
               var id = el.id ? '#' + el.id : '';
               var cls = el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '';
-              输出Text.textContent += '\n  ' + (i + 1) + '. <' + tag + id + cls + '> 「' + (el.textContent || '').substring(0, 50) + '」';
+              outputText.textContent += '\n  ' + (i + 1) + '. <' + tag + id + cls + '> 「' + (el.textContent || '').substring(0, 50) + '」';
             }
           }
 
@@ -112,11 +113,11 @@
           function buildHighlightedHTML(el) {
             var tag = el.tagName ? el.tagName.toLowerCase() : '';
             if (!tag || tag === 'html' || tag === 'head' || tag === 'body') {
-              var 结果 = '';
+              var result = '';
               for (var ci = 0; ci < el.childNodes.length; ci++) {
-                结果 += buildHighlightedHTML(el.childNodes[ci]);
+                result += buildHighlightedHTML(el.childNodes[ci]);
               }
-              return 结果;
+              return result;
             }
             var isMatch = false;
             for (var mi = 0; mi < matchedInTemp.length; mi++) {
@@ -137,7 +138,7 @@
           setStatus('测试完成');
 
         } catch (e) {
-          输出Text.textContent = '';
+          outputText.textContent = '';
           setStatus('选择器语法错误: ' + e.message, 'error');
         }
       });
@@ -145,7 +146,7 @@
       clearBtn.addEventListener('click', function () {
         selectorInput.value = '';
         htmlInput.value = '';
-        输出Text.textContent = '';
+        outputText.textContent = '';
         htmlPreview.innerHTML = '';
         previewBox.style.display = 'none';
         setStatus('');
@@ -153,7 +154,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
       });
     })();
   </script>

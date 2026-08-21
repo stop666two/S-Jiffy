@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>字符串相似度 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>字符串相似度 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-2);}
 .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
@@ -43,7 +44,7 @@ function update(){
   var sim=maxLen===0?100:Math.round((1-dist/maxLen)*10000)/100;
   dEl.textContent=dist;
   sEl.textContent=sim+'%';
-  o.textContent='Levenshtein 距离: '+dist+' | 相似度: '+sim+'% | 长度: '+a.length+' / '+b.length;
+  o.textContent='Levenshtein 距离: '+dist+' | 相似度: '+sim+'% | length: '+a.length+' / '+b.length;
 }
 ta.addEventListener('input',update);tb.addEventListener('input',update);
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});

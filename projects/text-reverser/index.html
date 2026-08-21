@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本反转器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rev-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -38,21 +39,21 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       function reverseChars() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        输出El.textContent = text.split('').reverse().join('');
+        outputEl.textContent = text.split('').reverse().join('');
         setStatus('字符反转完成');
       }
 
       function reverseWords() {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        输出El.textContent = text.split(/\s+/).reverse().join(' ');
+        outputEl.textContent = text.split(/\s+/).reverse().join(' ');
         setStatus('单词反转完成');
       }
 
@@ -60,7 +61,7 @@
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
         var lines = text.split('\n');
-        输出El.textContent = lines.reverse().join('\n');
+        outputEl.textContent = lines.reverse().join('\n');
         setStatus('行反转完成');
       }
 
@@ -70,13 +71,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

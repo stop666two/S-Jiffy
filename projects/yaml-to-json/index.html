@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YAML to JSON - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -40,7 +41,7 @@ nested:
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
 
       function parseYaml(src) {
         var lines = src.split('\n');
@@ -165,16 +166,16 @@ nested:
         if (!text) { setStatus('请输入 YAML', 'error'); return; }
         try {
           var parsed = parseYaml(text);
-          输出El.textContent = JSON.stringify(parsed, null, 2);
+          outputEl.textContent = JSON.stringify(parsed, null, 2);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('YAML 解析错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

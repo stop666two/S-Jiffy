@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>分数转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .fc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -35,7 +36,7 @@
     var mixedChk = document.getElementById('mixedChk');
     var stepsChk = document.getElementById('showStepsChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function gcd(a, b) {
@@ -87,7 +88,7 @@
       if (!input) { setStatus('请输入数值', 'error'); return; }
 
       var steps = [];
-      var 结果 = '';
+      var result = '';
 
       if (input.indexOf('/') !== -1) {
         var decimal = fractionToDecimal(input);
@@ -95,37 +96,37 @@
         steps.push('分数 → 小数:');
         steps.push(input + ' = ' + decimal);
         var fr = decimalToFraction(decimal, []);
-        结果 = '小数: ' + decimal + '\n分数: ' + input;
+        result = '小数: ' + decimal + '\n分数: ' + input;
         if (showMixed && fr.whole > 0) {
           var rem = parseInt(input.split('/')[0]) % parseInt(input.split('/')[1]);
           var den = parseInt(input.split('/')[1]);
-          结果 += '\n带分数: ' + fr.whole + ' ' + rem + '/' + den;
+          result += '\n带分数: ' + fr.whole + ' ' + rem + '/' + den;
         }
       } else {
         var val = parseFloat(input);
         if (isNaN(val)) { setStatus('请输入有效数值', 'error'); return; }
         steps.push('小数 → 分数:');
         var fr = decimalToFraction(val, steps);
-        结果 = '小数: ' + val;
+        result = '小数: ' + val;
         if (showMixed && fr.whole > 0 && fr.num > 0) {
-          结果 += '\n带分数: ' + fr.whole + ' ' + fr.num + '/' + fr.den;
-          结果 += '\n假分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+          result += '\n带分数: ' + fr.whole + ' ' + fr.num + '/' + fr.den;
+          result += '\n假分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
         } else {
-          结果 += '\n分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+          result += '\n分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
         }
-        if (fr.den === 1) 结果 += '\n（整数）';
+        if (fr.den === 1) result += '\n（整数）';
       }
 
       if (showSteps) {
-        输出El.textContent = steps.join('\n') + '\n\n' + 结果;
+        outputEl.textContent = steps.join('\n') + '\n\n' + result;
       } else {
-        输出El.textContent = 结果;
+        outputEl.textContent = result;
       }
       setStatus('转换完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

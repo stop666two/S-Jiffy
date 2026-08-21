@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机选择器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -37,7 +38,7 @@
     var pickEl = document.getElementById('pickCount');
     var dupChk = document.getElementById('dupChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function cryptoIndex(len) {
@@ -59,9 +60,9 @@
         return;
       }
 
-      var 结果 = [];
+      var result = [];
       if (allowDup) {
-        for (var i = 0; i < pick; i++) 结果.push(lines[cryptoIndex(lines.length)]);
+        for (var i = 0; i < pick; i++) result.push(lines[cryptoIndex(lines.length)]);
       } else {
         var shuffled = lines.slice();
         for (var i = shuffled.length - 1; i > 0; i--) {
@@ -70,14 +71,14 @@
           shuffled[i] = shuffled[j];
           shuffled[j] = tmp;
         }
-        结果 = shuffled.slice(0, pick);
+        result = shuffled.slice(0, pick);
       }
-      输出El.textContent = 结果.join('\n');
-      setStatus('已选取 ' + 结果.length + ' 项');
+      outputEl.textContent = result.join('\n');
+      setStatus('已选取 ' + result.length + ' 项');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

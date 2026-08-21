@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Slugify String - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -20,8 +21,8 @@
       <button id="slugifyBtn" class="btn btn-primary">生成 Slug</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -33,7 +34,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var slugifyBtn = document.getElementById('slugifyBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -52,26 +53,26 @@
       slugifyBtn.addEventListener('click', function () {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        输出El.textContent = slugify(text);
+        outputEl.textContent = slugify(text);
         setStatus('');
       });
 
       inputEl.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
-          输出El.textContent = slugify(inputEl.value);
+          outputEl.textContent = slugify(inputEl.value);
           setStatus('');
         }
       });
 
       clearBtn.addEventListener('click', function () {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

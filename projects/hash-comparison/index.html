@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Hash Comparison - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Hash Comparison - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .comp-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .comp-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
-.结果-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;display:inline-block;}
-.结果-badge.match{background:#e8f5e9;color:#2e7d32;}
-.结果-badge.no-match{background:#ffebee;color:#c62828;}
-.结果-badge.pending{background:#f5f5f5;color:#666;}
+.result-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;display:inline-block;}
+.result-badge.match{background:#e8f5e9;color:#2e7d32;}
+.result-badge.no-match{background:#ffebee;color:#c62828;}
+.result-badge.pending{background:#f5f5f5;color:#666;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -23,13 +24,13 @@
 <input type="file" id="fileInput" style="display:none;">
 </div>
 </div>
-<div class="card" style="text-align:center;"><span id="结果Badge" class="结果-badge pending">等待</span><div id="结果Detail" style="margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="card" style="text-align:center;"><span id="resultBadge" class="result-badge pending">等待</span><div id="resultDetail" style="margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){var i=document.getElementById('inputText'),hi=document.getElementById('hashInput'),al=document.getElementById('algoSelect'),fm=document.getElementById('fmtSelect');
-var rb=document.getElementById('结果Badge'),rd=document.getElementById('结果Detail'),o=document.getElementById('outputText'),fi=document.getElementById('fileInput');
+var rb=document.getElementById('resultBadge'),rd=document.getElementById('resultDetail'),o=document.getElementById('outputText'),fi=document.getElementById('fileInput');
 
 function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
 function b64(buf){var b=new Uint8Array(buf),s='';for(var x=0;x<b.length;x++)s+=String.fromCharCode(b[x]);return btoa(s);}
@@ -39,12 +40,12 @@ return(Math.abs(hash)>>>0).toString(16).padStart(32,'0');}
 function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().toLowerCase();if(!target){setStatus('Enter a hash to compare','error');return;}
 var hash;
 if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.toLowerCase()===target;
-rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match?'match':'no-match');
+rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match?'match':'no-match');
       rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
 o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('错误: '+e.message,'error');});
 return;}
 var computed2=hash;var match2=computed2.toLowerCase()===target;
-rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='结果-badge '+(match2?'match':'no-match');
+rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match2?'match':'no-match');
 rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed2)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
 o.textContent=computed2;setStatus(match2?'Match!':'No match');}
 

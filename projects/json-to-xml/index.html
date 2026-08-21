@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON to XML - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -33,29 +34,29 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
 
       function jsonToXml(obj, nodeName, indent) {
         if (indent === undefined) indent = 0;
         var pad = '  ';
         var padStr = pad.repeat(indent);
-        var 结果 = '';
+        var result = '';
 
         if (obj === null || obj === undefined) {
-          结果 += padStr + '<' + nodeName + '/>\n';
-          return 结果;
+          result += padStr + '<' + nodeName + '/>\n';
+          return result;
         }
 
         if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
-          结果 += padStr + '<' + nodeName + '>' + escapeXml(String(obj)) + '</' + nodeName + '>\n';
-          return 结果;
+          result += padStr + '<' + nodeName + '>' + escapeXml(String(obj)) + '</' + nodeName + '>\n';
+          return result;
         }
 
         if (Array.isArray(obj)) {
           for (var i = 0; i < obj.length; i++) {
-            结果 += jsonToXml(obj[i], nodeName, indent);
+            result += jsonToXml(obj[i], nodeName, indent);
           }
-          return 结果;
+          return result;
         }
 
         if (typeof obj === 'object') {
@@ -81,23 +82,23 @@
           var childKeys = Object.keys(children);
           if (childKeys.length === 0) {
             if (hasText) {
-              结果 += padStr + '<' + nodeName + attrs + '>' + textVal + '</' + nodeName + '>\n';
+              result += padStr + '<' + nodeName + attrs + '>' + textVal + '</' + nodeName + '>\n';
             } else {
-              结果 += padStr + '<' + nodeName + attrs + '/>\n';
+              result += padStr + '<' + nodeName + attrs + '/>\n';
             }
           } else {
-            结果 += padStr + '<' + nodeName + attrs + '>\n';
+            result += padStr + '<' + nodeName + attrs + '>\n';
             if (hasText) {
-              结果 += padStr + pad + textVal + '\n';
+              result += padStr + pad + textVal + '\n';
             }
             for (var i = 0; i < childKeys.length; i++) {
-              结果 += jsonToXml(children[childKeys[i]], childKeys[i], indent + 1);
+              result += jsonToXml(children[childKeys[i]], childKeys[i], indent + 1);
             }
-            结果 += padStr + '</' + nodeName + '>\n';
+            result += padStr + '</' + nodeName + '>\n';
           }
-          return 结果;
+          return result;
         }
-        return 结果;
+        return result;
       }
 
       function escapeXml(s) {
@@ -110,20 +111,20 @@
         try {
           var parsed = JSON.parse(text);
           var keys = Object.keys(parsed);
-          if (keys.length === 0) { 输出El.textContent = ''; setStatus('空对象', 'error'); return; }
+          if (keys.length === 0) { outputEl.textContent = ''; setStatus('空对象', 'error'); return; }
           var rootName = keys[0];
-          var 结果 = '<?xml version="1.0" encoding="UTF-8"?>\n';
-          结果 += jsonToXml(parsed[rootName], rootName, 0);
-          输出El.textContent = 结果;
+          var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
+          result += jsonToXml(parsed[rootName], rootName, 0);
+          outputEl.textContent = result;
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('JSON 格式错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

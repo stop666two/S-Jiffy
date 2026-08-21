@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>长度单位转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .len-grid { display:grid; gap:var(--space-3); }
@@ -55,7 +56,7 @@
       var inputFt = document.getElementById('inputFt');
       var inputYd = document.getElementById('inputYd');
       var inputMi = document.getElementById('inputMi');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -71,7 +72,7 @@
         inputFt.value = r(m * 3.28084);
         inputYd.value = r(m * 1.09361);
         inputMi.value = r(m / 1609.344);
-        输出El.textContent = m + ' m = ' + inputKm.value + ' km = ' + inputFt.value + ' ft = ' + inputMi.value + ' mi';
+        outputEl.textContent = m + ' m = ' + inputKm.value + ' km = ' + inputFt.value + ' ft = ' + inputMi.value + ' mi';
         updating = false;
       }
 
@@ -84,7 +85,7 @@
       inputMi.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) * 1609.344); });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

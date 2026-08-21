@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>日期差计算 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .dd-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
@@ -40,7 +41,7 @@
       var date1El = document.getElementById('date1');
       var date2El = document.getElementById('date2');
       var calcBtn = document.getElementById('calcBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function todayStr() {
@@ -70,14 +71,14 @@
         if (end.getDate() < start.getDate()) months--;
 
         var label = d1 < d2 ? '相差' : '相差（绝对值）';
-        输出El.textContent = label + ' ' + days + ' 天 = ' + weeks + ' 周 = ' + months + ' 个月 ≈ ' + years + ' 年';
+        outputEl.textContent = label + ' ' + days + ' 天 = ' + weeks + ' 周 = ' + months + ' 个月 ≈ ' + years + ' 年';
         setStatus('计算完成');
       }
 
       calcBtn.addEventListener('click', calc);
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

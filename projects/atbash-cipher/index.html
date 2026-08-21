@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Atbash 密码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,38 +35,38 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var encryptBtn = document.getElementById('encryptBtn');
       var decryptBtn = document.getElementById('decryptBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
       function atbash(text) {
-        var 结果 = '';
+        var result = '';
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
           if (code >= 65 && code <= 90) {
-            结果 += String.fromCharCode(90 - (code - 65));
+            result += String.fromCharCode(90 - (code - 65));
           } else if (code >= 97 && code <= 122) {
-            结果 += String.fromCharCode(122 - (code - 97));
+            result += String.fromCharCode(122 - (code - 97));
           } else {
-            结果 += text[i];
+            result += text[i];
           }
         }
-        return 结果;
+        return result;
       }
 
       function process(mode) {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        输出El.textContent = atbash(text);
+        outputEl.textContent = atbash(text);
         setStatus('');
       }
 
       encryptBtn.addEventListener('click', process);
       decryptBtn.addEventListener('click', process);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

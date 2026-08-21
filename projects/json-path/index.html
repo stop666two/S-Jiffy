@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSONPath 提取 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.jp-hint{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;font-family:var(--font-mono)}</style></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSONPath 提取 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.jp-hint{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;font-family:var(--font-mono)}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>JSONPath 查询</h1><p class="tool-desc">使用 JSONPath 表达式从 JSON 中提取值，支持点号和括号语法。</p>
@@ -18,7 +19,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var pathInput=document.getElementById('pathInput');
 var extractBtn=document.getElementById('extractBtn');
 var clearBtn=document.getElementById('clearBtn');
@@ -76,18 +77,18 @@ if(!json){setStatus('请输入 JSON','error');return;}
 if(!path){setStatus('请输入 JSONPath 表达式','error');return;}
 try{
 var parsed=JSON.parse(json);
-var 结果=evaluatePath(parsed,path);
-if(结果===undefined||结果===null){
-输出El.textContent='未找到匹配的值';
+var result=evaluatePath(parsed,path);
+if(result===undefined||result===null){
+outputEl.textContent='未找到匹配的值';
 }else{
-输出El.textContent=JSON.stringify(结果,null,2);
+outputEl.textContent=JSON.stringify(result,null,2);
 }
 setStatus('');
 }catch(e){
 setStatus('错误: '+e.message,'error');
 }
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';pathInput.value='';输出El.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';pathInput.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

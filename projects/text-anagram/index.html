@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>变位词检测器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ta-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -30,7 +31,7 @@
       </div>
       <div><button id="genBtn" class="btn btn-primary">检查</button></div>
     </div>
-    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -40,18 +41,18 @@
     var ignoreCaseChk = document.getElementById('ignoreCaseChk');
     var ignoreSpaceChk = document.getElementById('ignoreSpaceChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function countChars(s, ignoreCase, ignoreSpace) {
-      var 结果 = {};
+      var result = {};
       for (var i = 0; i < s.length; i++) {
         var c = s[i];
         if (ignoreSpace && (c === ' ' || c === '\t' || c === '\n')) continue;
         if (ignoreCase) c = c.toLowerCase();
-        结果[c] = (结果[c] || 0) + 1;
+        result[c] = (result[c] || 0) + 1;
       }
-      return 结果;
+      return result;
     }
 
     function generate() {
@@ -86,26 +87,26 @@
       for (var i = 0; i < keysB.length; i++) allKeys[keysB[i]] = true;
       var sortedKeys = Object.keys(allKeys).sort();
 
-      var 输出 = '';
-      输出 += '文本 A: ' + a + '\n';
-      输出 += '文本 B: ' + b + '\n';
-      输出 += '\n结果: ' + (isAnagram ? '✓ 是变位词' : '✗ 不是变位词') + '\n';
-      输出 += '\n字母计数对比:\n';
-      输出 += '字符 | A计数 | B计数\n';
-      输出 += '-----------------\n';
+      var output = '';
+      output += '文本 A: ' + a + '\n';
+      output += '文本 B: ' + b + '\n';
+      output += '\n结果: ' + (isAnagram ? '✓ 是变位词' : '✗ 不是变位词') + '\n';
+      output += '\n字母计数对比:\n';
+      output += '字符 | A计数 | B计数\n';
+      output += '-----------------\n';
       for (var i = 0; i < sortedKeys.length; i++) {
         var k = sortedKeys[i];
         var ca = cntA[k] || 0;
         var cb = cntB[k] || 0;
-        输出 += k + '    | ' + ca + '     | ' + cb + '\n';
+        output += k + '    | ' + ca + '     | ' + cb + '\n';
       }
 
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus(isAnagram ? '是变位词' : '不是变位词');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

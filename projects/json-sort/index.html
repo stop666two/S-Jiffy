@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON Key Sorter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON Key Sorter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .opt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
-.diff-输出{font-family:var(--font-mono);font-size:13px;line-height:1.5;max-height:400px;overflow:auto;}
+.diff-output{font-family:var(--font-mono);font-size:13px;line-height:1.5;max-height:400px;overflow:auto;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -21,29 +22,29 @@
 <button id="reverseBtn" class="btn btn-secondary">Reverse keys</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="output-box"><div id="diff输出" class="diff-输出"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<div class="output-box"><div id="diff输出" class="diff-output"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
-(function(){var i=document.getElementById('inputText'),dO=document.getElementById('diff输出'),o=document.getElementById('outputText');
+(function(){var i=document.getElementById('inputText'),dO=document.getElementById('diff输出');
 
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function sortKeys(obj,desc,deep,sortArrays){if(obj===null||typeof obj!=='object')return obj;
 if(Array.isArray(obj)&&!sortArrays)return obj.map(function(v){return deep?sortKeys(v,desc,deep,sortArrays):v;});
 if(Array.isArray(obj)&&sortArrays)return obj.slice().sort(function(a,b){return desc?String(b).localeCompare(String(a)):String(a).localeCompare(String(b));});
 var keys=Object.keys(obj).sort(function(a,b){return desc?b.localeCompare(a):a.localeCompare(b);});
-var 结果={};for(var i=0;i<keys.length;i++){var val=obj[keys[i]];结果[keys[i]]=deep?sortKeys(val,desc,deep,sortArrays):val;}
-return 结果;}
+var result={};for(var i=0;i<keys.length;i++){var val=obj[keys[i]];result[keys[i]]=deep?sortKeys(val,desc,deep,sortArrays):val;}
+return result;}
 function reverseKeys(obj,deep){if(obj===null||typeof obj!=='object')return obj;if(Array.isArray(obj))return obj.map(function(v){return deep?reverseKeys(v,deep):v;});
-var keys=Object.keys(obj).reverse();var 结果={};for(var i=0;i<keys.length;i++){结果[keys[i]]=deep?reverseKeys(obj[keys[i]],deep):obj[keys[i]];}
-return 结果;}
+var keys=Object.keys(obj).reverse();var result={};for(var i=0;i<keys.length;i++){result[keys[i]]=deep?reverseKeys(obj[keys[i]],deep):obj[keys[i]];}
+return result;}
 
 function getIndent(){var v=document.getElementById('indentSelect').value;return v==='tab'?'\t':parseInt(v);}
 
 function process(fn){var t=i.value.trim();if(!t){setStatus('Enter JSON','error');return;}
 try{var parsed=JSON.parse(t);var deep=document.getElementById('chkDeep').checked;var desc=document.getElementById('chkDesc').checked;
-var sortAr=document.getElementById('chkArray').checked;var 结果=fn(parsed,desc,deep,sortAr);
-var indent=getIndent();dO.textContent=JSON.stringify(结果,null,indent);setStatus('完成');}catch(e){setStatus('Invalid JSON: '+e.message,'error');}}
+var sortAr=document.getElementById('chkArray').checked;var result=fn(parsed,desc,deep,sortAr);
+var indent=getIndent();dO.textContent=JSON.stringify(result,null,indent);setStatus('完成');}catch(e){setStatus('Invalid JSON: '+e.message,'error');}}
 
 document.getElementById('sortBtn').addEventListener('click',function(){process(function(obj,desc,deep,sortAr){return sortKeys(obj,desc,deep,sortAr);});});
 document.getElementById('reverseBtn').addEventListener('click',function(){process(function(obj,desc,deep,sortAr){return reverseKeys(obj,deep);});});

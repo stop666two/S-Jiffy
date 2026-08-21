@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Advanced Text Statistics - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Advanced Text Statistics - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .adv-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-2);margin-bottom:var(--space-3);}
 .adv-stat-item{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);text-align:center;}
@@ -39,7 +40,7 @@ function countSyllables(word){word=word.toLowerCase().replace(/[^a-z]/g,'');if(!
 if(word.length<=3)return 1;
 word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'');
 word=word.replace(/^y/,'');
-var m=word.match(/[aeiouy]{1,2}/g);return m?m.length：1;}
+var m=word.match(/[aeiouy]{1,2}/g);return m?m.length:1;}
 
 function update(){var t=i.value;if(!t.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p>';o.textContent='';return;}
 var cc=t.length;

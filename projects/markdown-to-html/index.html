@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Markdown 转 HTML - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .md-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -85,7 +86,7 @@ function hello() {
     (function() {
       var mdInput = document.getElementById('mdInput');
       var previewArea = document.getElementById('previewArea');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var copyHtmlBtn = document.getElementById('copyHtmlBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -235,7 +236,7 @@ function hello() {
         var md = mdInput.value;
         var html = convertMarkdown(md);
         previewArea.innerHTML = html;
-        输出El.textContent = '<div class="md-preview">\n' + html + '\n</div>';
+        outputEl.textContent = '<div class="md-preview">\n' + html + '\n</div>';
         setStatus('已转换');
       }
 
@@ -249,13 +250,13 @@ function hello() {
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
 
       clearBtn.addEventListener('click', function() {
         mdInput.value = '';
         previewArea.innerHTML = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         mdInput.focus();
       });

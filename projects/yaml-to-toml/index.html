@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YAML to TOML - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -37,7 +38,7 @@ logging:
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
 
       function parseYaml(src) {
         var lines = src.split('\n');
@@ -91,7 +92,7 @@ logging:
               objStack.push(obj);
               indentStack.push(indent);
               keyStack.push(arr.length - 1);
-              // process inline 密钥：value
+              // process inline key：value
               var colonIdx = content.indexOf(':');
               var k = content.substring(0, colonIdx).trim();
               var v = content.substring(colonIdx + 1).trim();
@@ -235,17 +236,17 @@ logging:
         if (!text) { setStatus('请输入 YAML', 'error'); return; }
         try {
           var parsed = parseYaml(text);
-          var 结果 = toToml(parsed, []);
-          输出El.textContent = 结果.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+          var result = toToml(parsed, []);
+          outputEl.textContent = result.join('\n').replace(/\n{3,}/g, '\n\n').trim();
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('YAML 解析错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

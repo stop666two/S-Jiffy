@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>工作日计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .wd-config { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
@@ -12,8 +13,8 @@
     .wd-config input[type="date"]:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
     .wd-holidays { margin-top:var(--space-2); }
     .wd-holidays textarea { min-height:80px; font-family:var(--font-mono); font-size:12px; }
-    .wd-结果 { font-family:var(--font-mono); }
-    .wd-结果 strong { font-size:var(--font-size-lg); }
+    .wd-result { font-family:var(--font-mono); }
+    .wd-result strong { font-size:var(--font-size-lg); }
   </style>
 </head>
 <body>
@@ -34,7 +35,7 @@
       <textarea id="holidaysInput" class="input textarea" placeholder="2026-01-01&#10;2026-01-28"></textarea>
     </div>
     <div class="output-box">
-      <div id="outputText" class="wd-结果" style="display:block;padding-right:60px;"></div>
+      <div id="outputText" class="wd-result" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -48,7 +49,7 @@
       var startEl = document.getElementById('startDate');
       var endEl = document.getElementById('endDate');
       var holidaysEl = document.getElementById('holidaysInput');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var calcBtn = document.getElementById('calcBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -124,13 +125,13 @@
         }
 
         var includeEnd = !isWeekend(end);
-        var 结果 = '<strong>' + workingDays + '</strong> 个工作日';
-        结果 += '<br>总天数: ' + totalDays;
-        结果 += '<br>周末: ' + weekendDays + ' 天';
-        if (holidays.length > 0) 结果 += '<br>节假日: ' + holidayDays + ' 天';
-        结果 += '<br><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">' + formatDate(start) + ' \u2192 ' + formatDate(end) + '</span>';
+        var result = '<strong>' + workingDays + '</strong> 个工作日';
+        result += '<br>总天数: ' + totalDays;
+        result += '<br>周末: ' + weekendDays + ' 天';
+        if (holidays.length > 0) result += '<br>节假日: ' + holidayDays + ' 天';
+        result += '<br><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">' + formatDate(start) + ' \u2192 ' + formatDate(end) + '</span>';
 
-        输出El.innerHTML = 结果;
+        outputEl.innerHTML = result;
         setStatus('');
       }
 
@@ -145,10 +146,10 @@
 
       calcBtn.addEventListener('click', calcWorkingDays);
       clearBtn.addEventListener('click', function () {
-        startEl.value = ''; endEl.value = ''; holidaysEl.value = ''; 输出El.innerHTML = ''; setStatus('');
+        startEl.value = ''; endEl.value = ''; holidaysEl.value = ''; outputEl.innerHTML = ''; setStatus('');
       });
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent || '';
+        var text = outputEl.textContent || '';
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

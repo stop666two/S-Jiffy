@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>面积单位转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ar-grid { display:grid; gap:var(--space-3); }
@@ -53,7 +54,7 @@
       var inputAcre = document.getElementById('inputAcre');
       var inputFt2 = document.getElementById('inputFt2');
       var inputIn2 = document.getElementById('inputIn2');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -68,7 +69,7 @@
         inputAcre.value = r(m2 / 4046.86);
         inputFt2.value = r(m2 * 10.7639);
         inputIn2.value = r(m2 * 1550.0031);
-        输出El.textContent = m2 + ' m² = ' + inputKm2.value + ' km² = ' + inputHa.value + ' ha = ' + inputAcre.value + ' acre';
+        outputEl.textContent = m2 + ' m² = ' + inputKm2.value + ' km² = ' + inputHa.value + ' ha = ' + inputAcre.value + ' acre';
         updating = false;
       }
 
@@ -80,7 +81,7 @@
       inputIn2.addEventListener('input', function() { fromSqMeters((parseFloat(this.value) || 0) / 1550.0031); });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

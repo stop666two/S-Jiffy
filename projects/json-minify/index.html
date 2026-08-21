@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON 压缩 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -33,27 +34,27 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var minifyBtn = document.getElementById('minifyBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
       function minify() {
         var text = inputEl.value.trim();
-        if (!text) { 输出El.textContent = ''; setStatus('请输入 JSON', 'error'); return; }
+        if (!text) { outputEl.textContent = ''; setStatus('请输入 JSON', 'error'); return; }
         try {
           var parsed = JSON.parse(text);
-          输出El.textContent = JSON.stringify(parsed);
+          outputEl.textContent = JSON.stringify(parsed);
           setStatus('压缩成功，节省 ' + (text.length - JSON.stringify(parsed).length) + ' 字符');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('JSON 格式错误: ' + e.message, 'error');
         }
       }
 
       minifyBtn.addEventListener('click', minify);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
       inputEl.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') minify(); });
     })();
   </script>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>QR Code Generator - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>QR Code Generator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 #qrcode{display:inline-block;padding:0;background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);}
 #qrcode img,#qrcode canvas{display:block;}
@@ -36,7 +37,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="../../assets/js/global.js"></script>
 <script>(function(){
-  var textEl=document.getElementById('textInput'),eccEl=document.getElementById('eccSelect'),qrEl=document.getElementById('qrcode'),输出El=document.getElementById('outputText');
+  var textEl=document.getElementById('textInput'),eccEl=document.getElementById('eccSelect'),qrEl=document.getElementById('qrcode'),outputEl=document.getElementById('outputText');
   var fgEl=document.getElementById('fgColor'),bgEl=document.getElementById('bgColor'),marginEl=document.getElementById('marginSelect');
   var currentSize=256,currentQR=null;
   var sizeBtns=document.querySelectorAll('.qr-size-btn');
@@ -47,7 +48,7 @@
     currentQR=new QRCode(qrEl,{text:text,width:currentSize,height:currentSize,correctLevel:QRCode.CorrectLevel[ecc],colorDark:fgEl.value,colorLight:bgEl.value});
     // Apply margin via padding on the container
     qrEl.style.padding=margin*4+'px';
-    输出El.textContent=text;setStatus('QR code generated');}
+    outputEl.textContent=text;setStatus('QR code generated');}
   document.getElementById('generateBtn').addEventListener('click',generate);
   textEl.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
   document.getElementById('downloadBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(!canvas){setStatus('Generate QR first','error');return;}

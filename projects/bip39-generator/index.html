@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BIP39 助记词生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .word-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-2); }
@@ -23,8 +24,8 @@
       <button id="generateBtn" class="btn btn-primary">生成</button>
       <button id="randomBtn" class="btn btn-secondary">随机熵</button>
     </div>
-    <div class="输出-box" style="min-height:80px;">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" style="min-height:80px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <div class="word-grid" id="wordGrid"></div>
@@ -36,7 +37,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var entropyEl = document.getElementById('entropyInput');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var gridEl = document.getElementById('wordGrid');
     var wordlist = [
       'abandon','ability','able','about','above','absent','absorb','abstract','absurd','abuse',
@@ -335,7 +336,7 @@
       if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) { setStatus('熵值格式无效，请输入十六进制', 'error'); return; }
       if (hex.length < 32) { setStatus('熵值过短，至少 16 字节 (32 hex)', 'error'); return; }
       var words = entropyToMnemonic(hex.toLowerCase());
-      输出El.textContent = words.join(' ');
+      outputEl.textContent = words.join(' ');
       var chips = '';
       for (var i = 0; i < words.length; i++) { chips += '<span class="word-chip">' + (i + 1) + '. ' + words[i] + '</span>'; }
       gridEl.innerHTML = chips;
@@ -346,7 +347,7 @@
       entropyEl.value = hex;
       setStatus('已生成随机熵值 (32 字节)');
     });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

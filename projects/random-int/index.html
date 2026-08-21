@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机整数生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ri-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -39,7 +40,7 @@
     var uniqueChk = document.getElementById('uniqueChk');
     var sortChk = document.getElementById('sortChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function cryptoInt(min, max) {
@@ -66,7 +67,7 @@
         return;
       }
 
-      var 结果 = [];
+      var result = [];
       if (unique) {
         var pool = [];
         for (var i = min; i <= max; i++) pool.push(i);
@@ -76,18 +77,18 @@
           pool[i] = pool[j];
           pool[j] = tmp;
         }
-        结果 = pool.slice(0, count);
+        result = pool.slice(0, count);
       } else {
-        for (var i = 0; i < count; i++) 结果.push(cryptoInt(min, max));
+        for (var i = 0; i < count; i++) result.push(cryptoInt(min, max));
       }
 
-      if (sort) 结果.sort(function(a, b) { return a - b; });
-      输出El.textContent = 结果.join('\n');
+      if (sort) result.sort(function(a, b) { return a - b; });
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个随机整数');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

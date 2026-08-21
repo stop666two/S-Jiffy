@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Basic Auth Generator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .auth-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
@@ -40,7 +41,7 @@
       var authUsername = document.getElementById('authUsername');
       var authPassword = document.getElementById('authPassword');
       var generateBtn = document.getElementById('generateBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       generateBtn.addEventListener('click', function () {
@@ -49,12 +50,12 @@
         if (!user && !pass) { setStatus('请输入用户名和密码', 'error'); return; }
         var token = btoa(unescape(encodeURIComponent(user + ':' + pass)));
         var header = 'Authorization: Basic ' + token;
-        输出El.textContent = header;
+        outputEl.textContent = header;
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

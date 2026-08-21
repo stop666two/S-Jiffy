@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 高级压缩 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.jma-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px}</style></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 高级压缩 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.jma-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>JSON 高级压缩</h1><p class="tool-desc">深度压缩 JSON：去除空格、缩短键名、替换值模式。</p>
@@ -22,7 +23,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
@@ -37,7 +38,7 @@ if(Array.isArray(obj)){
 return obj.map(function(v){return shorten(v);});
 }
 if(obj===null||typeof obj!=='object')return obj;
-var 结果={};
+var result={};
 Object.keys(obj).forEach(function(k){
 var nk=k;
 if(shortenKeys.checked){
@@ -45,11 +46,11 @@ if(!keyMap[k])keyMap[k]=genShortKey();
 nk=keyMap[k];
 }
 var v=obj[k];
-if(shortenVals.checked&&v===true){结果[nk]='!0';}
-else if(shortenVals.checked&&v===false){结果[nk]='!1';}
-else{结果[nk]=shorten(v);}
+if(shortenVals.checked&&v===true){result[nk]='!0';}
+else if(shortenVals.checked&&v===false){result[nk]='!1';}
+else{result[nk]=shorten(v);}
 });
-return 结果;
+return result;
 }
 minifyBtn.addEventListener('click',function(){
 var t=inputEl.value.trim();
@@ -59,7 +60,7 @@ var parsed=JSON.parse(t);
 keyMap={};keyIdx=0;
 var data=shortenKeys.checked||shortenVals.checked?shorten(parsed):parsed;
 var minified=JSON.stringify(data);
-输出El.textContent=minified;
+outputEl.textContent=minified;
 var origSize=t.length;
 var newSize=minified.length;
 var saved=origSize-newSize;
@@ -70,7 +71,7 @@ setStatus('');
 setStatus('JSON 格式错误: '+e.message,'error');
 }
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';sizeInfo.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';sizeInfo.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

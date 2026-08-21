@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本排序器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .sort-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -40,7 +41,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -51,7 +52,7 @@
       }
 
       function setLines(lines) {
-        输出El.textContent = lines.join('\n');
+        outputEl.textContent = lines.join('\n');
       }
 
       document.getElementById('sortAZBtn').addEventListener('click', function() {
@@ -95,29 +96,29 @@
         var lines = getLines();
         if (!lines) return;
         var seen = {};
-        var 结果 = [];
+        var result = [];
         var removed = 0;
         for (var i = 0; i < lines.length; i++) {
           if (!seen[lines[i]]) {
             seen[lines[i]] = true;
-            结果.push(lines[i]);
+            result.push(lines[i]);
           } else {
             removed++;
           }
         }
-        setLines(结果);
+        setLines(result);
         setStatus('去重完成，移除 ' + removed + ' 行');
       });
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

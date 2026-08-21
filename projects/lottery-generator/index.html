@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>彩票号码生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .lg-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -47,7 +48,7 @@
     var bonusCntEl = document.getElementById('bonusCount');
     var bonusMaxEl = document.getElementById('bonusMax');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function cryptoInt(min, max) {
@@ -101,13 +102,13 @@
         html += '</div>';
         linesHtml.push(html);
       }
-      输出El.innerHTML = linesHtml.join('');
+      outputEl.innerHTML = linesHtml.join('');
       setStatus('已生成 ' + lines + ' 注号码');
     }
 
     genBtn.addEventListener('click', generate);
     copyBtn.addEventListener('click', function() {
-      var text = 输出El.textContent;
+      var text = outputEl.textContent;
       if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
     });
   })();</script>

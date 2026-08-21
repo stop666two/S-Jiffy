@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JSON Formatter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JSON Formatter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .json-tree{font-family:var(--font-mono);font-size:13px;line-height:1.6;}
 .json-tree .toggle{cursor:pointer;user-select:none;color:var(--color-text-disabled);margin-right:4px;display:inline-block;width:12px;text-align:center;}
@@ -8,7 +9,7 @@
 .json-tree .collapsed>.children{display:none;}.json-tree .children{padding-left:20px;}
 .json-split{display:flex;gap:0;}
 .json-line-nums{font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-text-disabled);text-align:right;padding-right:12px;border-right:1px solid var(--color-border);user-select:none;min-width:40px;}
-.json-path-结果{font-family:var(--font-mono);font-size:13px;padding:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:8px;max-height:200px;overflow:auto;}
+.json-path-result{font-family:var(--font-mono);font-size:13px;padding:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:8px;max-height:200px;overflow:auto;}
 .diff-view{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:var(--font-mono);font-size:12px;}
 .diff-view pre{margin:0;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);overflow:auto;max-height:400px;}
 .tree-wrap{max-height:400px;overflow:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-2);background:var(--color-bg);}
@@ -30,12 +31,12 @@
 <div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSONPath</label><input id="jsonPathInput" class="input" placeholder="$.store.book[0].title" style="flex:1;min-width:160px;"><button id="jsonPathBtn" class="btn btn-secondary">查询</button></div>
 <div id="jsonPath结果"></div>
 <div id="errorDetail" style="display:none;"></div>
-<div class="output-box" id="输出Container" style="min-height:80px;"><div id="输出Content"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<div class="output-box" id="输出Container" style="min-height:80px;"><div id="outputContent"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){
-  var inputEl=document.getElementById('inputText'),输出Content=document.getElementById('输出Content'),copyBtn=document.getElementById('copyBtn');
+  var inputEl=document.getElementById('inputText'),outputContent=document.getElementById('outputContent'),copyBtn=document.getElementById('copyBtn');
   var jpInput=document.getElementById('jsonPathInput'),jp结果=document.getElementById('jsonPath结果'),errorDetail=document.getElementById('errorDetail');
   var jsonB=document.getElementById('jsonBText'),diff结果=document.getElementById('diff结果');
   var currentParsed=null;
@@ -75,28 +76,28 @@
     return div;}
 
   function format(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
-    if(!v){输出Content.innerHTML='';setStatus('Enter JSON','error');return;}var 结果=tryParse(v);if(!结果.ok){输出Content.innerHTML='';setStatus('JSON error','error');return;}
-    currentParsed=结果.data;输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(JSON.stringify(结果.data,null,2))+'</pre>';setStatus('');}
+    if(!v){outputContent.innerHTML='';setStatus('Enter JSON','error');return;}var result=tryParse(v);if(!result.ok){outputContent.innerHTML='';setStatus('JSON error','error');return;}
+    currentParsed=result.data;outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(JSON.stringify(result.data,null,2))+'</pre>';setStatus('');}
 
   document.getElementById('formatBtn').addEventListener('click',format);
   document.getElementById('minifyBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;if(!v){setStatus('Enter JSON','error');return;}
-    var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}currentParsed=结果.data;输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(结果.data))+'</pre>';setStatus('');});
+    var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}currentParsed=result.data;outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(result.data))+'</pre>';setStatus('');});
   document.getElementById('treeBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
-    if(!v){setStatus('Enter JSON','error');return;}var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}currentParsed=结果.data;
-    输出Content.innerHTML='';var tw=document.createElement('div');tw.className='tree-wrap json-tree';tw.appendChild(buildTree(结果.data));输出Content.appendChild(tw);setStatus('');});
+    if(!v){setStatus('Enter JSON','error');return;}var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}currentParsed=result.data;
+    outputContent.innerHTML='';var tw=document.createElement('div');tw.className='tree-wrap json-tree';tw.appendChild(buildTree(result.data));outputContent.appendChild(tw);setStatus('');});
   document.getElementById('toTsBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';if(!v){setStatus('Enter JSON','error');return;}
-    var 结果=tryParse(v);if(!结果.ok){setStatus('JSON error','error');return;}var ts=jsonToTs(结果.data);输出Content.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS type generated');});
+    var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}var ts=jsonToTs(result.data);outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS type generated');});
   document.getElementById('diffBtn').addEventListener('click',function(){var a=inputEl.value.trim(),b=jsonB.value.trim();if(!a||!b){setStatus('Enter both JSONs','error');return;}
     var ra=tryParse(a),rb=tryParse(b);if(!ra.ok||!rb.ok){setStatus('无效 JSON','error');return;}
     diff结果.innerHTML='<pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">A: '+escapeHtml(JSON.stringify(ra.data,null,2))+'</pre><pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">B: '+escapeHtml(JSON.stringify(rb.data,null,2))+'</pre>';setStatus('Diff shown');});
-  document.getElementById('clearBtn')&&document.getElementById('clearBtn').addEventListener('click',function(){inputEl.value='';输出Content.innerHTML='';errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;setStatus('');inputEl.focus();});
-  document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Format JSON first</div>';return;}
+  document.getElementById('clearBtn')&&document.getElementById('clearBtn').addEventListener('click',function(){inputEl.value='';outputContent.innerHTML='';errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;setStatus('');inputEl.focus();});
+  document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-result" style="color:var(--color-error);">Format JSON first</div>';return;}
     var path=jpInput.value.trim();if(!path){jp结果.innerHTML='';return;}
-    try{var parts=path.replace(/^\$\.?/,'').split(/\.|\[|\]\.|'|"/).filter(function(p){return p!=='';});var 结果s=[currentParsed];
-      for(var i=0;i<parts.length;i++){var part=parts[i],next=[];for(var j=0;j<结果s.length;j++){var item=结果s[j];if(item&&typeof item==='object'){if(Array.isArray(item)){if(part==='*'){for(var k=0;k<item.length;k++)next.push(item[k]);}else if(!isNaN(part)){if(item[+part]!==undefined)next.push(item[+part]);}}else{if(part==='*'){for(var key in item)next.push(item[key]);}else if(item[part]!==undefined)next.push(item[part]);}}}
-      结果s=next;}
-    jp结果.innerHTML='<div class="json-path-结果"><strong>Matches ('+结果s.length+')</strong><br>'+escapeHtml(JSON.stringify(结果s,null,2))+'</div>';setStatus('');}catch(e){jp结果.innerHTML='<div class="json-path-结果" style="color:var(--color-error);">Query error: '+escapeHtml(e.message)+'</div>';}});
+    try{var parts=path.replace(/^\$\.?/,'').split(/\.|\[|\]\.|'|"/).filter(function(p){return p!=='';});var results=[currentParsed];
+      for(var i=0;i<parts.length;i++){var part=parts[i],next=[];for(var j=0;j<results.length;j++){var item=results[j];if(item&&typeof item==='object'){if(Array.isArray(item)){if(part==='*'){for(var k=0;k<item.length;k++)next.push(item[k]);}else if(!isNaN(part)){if(item[+part]!==undefined)next.push(item[+part]);}}else{if(part==='*'){for(var key in item)next.push(item[key]);}else if(item[part]!==undefined)next.push(item[part]);}}}
+      results=next;}
+    jp结果.innerHTML='<div class="json-path-result"><strong>Matches ('+results.length+')</strong><br>'+escapeHtml(JSON.stringify(results,null,2))+'</div>';setStatus('');}catch(e){jp结果.innerHTML='<div class="json-path-result" style="color:var(--color-error);">Query error: '+escapeHtml(e.message)+'</div>';}});
   jpInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('jsonPathBtn').click();});
-  copyBtn.addEventListener('click',function(){var text=输出Content.textContent;if(text){copyToClipboard(text,this);setStatus('已复制');}});
+  copyBtn.addEventListener('click',function(){var text=outputContent.textContent;if(text){copyToClipboard(text,this);setStatus('已复制');}});
 })();
 </script></body></html>

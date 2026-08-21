@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>重量单位转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .wg-grid { display:grid; gap:var(--space-3); }
@@ -51,7 +52,7 @@
       var inputLb = document.getElementById('inputLb');
       var inputOz = document.getElementById('inputOz');
       var inputTon = document.getElementById('inputTon');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -65,7 +66,7 @@
         inputLb.value = r(kg * 2.20462);
         inputOz.value = r(kg * 35.274);
         inputTon.value = r(kg / 1000);
-        输出El.textContent = kg + ' kg = ' + inputLb.value + ' lb = ' + inputOz.value + ' oz = ' + inputTon.value + ' ton';
+        outputEl.textContent = kg + ' kg = ' + inputLb.value + ' lb = ' + inputOz.value + ' oz = ' + inputTon.value + ' ton';
         updating = false;
       }
 
@@ -76,7 +77,7 @@
       inputTon.addEventListener('input', function() { fromKg((parseFloat(this.value) || 0) * 1000); });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

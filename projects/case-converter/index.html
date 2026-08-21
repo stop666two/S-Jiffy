@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Case Converter - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Case Converter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .case-grid{display:grid;gap:var(--space-2);}
 .case-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);transition:border-color .15s;}
@@ -25,12 +26,12 @@
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
 <div class="card"><div class="case-grid" id="caseGrid"></div></div>
-<div class="输出-box" id="输出Container"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
+<div class="output-box" id="输出Container"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){
-  var i=document.getElementById('inputText'),o=document.getElementById('输出Text'),grid=document.getElementById('caseGrid');
+  var i=document.getElementById('inputText'),o=document.getElementById('outputText'),grid=document.getElementById('caseGrid');
   var titleExceptions={'a':true,'an':true,'the':true,'and':true,'but':true,'or':true,'for':true,'nor':true,'on':true,'at':true,'to':true,'by':true,'with':true,'from':true,'in':true,'of':true,'is':true,'as':true,'it':true,'up':true,'so':true};
 
   function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -63,8 +64,8 @@
   function updateAll(){
     var w=words(i.value),raw=i.value;
     if(w.length===0){grid.innerHTML=allCases.map(function(c){return'<div class="case-row"><span class="case-label">'+esc(c.label)+'</span><span class="case-value" style="color:var(--color-text-disabled);">—</span></div>';}).join('');o.textContent='';return;}
-    var 结果s={};allCases.forEach(function(c){结果s[c.id]=convert(c.id,w,raw);});
-    grid.innerHTML=allCases.map(function(c){return'<div class="case-row"><span class="case-label">'+esc(c.label)+'</span><span class="case-value">'+esc(结果s[c.id])+'</span></div>';}).join('');}
+    var results={};allCases.forEach(function(c){results[c.id]=convert(c.id,w,raw);});
+    grid.innerHTML=allCases.map(function(c){return'<div class="case-row"><span class="case-label">'+esc(c.label)+'</span><span class="case-value">'+esc(results[c.id])+'</span></div>';}).join('');}
 
   i.addEventListener('input',updateAll);
   var btns=document.querySelectorAll('.case-btn');

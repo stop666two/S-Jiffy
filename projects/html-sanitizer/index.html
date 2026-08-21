@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTML 净化器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .tag-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:var(--space-3); }
@@ -73,8 +74,8 @@
       </div>
       <div class="card">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">净化后的 HTML</label>
-        <div class="输出-box" style="min-height:250px;">
-          <span id="输出Text" style="display:block;padding-right:60px;font-size:13px;"></span>
+        <div class="output-box" style="min-height:250px;">
+          <span id="outputText" style="display:block;padding-right:60px;font-size:13px;"></span>
           <button class="copy-btn" id="copyBtn">复制</button>
         </div>
       </div>
@@ -90,7 +91,7 @@
   <script>
     (function () {
       var dirtyInput = document.getElementById('dirtyInput');
-      var 输出Text = document.getElementById('输出Text');
+      var outputText = document.getElementById('outputText');
       var sanitizeBtn = document.getElementById('sanitizeBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -158,29 +159,29 @@
         var noAttrs = stripAttrs.checked;
         var noComments = stripComments.checked;
 
-        var 结果 = sanitizeHTML(html, allowed, noAttrs, noComments);
+        var result = sanitizeHTML(html, allowed, noAttrs, noComments);
 
         var container = document.createElement('div');
-        container.appendChild(结果.cloneNode(true));
-        var 输出 = container.innerHTML;
+        container.appendChild(result.cloneNode(true));
+        var output = container.innerHTML;
 
-        if (!输出.trim()) {
-          输出Text.textContent = '(净化后无内容 - 所有标签均被过滤)';
+        if (!output.trim()) {
+          outputText.textContent = '(净化后无内容 - 所有标签均被过滤)';
         } else {
-          输出Text.textContent = 输出;
+          outputText.textContent = output;
         }
         setStatus('净化完成');
       });
 
       clearBtn.addEventListener('click', function () {
         dirtyInput.value = '';
-        输出Text.textContent = '';
+        outputText.textContent = '';
         setStatus('');
         dirtyInput.focus();
       });
 
       copyBtn.addEventListener('click', function () {
-        if (输出Text.textContent.trim()) { copyToClipboard(输出Text.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
       });
     })();
   </script>

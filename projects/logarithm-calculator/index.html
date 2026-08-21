@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>对数计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .lc-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -41,7 +42,7 @@
     var inputEl = document.getElementById('inputVal');
     var baseEl = document.getElementById('baseVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function generate() {
@@ -72,22 +73,22 @@
         document.getElementById('customVal').textContent = '-';
       }
 
-      var 输出 = 'log₁₀(' + val + ') = ' + log10.toFixed(6) + '\n';
-      输出 += 'ln(' + val + ') = ' + ln.toFixed(6) + '\n';
-      输出 += 'log₂(' + val + ') = ' + log2.toFixed(6);
+      var output = 'log₁₀(' + val + ') = ' + log10.toFixed(6) + '\n';
+      output += 'ln(' + val + ') = ' + ln.toFixed(6) + '\n';
+      output += 'log₂(' + val + ') = ' + log2.toFixed(6);
       if (customBase) {
         var base = parseFloat(customBase);
         if (!isNaN(base) && base > 0 && base !== 1) {
           var customLog = Math.log(val) / Math.log(base);
-          输出 += '\nlog_' + base + '(' + val + ') = ' + customLog.toFixed(6);
+          output += '\nlog_' + base + '(' + val + ') = ' + customLog.toFixed(6);
         }
       }
-      输出El.textContent = 输出;
+      outputEl.textContent = output;
       setStatus('计算完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS 格式化 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,7 +35,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var formatBtn = document.getElementById('formatBtn');
       var minifyBtn = document.getElementById('minifyBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -47,7 +48,7 @@
       }
 
       function formatCSS(css) {
-        var 结果 = '';
+        var result = '';
         var i = 0;
         var buf = '';
         var inBlock = false;
@@ -59,9 +60,9 @@
             selector = buf.trim();
             buf = '';
             inBlock = true;
-            结果 += selector + ' {\n  ';
+            result += selector + ' {\n  ';
           } else if (ch === '}' && inBlock) {
-            结果 += buf.trim() + '\n}\n\n';
+            result += buf.trim() + '\n}\n\n';
             buf = '';
             inBlock = false;
           } else if (ch === '@' && !inBlock) {
@@ -71,7 +72,7 @@
               i++;
             }
             if (css[i] === '{') {
-              结果 += atRule + '{\n';
+              result += atRule + '{\n';
               i++;
               var inner = '';
               var depth = 1;
@@ -84,9 +85,9 @@
               var formatted = formatCSS(inner);
               var lines = formatted.trim().split('\n');
               for (var li = 0; li < lines.length; li++) {
-                结果 += '  ' + lines[li] + '\n';
+                result += '  ' + lines[li] + '\n';
               }
-              结果 += '}\n\n';
+              result += '}\n\n';
               buf = '';
             }
           } else {
@@ -94,7 +95,7 @@
             i++;
           }
         }
-        return 结果.trim();
+        return result.trim();
       }
 
       function minifyCSS(css) {
@@ -106,21 +107,21 @@
         if (!text) { setStatus('请输入 CSS 代码', 'error'); return; }
         try {
           if (mode === 'format') {
-            输出El.textContent = formatCSS(text);
+            outputEl.textContent = formatCSS(text);
           } else {
-            输出El.textContent = minifyCSS(text);
+            outputEl.textContent = minifyCSS(text);
           }
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('处理失败', 'error');
         }
       }
 
       formatBtn.addEventListener('click', function () { update('format'); });
       minifyBtn.addEventListener('click', function () { update('minify'); });
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

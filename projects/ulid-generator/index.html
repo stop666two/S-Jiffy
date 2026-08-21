@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ULID 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -31,7 +32,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function() {
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var countEl = document.getElementById('countInput');
       var clearBtn = document.getElementById('clearBtn');
@@ -74,17 +75,17 @@
         if (n > 100) n = 100;
         var arr = [];
         for (var i = 0; i < n; i++) arr.push(generateULID());
-        输出El.textContent = arr.join('\n');
+        outputEl.textContent = arr.join('\n');
         setStatus('已生成 ' + n + ' 个 ULID');
       });
 
       clearBtn.addEventListener('click', function() {
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

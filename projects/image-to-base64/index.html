@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图片转 Base64 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -20,8 +21,8 @@
         <img id="previewImg" style="max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);">
       </div>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block;padding-right:60px;font-size:12px;word-break:break-all;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;word-break:break-all;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,7 +35,7 @@
     (function() {
       var fileInput = document.getElementById('fileInput');
       var fileBtn = document.getElementById('fileBtn');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var previewImg = document.getElementById('previewImg');
       var previewArea = document.getElementById('previewArea');
@@ -46,7 +47,7 @@
         var reader = new FileReader();
         reader.onload = function(e) {
           var dataUrl = e.target.result;
-          输出El.textContent = dataUrl;
+          outputEl.textContent = dataUrl;
           previewImg.src = dataUrl;
           previewArea.style.display = 'block';
           setStatus('转换完成，共 ' + dataUrl.length + ' 字符');
@@ -58,7 +59,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

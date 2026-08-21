@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Text Summarizer - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Text Summarizer - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
 .opt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
@@ -29,11 +30,11 @@ for(var si=0;si<sents.length;si++){var sent=sents[si].trim().toLowerCase();var w
 sentWords.push(w);for(var wi=0;wi<w.length;wi++){words[w[wi]]=(words[w[wi]]||0)+1;}}
 var maxFreq=0;for(var k in words){if(words[k]>maxFreq)maxFreq=words[k];}
 var scores=[];for(var si2=0;si2<sents.length;si2++){var sw=sentWords[si2];var score=0;for(var wi2=0;wi2<sw.length;wi2++){score+=words[sw[wi2]]||0;}
-score=sw.length>0?score/sw.length：0;scores.push({idx:si2,score:score});}
+score=sw.length>0?score/sw.length:0;scores.push({idx:si2,score:score});}
 scores.sort(function(a,b){return b.score-a.score;});
 var selected={};for(var li=0;li<Math.min(limit,scores.length);li++){selected[scores[li].idx]=true;}
-var 结果=[];for(var ri=0;ri<sents.length;ri++){if(selected[ri])结果.push(sents[ri].trim());}
-return 结果.join(' ');}
+var result=[];for(var ri=0;ri<sents.length;ri++){if(selected[ri])result.push(sents[ri].trim());}
+return result.join(' ');}
 
 function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('请输入文本','error');return;}
 var origSents=(t.match(/[^.!?\n]+[.!?]?/g)||[]).length;oS.textContent=origSents;

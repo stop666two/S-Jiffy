@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>倒计时器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .cd-display { display:flex; gap:var(--space-2); justify-content:center; margin:var(--space-4) 0; }
@@ -48,7 +49,7 @@
     (function() {
       var targetEl = document.getElementById('targetDatetime');
       var startBtn = document.getElementById('startBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var cdDays = document.getElementById('cdDays');
       var cdHours = document.getElementById('cdHours');
@@ -73,7 +74,7 @@
           cdMins.textContent = '00';
           cdSecs.textContent = '00';
           cdExpired.style.display = 'block';
-          输出El.textContent = '目标时间已过';
+          outputEl.textContent = '目标时间已过';
           stopTimer();
           return;
         }
@@ -89,7 +90,7 @@
         cdHours.textContent = pad2(hours);
         cdMins.textContent = pad2(mins);
         cdSecs.textContent = pad2(secs);
-        输出El.textContent = '剩余 ' + days + ' 天 ' + hours + ' 时 ' + mins + ' 分 ' + secs + ' 秒';
+        outputEl.textContent = '剩余 ' + days + ' 天 ' + hours + ' 时 ' + mins + ' 分 ' + secs + ' 秒';
       }
 
       function stopTimer() {
@@ -110,7 +111,7 @@
       startBtn.addEventListener('click', startCountdown);
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

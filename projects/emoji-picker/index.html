@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Emoji 选择器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .emoji-search { width:100%; height:48px; padding:0 var(--space-2); font-size:var(--font-size-base); border:1px solid #ddd; border-radius:var(--radius-md); outline:none; margin-bottom:16px; }
@@ -31,8 +32,8 @@
         <div class="label" id="previewCode"></div>
       </div>
     </div>
-    <div class="输出-box" id="输出Container">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" id="输出Container">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
     <div class="card" style="margin-top:16px;">
@@ -52,7 +53,7 @@
 
       var searchEl = document.getElementById('searchInput');
       var gridEl = document.getElementById('emojiGrid');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var previewArea = document.getElementById('previewArea');
       var previewEmoji = document.getElementById('previewEmoji');
@@ -81,7 +82,7 @@
           cell.title = e.n.trim();
           cell.addEventListener('click', function() {
             lastClicked = e.e;
-            输出El.textContent = e.e;
+            outputEl.textContent = e.e;
             previewArea.style.display = 'flex';
             previewEmoji.textContent = e.e;
             previewName.textContent = e.n.trim();
@@ -100,7 +101,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
 
       renderEmojis('');

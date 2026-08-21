@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rail Fence 密码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rail-config { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
@@ -41,7 +42,7 @@
     (function () {
       var inputEl = document.getElementById('inputText');
       var railsEl = document.getElementById('railsInput');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var encryptBtn = document.getElementById('encryptBtn');
       var decryptBtn = document.getElementById('decryptBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -57,11 +58,11 @@
           row += dir;
           if (row === rails - 1 || row === 0) dir = -dir;
         }
-        var 结果 = '';
+        var result = '';
         for (var k = 0; k < rails; k++) {
-          结果 += fence[k].join('');
+          result += fence[k].join('');
         }
-        return 结果;
+        return result;
       }
 
       function railFenceDecrypt(text, rails) {
@@ -88,11 +89,11 @@
             fence[r].push(text[pos++]);
           }
         }
-        var 结果 = '';
+        var result = '';
         for (var p = 0; p < text.length; p++) {
-          结果 += fence[indexMap[p]].shift();
+          result += fence[indexMap[p]].shift();
         }
-        return 结果;
+        return result;
       }
 
       encryptBtn.addEventListener('click', function () {
@@ -100,7 +101,7 @@
         var rails = parseInt(railsEl.value, 10) || 3;
         if (!text) { setStatus('请输入文本', 'error'); return; }
         if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
-        输出El.textContent = railFenceEncrypt(text, rails);
+        outputEl.textContent = railFenceEncrypt(text, rails);
         setStatus('');
       });
 
@@ -109,12 +110,12 @@
         var rails = parseInt(railsEl.value, 10) || 3;
         if (!text) { setStatus('请输入文本', 'error'); return; }
         if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
-        输出El.textContent = railFenceDecrypt(text, rails);
+        outputEl.textContent = railFenceDecrypt(text, rails);
         setStatus('');
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

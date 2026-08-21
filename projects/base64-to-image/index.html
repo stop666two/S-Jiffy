@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Base64 转图片 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -40,7 +41,7 @@
       var downloadLink = document.getElementById('downloadLink');
       var previewImg = document.getElementById('previewImg');
       var imagePreview = document.getElementById('imagePreview');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function process() {
@@ -59,14 +60,14 @@
         var mime = dataUrl.split(';')[0].split(':')[1];
         var ext = mime.split('/')[1] || 'png';
         downloadLink.download = 'image.' + ext;
-        输出El.textContent = '格式: ' + mime + ' | 大小: ' + Math.round(dataUrl.length * 3 / 4 / 1024) + ' KB';
+        outputEl.textContent = '格式: ' + mime + ' | 大小: ' + Math.round(dataUrl.length * 3 / 4 / 1024) + ' KB';
         setStatus('预览成功');
       }
 
       previewBtn.addEventListener('click', process);
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>速度单位转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .sp-grid { display:grid; gap:var(--space-3); }
@@ -47,7 +48,7 @@
       var mph = document.getElementById('mph');
       var knot = document.getElementById('knot');
       var ms = document.getElementById('ms');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
@@ -59,7 +60,7 @@
         mph.value = r(v * 0.621371);
         knot.value = r(v * 0.539957);
         ms.value = r(v / 3.6);
-        输出El.textContent = v + ' km/h = ' + mph.value + ' mph = ' + knot.value + ' knot = ' + ms.value + ' m/s';
+        outputEl.textContent = v + ' km/h = ' + mph.value + ' mph = ' + knot.value + ' knot = ' + ms.value + ' m/s';
         updating = false;
       }
 
@@ -73,7 +74,7 @@
       ms.addEventListener('input', function() { fromMs(parseFloat(this.value) || 0); });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

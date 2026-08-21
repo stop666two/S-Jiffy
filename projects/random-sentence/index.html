@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机句子生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rs-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -24,7 +25,7 @@
       </div>
       <div><button id="genBtn" class="btn btn-primary">生成</button></div>
     </div>
-    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -33,7 +34,7 @@
     var minLenEl = document.getElementById('minLen');
     var maxLenEl = document.getElementById('maxLen');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var words = ['the','a','this','that','every','each','some','any','no','all','one','two','three','big','small','large','tiny','quick','slow','hot','cold','warm','cool','bright','dark','red','blue','green','black','white','soft','hard','smooth','rough','clean','dirty','new','old','young','ancient','fast','swift','brave','calm','eager','fierce','gentle','happy','jolly','kind','lively','proud','shy','silly','smart','sunny','witty','bold','bright','crazy','fancy','grand','great','heavy','humble','icy','jazzy','lucky','mighty','neat','noble','quiet','rapid','royal','sharp','smooth','solid','steady','super','sweet','tough','vivid','wild','wise','alert','ample','brief','chill','clean','clear','crisp','deep','dense','fair','flat','fleet','full','grim','harsh','lame','lean','loud','mild','pure','rare','ripe','safe','same','slim','tall','tame','tidy','tiny','trim','true','vast','warm','wary','wide','apple','bird','book','bread','bridge','cake','car','cat','cloud','crane','crown','dance','desk','dog','dove','drum','duck','eagle','echo','edge','eye','fern','fish','flame','flute','fox','frog','garden','ghost','globe','glove','grape','grass','hawk','heart','horse','house','jewel','kite','knot','lamp','leaf','lemon','lion','lotus','moon','moss','nest','nova','ocean','olive','otter','owl','panda','peach','pearl','piano','pine','plum','pond','rain','raven','reed','ridge','river','robin','rock','rose','sage','sail','seed','silk','sky','snail','snake','snow','spirit','spring','star','storm','stream','sun','swan','tiger','tree','valley','vine','water','wave','wheat','wheel','willow','wing','wolf','youth'];
@@ -54,7 +55,7 @@
       if (maxLen < minLen) maxLen = minLen;
       if (maxLen > 50) maxLen = 50;
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var lenBytes = new Uint8Array(1);
         crypto.getRandomValues(lenBytes);
@@ -64,14 +65,14 @@
           sentenceWords.push(pick(words));
         }
         sentenceWords[0] = sentenceWords[0].charAt(0).toUpperCase() + sentenceWords[0].slice(1);
-        结果.push(sentenceWords.join(' ') + '.');
+        result.push(sentenceWords.join(' ') + '.');
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个句子');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

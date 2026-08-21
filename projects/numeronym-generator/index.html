@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Numeronym 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .example-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-3); }
     .example-tag { background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: 9999px; padding: 4px 12px; font-size: var(--font-size-sm); cursor: pointer; transition: border-color 0.15s; }
     .example-tag:hover { border-color: var(--color-text-primary); }
-    .结果-line { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
-    .结果-line:last-child { border-bottom: none; }
-    .结果-original { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-width: 200px; }
-    .结果-arrow { color: var(--color-text-disabled); }
-    .结果-numeronym { font-weight: 600; }
+    .result-line { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+    .result-line:last-child { border-bottom: none; }
+    .result-original { font-size: var(--font-size-sm); color: var(--color-text-secondary); min-width: 200px; }
+    .result-arrow { color: var(--color-text-disabled); }
+    .result-numeronym { font-weight: 600; }
   </style>
 </head>
 <body>
@@ -50,7 +51,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('inputText');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     function toNumeronym(word) {
       word = word.trim();
       if (!word) return '';
@@ -69,18 +70,18 @@
         var line = lines[i].trim();
         if (!line) continue;
         var numeronym = toNumeronym(line);
-        html += '<div class="结果-line"><span class="结果-original">' + htmlEscape(line) + '</span><span class="结果-arrow">→</span><span class="结果-numeronym">' + htmlEscape(numeronym) + '</span></div>';
+        html += '<div class="result-line"><span class="result-original">' + htmlEscape(line) + '</span><span class="result-arrow">→</span><span class="result-numeronym">' + htmlEscape(numeronym) + '</span></div>';
       }
-      输出El.innerHTML = html;
+      outputEl.innerHTML = html;
       setStatus('转换完成');
     }
     document.getElementById('generateBtn').addEventListener('click', convert);
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.innerHTML = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
     document.getElementById('copyBtn').addEventListener('click', function() {
       var texts = [];
-      var lines = 输出El.querySelectorAll('.结果-line');
+      var lines = outputEl.querySelectorAll('.result-line');
       for (var i = 0; i < lines.length; i++) {
-        var numEl = lines[i].querySelector('.结果-numeronym');
+        var numEl = lines[i].querySelector('.result-numeronym');
         if (numEl) texts.push(numEl.textContent);
       }
       if (texts.length) { copyToClipboard(texts.join('\n'), this); setStatus('已复制'); }

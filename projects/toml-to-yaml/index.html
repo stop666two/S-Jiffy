@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TOML to YAML - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -38,11 +39,11 @@ level = "debug"' style="min-height:200px;"></textarea>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
 
       function parseToml(src) {
-        var 结果 = {};
-        var currentSection = 结果;
+        var result = {};
+        var currentSection = result;
         var sectionPath = [];
         var lines = src.split('\n');
         for (var i = 0; i < lines.length; i++) {
@@ -54,7 +55,7 @@ level = "debug"' style="min-height:200px;"></textarea>
             if (close === -1) continue;
             var raw = trimmed.substring(1, close);
             sectionPath = raw.trim().split('.');
-            currentSection = 结果;
+            currentSection = result;
             for (var s = 0; s < sectionPath.length; s++) {
               var part = sectionPath[s].trim();
               if (!currentSection[part]) currentSection[part] = {};
@@ -90,7 +91,7 @@ level = "debug"' style="min-height:200px;"></textarea>
             currentSection[key] = isNaN(num) ? valStr : num;
           }
         }
-        return 结果;
+        return result;
       }
 
       function toYaml(val, indent) {
@@ -148,16 +149,16 @@ level = "debug"' style="min-height:200px;"></textarea>
         if (!text) { setStatus('请输入 TOML', 'error'); return; }
         try {
           var parsed = parseToml(text);
-          输出El.textContent = toYaml(parsed, 0);
+          outputEl.textContent = toYaml(parsed, 0);
           setStatus('');
         } catch (e) {
-          输出El.textContent = '';
+          outputEl.textContent = '';
           setStatus('转换错误', 'error');
         }
       });
 
-      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
     })();
   </script>
 </body>

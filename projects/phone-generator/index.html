@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>随机手机号生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>随机手机号生成 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px}.preset-btn{padding:10px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;text-align:center;font-size:13px;transition:all .15s}.preset-btn:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft)}.preset-btn .code{font-weight:600;font-size:15px}
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
@@ -24,7 +25,7 @@ var countrySelect=document.getElementById('countrySelect');
 var countInput=document.getElementById('countInput');
 var generateBtn=document.getElementById('generateBtn');
 var clearBtn=document.getElementById('clearBtn');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 var presetGrid=document.getElementById('presetGrid');
 
@@ -82,7 +83,7 @@ var count=parseInt(countInput.value)||5;
 if(count<1)count=1;if(count>100)count=100;
 var lines=[];
 for(var i=0;i<count;i++)lines.push(generatePhone(c.code));
-输出El.textContent=lines.join('\n');
+outputEl.textContent=lines.join('\n');
 setStatus('生成 '+count+' 个 '+c.name+' 号码');
 }
 
@@ -115,8 +116,8 @@ generate();
 }
 
 generateBtn.addEventListener('click',generate);
-clearBtn.addEventListener('click',function(){输出El.textContent='';setStatus('');});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){outputEl.textContent='';setStatus('');});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 populateSelect();
 populatePresets();
 })();</script></body></html>

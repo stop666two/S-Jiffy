@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Encryption - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -49,7 +50,7 @@
     var shiftEl = document.getElementById('shiftInput');
     var xorKeyEl = document.getElementById('xorKeyInput');
     var inputEl = document.getElementById('inputText');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
 
     function caesarShift(text, shift, decrypt) {
       if (decrypt) shift = -shift;
@@ -95,24 +96,24 @@
       if (!text) { setStatus('请输入文本', 'error'); return; }
       var algo = algoEl.value;
       var decrypt = modeEl.value === 'decrypt';
-      var 结果;
+      var result;
       switch(algo) {
-        case 'rot13': 结果 = rot13(text); break;
-        case 'rot47': 结果 = rot47(text); break;
-        case 'atbash': 结果 = atbash(text); break;
+        case 'rot13': result = rot13(text); break;
+        case 'rot47': result = rot47(text); break;
+        case 'atbash': result = atbash(text); break;
         case 'xor':
           var key = xorKeyEl.value || 'key';
-          结果 = xorCipher(text, key);
+          result = xorCipher(text, key);
           break;
         default:
           var shift = parseInt(shiftEl.value) || 3;
-          结果 = caesarShift(text, shift, decrypt);
+          result = caesarShift(text, shift, decrypt);
       }
-      输出El.textContent = 结果;
+      outputEl.textContent = result;
       setStatus((decrypt ? 'Decrypt' : 'Encrypt') + 'ion complete');
     });
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
     algoEl.addEventListener('change', function() {
       shiftEl.style.display = (algoEl.value === 'caesar') ? 'inline-block' : 'none';
       xorKeyEl.style.display = (algoEl.value === 'xor') ? 'inline-block' : 'none';

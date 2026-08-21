@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Key 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ak-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -41,7 +42,7 @@
     var lenEl = document.getElementById('lenVal');
     var countEl = document.getElementById('countVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var hexChars = '0123456789abcdef';
@@ -66,7 +67,7 @@
       else if (fmt === 'base64') chars = b64Chars;
       else chars = hybridChars;
 
-      var 结果 = [];
+      var result = [];
       for (var n = 0; n < count; n++) {
         var body = '';
         var bytes = new Uint8Array(bodyLen);
@@ -74,14 +75,14 @@
         for (var i = 0; i < bodyLen; i++) {
           body += chars[bytes[i] % chars.length];
         }
-        结果.push(prefix + body);
+        result.push(prefix + body);
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个 API Key');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

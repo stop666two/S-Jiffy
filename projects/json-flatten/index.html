@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 扁平化 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 扁平化 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>JSON 扁平化</h1><p class="tool-desc">将嵌套 JSON 扁平化为单层键值，支持自定义分隔符和反向操作。</p>
@@ -23,7 +24,7 @@
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 var flattenBtn=document.getElementById('flattenBtn');
 var unflattenBtn=document.getElementById('unflattenBtn');
 var clearBtn=document.getElementById('clearBtn');
@@ -31,13 +32,13 @@ var copyBtn=document.getElementById('copyBtn');
 var separator=document.getElementById('separator');
 var flattenArrays=document.getElementById('flattenArrays');
 function flatten(obj,sep,arr){
-var 结果={};
+var result={};
 function recurse(cur,prefix){
 if(Array.isArray(cur)){
 if(arr){
 cur.forEach(function(v,i){recurse(v,prefix+sep+i);});
 }else{
-结果[prefix]=cur;
+result[prefix]=cur;
 }
 }else if(cur!==null&&typeof cur==='object'){
 Object.keys(cur).forEach(function(k){
@@ -45,17 +46,17 @@ var newKey=prefix?prefix+sep+k:k;
 recurse(cur[k],newKey);
 });
 }else{
-结果[prefix]=cur;
+result[prefix]=cur;
 }
 }
 recurse(obj,'');
-return 结果;
+return result;
 }
 function unflatten(obj,sep){
-var 结果={};
+var result={};
 Object.keys(obj).forEach(function(k){
 var keys=k.split(sep);
-var current=结果;
+var current=result;
 for(var i=0;i<keys.length;i++){
 var key=keys[i];
 if(i===keys.length-1){
@@ -66,7 +67,7 @@ current=current[key];
 }
 }
 });
-return 结果;
+return result;
 }
 flattenBtn.addEventListener('click',function(){
 var t=inputEl.value.trim();
@@ -74,7 +75,7 @@ if(!t){setStatus('请输入 JSON','error');return;}
 try{
 var parsed=JSON.parse(t);
 var flat=flatten(parsed,separator.value||'.',flattenArrays.checked);
-输出El.textContent=JSON.stringify(flat,null,2);
+outputEl.textContent=JSON.stringify(flat,null,2);
 setStatus('');
 }catch(e){
 setStatus('JSON 格式错误: '+e.message,'error');
@@ -86,13 +87,13 @@ if(!t){setStatus('请输入扁平化 JSON','error');return;}
 try{
 var parsed=JSON.parse(t);
 var unflat=unflatten(parsed,separator.value||'.');
-输出El.textContent=JSON.stringify(unflat,null,2);
+outputEl.textContent=JSON.stringify(unflat,null,2);
 setStatus('');
 }catch(e){
 setStatus('JSON 格式错误: '+e.message,'error');
 }
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

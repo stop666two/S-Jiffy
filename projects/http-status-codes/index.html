@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTTP 状态码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .status-search { width:100%; height:48px; padding:0 var(--space-2); font-size:var(--font-size-base); border:1px solid #ddd; border-radius:var(--radius-md); outline:none; margin-bottom:16px; }
@@ -29,8 +30,8 @@
     <h1>HTTP 状态码</h1>
     <p class="tool-desc">浏览和搜索 HTTP 状态码及其含义。</p>
     <input id="searchInput" class="status-search js-focus-input" placeholder="搜索状态码或描述... 如 404, not found, redirect..." autocomplete="off">
-    <div class="输出-box" id="输出Container">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" id="输出Container">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -105,7 +106,7 @@
       ];
 
       var searchEl = document.getElementById('searchInput');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function render(query) {
@@ -128,7 +129,7 @@
             + '<span class="status-desc">' + s.desc + '</span>'
             + '</div>';
         }
-        输出El.innerHTML = html;
+        outputEl.innerHTML = html;
         setStatus('显示 ' + filtered.length + ' 个状态码');
       }
 
@@ -137,7 +138,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent || 输出El.innerText;
+        var text = outputEl.textContent || outputEl.innerText;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
 

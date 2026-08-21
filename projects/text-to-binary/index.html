@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本与二进制互转 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,19 +35,19 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       document.getElementById('toBinaryBtn').addEventListener('click', function() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        var 结果 = [];
+        var result = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
-          结果.push(code.toString(2).padStart(8, '0'));
+          result.push(code.toString(2).padStart(8, '0'));
         }
-        输出El.textContent = 结果.join(' ');
+        outputEl.textContent = result.join(' ');
         setStatus('已转换 ' + text.length + ' 个字符');
       });
 
@@ -59,7 +60,7 @@
           setStatus('二进制位数不是 8 的倍数', 'error');
           return;
         }
-        var 结果 = '';
+        var result = '';
         for (var i = 0; i < clean.length; i += 8) {
           var byteStr = clean.substring(i, i + 8);
           var code = parseInt(byteStr, 2);
@@ -67,21 +68,21 @@
             setStatus('包含无效的二进制字符（只能含 0 和 1）', 'error');
             return;
           }
-          结果 += String.fromCharCode(code);
+          result += String.fromCharCode(code);
         }
-        输出El.textContent = 结果;
+        outputEl.textContent = result;
         setStatus('已转换 ' + (clean.length / 8) + ' 字节');
       });
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

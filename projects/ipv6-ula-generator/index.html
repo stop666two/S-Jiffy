@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPv6 ULA 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ula-addr { font-size:20px; letter-spacing:0.05em; word-break:break-all; }
@@ -34,7 +35,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>
     (function() {
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function randomHex(len) {
@@ -60,25 +61,25 @@
       }
 
       document.getElementById('generateBtn').addEventListener('click', function() {
-        输出El.textContent = generateULA();
+        outputEl.textContent = generateULA();
         setStatus('已生成 ULA 地址');
       });
 
       document.getElementById('generateMultiBtn').addEventListener('click', function() {
         var arr = [];
         for (var i = 0; i < 5; i++) arr.push(generateULA());
-        输出El.textContent = arr.join('\n\n');
+        outputEl.textContent = arr.join('\n\n');
         setStatus('已生成 5 个 ULA 地址');
       });
 
       clearBtn = document.getElementById('clearBtn');
       clearBtn.addEventListener('click', function() {
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

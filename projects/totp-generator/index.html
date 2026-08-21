@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TOTP 验证码生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TOTP 验证码生成 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.code-display{font-size:48px;font-weight:700;font-family:var(--font-mono);text-align:center;padding:24px;letter-spacing:8px;color:var(--color-text-primary);}.progress-bar{height:4px;background:var(--color-border);border-radius:2px;margin-top:12px;overflow:hidden;}.progress-fill{height:100%;background:var(--color-success);transition:width 1s linear;border-radius:2px;}.time-display{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:8px;}.info-row{padding:4px 0;font-size:var(--font-size-sm);display:flex;gap:8px;}.info-label{color:var(--color-text-secondary);min-width:80px;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>TOTP 验证码生成</h1><p class="tool-desc">基于 RFC 6238 的时间型一次性密码生成器（Base32 密钥 + SHA-1）</p>
@@ -77,7 +78,7 @@ function updateCode(){
 }
 var codeTimer=null;
 generateBtn.addEventListener('click',function(){
-  var secret=secretInput.value.trim();if(!secret){setStatus('请输入 Base32 密钥','error');return;}
+  var secret=secretInput.value.trim();if(!secret){setStatus('请输入 Base32 key','error');return;}
   if(codeTimer)clearInterval(codeTimer);
   resultCard.style.display='block';updateCode();
   codeTimer=setInterval(updateCode,1000);

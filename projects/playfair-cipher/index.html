@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Playfair 密码 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.pf-grid{font-family:var(--font-mono);font-size:var(--font-size-sm);border-collapse:collapse;margin:var(--space-2) 0}.pf-grid td{border:1px solid var(--color-border);padding:8px 12px;text-align:center;width:36px;height:36px}</style></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Playfair 密码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.pf-grid{font-family:var(--font-mono);font-size:var(--font-size-sm);border-collapse:collapse;margin:var(--space-2) 0}.pf-grid td{border:1px solid var(--color-border);padding:8px 12px;text-align:center;width:36px;height:36px}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>Playfair 密码</h1><p class="tool-desc">Playfair 密码加密/解密，使用 5x5 字母矩阵和关键词。</p>
@@ -11,14 +12,14 @@
 <button id="decryptBtn" class="btn btn-secondary">解密</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 <div id="gridArea" style="overflow-x:auto;margin-top:var(--space-2);"></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
-var 输出El=document.getElementById('输出Text');
+var outputEl=document.getElementById('outputText');
 var keyInput=document.getElementById('keyInput');
 var encryptBtn=document.getElementById('encryptBtn');
 var decryptBtn=document.getElementById('decryptBtn');
@@ -99,16 +100,16 @@ return r;
 encryptBtn.addEventListener('click',function(){
 var t=inputEl.value;
 if(!t||!keyInput.value){setStatus('请输入文本和关键词','error');return;}
-输出El.textContent=process(t,keyInput.value,1);
+outputEl.textContent=process(t,keyInput.value,1);
 setStatus('');
 });
 decryptBtn.addEventListener('click',function(){
 var t=inputEl.value;
 if(!t||!keyInput.value){setStatus('请输入密文和关键词','error');return;}
-输出El.textContent=process(t,keyInput.value,-1);
+outputEl.textContent=process(t,keyInput.value,-1);
 setStatus('');
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';输出El.textContent='';gridArea.innerHTML='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';gridArea.innerHTML='';setStatus('');inputEl.focus();});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

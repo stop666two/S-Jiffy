@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本填充器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .tp-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -45,7 +46,7 @@
     var padCharEl = document.getElementById('padChar');
     var alignEl = document.getElementById('alignSel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function generate() {
@@ -57,36 +58,36 @@
       var align = alignEl.value;
 
       if (text.length >= target) {
-        输出El.textContent = text;
+        outputEl.textContent = text;
         setStatus('文本长度已达目标，无需填充');
         return;
       }
 
       var needed = target - text.length;
-      var 结果;
+      var result;
       if (align === 'right') {
         var pad = '';
         for (var i = 0; i < needed; i++) pad += padChar;
-        结果 = pad + text;
+        result = pad + text;
       } else if (align === 'left') {
         var pad = '';
         for (var i = 0; i < needed; i++) pad += padChar;
-        结果 = text + pad;
+        result = text + pad;
       } else {
         var left = Math.floor(needed / 2);
         var right = needed - left;
         var leftPad = '', rightPad = '';
         for (var i = 0; i < left; i++) leftPad += padChar;
         for (var i = 0; i < right; i++) rightPad += padChar;
-        结果 = leftPad + text + rightPad;
+        result = leftPad + text + rightPad;
       }
 
-      输出El.textContent = 结果;
+      outputEl.textContent = result;
       setStatus('已填充至 ' + target + ' 字符');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

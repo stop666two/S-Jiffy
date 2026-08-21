@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HMAC 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -42,7 +43,7 @@
       var inputEl = document.getElementById('inputText');
       var keyEl = document.getElementById('keyInput');
       var algoEl = document.getElementById('algoSelect');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var generateBtn = document.getElementById('generateBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
@@ -61,7 +62,7 @@
           return crypto.subtle.sign('HMAC', cryptoKey, msgData);
         }).then(function (sig) {
           var hex = Array.from(new Uint8Array(sig)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-          输出El.textContent = hex;
+          outputEl.textContent = hex;
           setStatus('');
         }).catch(function () {
           setStatus('HMAC 生成失败', 'error');
@@ -69,8 +70,8 @@
       }
 
       generateBtn.addEventListener('click', generate);
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>

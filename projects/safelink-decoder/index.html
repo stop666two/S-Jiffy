@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Safelink 解码 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -33,7 +34,7 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -65,18 +66,18 @@
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 URL', 'error'); return; }
         var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-        var 结果s = [];
+        var results = [];
         var decoded = 0;
         for (var i = 0; i < lines.length; i++) {
           var original = decodeSafelink(lines[i]);
           if (original) {
-            结果s.push('原始 URL: ' + original + '\n来源: ' + lines[i] + '\n');
+            results.push('原始 URL: ' + original + '\n来源: ' + lines[i] + '\n');
             decoded++;
           } else {
-            结果s.push('未能解码: ' + lines[i] + '\n');
+            results.push('未能解码: ' + lines[i] + '\n');
           }
         }
-        输出El.textContent = 结果s.join('\n');
+        outputEl.textContent = results.join('\n');
         if (decoded > 0) {
           setStatus('成功解码 ' + decoded + ' 个 URL');
         } else {
@@ -86,13 +87,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

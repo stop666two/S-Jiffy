@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>数列生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .sg-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -52,7 +53,7 @@
     var suffixEl = document.getElementById('suffixVal');
     var sepEl = document.getElementById('sepSel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function padNum(n, len) {
@@ -78,16 +79,16 @@
 
       if (start > end) { setStatus('起始值不能大于结束值', 'error'); return; }
 
-      var 结果 = [];
+      var result = [];
       for (var i = start; i <= end; i += step) {
-        结果.push(prefix + padNum(i, pad) + suffix);
+        result.push(prefix + padNum(i, pad) + suffix);
       }
-      输出El.textContent = 结果.join(sep);
-      setStatus('已生成 ' + 结果.length + ' 项');
+      outputEl.textContent = result.join(sep);
+      setStatus('已生成 ' + result.length + ' 项');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

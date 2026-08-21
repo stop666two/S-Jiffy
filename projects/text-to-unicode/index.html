@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文本与 Unicode 互转 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -21,8 +22,8 @@
       <button id="toTextBtn" class="btn btn-secondary">\\uXXXX → 文本</button>
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
-    <div class="输出-box" id="输出Container">
-      <span id="输出Text" style="display:block;padding-right:60px;"></span>
+    <div class="output-box" id="输出Container">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -34,19 +35,19 @@
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('输出Text');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var clearBtn = document.getElementById('clearBtn');
 
       document.getElementById('toUnicodeBtn').addEventListener('click', function() {
         var text = inputEl.value;
         if (!text) { setStatus('请输入文本', 'error'); return; }
-        var 结果 = [];
+        var result = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
-          结果.push('\\u' + code.toString(16).toUpperCase().padStart(4, '0'));
+          result.push('\\u' + code.toString(16).toUpperCase().padStart(4, '0'));
         }
-        输出El.textContent = 结果.join('');
+        outputEl.textContent = result.join('');
         setStatus('已转换 ' + text.length + ' 个字符');
       });
 
@@ -54,10 +55,10 @@
         var raw = inputEl.value;
         if (!raw) { setStatus('请输入 \\uXXXX 序列', 'error'); return; }
         try {
-          var 结果 = raw.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
+          var result = raw.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
             return String.fromCharCode(parseInt(hex, 16));
           });
-          输出El.textContent = 结果;
+          outputEl.textContent = result;
           setStatus('已还原为文本');
         } catch (e) {
           setStatus('解析失败：格式无效', 'error');
@@ -66,13 +67,13 @@
 
       clearBtn.addEventListener('click', function() {
         inputEl.value = '';
-        输出El.textContent = '';
+        outputEl.textContent = '';
         setStatus('');
         inputEl.focus();
       });
 
       copyBtn.addEventListener('click', function() {
-        if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
       });
     })();
   </script>

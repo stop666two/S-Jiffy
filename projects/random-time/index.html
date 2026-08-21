@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机时间生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rt-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -40,7 +41,7 @@
     var stepEl = document.getElementById('stepVal');
     var fmtEl = document.getElementById('fmtSel');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function cryptoInt(min, max) {
@@ -60,7 +61,7 @@
       if (step > 60) step = 60;
       var is12 = fmtEl.value === '12';
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var h = cryptoInt(0, 23);
         var possibleMins = Math.floor(60 / step);
@@ -70,17 +71,17 @@
           var ampm = h < 12 ? 'AM' : 'PM';
           var h12 = h % 12;
           if (h12 === 0) h12 = 12;
-          结果.push(zeroPad(h12) + ':' + zeroPad(m) + ':' + zeroPad(s) + ' ' + ampm);
+          result.push(zeroPad(h12) + ':' + zeroPad(m) + ':' + zeroPad(s) + ' ' + ampm);
         } else {
-          结果.push(zeroPad(h) + ':' + zeroPad(m) + ':' + zeroPad(s));
+          result.push(zeroPad(h) + ':' + zeroPad(m) + ':' + zeroPad(s));
         }
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个时间');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

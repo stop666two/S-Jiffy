@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>易记密码生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .pm-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -36,7 +37,7 @@
       </div>
       <div><button id="genBtn" class="btn btn-primary">生成</button></div>
     </div>
-    <div class="输出-box"><span id="输出Text" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -46,7 +47,7 @@
     var countEl = document.getElementById('countVal');
     var capChk = document.getElementById('capChk');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('输出Text');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var wordList = ['Apple','Arrow','Basket','Beach','Breeze','Cabin','Candy','Cherry','Coral','Crisp','Daisy','Dream','Drift','Eagle','Echo','Ember','Fancy','Flame','Flower','Forest','Frost','Fuzzy','Garden','Gentle','Ghost','Gleam','Glow','Grape','Green','Happy','Haven','Honey','House','Icicle','Ivy','Jelly','Jewel','Jolly','Jungle','Kettle','Lemon','Light','Lily','Lucky','Maple','Meadow','Mint','Moon','Moss','Mystic','Noble','Ocean','Olive','Owl','Panda','Paper','Peach','Pearl','Petal','Piano','Pine','Plum','Purple','Quiet','Rabbit','Rain','River','Robin','Rose','Royal','Rubber','Sable','Salad','Sandy','Sapphire','Sharp','Shell','Silk','Silver','Sky','Snow','Solar','Spirit','Spring','Star','Storm','Summer','Sunny','Swift','Tiger','Travel','Tree','Tulip','Twilight','Velvet','Violet','Wallet','Water','Whisper','Wild','Willow','Winter','Wish','Yellow','Zeal','Zebra','Zephyr','Zest','Zipper','Zone'];
@@ -69,7 +70,7 @@
       if (count > 1000) count = 1000;
       var doCap = capChk.checked;
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var parts = [];
         for (var j = 0; j < wc; j++) {
@@ -79,14 +80,14 @@
         var numBytes = new Uint32Array(1);
         crypto.getRandomValues(numBytes);
         var num = numBytes[0] % 9999 + 1;
-        结果.push(parts.join(sep) + num);
+        result.push(parts.join(sep) + num);
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个易记密码');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

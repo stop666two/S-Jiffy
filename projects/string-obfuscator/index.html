@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>字符串混淆器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .obf-config { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -49,7 +50,7 @@
   <script src="../../assets/js/global.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('inputText');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var charSetEl = document.getElementById('charSetSelect');
     var densityEl = document.getElementById('densitySelect');
     var charSets = {
@@ -69,31 +70,31 @@
       if (!text) { setStatus('请输入文本', 'error'); return; }
       var density = parseInt(densityEl.value);
       var noiseSet = getNoiseChars();
-      var 结果 = '';
+      var result = '';
       for (var i = 0; i < text.length; i++) {
-        结果 += text[i];
+        result += text[i];
         for (var j = 0; j < density; j++) {
-          结果 += randomChar(noiseSet);
+          result += randomChar(noiseSet);
         }
       }
-      输出El.textContent = 结果;
-      setStatus('混淆完成 (' + text.length + ' -> ' + 结果.length + ' 字符)');
+      outputEl.textContent = result;
+      setStatus('混淆完成 (' + text.length + ' -> ' + result.length + ' 字符)');
     }
     function deobfuscate() {
-      var text = 输出El.textContent || inputEl.value;
+      var text = outputEl.textContent || inputEl.value;
       if (!text) { setStatus('请输入文本', 'error'); return; }
       var density = parseInt(densityEl.value);
-      var 结果 = '';
+      var result = '';
       for (var i = 0; i < text.length; i += density + 1) {
-        结果 += text[i];
+        result += text[i];
       }
-      输出El.textContent = 结果;
+      outputEl.textContent = result;
       setStatus('还原完成');
     }
     document.getElementById('obfuscateBtn').addEventListener('click', obfuscate);
     document.getElementById('deobfuscateBtn').addEventListener('click', deobfuscate);
-    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, this); setStatus('已复制'); } });
+    document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

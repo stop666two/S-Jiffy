@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Text Diff - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Text Diff - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .diff-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .diff-pane label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
 .diff-pane textarea{min-height:200px;}
-.diff-输出{font-family:var(--font-mono);font-size:12px;line-height:1.5;}
-.diff-输出 .same{color:var(--color-text-primary);}
-.diff-输出 .added{background:#e6ffe6;color:#1a7d1a;}
-.diff-输出 .removed{background:#ffe6e6;color:#cc3333;}
+.diff-output{font-family:var(--font-mono);font-size:12px;line-height:1.5;}
+.diff-output .same{color:var(--color-text-primary);}
+.diff-output .added{background:#e6ffe6;color:#1a7d1a;}
+.diff-output .removed{background:#ffe6e6;color:#cc3333;}
 .diff-stats{display:flex;gap:16px;margin:12px 0;font-size:var(--font-size-sm);}
 .diff-stat{padding:2px 8px;border-radius:var(--radius-sm);}
 .diff-stat.add{background:#e6ffe6;color:#1a7d1a;}
@@ -42,7 +43,7 @@
 <script src="../../assets/js/global.js"></script>
 <script>
 (function(){
-  var textA=document.getElementById('textA'),textB=document.getElementById('textB'),输出El=document.getElementById('outputText'),diffStats=document.getElementById('diffStats');
+  var textA=document.getElementById('textA'),textB=document.getElementById('textB'),outputEl=document.getElementById('outputText'),diffStats=document.getElementById('diffStats');
 
   function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -50,11 +51,11 @@
     var ma=a.length,mb=b.length,dp=[];for(var i=0;i<=ma;i++){dp[i]=[];dp[i][0]=0;}
     for(var j=0;j<=mb;j++)dp[0][j]=0;
     for(var i=1;i<=ma;i++)for(var j=1;j<=mb;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
-    var 结果=[],i=ma,j=mb;
-    while(i>0||j>0){if(i>0&&j>0&&a[i-1]===b[j-1]){结果.push({type:'same',text:a[i-1]});i--;j--;}
-    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){结果.push({type:'added',text:b[j-1]});j--;}
-    else{结果.push({type:'removed',text:a[i-1]});i--;}}
-    结果.reverse();return 结果;}
+    var result=[],i=ma,j=mb;
+    while(i>0||j>0){if(i>0&&j>0&&a[i-1]===b[j-1]){result.push({type:'same',text:a[i-1]});i--;j--;}
+    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){result.push({type:'added',text:b[j-1]});j--;}
+    else{result.push({type:'removed',text:a[i-1]});i--;}}
+    result.reverse();return result;}
 
   function diffWords(a,b){
     var wa=a.match(/[a-zA-Z0-9]+|[^a-zA-Z0-9]/g)||[],wb=b.match(/[a-zA-Z0-9]+|[^a-zA-Z0-9]/g)||[];
@@ -79,12 +80,12 @@
       else if(d.type==='added'){prefix='+ ';cls='added';added++;}
       else{prefix='- ';cls='removed';removed++;}
       html+='<div class="'+cls+'">'+prefix+escapeHtml(d.text)+'</div>';}
-    输出El.innerHTML=html;
+    outputEl.innerHTML=html;
     diffStats.innerHTML='<span class="diff-stat same">Same '+same+'</span><span class="diff-stat add">+Added '+added+'</span><span class="diff-stat del">-Removed '+removed+'</span>';
     setStatus('Diff complete: '+same+' same, '+added+' added, '+removed+' removed');});
 
   document.getElementById('swapBtn').addEventListener('click',function(){var t=textA.value;textA.value=textB.value;textB.value=t;});
-  document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';输出El.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=输出El.textContent||输出El.innerText;if(t){copyToClipboard(t,this);setStatus('已复制');}});
+  document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';outputEl.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=outputEl.textContent||outputEl.innerText;if(t){copyToClipboard(t,this);setStatus('已复制');}});
 })();
 </script></body></html>

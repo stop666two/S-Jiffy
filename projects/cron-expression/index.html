@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cron 表达式解析 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .cron-fields { display:grid; grid-template-columns:repeat(5,1fr); gap:var(--space-1); margin-bottom:var(--space-2); }
     .cron-field { text-align:center; }
-    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform:大写; }
+    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform: uppercase; }
     .cron-field input { width:100%; text-align:center; font-family:var(--font-mono); font-size:14px; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px 4px; outline:none; }
     .cron-field input:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
     .next-times { font-size:var(--font-size-xs); margin-top:var(--space-2); }
@@ -48,7 +49,7 @@
   <script>
     (function () {
       var cronInput = document.getElementById('cronInput');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var parseBtn = document.getElementById('parseBtn');
       var copyBtn = document.getElementById('copyBtn');
       var fields = {
@@ -163,10 +164,10 @@
 
       function update() {
         var raw = cronInput.value.trim();
-        if (!raw) { 输出El.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
+        if (!raw) { outputEl.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
         var parsed = parseCron(raw);
         if (parsed.error) {
-          输出El.textContent = parsed.error;
+          outputEl.textContent = parsed.error;
           setStatus('格式错误', 'error');
           return;
         }
@@ -194,13 +195,13 @@
           desc += '\n未找到未来执行时间\n';
         }
 
-        输出El.textContent = desc;
+        outputEl.textContent = desc;
         setStatus('');
       }
 
       parseBtn.addEventListener('click', update);
       cronInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

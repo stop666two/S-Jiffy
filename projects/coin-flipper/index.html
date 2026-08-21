@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>抛硬币 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .coin { width:120px;height:120px;border-radius:50%;background:var(--color-text-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto var(--space-3);transition:transform 0.1s;user-select:none; }
@@ -47,7 +48,7 @@
       var coin = document.getElementById('coin');
       var flipBtn = document.getElementById('flipBtn');
       var flipManyBtn = document.getElementById('flipManyBtn');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var headsCount = document.getElementById('headsCount');
       var tailsCount = document.getElementById('tailsCount');
@@ -58,14 +59,14 @@
 
       function flip(showAnimation) {
         if (flipping) return;
-        var 结果 = Math.random() < 0.5 ? 'H' : 'T';
+        var result = Math.random() < 0.5 ? 'H' : 'T';
         if (showAnimation) {
           flipping = true;
           coin.classList.add('flipping');
           coin.textContent = '?';
         }
         setTimeout(function() {
-          if (结果 === 'H') {
+          if (result === 'H') {
             coin.textContent = 'H';
             heads++;
           } else {
@@ -79,9 +80,9 @@
             coin.classList.remove('flipping');
             flipping = false;
           }
-          输出El.textContent = '结果: ' + (结果 === 'H' ? '正面 (Head)' : '反面 (Tail)') + ' | 正:' + heads + ' 反:' + tails + ' 共:' + (heads + tails);
+          outputEl.textContent = '结果: ' + (result === 'H' ? '正面 (Head)' : '反面 (Tail)') + ' | 正:' + heads + ' 反:' + tails + ' 共:' + (heads + tails);
         }, showAnimation ? 300 : 0);
-        return 结果;
+        return result;
       }
 
       flipBtn.addEventListener('click', function() { flip(true); });
@@ -91,7 +92,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
           setStatus('已复制到剪贴板');

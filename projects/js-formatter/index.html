@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JavaScript 格式化 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
 <body>
@@ -34,7 +35,7 @@
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var formatBtn = document.getElementById('formatBtn');
       var minifyBtn = document.getElementById('minifyBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -42,34 +43,34 @@
 
       function formatJS(code) {
         var indent = 0;
-        var 结果 = '';
+        var result = '';
         var inStr = null;
         var escape = false;
 
         for (var i = 0; i < code.length; i++) {
           var ch = code[i];
 
-          if (escape) { 结果 += ch; escape = false; continue; }
+          if (escape) { result += ch; escape = false; continue; }
           if (inStr) {
-            if (ch === '\\') { escape = true; 结果 += ch; }
-            else if (ch === inStr) { inStr = null; 结果 += ch; }
-            else { 结果 += ch; }
+            if (ch === '\\') { escape = true; result += ch; }
+            else if (ch === inStr) { inStr = null; result += ch; }
+            else { result += ch; }
             continue;
           }
-          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; 结果 += ch; continue; }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
           if (ch === '/' && i + 1 < code.length) {
             if (code[i + 1] === '/') {
-              while (i < code.length && code[i] !== '\n') { 结果 += code[i]; i++; }
-              结果 += '\n';
+              while (i < code.length && code[i] !== '\n') { result += code[i]; i++; }
+              result += '\n';
               continue;
             }
             if (code[i + 1] === '*') {
-              结果 += '/*';
+              result += '/*';
               i += 2;
               while (i < code.length) {
-                结果 += code[i];
+                result += code[i];
                 if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') {
-                  结果 += '/'; i++; break;
+                  result += '/'; i++; break;
                 }
                 i++;
               }
@@ -77,63 +78,63 @@
             }
           }
 
-          if (ch === '{') { 结果 += ' {\n'; indent++; 结果 += '  '.repeat(indent); }
-          else if (ch === '}') { 结果 += '\n'; indent = Math.max(0, indent - 1); 结果 += '  '.repeat(indent) + '}'; }
-          else if (ch === ';') { 结果 += ';\n'; 结果 += '  '.repeat(indent); }
+          if (ch === '{') { result += ' {\n'; indent++; result += '  '.repeat(indent); }
+          else if (ch === '}') { result += '\n'; indent = Math.max(0, indent - 1); result += '  '.repeat(indent) + '}'; }
+          else if (ch === ';') { result += ';\n'; result += '  '.repeat(indent); }
           else if (ch === '\n' || ch === '\r') { }
-          else if (ch === '(') { 结果 += '('; }
-          else if (ch === ')') { 结果 += ')'; }
-          else { 结果 += ch; }
+          else if (ch === '(') { result += '('; }
+          else if (ch === ')') { result += ')'; }
+          else { result += ch; }
         }
-        return 结果.replace(/\n\s*\n/g, '\n').trim();
+        return result.replace(/\n\s*\n/g, '\n').trim();
       }
 
       function minifyJS(code) {
-        var 结果 = '';
+        var result = '';
         var inStr = null;
         var escape = false;
 
         for (var i = 0; i < code.length; i++) {
           var ch = code[i];
-          if (escape) { 结果 += ch; escape = false; continue; }
+          if (escape) { result += ch; escape = false; continue; }
           if (inStr) {
-            if (ch === '\\') { escape = true; 结果 += ch; }
-            else if (ch === inStr) { inStr = null; 结果 += ch; }
-            else { 结果 += ch; }
+            if (ch === '\\') { escape = true; result += ch; }
+            else if (ch === inStr) { inStr = null; result += ch; }
+            else { result += ch; }
             continue;
           }
-          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; 结果 += ch; continue; }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; result += ch; continue; }
           if (ch === '/' && i + 1 < code.length) {
             if (code[i + 1] === '/') { while (i < code.length && code[i] !== '\n') i++; continue; }
             if (code[i + 1] === '*') { i += 2; while (i < code.length) { if (code[i] === '*' && i + 1 < code.length && code[i + 1] === '/') { i++; break; } i++; } continue; }
           }
           if (/\s/.test(ch)) {
             var next = i + 1 < code.length ? code[i + 1] : '';
-            var prev = 结果.length ? 结果[结果.length - 1] : '';
-            if (prev && next && /\w/.test(prev) && /\w/.test(next)) { 结果 += ' '; }
+            var prev = result.length ? result[result.length - 1] : '';
+            if (prev && next && /\w/.test(prev) && /\w/.test(next)) { result += ' '; }
             continue;
           }
-          结果 += ch;
+          result += ch;
         }
-        return 结果;
+        return result;
       }
 
       formatBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
-        输出El.textContent = formatJS(text);
+        outputEl.textContent = formatJS(text);
         setStatus('');
       });
 
       minifyBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
         if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
-        输出El.textContent = minifyJS(text);
+        outputEl.textContent = minifyJS(text);
         setStatus('');
       });
 
-      clearBtn.addEventListener('click', function () { inputEl.value = ''; 输出El.textContent = ''; setStatus(''); inputEl.focus(); });
-      copyBtn.addEventListener('click', function () { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+      clearBtn.addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
     })();
   </script>
 </body>

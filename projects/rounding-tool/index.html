@@ -4,15 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>取整工具 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .rt-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
     .rt-row .field { flex:1; min-width:100px; }
     .rt-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .结果-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:var(--space-2); }
-    .结果-item { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); }
-    .结果-item .label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
-    .结果-item .value { font-size:var(--font-size-lg); font-weight:600; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:var(--space-2); }
+    .result-item { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); }
+    .result-item .label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .result-item .value { font-size:var(--font-size-lg); font-weight:600; }
   </style>
 </head>
 <body>
@@ -26,11 +27,11 @@
         <div class="field"><label for="decVal">小数位数</label><input id="decVal" class="input" type="number" value="2" min="0" max="15"></div>
       </div>
       <div><button id="genBtn" class="btn btn-primary">计算</button></div>
-      <div class="结果-grid" id="结果Grid">
-        <div class="结果-item"><div class="label">向下取整 (floor)</div><div class="value" id="floorVal">-</div></div>
-        <div class="结果-item"><div class="label">向上取整 (ceil)</div><div class="value" id="ceilVal">-</div></div>
-        <div class="结果-item"><div class="label">四舍五入 (round)</div><div class="value" id="roundVal">-</div></div>
-        <div class="结果-item"><div class="label">截断取整 (trunc)</div><div class="value" id="truncVal">-</div></div>
+      <div class="result-grid" id="resultGrid">
+        <div class="result-item"><div class="label">向下取整 (floor)</div><div class="value" id="floorVal">-</div></div>
+        <div class="result-item"><div class="label">向上取整 (ceil)</div><div class="value" id="ceilVal">-</div></div>
+        <div class="result-item"><div class="label">四舍五入 (round)</div><div class="value" id="roundVal">-</div></div>
+        <div class="result-item"><div class="label">截断取整 (trunc)</div><div class="value" id="truncVal">-</div></div>
       </div>
     </div>
     <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
@@ -41,7 +42,7 @@
     var inputEl = document.getElementById('inputVal');
     var decEl = document.getElementById('decVal');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     function generate() {
@@ -63,12 +64,12 @@
       document.getElementById('roundVal').textContent = roundV.toFixed(dec);
       document.getElementById('truncVal').textContent = truncV.toFixed(dec);
 
-      输出El.textContent = 'Floor: ' + floorV.toFixed(dec) + ', Ceil: ' + ceilV.toFixed(dec) + ', Round: ' + roundV.toFixed(dec) + ', Trunc: ' + truncV.toFixed(dec);
+      outputEl.textContent = 'Floor: ' + floorV.toFixed(dec) + ', Ceil: ' + ceilV.toFixed(dec) + ', Round: ' + roundV.toFixed(dec) + ', Trunc: ' + truncV.toFixed(dec);
       setStatus('取整完成');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

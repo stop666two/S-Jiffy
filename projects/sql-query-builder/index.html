@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SQL 查询生成 - S-Jiffy</title><link rel="stylesheet" href="../../assets/css/global.css"><style>.sqb-preview{font-family:var(--font-mono);font-size:var(--font-size-sm);background:var(--color-bg-secondary);padding:var(--space-3);border-radius:var(--radius-md);white-space:pre-wrap;margin-top:var(--space-2)}</style></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SQL 查询生成 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.sqb-preview{font-family:var(--font-mono);font-size:var(--font-size-sm);background:var(--color-bg-secondary);padding:var(--space-3);border-radius:var(--radius-md);white-space:pre-wrap;margin-top:var(--space-2)}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>SQL 查询构造器</h1><p class="tool-desc">可视化构建 SELECT 查询，选择列、表、条件、排序和 LIMIT。</p>
@@ -28,7 +29,7 @@ var limitVal=document.getElementById('limitVal');
 var generateBtn=document.getElementById('generateBtn');
 var copyBtn=document.getElementById('copyBtn');
 var sqlPreview=document.getElementById('sqlPreview');
-var 输出El=document.getElementById('outputText');
+var outputEl=document.getElementById('outputText');
 function buildSQL(){
 var table=tableName.value.trim();
 if(!table){setStatus('请输入表名','error');return;}
@@ -47,7 +48,7 @@ return sql;
 function generate(){
 var sql=buildSQL();
 sqlPreview.textContent=sql;
-输出El.textContent=sql;
+outputEl.textContent=sql;
 setStatus('');
 }
 columns.addEventListener('input',generate);
@@ -56,7 +57,7 @@ whereClause.addEventListener('input',generate);
 orderBy.addEventListener('input',generate);
 limitVal.addEventListener('input',generate);
 generateBtn.addEventListener('click',generate);
-copyBtn.addEventListener('click',function(){if(输出El.textContent){copyToClipboard(输出El.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 generate();
 })();
 </script></body></html>

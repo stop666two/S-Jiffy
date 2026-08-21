@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Percentage Calculator - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .pc-form { display:grid; gap:var(--space-3); }
@@ -60,7 +61,7 @@
       var pctY = document.getElementById('pctY');
       var pctOld = document.getElementById('pctOld');
       var pctNew = document.getElementById('pctNew');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var pctOfBtn = document.getElementById('pctOfBtn');
       var pctWhatBtn = document.getElementById('pctWhatBtn');
@@ -69,32 +70,32 @@
       pctOfBtn.addEventListener('click', function () {
         var a = parseFloat(pctA.value);
         var b = parseFloat(pctB.value);
-        if (b === 0) { 输出El.textContent = '除数不能为 0'; setStatus('', 'error'); return; }
-        var 结果 = (a / b) * 100;
-        输出El.textContent = a + ' 是 ' + b + ' 的 ' + 结果.toFixed(2) + '%';
+        if (b === 0) { outputEl.textContent = '除数不能为 0'; setStatus('', 'error'); return; }
+        var result = (a / b) * 100;
+        outputEl.textContent = a + ' 是 ' + b + ' 的 ' + result.toFixed(2) + '%';
         setStatus('');
       });
 
       pctWhatBtn.addEventListener('click', function () {
         var x = parseFloat(pctX.value);
         var y = parseFloat(pctY.value);
-        var 结果 = (x / 100) * y;
-        输出El.textContent = x + '% of ' + y + ' = ' + 结果.toFixed(2);
+        var result = (x / 100) * y;
+        outputEl.textContent = x + '% of ' + y + ' = ' + result.toFixed(2);
         setStatus('');
       });
 
       pctChangeBtn.addEventListener('click', function () {
         var oldVal = parseFloat(pctOld.value);
         var newVal = parseFloat(pctNew.value);
-        if (oldVal === 0) { 输出El.textContent = '原值不能为 0'; setStatus('', 'error'); return; }
+        if (oldVal === 0) { outputEl.textContent = '原值不能为 0'; setStatus('', 'error'); return; }
         var change = ((newVal - oldVal) / oldVal) * 100;
         var sign = change >= 0 ? '增长' : '下降';
-        输出El.textContent = '从 ' + oldVal + ' 到 ' + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
+        outputEl.textContent = '从 ' + oldVal + ' 到 ' + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
     })();

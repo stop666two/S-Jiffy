@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON 合并 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .merge-container { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .merge-pane textarea { min-height:200px; font-family:var(--font-mono); font-size:12px; }
     .merge-pane label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:6px; }
-    .merge-结果 { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
+    .merge-result { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
     .merge-conflict { background:#fff3cd; border:1px solid #ffc107; border-radius:var(--radius-sm); padding:var(--space-2); margin-top:var(--space-2); }
   </style>
 </head>
@@ -36,7 +37,7 @@
       <button id="clearBtn" class="btn btn-secondary">清空</button>
     </div>
     <div class="output-box">
-      <div id="outputText" class="merge-结果" style="display:block;padding-right:60px;"></div>
+      <div id="outputText" class="merge-result" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -49,7 +50,7 @@
     (function () {
       var jsonA = document.getElementById('jsonA');
       var jsonB = document.getElementById('jsonB');
-      var 输出El = document.getElementById('outputText');
+      var outputEl = document.getElementById('outputText');
       var mergeBtn = document.getElementById('mergeBtn');
       var mergeReverseBtn = document.getElementById('mergeReverseBtn');
       var clearBtn = document.getElementById('clearBtn');
@@ -60,13 +61,13 @@
       }
 
       function deepMerge(target, source, path) {
-        var 结果 = {};
+        var result = {};
         var conflicts = [];
 
         if (target && typeof target === 'object') {
           for (var key in target) {
             if (Object.prototype.hasOwnProperty.call(target, key)) {
-              结果[key] = target[key];
+              result[key] = target[key];
             }
           }
         }
@@ -75,21 +76,21 @@
           for (var key2 in source) {
             if (Object.prototype.hasOwnProperty.call(source, key2)) {
               var fullPath = path ? path + '.' + key2 : key2;
-              if (key2 in 结果 && isObject(结果[key2]) && isObject(source[key2])) {
-                var merged = deepMerge(结果[key2], source[key2], fullPath);
-                结果[key2] = merged.结果;
+              if (key2 in result && isObject(result[key2]) && isObject(source[key2])) {
+                var merged = deepMerge(result[key2], source[key2], fullPath);
+                result[key2] = merged.result;
                 conflicts = conflicts.concat(merged.conflicts);
-              } else if (key2 in 结果 && 结果[key2] !== source[key2]) {
-                conflicts.push({ path: fullPath, oldVal: JSON.stringify(结果[key2]), newVal: JSON.stringify(source[key2]) });
-                结果[key2] = source[key2];
+              } else if (key2 in result && result[key2] !== source[key2]) {
+                conflicts.push({ path: fullPath, oldVal: JSON.stringify(result[key2]), newVal: JSON.stringify(source[key2]) });
+                result[key2] = source[key2];
               } else {
-                结果[key2] = source[key2];
+                result[key2] = source[key2];
               }
             }
           }
         }
 
-        return { 结果: 结果, conflicts: conflicts };
+        return { result: result, conflicts: conflicts };
       }
 
       function doMerge(priorityA, priorityB) {
@@ -105,11 +106,11 @@
         var merged, conflicts;
         if (priorityA) {
           var m1 = deepMerge(objB, objA, '');
-          merged = m1.结果;
+          merged = m1.result;
           conflicts = m1.conflicts;
         } else {
           var m2 = deepMerge(objA, objB, '');
-          merged = m2.结果;
+          merged = m2.result;
           conflicts = m2.conflicts;
         }
 
@@ -121,7 +122,7 @@
           }
           html += '</div>';
         }
-        输出El.innerHTML = html;
+        outputEl.innerHTML = html;
         setStatus('合并完成' + (conflicts.length ? '，' + conflicts.length + ' 处冲突以 B 为准' : '，无冲突'));
       }
 
@@ -131,9 +132,9 @@
 
       mergeBtn.addEventListener('click', function () { doMerge(false, true); });
       mergeReverseBtn.addEventListener('click', function () { doMerge(true, false); });
-      clearBtn.addEventListener('click', function () { jsonA.value = ''; jsonB.value = ''; 输出El.innerHTML = ''; setStatus(''); jsonA.focus(); });
+      clearBtn.addEventListener('click', function () { jsonA.value = ''; jsonB.value = ''; outputEl.innerHTML = ''; setStatus(''); jsonA.focus(); });
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent || 输出El.innerText;
+        var text = outputEl.textContent || outputEl.innerText;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
       });
     })();

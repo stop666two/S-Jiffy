@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Color Converter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .color-preview-lg { width:100%;height:80px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-3);transition:background .2s; }
@@ -44,8 +45,8 @@
       </div>
       <div class="cb-section"><h3>Colorblind Simulation</h3><div class="cb-swatches" id="cbSim"></div></div>
     </div>
-    <div class="输出-box" id="输出Container" style="min-height:60px;">
-      <span id="输出Text" style="display:block; padding-right:60px; white-space:pre-line;"></span>
+    <div class="output-box" id="输出Container" style="min-height:60px;">
+      <span id="outputText" style="display:block; padding-right:60px; white-space:pre-line;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -57,7 +58,7 @@
       var vHex = document.getElementById('valHex'), vRgb = document.getElementById('valRgb'), vHsl = document.getElementById('valHsl');
       var vHsla = document.getElementById('valHsla'), vHsv = document.getElementById('valHsv'), vCmyk = document.getElementById('valCmyk');
       var vOklch = document.getElementById('valOklch'), vLab = document.getElementById('valLab'), vLch = document.getElementById('valLch');
-      var cbSim = document.getElementById('cbSim'), o = document.getElementById('输出Text');
+      var cbSim = document.getElementById('cbSim'), o = document.getElementById('outputText');
 
       function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
       function srgbTransfer(c) { c = c / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>随机邮箱生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .re-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
@@ -37,7 +38,7 @@
     var dispChk = document.getElementById('dispChk');
     var nameLenEl = document.getElementById('nameLen');
     var genBtn = document.getElementById('genBtn');
-    var 输出El = document.getElementById('outputText');
+    var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
     var dispDomains = ['mailinator.com','guerrillamail.com','10minutemail.com','temp-mail.org','throwaway.email','trashmail.com','yopmail.com','sharklasers.com'];
@@ -47,13 +48,13 @@
 
     function randomString(len) {
       var chars = 'abcdefghijklmnopqrstuvwxyz0123456789._-';
-      var 结果 = '';
+      var result = '';
       for (var i = 0; i < len; i++) {
         var bytes = new Uint8Array(1);
         crypto.getRandomValues(bytes);
-        结果 += chars[bytes[0] % chars.length];
+        result += chars[bytes[0] % chars.length];
       }
-      return 结果;
+      return result;
     }
 
     function generate() {
@@ -66,7 +67,7 @@
       if (nameLen < 3) nameLen = 3;
       if (nameLen > 32) nameLen = 32;
 
-      var 结果 = [];
+      var result = [];
       for (var i = 0; i < count; i++) {
         var domain;
         if (customDomain) {
@@ -81,14 +82,14 @@
           domain = normalDomains[ni[0] % normalDomains.length];
         }
         var local = randomString(nameLen);
-        结果.push(local + '@' + domain);
+        result.push(local + '@' + domain);
       }
-      输出El.textContent = 结果.join('\n');
+      outputEl.textContent = result.join('\n');
       setStatus('已生成 ' + count + ' 个邮箱');
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (输出El.textContent) { copyToClipboard(输出El.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
   })();</script>
 </body>
 </html>

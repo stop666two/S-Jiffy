@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPv4 Address Converter - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .ipconv-grid { display:grid; gap:var(--space-3); }
     .ipconv-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
     .ipconv-row .field { flex:1; min-width:200px; }
     .ipconv-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
-    .ipconv-结果 { margin-top:var(--space-3); }
-    .ipconv-结果 .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); font-size:var(--font-size-sm); }
-    .ipconv-结果 .item:last-child { border-bottom:none; }
-    .ipconv-结果 .lbl { color:var(--color-text-secondary); }
+    .ipconv-result { margin-top:var(--space-3); }
+    .ipconv-result .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); font-size:var(--font-size-sm); }
+    .ipconv-result .item:last-child { border-bottom:none; }
+    .ipconv-result .lbl { color:var(--color-text-secondary); }
   </style>
 </head>
 <body>
@@ -30,10 +31,10 @@
           <button id="convertBtn" class="btn btn-primary">转换</button>
         </div>
       </div>
-      <div class="ipconv-结果" id="结果Container"></div>
+      <div class="ipconv-result" id="resultContainer"></div>
     </div>
-    <div class="输出-box">
-      <span id="输出Text" style="display:block; padding-right:60px;"></span>
+    <div class="output-box">
+      <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
@@ -46,8 +47,8 @@
     (function() {
       var ipInput = document.getElementById('ipInput');
       var convertBtn = document.getElementById('convertBtn');
-      var 结果Container = document.getElementById('结果Container');
-      var 输出El = document.getElementById('输出Text');
+      var resultContainer = document.getElementById('resultContainer');
+      var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
       function ipToNum(ip) {
@@ -66,8 +67,8 @@
         var ip = ipInput.value.trim();
         var num = ipToNum(ip);
         if (num === -1) {
-          结果Container.innerHTML = '<div style="color:var(--color-error);">无效的 IPv4 地址</div>';
-          输出El.textContent = '';
+          resultContainer.innerHTML = '<div style="color:var(--color-error);">无效的 IPv4 地址</div>';
+          outputEl.textContent = '';
           setStatus('请输入有效的 IPv4 地址', 'error');
           return;
         }
@@ -88,8 +89,8 @@
         for (var i = 0; i < items.length; i++) {
           html += '<div class="item"><span class="lbl">' + items[i][0] + '</span><span>' + htmlEscape(items[i][1]) + '</span></div>';
         }
-        结果Container.innerHTML = html;
-        输出El.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
+        resultContainer.innerHTML = html;
+        outputEl.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
         setStatus('');
       }
 
@@ -97,7 +98,7 @@
       ipInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') convert(); });
 
       copyBtn.addEventListener('click', function () {
-        var text = 输出El.textContent;
+        var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
       });
 

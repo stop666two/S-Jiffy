@@ -97,7 +97,7 @@
   var dict = {};
   /** 当前页面 slug（工具目录名，如 "base64"）；主页无 slug 时为 null */
   var pageKey = null;
-  var pathMatch = window.location.pathname.match(/\/([^/]+)\/index\.html$/);
+  var pathMatch = window.location.pathname.match(/\/projects\/([^/]+)\/?(?:index\.html)?$/);
   if (pathMatch) pageKey = pathMatch[1];
 
   /**
@@ -123,7 +123,7 @@
   }
 
   loadDict('common');
-  if (pageKey) loadDict(pageKey);
+  loadDict(pageKey || 'home');
 
   /**
    * 按词典更新页面元数据：document.title（key "meta.title"）与 meta[name=description]（key "meta.description"）。
@@ -204,17 +204,22 @@
   /**
    * 应用词典文案到页面元素：
    *  - [data-i18n="key"]：替换 textContent（key 为完整词典 key）
+   *  - [data-i18n-html="key"]：替换 innerHTML（用于含链接/行内标签的段落，词典值须为受信 HTML——仅项目自写词典，无用户输入）
    *  - [data-i18n-placeholder="key"]：替换 placeholder 属性
    *  - [data-i18n-attr-title="key"]：替换 title 属性
+   *  - [data-i18n-attr-aria-label="key"]：替换 aria-label 属性（可访问性）
    * 词典缺 key 时元素保持 HTML 原文（优雅降级，未翻译页面不受影响）。
-   * 注意：textContent 替换会清除子节点（含链接）——含链接的段落应改用 data-i18n-html 场景（主页 desc），
-   *       此时页面应自行处理 innerHTML 替换（见 index.html 的 home.desc 处理）。
    */
   function apply() {
     var els = document.querySelectorAll('[data-i18n]');
     for (var i = 0; i < els.length; i++) {
       var key = els[i].getAttribute('data-i18n');
       if (dict[key] != null) els[i].textContent = dict[key];
+    }
+    var htmlEls = document.querySelectorAll('[data-i18n-html]');
+    for (var h = 0; h < htmlEls.length; h++) {
+      var hk = htmlEls[h].getAttribute('data-i18n-html');
+      if (dict[hk] != null) htmlEls[h].innerHTML = dict[hk];
     }
     var phs = document.querySelectorAll('[data-i18n-placeholder]');
     for (var j = 0; j < phs.length; j++) {
@@ -225,6 +230,11 @@
     for (var k = 0; k < ts.length; k++) {
       var tk = ts[k].getAttribute('data-i18n-attr-title');
       if (dict[tk] != null) ts[k].setAttribute('title', dict[tk]);
+    }
+    var als = document.querySelectorAll('[data-i18n-attr-aria-label]');
+    for (var a = 0; a < als.length; a++) {
+      var ak = als[a].getAttribute('data-i18n-attr-aria-label');
+      if (dict[ak] != null) als[a].setAttribute('aria-label', dict[ak]);
     }
   }
 

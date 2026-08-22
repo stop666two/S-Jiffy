@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var h1 = document.querySelector('.tool-workspace h1');
   var path = window.location.pathname;
   if (path.indexOf('/projects/') !== -1) {
-    var m = path.match(/\/([^/]+)\/index\.html$/);
+    var m = path.match(/\/projects\/([^/]+)\/?(?:index\.html)?$/);
     recordUse(m ? m[1] : (h1 ? h1.textContent.trim() : ''));
   }
   var focusInput = document.querySelector('.js-focus-input');

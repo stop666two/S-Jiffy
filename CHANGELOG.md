@@ -8,6 +8,11 @@
 
 ### Added
 
+- 新增六语言国际化（i18n）：English / 简体中文 / 繁體中文（台灣）/ 繁體中文（香港）/ Español / 日本語，全部内容逐语言撰写，运行时切换
+- 语言切换器：主页与工具页 header 右上角下拉菜单，任意页面随时切换，选择持久化（localStorage），首次访问跟随浏览器语言自动检测
+- 返回按钮迁移至展示栏（tool-workspace）左上角，语言切换器占据原返回按钮位置
+- 主页全面本地化：标题与 meta 描述、分类名、591 个工具名称与描述、搜索（多语言双轨匹配）、历史记录（slug 存储兼容多语言）、工具栏与状态提示
+- 首批 5 个代表工具完整本地化：Base64 编解码、BMI 计算器、财神灵签、繁简体转换、老黄历
 - 新增 100 个程序员工具（JSON 互转、API 工具、DevOps、Git 协作、安全、数学、速查卡等），总数 460 → 560
 - 新增 12 种灵签工具（月老 / 财神 / 黄大仙 / 观音 / 吕祖 / 关帝 / 车公 / 土地公 / 王公 / 玉帝 / 佛祖 / 周公），每签含完整签文与解签数据
 - 新增文化阅读工具：论语全文、歇后语大全、名人名言、各国国旗（192 国）
@@ -18,6 +23,9 @@
 
 ### Fixed
 
+- 工具页 pageKey 解析：/projects/xxx/（目录形式）访问时词典加载失败，正则限定 projects/ 前缀并兼容 index.html 后缀
+- chinese-converter 繁体字表变量名 t 遮蔽全局翻译函数导致 TypeError，改名 tradChars
+- 主页缺失状态栏元素，删除历史等操作提示不显示，补齐 .tool-status
 - server.js 路径穿越漏洞与畸形 URL 崩溃（decodeURIComponent 未捕获）
 - 主页重复工具注册（文本对齐/列对齐重复条目）
 - 全站 24 个功能缺陷：checksum-calculator（MD5）、css-formatter、hmac-verify、html-to-pug、ipv4-range-expander、json-schema-validator、json-to-swift、json-to-xml、json-to-xml 多键丢失、qr-code-generator、qr-reader、wifi-qr-code、quote-converter、semver-compare、sql-format、sql-validator、sunrise-sunset、xml-formatter、xor-cipher、xpath-query、yaml-validator 等
@@ -29,6 +37,8 @@
 
 ### Changed
 
+- 全站界面文案随语言切换：页面标题、meta 描述、按钮、占位符、状态提示全部本地化（未本地化的工具页保留中文原文）
+- 历史记录改为 slug（工具目录名）存储，多语言切换后历史记录不再丢失匹配
 - 主页注册更新至 591 个工具、34 个分类
 - README 全面更新（591 工具 / 34 分类计数表 / 新工具清单）
 - 站点字体回退栈优化，数学符号正确渲染

@@ -87,31 +87,33 @@
     <a href="https://github.com/stop666two/S-Jiffy" target="_blank" class="logo" style="display:flex;align-items:center;gap:6px;">S-Jiffy <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400;">GitHub</span></a>
   </header>
   <main class="tool-workspace">
-    <h1>即用即走工具集</h1>
-    <p class="tool-desc">轻量、瞬时的生产力工具，打开即用，用完即走。所有操作均在浏览器本地完成，极少情况下可能出现问题，请自行校验结果，如有问题请提交 <a href="https://github.com/stop666two/S-Jiffy/issues" target="_blank" style="color:var(--color-text-primary);text-decoration:underline;">Issues</a>。</p>
+    <h1 data-i18n="home.h1">即用即走工具集</h1>
+    <p class="tool-desc" data-i18n-html="home.desc">轻量、瞬时的生产力工具，打开即用，用完即走。所有操作均在浏览器本地完成，极少情况下可能出现问题，请自行校验结果，如有问题请提交 <a href="https://github.com/stop666two/S-Jiffy/issues" target="_blank" style="color:var(--color-text-primary);text-decoration:underline;">Issues</a>。</p>
     <div class="section-tabs" id="sectionTabs" style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap;">
-      <button class="sec-tab active" data-section="all">全部工具</button>
-      <button class="sec-tab" data-section="history">历史记录 <span id="historyBadge" style="font-size:11px;color:var(--color-text-disabled);"></span></button>
-      <button class="sec-tab" data-section="popular">热门工具</button>
+      <button class="sec-tab active" data-section="all" data-i18n="home.sectionAll">全部工具</button>
+      <button class="sec-tab" data-section="history"><span data-i18n="home.sectionHistory">历史记录</span> <span id="historyBadge" style="font-size:11px;color:var(--color-text-disabled);"></span></button>
+      <button class="sec-tab" data-section="popular" data-i18n="home.sectionPopular">热门工具</button>
     </div>
     <div class="search-bar" id="searchBar" style="margin-bottom:var(--space-3);">
-      <input id="searchInput" class="input" type="text" placeholder="搜索工具名称、描述或分类..." style="height:40px;font-size:14px;">
+      <input id="searchInput" class="input" type="text" placeholder="搜索工具名称、描述或分类..." data-i18n-placeholder="home.searchPlaceholder" style="height:40px;font-size:14px;">
     </div>
     <div class="category-bar" id="categoryBar"></div>
     <div id="historyToolbar" style="display:none;margin-bottom:var(--space-3);padding:var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-md);align-items:center;gap:8px;flex-wrap:wrap;">
-      <button id="selectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;">全选</button>
-      <button id="deselectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;">反选</button>
-      <button id="deleteSelectedBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);">删除所选</button>
-      <button id="clearHistoryBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);">清空全部记录</button>
+      <button id="selectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="home.selectAll">全选</button>
+      <button id="deselectAllBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="home.deselectAll">反选</button>
+      <button id="deleteSelectedBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);" data-i18n="home.deleteSelected">删除所选</button>
+      <button id="clearHistoryBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;color:var(--color-error);border-color:var(--color-error);" data-i18n="home.clearHistory">清空全部记录</button>
       <span id="historySelectInfo" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-left:auto;"></span>
     </div>
     <div class="tool-grid" id="toolGrid"></div>
   </main>
   <footer class="global-footer">
-    <div>S-Jiffy · 保持简单</div>
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="home.footer">S-Jiffy · 保持简单</div>
   </footer>
 
   <script src="assets/js/global.js"></script>
+  <script src="assets/js/i18n.js"></script>
   <script>
     (function () {
       var categories = [
@@ -725,11 +727,33 @@
       var currentSection = 'all';
       var searchQuery = '';
 
+      function getToolBySlug(slug) {
+        var target = 'projects/' + slug + '/';
+        for (var i = 0; i < tools.length; i++) {
+          if (tools[i].link === target) return tools[i];
+        }
+        return null;
+      }
+
       function getToolByName(name) {
         for (var i = 0; i < tools.length; i++) {
           if (tools[i].name === name) return tools[i];
         }
         return null;
+      }
+
+      function localName(key, fallback) {
+        return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fallback;
+      }
+
+      function renderTpl(key, params, fallback) {
+        var s = localName(key, fallback);
+        for (var k in params) {
+          if (Object.prototype.hasOwnProperty.call(params, k)) {
+            s = s.split('{' + k + '}').join(params[k]);
+          }
+        }
+        return s;
       }
 
       function htmlEscape(str) {
@@ -741,7 +765,7 @@
       function getCurrentToolList() {
         if (currentSection === 'history') {
           var hist = getHistory(200);
-          return hist.map(function (t) { return getToolByName(t.name); }).filter(function (t) { return t; });
+          return hist.map(function (t) { return getToolBySlug(t.name) || getToolByName(t.name); }).filter(function (t) { return t; });
         }
         if (currentSection === 'popular') {
           var popNames = [
@@ -779,7 +803,7 @@
         var currentTools = getCurrentToolList();
         var allBtn = document.createElement('button');
         allBtn.className = 'cat-tag' + (activeCategory === null ? ' active' : '');
-        allBtn.textContent = '全部';
+        allBtn.textContent = localName('home.all', '全部');
         allBtn.addEventListener('click', function () { activeCategory = null; renderCategories(); renderTools(); });
         bar.appendChild(allBtn);
 
@@ -788,7 +812,7 @@
           if (count === 0) return;
           var btn = document.createElement('button');
           btn.className = 'cat-tag' + (activeCategory === cat ? ' active' : '');
-          btn.textContent = cat + ' ' + count;
+          btn.textContent = localName('home.cat.' + cat, cat) + ' ' + count;
           btn.addEventListener('click', function () {
             activeCategory = activeCategory === cat ? null : cat;
             renderCategories();
@@ -800,14 +824,16 @@
 
       function getSearchRelevance(tool, query) {
         var q = query.toLowerCase();
-        var name = tool.name.toLowerCase();
-        var desc = tool.desc.toLowerCase();
-        var cats = tool.cats.join(' ').toLowerCase();
+        var name = localName('home.tool.' + tool.link + '.name', tool.name).toLowerCase();
+        var desc = localName('home.tool.' + tool.link + '.desc', tool.desc).toLowerCase();
+        var cats = tool.cats.map(function (c) { return localName('home.cat.' + c, c); }).join(' ').toLowerCase();
+        var origName = tool.name.toLowerCase();
+        var origDesc = tool.desc.toLowerCase();
         var score = 0;
-        if (name === q) score += 100;
-        if (name.indexOf(q) === 0) score += 50;
-        if (name.indexOf(q) !== -1) score += 30;
-        if (desc.indexOf(q) !== -1) score += 15;
+        if (name === q || origName === q) score += 100;
+        if (name.indexOf(q) === 0 || origName.indexOf(q) === 0) score += 50;
+        if (name.indexOf(q) !== -1 || origName.indexOf(q) !== -1) score += 30;
+        if (desc.indexOf(q) !== -1 || origDesc.indexOf(q) !== -1) score += 15;
         if (cats.indexOf(q) !== -1) score += 10;
         return score;
       }
@@ -822,20 +848,23 @@
           list = list.filter(function (t) { return t && getSearchRelevance(t, searchQuery) > 0; });
           list.sort(function (a, b) { return getSearchRelevance(b, searchQuery) - getSearchRelevance(a, searchQuery); });
           if (list.length === 0) {
-            grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">未找到与 "<strong>' + htmlEscape(searchQuery) + '</strong>" 相关的工具。</p>';
+            grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">' + renderTpl('home.noResult', { q: '<strong>' + htmlEscape(searchQuery) + '</strong>' }, '未找到与 "{q}" 相关的工具。') + '</p>';
             return;
           }
         }
 
         if (currentSection !== 'all' && list.length === 0) {
-          grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">暂无数据，使用工具后会自动记录。</p>';
+          grid.innerHTML = '<p style="color:var(--color-text-disabled);padding:var(--space-4);">' + localName('home.noData', '暂无数据，使用工具后会自动记录。') + '</p>';
           return;
         }
 
         if (activeCategory) list = list.filter(function (t) { return t && t.cats.indexOf(activeCategory) !== -1; });
 
         if (!searchQuery && currentSection === 'all') {
-          list.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh-CN'); });
+          list.sort(function (a, b) {
+            var loc = window.I18N ? I18N.lang.slice(0, 2) : 'zh';
+            return localName('home.tool.' + a.link + '.name', a.name).localeCompare(localName('home.tool.' + b.link + '.name', b.name), loc);
+          });
         }
 
         var isHistory = (currentSection === 'history');
@@ -853,7 +882,7 @@
             var cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.className = 'history-cb';
-            cb.dataset.name = tool.name;
+            cb.dataset.slug = tool.link.slice('projects/'.length, -1);
             cb.style.marginTop = '16px';
             cb.style.flexShrink = '0';
             cb.addEventListener('change', updateHistoryInfo);
@@ -866,10 +895,11 @@
           link.style.flex = '1';
           link.style.minWidth = '0';
           var usage = getUsage();
-          var info = usage[tool.name];
-          var usageHtml = info ? '<span style="font-size:10px;color:var(--color-text-disabled);">使用 ' + info.count + ' 次</span>' : '';
-          var tagsHtml = tool.cats.map(function (c) { return '<span>#' + c + '</span>'; }).join('');
-          link.innerHTML = '<h2>' + tool.name + '</h2><p>' + tool.desc + '</p><div class="tags" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">' + tagsHtml + usageHtml + '</div>';
+          var slug = tool.link.slice('projects/'.length, -1);
+          var info = usage[slug] || usage[tool.name];
+          var usageHtml = info ? '<span style="font-size:10px;color:var(--color-text-disabled);">' + renderTpl('home.usedCount', { n: info.count }, '使用 ' + info.count + ' 次') + '</span>' : '';
+          var tagsHtml = tool.cats.map(function (c) { return '<span>#' + localName('home.cat.' + c, c) + '</span>'; }).join('');
+          link.innerHTML = '<h2>' + localName('home.tool.' + tool.link + '.name', tool.name) + '</h2><p>' + localName('home.tool.' + tool.link + '.desc', tool.desc) + '</p><div class="tags" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">' + tagsHtml + usageHtml + '</div>';
           card.appendChild(link);
           grid.appendChild(card);
         });
@@ -880,7 +910,7 @@
         var checked = 0;
         cbs.forEach(function (cb) { if (cb.checked) checked++; });
         var info = document.getElementById('historySelectInfo');
-        if (info) info.textContent = '已选 ' + checked + ' / ' + cbs.length;
+        if (info) info.textContent = renderTpl('home.selected', { n: checked, m: cbs.length }, '已选 ' + checked + ' / ' + cbs.length);
       }
 
       function setupHistoryToolbar() {
@@ -896,20 +926,20 @@
           var usage = getUsage();
           var count = 0;
           document.querySelectorAll('.history-cb').forEach(function (cb) {
-            if (cb.checked) { delete usage[cb.dataset.name]; count++; }
+            if (cb.checked) { delete usage[cb.dataset.slug]; count++; }
           });
-          if (count === 0) { setStatus('请先选择要删除的记录', 'error'); return; }
+          if (count === 0) { setStatus(localName('home.selectFirst', '请先选择要删除的记录'), 'error'); return; }
           saveUsage(usage);
-          setStatus('已删除 ' + count + ' 条记录');
+          setStatus(renderTpl('home.deletedCount', { n: count }, '已删除 ' + count + ' 条记录'));
           updateBadge();
           renderCategories();
           renderTools();
         });
         document.getElementById('clearHistoryBtn').addEventListener('click', function () {
-          showConfirm('确定要清空全部历史记录吗？', function (ok) {
+          showConfirm(localName('home.confirmClear', '确定要清空全部历史记录吗？'), function (ok) {
           if (!ok) return;
           savePreference('usage', {});
-          setStatus('已清空全部历史记录');
+          setStatus(localName('home.cleared', '已清空全部历史记录'));
           updateBadge();
           renderCategories();
           renderTools();

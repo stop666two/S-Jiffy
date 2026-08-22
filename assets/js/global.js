@@ -3,6 +3,11 @@ function htmlEscape(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+/* ---- i18n 取词（i18n.js 未加载时回退中文，兼容未改造页面） ---- */
+function t(key, fallback) {
+  return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fallback;
+}
+
 /* ---- Modal / Dialog ---- */
 var modalEl = null;
 function getModal() {
@@ -22,7 +27,7 @@ function showPrompt(title, placeholder, defaultValue, callback) {
   var m = getModal();
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = '<input class="modal-input" id="modalInput" type="text" placeholder="' + htmlEscape(placeholder || '') + '" value="' + htmlEscape(defaultValue || '') + '">';
-  document.getElementById('modalActions').innerHTML = '<button class="btn btn-secondary" id="modalCancel">取消</button><button class="btn btn-primary" id="modalOk">确定</button>';
+  document.getElementById('modalActions').innerHTML = '<button class="btn btn-secondary" id="modalCancel">' + t('common.cancel', '取消') + '</button><button class="btn btn-primary" id="modalOk">' + t('common.ok', '确定') + '</button>';
   m.classList.add('open');
   var input = document.getElementById('modalInput');
   input.focus();
@@ -37,7 +42,7 @@ function showAlert(message) {
   var m = getModal();
   document.getElementById('modalTitle').textContent = '';
   document.getElementById('modalBody').innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);line-height:1.5">' + htmlEscape(message) + '</p>';
-  document.getElementById('modalActions').innerHTML = '<button class="btn btn-primary" id="modalOk">确定</button>';
+  document.getElementById('modalActions').innerHTML = '<button class="btn btn-primary" id="modalOk">' + t('common.ok', '确定') + '</button>';
   m.classList.add('open');
   document.getElementById('modalOk').onclick = function () { m.classList.remove('open'); };
   document.getElementById('modalOk').focus();
@@ -47,7 +52,7 @@ function showConfirm(message, callback) {
   var m = getModal();
   document.getElementById('modalTitle').textContent = '';
   document.getElementById('modalBody').innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);line-height:1.5">' + htmlEscape(message) + '</p>';
-  document.getElementById('modalActions').innerHTML = '<button class="btn btn-secondary" id="modalCancel">取消</button><button class="btn btn-primary" id="modalOk">确定</button>';
+  document.getElementById('modalActions').innerHTML = '<button class="btn btn-secondary" id="modalCancel">' + t('common.cancel', '取消') + '</button><button class="btn btn-primary" id="modalOk">' + t('common.ok', '确定') + '</button>';
   m.classList.add('open');
   function cleanup() { m.classList.remove('open'); }
   document.getElementById('modalCancel').onclick = function () { cleanup(); callback(false); };
@@ -62,14 +67,14 @@ function isSecureContext() {
 function copyToClipboard(text, buttonEl) {
   navigator.clipboard.writeText(text).then(() => {
     var originalText = buttonEl.textContent;
-    buttonEl.textContent = '已复制';
+    buttonEl.textContent = t('common.copied', '已复制');
     buttonEl.disabled = true;
     setTimeout(() => {
       buttonEl.textContent = originalText;
       buttonEl.disabled = false;
     }, 2000);
   }).catch(() => {
-    setStatus('复制失败', 'error');
+    setStatus(t('common.copyFailed', '复制失败'), 'error');
   });
 }
 
@@ -134,12 +139,13 @@ function getHistoryCount() {
   return Object.keys(usage).length;
 }
 
-/* ---- Auto-record tool visit on tool pages ---- */
+/* ---- Auto-record tool visit on tool pages (slug-based, survives i18n) ---- */
 document.addEventListener('DOMContentLoaded', function () {
   var h1 = document.querySelector('.tool-workspace h1');
   var path = window.location.pathname;
-  if (h1 && path.indexOf('/projects/') !== -1) {
-    recordUse(h1.textContent.trim());
+  if (path.indexOf('/projects/') !== -1) {
+    var m = path.match(/\/([^/]+)\/index\.html$/);
+    recordUse(m ? m[1] : (h1 ? h1.textContent.trim() : ''));
   }
   var focusInput = document.querySelector('.js-focus-input');
   if (focusInput) focusInput.focus();

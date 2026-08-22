@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>答案之书 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ask-wrap { text-align: center; padding: var(--space-2) 0 var(--space-1); }
+    .ask-mark { font-size: var(--font-size-lg); font-weight: 600; letter-spacing: 2px; margin-bottom: var(--space-1); }
+    .ask-hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+    .find-btn { height: 56px; padding: 0 40px; font-size: var(--font-size-base); border-radius: 9999px; }
+    .book-stage { position: relative; min-height: 220px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .book-cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); transition: opacity 0.25s; }
+    .book-cover.fade { opacity: 0; }
+    .book-title { font-size: var(--font-size-lg); font-weight: 600; letter-spacing: 6px; }
+    .book-sub { font-size: var(--font-size-xs); color: var(--color-text-disabled); letter-spacing: 3px; }
+    .answer-box { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: var(--space-3); }
+    .answer-txt { font-size: 34px; font-weight: 600; line-height: 1.4; text-align: center; letter-spacing: 2px; animation: answerIn 0.45s ease both; }
+    .answer-txt.hide { animation: none; opacity: 0; }
+    @keyframes answerIn {
+      0% { opacity: 0; transform: scale(0.86) translateY(8px); }
+      70% { opacity: 1; transform: scale(1.03) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .draw-count { text-align: center; font-size: var(--font-size-xs); color: var(--color-text-disabled); margin-top: var(--space-2); min-height: 18px; }
+    .note-line { font-size: var(--font-size-xs); color: var(--color-text-disabled); text-align: center; margin-top: var(--space-2); }
+    .rule-list { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 2; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>答案之书</h1>
+    <p class="tool-desc">心中默念一个问题，翻开书页，得到一个提示性的答案。</p>
+    <div class="card">
+      <div class="ask-wrap">
+        <div class="ask-mark">？</div>
+        <p class="ask-hint">先在心中默念你的问题，问题越具体，答案越有启发</p>
+        <button id="findBtn" class="btn btn-primary find-btn">查找答案</button>
+      </div>
+      <div class="book-stage" id="bookStage">
+        <div class="book-cover" id="bookCover">
+          <div class="book-title">答案之书</div>
+          <div class="book-sub">THE ANSWER BOOK</div>
+        </div>
+        <div class="answer-box">
+          <div class="answer-txt hide" id="answerTxt"></div>
+        </div>
+      </div>
+      <div class="draw-count" id="drawCount"></div>
+    </div>
+    <div class="card">
+      <p class="rule-list">使用方式：</p>
+      <p class="rule-list">1. 闭上眼，在心里默念一个困扰你的问题。</p>
+      <p class="rule-list">2. 点击「查找答案」，书页会随机翻开一页。</p>
+      <p class="rule-list">3. 读完答案后，可以再次抽取，换一个问题再问。</p>
+      <p class="rule-list">4. 同一问题反复出现时，也许答案已经很明显。</p>
+    </div>
+    <div class="card">
+      <p class="note-line">答案之书属于娱乐参考，不能替代专业判断，重大决定请自行负责。</p>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var ANSWERS = [
+        '保持坚定', '情况不明', '相信你的第一感觉', '数到十；再问', '值得一试', '放下执念', '答案在行动里',
+        '不必着急', '顺从你的心', '现在不是时候', '大胆去做', '时机已到', '暂且搁置', '再等片刻',
+        '问问身边的人', '它会变好', '保持耐心', '你已经准备好', '别犹豫', '退一步看', '跟着直觉走',
+        '该放手的时刻', '一切都会过去', '坚持下去', '换个角度想', '是的，现在', '不，现在还不行',
+        '风险不大', '值得等待', '相信过程', '向前迈一步', '收起冲动', '倾听内心', '别回头',
+        '答案显而易见', '慢慢来', '再想一想', '先静一静', '机会正在靠近', '果断决定', '不要勉强',
+        '顺其自然', '值得冒险', '再试一次', '保持冷静', '相信直觉', '时机未到', '放手去做',
+        '静观其变', '前路渐明', '有人会帮你', '别怕犯错', '做好准备了吗', '谨慎行事', '心之所向',
+        '现在别动', '明天再说', '这正是时候', '放弃亦可', '继续就好', '答案在风里', '不必过分担忧',
+        '走自己的路', '先照顾好自己', '勇敢一点', '是的', '不', '也许', '再等等', '就现在',
+        '告诉自己：可以', '别想太多', '轻装上阵', '目标在望', '换个方式', '记住初衷', '沉默是金',
+        '值得庆祝', '小声说：可以', '需要更多信息', '看看自己的手', '别急着下结论', '这条路可行',
+        '关上一扇门，开一扇窗', '今日宜行动', '听听长辈怎么说', '新的开始', '旧事已了', '值得深究',
+        '到此为止', '抬头看路', '保持微笑', '答案近在眼前', '选简单的那条', '选困难的那条', '先休息一下',
+        '感谢这一刻', '别比较', '学会说不', '学会说好', '随它去', '认真对待', '梦想值得追', '现实一点',
+        '放开手试试', '先做再说', '先问为什么', '现在是最好的时候', '黑暗后有光', '慢慢接近了', '检查细节',
+        '大局为重', '别错过', '别有负担', '水到渠成', '时来运转', '再接再厉', '从心出发', '向远处看',
+        '回到原点', '诚意足够', '再诚一点', '命运站在你这边', '保守为上', '大胆创新', '观察再行动',
+        '是时候改变了', '坚持原计划', '今天宜安静', '今天宜出门', '答案在你心里', '别被表象迷惑', '相信同伴',
+        '独自前行', '学习新知', '温故知新', '放下手机', '好好吃饭', '好好睡觉', '慢慢来比较快',
+        '那不重要', '这个很重要', '别太当真', '认真起来', '三分靠运气', '七分靠努力', '方向对了', '调整方向',
+        '轻舟已过，前路平缓', '别让恐惧做主', '勇气是答案', '再翻一页', '好事多磨', '尘埃未定', '尚未可知',
+        '保持开放', '准备行动', '那就去做吧', '那就放下吧', '相信你值得', '给时间一点时间', '答案自会浮现',
+        '风向已变', '顺水行舟', '逆水行舟', '稳步前进', '别再问下去', '问得越多越清晰', '今天不适合',
+        '明天更合适', '你已经尽力', '还需加把劲', '有人在乎', '别忽视细节', '靠别人不如靠自己', '路是自己走的',
+        '关灯睡觉', '醒来再说', '一念放下', '万般自在', '得失随缘', '心静自然明', '一切如常', '一切不同了',
+        '那是好消息', '别过度解读', '简单点', '相信时间', '答案不在远方', '专注当下', '别分心', '稳住节奏',
+        '记住微笑', '温柔以待', '重新出发', '未完待续', '就到这里', '你心里有数', '听从自己', '愿你心想事成'
+      ];
+      var stage = document.getElementById('bookStage');
+      var cover = document.getElementById('bookCover');
+      var txt = document.getElementById('answerTxt');
+      var drawCount = document.getElementById('drawCount');
+      var count = 0;
+      var lastIdx = -1;
+      var timer = null;
+
+      function pickAnswer() {
+        var idx = Math.floor(Math.random() * ANSWERS.length);
+        if (ANSWERS.length > 1 && idx === lastIdx) {
+          idx = (idx + 1) % ANSWERS.length;
+        }
+        lastIdx = idx;
+        return ANSWERS[idx];
+      }
+
+      function draw() {
+        clearTimeout(timer);
+        txt.className = 'answer-txt hide';
+        txt.textContent = '';
+        cover.classList.remove('fade');
+        setTimeout(function () {
+          cover.classList.add('fade');
+          txt.textContent = pickAnswer();
+          txt.className = 'answer-txt';
+          count += 1;
+          drawCount.textContent = '已翻开 ' + count + ' 页';
+          setStatus('答案已给出，用心体会');
+        }, 200);
+      }
+
+      document.getElementById('findBtn').addEventListener('click', function () {
+        draw();
+      });
+
+      drawCount.textContent = '翻开书页，开启一次问答';
+    })();
+  </script>
+</body>
+</html>

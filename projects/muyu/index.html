@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电子木鱼 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .zen-card { background: #141519; border-color: #2a2c31; }
+    .muyu-stage { position: relative; width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: var(--radius-md); background: radial-gradient(ellipse at 50% 30%, #1c1e23 0%, #0e0f11 78%); }
+    .muyu { position: relative; width: 190px; height: 158px; border: none; cursor: pointer; background: radial-gradient(ellipse at 50% 22%, #c98a4b 0%, #9a6230 45%, #6e4218 100%); border-radius: 52% 52% 46% 46%; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55), inset 0 4px 10px rgba(255, 220, 170, 0.35); transition: transform 0.12s; outline: none; }
+    .muyu:hover { filter: brightness(1.06); }
+    .muyu:active { transform: scale(0.94); }
+    .muyu.strike { transform: scale(0.93); }
+    .muyu-slot { position: absolute; left: 14%; right: 14%; top: 50%; height: 11px; transform: translateY(-50%); background: #4a2c10; border-radius: 50%; box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.7); }
+    .muyu-glow { position: absolute; left: 18%; right: 18%; top: 8%; height: 22%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 226, 180, 0.4), rgba(255, 226, 180, 0)); pointer-events: none; }
+    .hit-ring { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border: 2px solid rgba(201, 168, 106, 0.8); border-radius: 50%; opacity: 0; pointer-events: none; }
+    .hit-ring.ring { animation: ringOut 0.5s ease-out forwards; }
+    @keyframes ringOut {
+      0% { opacity: 0.9; transform: scale(0.6); }
+      100% { opacity: 0; transform: scale(3.2); }
+    }
+    .float-txt { position: absolute; left: 50%; bottom: 34%; font-size: 20px; font-weight: 600; color: #e8c987; letter-spacing: 1px; white-space: nowrap; pointer-events: none; animation: floatUp 0.95s ease-out forwards; }
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translate(-50%, 8px) scale(0.8); }
+      18% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -96px) scale(1.06); }
+    }
+    .count-line { text-align: center; font-size: var(--font-size-lg); font-weight: 600; color: #e8dcc0; margin-top: var(--space-2); }
+    .count-sub { text-align: center; font-size: var(--font-size-xs); color: #7a7366; margin-top: 4px; }
+    .wish-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
+    .wish-btn { height: 36px; min-width: 0; padding: 0 14px; font-size: 13px; border-color: #3a3d44; color: #d8cdb4; background: transparent; }
+    .wish-btn:hover { border-color: #c9a86a; }
+    .wish-btn.on { border-color: #c9a86a; background: rgba(201, 168, 106, 0.18); color: #e8dcc0; }
+    .custom-row { display: flex; gap: 8px; align-items: center; margin-top: var(--space-2); }
+    .custom-row .input { height: 38px; width: 200px; font-size: 13px; background: #1b1d21; border-color: #3a3d44; color: #e8dcc0; }
+    .custom-row .input:focus { border-color: #c9a86a; }
+    .custom-row.hidden { display: none; }
+    .ctl-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
+    .ctl-btn { height: 36px; min-width: 0; padding: 0 14px; font-size: 13px; border-color: #3a3d44; color: #d8cdb4; background: transparent; }
+    .ctl-btn:hover { border-color: #c9a86a; }
+    .ctl-btn.on { border-color: #c9a86a; background: rgba(201, 168, 106, 0.18); color: #e8dcc0; }
+    .zen-note { font-size: var(--font-size-xs); color: #7a7366; margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>电子木鱼</h1>
+    <p class="tool-desc">点击木鱼或按下空格键，敲一敲，攒一攒，心烦的时候给自己一点仪式感。</p>
+    <div class="card zen-card">
+      <div class="muyu-stage" id="muyuStage">
+        <button class="muyu" id="muyuBtn" aria-label="敲击木鱼">
+          <span class="muyu-glow"></span>
+          <span class="muyu-slot"></span>
+        </button>
+        <span class="hit-ring" id="hitRing"></span>
+      </div>
+      <div class="count-line" id="countLine">累计功德 0</div>
+      <div class="count-sub" id="countSub">今日敲一敲，烦恼少一少</div>
+      <div class="wish-row" id="wishRow">
+        <button class="btn wish-btn on" data-wish="功德+1">功德+1</button>
+        <button class="btn wish-btn" data-wish="涨工资">涨工资</button>
+        <button class="btn wish-btn" data-wish="佛祖保佑">佛祖保佑</button>
+        <button class="btn wish-btn" data-wish="考试必过">考试必过</button>
+        <button class="btn wish-btn" data-wish="__custom__">自定义</button>
+      </div>
+      <div class="custom-row hidden" id="customRow">
+        <input id="customInput" class="input" type="text" maxlength="10" placeholder="输入心愿（10 字以内）">
+      </div>
+      <div class="ctl-row">
+        <button id="soundBtn" class="btn ctl-btn on">声音：开</button>
+        <button id="autoBtn" class="btn ctl-btn">自动敲击：关</button>
+        <button id="fullBtn" class="btn ctl-btn">全屏</button>
+        <button id="clearBtn" class="btn ctl-btn">清零计数</button>
+      </div>
+      <p class="zen-note">木鱼声由浏览器实时合成，无需音频文件；自动敲击会以随机间隔进行。计数保存在本机浏览器中，仅作娱乐记录。</p>
+    </div>
+    <div class="card">
+      <p style="font-size:var(--font-size-xs);color:var(--color-text-disabled)">本工具为减压娱乐用途，与任何宗教团体无关；遇到真正的烦恼，请及时向家人朋友或专业人士求助。</p>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var WISHES = { '功德+1': '功德+1', '涨工资': '涨工资', '佛祖保佑': '佛祖保佑', '考试必过': '考试必过' };
+      var muyuBtn = document.getElementById('muyuBtn');
+      var stage = document.getElementById('muyuStage');
+      var ring = document.getElementById('hitRing');
+      var countLine = document.getElementById('countLine');
+      var customRow = document.getElementById('customRow');
+      var customInput = document.getElementById('customInput');
+      var soundBtn = document.getElementById('soundBtn');
+      var autoBtn = document.getElementById('autoBtn');
+      var fullBtn = document.getElementById('fullBtn');
+      var count = loadPreference('muyuCount', 0);
+      var wishKey = loadPreference('muyuWish', '功德+1');
+      var customText = loadPreference('muyuCustom', '');
+      var soundOn = loadPreference('muyuSound', true);
+      var autoOn = loadPreference('muyuAuto', false);
+      var audioCtx = null;
+      var autoTimer = null;
+      var d = document;
+
+      function currentWish() {
+        if (wishKey === '__custom__') {
+          var v = customInput.value.replace(/^\s+|\s+$/g, '');
+          return v ? v : '功德+1';
+        }
+        return WISHES[wishKey] || '功德+1';
+      }
+
+      function updateCount() {
+        countLine.textContent = '累计功德 ' + count;
+      }
+
+      function playHit() {
+        if (!soundOn) return;
+        try {
+          if (!audioCtx) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            audioCtx = new AC();
+          }
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          var t0 = audioCtx.currentTime;
+          var o1 = audioCtx.createOscillator();
+          var g1 = audioCtx.createGain();
+          o1.type = 'sine';
+          o1.frequency.setValueAtTime(760, t0);
+          o1.frequency.exponentialRampToValueAtTime(300, t0 + 0.08);
+          g1.gain.setValueAtTime(0.5, t0);
+          g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.12);
+          o1.connect(g1);
+          g1.connect(audioCtx.destination);
+          o1.start(t0);
+          o1.stop(t0 + 0.13);
+          var o2 = audioCtx.createOscillator();
+          var g2 = audioCtx.createGain();
+          o2.type = 'triangle';
+          o2.frequency.setValueAtTime(1520, t0);
+          o2.frequency.exponentialRampToValueAtTime(600, t0 + 0.06);
+          g2.gain.setValueAtTime(0.16, t0);
+          g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+          o2.connect(g2);
+          g2.connect(audioCtx.destination);
+          o2.start(t0);
+          o2.stop(t0 + 0.1);
+        } catch (e) {}
+      }
+
+      function floatText() {
+        var el = document.createElement('span');
+        el.className = 'float-txt';
+        el.textContent = currentWish() + ' +1';
+        el.style.left = '50%';
+        el.style.marginLeft = (Math.random() * 60 - 30) + 'px';
+        stage.appendChild(el);
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 1000);
+      }
+
+      function strike() {
+        count += 1;
+        savePreference('muyuCount', count);
+        updateCount();
+        playHit();
+        floatText();
+        muyuBtn.classList.add('strike');
+        ring.classList.remove('ring');
+        void ring.offsetWidth;
+        ring.classList.add('ring');
+        setTimeout(function () {
+          muyuBtn.classList.remove('strike');
+        }, 120);
+      }
+
+      function scheduleAuto() {
+        if (!autoOn) return;
+        autoTimer = setTimeout(function () {
+          strike();
+          scheduleAuto();
+        }, 400 + Math.random() * 1200);
+      }
+
+      function setAuto(on) {
+        autoOn = on;
+        savePreference('muyuAuto', on);
+        autoBtn.textContent = '自动敲击：' + (on ? '开' : '关');
+        autoBtn.className = 'btn ctl-btn' + (on ? ' on' : '');
+        clearTimeout(autoTimer);
+        if (on) scheduleAuto();
+      }
+
+      muyuBtn.addEventListener('click', strike);
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === ' ' || e.key === 'Spacebar') {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (e.target === muyuBtn) return;
+          e.preventDefault();
+          strike();
+        }
+      });
+
+      var wishBtns = document.querySelectorAll('.wish-btn');
+      function syncWishUI() {
+        for (var i = 0; i < wishBtns.length; i++) {
+          var w = wishBtns[i].getAttribute('data-wish');
+          wishBtns[i].className = 'btn wish-btn' + (w === wishKey ? ' on' : '');
+        }
+        customRow.className = 'custom-row' + (wishKey === '__custom__' ? '' : ' hidden');
+        if (wishKey === '__custom__') customInput.value = customText;
+      }
+      for (var i = 0; i < wishBtns.length; i++) {
+        wishBtns[i].addEventListener('click', function () {
+          wishKey = this.getAttribute('data-wish');
+          savePreference('muyuWish', wishKey);
+          syncWishUI();
+          if (wishKey === '__custom__') customInput.focus();
+        });
+      }
+      customInput.addEventListener('input', function () {
+        customText = customInput.value;
+        savePreference('muyuCustom', customText);
+      });
+
+      soundBtn.addEventListener('click', function () {
+        soundOn = !soundOn;
+        savePreference('muyuSound', soundOn);
+        soundBtn.textContent = '声音：' + (soundOn ? '开' : '关');
+        soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
+        if (soundOn) playHit();
+      });
+
+      autoBtn.addEventListener('click', function () {
+        setAuto(!autoOn);
+      });
+
+      fullBtn.addEventListener('click', function () {
+        if (d.fullscreenElement || d.webkitFullscreenElement) {
+          if (d.exitFullscreen) d.exitFullscreen();
+          else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
+        } else {
+          var el = d.documentElement;
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+      });
+
+      function syncFullLabel() {
+        fullBtn.textContent = (d.fullscreenElement || d.webkitFullscreenElement) ? '退出全屏' : '全屏';
+      }
+      d.addEventListener('fullscreenchange', syncFullLabel);
+      d.addEventListener('webkitfullscreenchange', syncFullLabel);
+
+      clearBtn.addEventListener('click', function () {
+        showConfirm('确定要清零累计功德吗？清零后无法恢复。', function (ok) {
+          if (ok) {
+            count = 0;
+            savePreference('muyuCount', 0);
+            updateCount();
+            setStatus('计数已清零');
+          }
+        });
+      });
+
+      updateCount();
+      syncWishUI();
+      soundBtn.textContent = '声音：' + (soundOn ? '开' : '关');
+      soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
+      setAuto(autoOn);
+      syncFullLabel();
+    })();
+  </script>
+</body>
+</html>

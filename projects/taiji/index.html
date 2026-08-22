@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>旋转太极图 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .zen-card { background: #121316; border-color: #2a2c31; }
+    .stage { position: relative; width: 100%; height: 420px; border-radius: var(--radius-md); overflow: hidden; background: #0d0e10; cursor: crosshair; }
+    @media (max-width: 640px) { .stage { height: 300px; } }
+    .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .zen-line { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); font-size: var(--font-size-xs); color: #6b6252; letter-spacing: 6px; pointer-events: none; white-space: nowrap; }
+    .ctl-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); }
+    .ctl-group { display: flex; flex-direction: column; gap: 4px; }
+    .ctl-group label { font-size: var(--font-size-xs); color: #8b8b93; }
+    .speed-row { display: flex; align-items: center; gap: 10px; }
+    .speed-row input[type=range] { width: 180px; accent-color: #c9a86a; }
+    .speed-val { font-size: var(--font-size-sm); color: #d8cdb4; min-width: 120px; }
+    .zen-btn { height: 40px; min-width: 0; padding: 0 16px; font-size: 13px; border-color: #3a3d44; color: #d8cdb4; background: transparent; }
+    .zen-btn:hover { border-color: #c9a86a; background: rgba(201, 168, 106, 0.08); }
+    .zen-btn.on { border-color: #c9a86a; background: rgba(201, 168, 106, 0.18); color: #e8dcc0; }
+    .zen-note { font-size: var(--font-size-xs); color: #6b6252; margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>旋转太极图</h1>
+    <p class="tool-desc">阴阳流转，动静随心；深色禅意画布上，让太极缓缓旋转，金色粒子随鼠标游走。</p>
+    <div class="card zen-card">
+      <div class="stage" id="stage">
+        <canvas id="taijiCanvas" role="img" aria-label="旋转的太极图"></canvas>
+        <div class="zen-line">阴阳相生 · 动静互见</div>
+      </div>
+      <div class="ctl-row">
+        <div class="ctl-group">
+          <label>转速</label>
+          <div class="speed-row">
+            <input type="range" id="speedSlider" min="0" max="10" step="0.1" value="2">
+            <span class="speed-val" id="speedVal">2 转/秒</span>
+          </div>
+        </div>
+        <button id="dirBtn" class="btn zen-btn">方向：顺时针</button>
+        <button id="autoBtn" class="btn zen-btn">自动变速：关</button>
+      </div>
+      <p class="zen-note">滑动调节旋转速度，可切换方向，开启自动变速后转速会在 0 与设定值之间来回变化。移动鼠标，金色微粒随之飘散。</p>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var canvas = document.getElementById('taijiCanvas');
+      var ctx = canvas.getContext('2d');
+      var stage = document.getElementById('stage');
+      var speedSlider = document.getElementById('speedSlider');
+      var speedVal = document.getElementById('speedVal');
+      var dirBtn = document.getElementById('dirBtn');
+      var autoBtn = document.getElementById('autoBtn');
+      var YANG = '#f2efe6';
+      var YIN = '#191a1e';
+      var RING = 'rgba(201,168,106,0.4)';
+      var GOLD = '201,168,106';
+      var angle = 0;
+      var dir = 1;
+      var auto = false;
+      var autoPhase = 0;
+      var particles = [];
+      var lastT = 0;
+      var lastPX = -1;
+      var lastPY = -1;
+      var maxParticles = 150;
+
+      function resizeCanvas() {
+        var w = stage.clientWidth;
+        var h = stage.clientHeight;
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.floor(w * dpr));
+        canvas.height = Math.max(1, Math.floor(h * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function drawTaiji() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var cx = stage.clientWidth / 2;
+        var cy = stage.clientHeight / 2;
+        var R = Math.min(stage.clientWidth, stage.clientHeight) * 0.42;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.arc(0, 0, R, 0, Math.PI * 2);
+        ctx.fillStyle = YIN;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, 0, R, -Math.PI / 2, Math.PI / 2);
+        ctx.closePath();
+        ctx.fillStyle = YANG;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -R / 2, R / 2, 0, Math.PI * 2);
+        ctx.fillStyle = YANG;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, R / 2, R / 2, 0, Math.PI * 2);
+        ctx.fillStyle = YIN;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -R / 2, R / 10, 0, Math.PI * 2);
+        ctx.fillStyle = YIN;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, R / 2, R / 10, 0, Math.PI * 2);
+        ctx.fillStyle = YANG;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, 0, R + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = RING;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function spawnParticles(x, y) {
+        for (var i = 0; i < 2; i++) {
+          if (particles.length >= maxParticles) particles.shift();
+          particles.push({
+            x: x + (Math.random() - 0.5) * 6,
+            y: y + (Math.random() - 0.5) * 6,
+            vx: (Math.random() - 0.5) * 24,
+            vy: -18 - Math.random() * 26,
+            life: 0,
+            ttl: 0.7 + Math.random() * 0.6,
+            size: 1 + Math.random() * 1.6
+          });
+        }
+      }
+
+      function updateParticles(dt) {
+        for (var i = particles.length - 1; i >= 0; i--) {
+          var p = particles[i];
+          p.life += dt;
+          if (p.life >= p.ttl) {
+            particles.splice(i, 1);
+            continue;
+          }
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy -= 14 * dt;
+          var a = 1 - p.life / p.ttl;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + GOLD + ',' + (0.85 * a).toFixed(3) + ')';
+          ctx.fill();
+        }
+      }
+
+      function frame(t) {
+        if (!lastT) lastT = t;
+        var dt = Math.min(0.05, (t - lastT) / 1000);
+        lastT = t;
+        var base = parseFloat(speedSlider.value) || 0;
+        var eff = base;
+        if (auto) {
+          autoPhase += dt * 0.6;
+          eff = base * (0.5 + 0.5 * Math.sin(autoPhase));
+          speedVal.textContent = base.toFixed(1) + ' 转/秒 · 自动';
+        } else {
+          speedVal.textContent = base.toFixed(1) + ' 转/秒';
+        }
+        angle += dir * eff * Math.PI * 2 * dt;
+        drawTaiji();
+        updateParticles(dt);
+        requestAnimationFrame(frame);
+      }
+
+      function onPointer(e) {
+        var rect = canvas.getBoundingClientRect();
+        var px = e.clientX - rect.left;
+        var py = e.clientY - rect.top;
+        if (Math.abs(px - lastPX) < 3 && Math.abs(py - lastPY) < 3) return;
+        lastPX = px;
+        lastPY = py;
+        spawnParticles(px, py);
+      }
+
+      stage.addEventListener('mousemove', onPointer);
+      stage.addEventListener('touchmove', function (e) {
+        if (e.touches && e.touches.length > 0) {
+          onPointer({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+        }
+      }, { passive: true });
+
+      speedSlider.addEventListener('input', function () {
+        if (!auto) speedVal.textContent = (parseFloat(speedSlider.value) || 0).toFixed(1) + ' 转/秒';
+      });
+
+      dirBtn.addEventListener('click', function () {
+        dir = -dir;
+        dirBtn.textContent = '方向：' + (dir === 1 ? '顺时针' : '逆时针');
+        setStatus('旋转方向已切换');
+      });
+
+      autoBtn.addEventListener('click', function () {
+        auto = !auto;
+        autoBtn.textContent = '自动变速：' + (auto ? '开' : '关');
+        autoBtn.className = 'btn zen-btn' + (auto ? ' on' : '');
+        setStatus(auto ? '已开启自动变速' : '已关闭自动变速');
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

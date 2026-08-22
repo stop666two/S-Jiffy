@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周易六十四卦 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .search-row { display: flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .search-row .input { flex: 1; min-width: 200px; height: 44px; }
+    .search-row .count-note { font-size: var(--font-size-xs); color: var(--color-text-disabled); white-space: nowrap; }
+    .preview-strip { min-height: 40px; padding: var(--space-1) var(--space-2); background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-3); display: flex; align-items: center; }
+    .preview-strip .pv-name { color: var(--color-text-primary); font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .gua-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+    .gua-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2) 8px; cursor: pointer; background: var(--color-bg); transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s; }
+    .gua-card:hover { border-color: var(--color-text-primary); box-shadow: var(--shadow-focus); }
+    .gua-card:active { transform: scale(0.97); }
+    .gua-card.hidden { display: none; }
+    .yao { height: 5px; margin: 2.5px 0; position: relative; }
+    .yao .seg { position: absolute; top: 0; bottom: 0; width: 40%; border-radius: 1px; background: var(--color-text-primary); }
+    .yao .seg.l { left: 0; }
+    .yao .seg.r { right: 0; }
+    .yao.yang .seg { width: 100%; right: auto; }
+    .card-yao { width: 46px; margin: 0 auto; }
+    .gua-name { margin-top: 6px; font-size: 13px; font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .detail-panel { display: none; }
+    .detail-panel.show { display: block; }
+    .detail-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    .detail-yao { width: 72px; }
+    .detail-yao .yao { height: 8px; margin: 4px 0; }
+    .detail-title { font-size: var(--font-size-lg); font-weight: 600; }
+    .detail-sub { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 2px; }
+    .detail-body { margin-top: var(--space-3); }
+    .detail-line { font-size: var(--font-size-sm); line-height: 1.8; color: var(--color-text-secondary); }
+    .detail-line .dl-label { color: var(--color-text-primary); font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .detail-line p { display: inline; }
+    .detail-note { margin-top: var(--space-2); }
+    .close-row { margin-top: var(--space-3); display: flex; justify-content: flex-end; }
+    .close-row .btn { height: 38px; min-width: 0; padding: 0 18px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>周易六十四卦</h1>
+    <p class="tool-desc">六十四卦速查：卦象、卦辞与简注，悬停卡片预览卦辞，点击查看详情。</p>
+    <div class="card">
+      <div class="search-row">
+        <input id="searchInput" class="input" type="text" placeholder="输入卦名搜索，如：乾、屯、既济">
+        <span class="count-note" id="countNote">共 64 卦</span>
+      </div>
+      <div class="preview-strip" id="previewStrip">悬停任意卦卡，此处预览卦辞</div>
+    </div>
+    <div class="card detail-panel" id="detailPanel">
+      <div class="detail-head">
+        <div class="detail-yao" id="detailYao"></div>
+        <div>
+          <div class="detail-title" id="detailName"></div>
+          <div class="detail-sub" id="detailSub"></div>
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="detail-line"><span class="dl-label">卦辞</span><p id="detailGuaci"></p></div>
+        <div class="detail-line detail-note"><span class="dl-label">简注</span><p id="detailNote"></p></div>
+      </div>
+      <div class="close-row"><button id="detailClose" class="btn btn-secondary">收起详情</button></div>
+    </div>
+    <div class="card">
+      <div class="gua-grid" id="guaGrid"></div>
+    </div>
+    <div class="card">
+      <p style="font-size:var(--font-size-xs);color:var(--color-text-disabled)">卦辞为《周易》原文，简注为便于理解的通俗提示，仅供传统文化爱好者研读参考。</p>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var GUA = [
+        { n: '乾为天', l: '111111', g: '元亨利贞。', j: '刚健不息，自强自立之象' },
+        { n: '坤为地', l: '000000', g: '元亨，利牝马之贞。君子有攸往，先迷后得主，利西南得朋，东北丧朋。安贞吉。', j: '厚德载物，柔顺包容之象' },
+        { n: '水雷屯', l: '100010', g: '元亨利贞。勿用有攸往，利建侯。', j: '万物初生，艰难中孕育希望' },
+        { n: '山水蒙', l: '010001', g: '亨。匪我求童蒙，童蒙求我。初筮告，再三渎，渎则不告。利贞。', j: '蒙昧初开，求学启蒙之时' },
+        { n: '水天需', l: '111010', g: '有孚，光亨，贞吉。利涉大川。', j: '等待时机，积蓄力量' },
+        { n: '天水讼', l: '010111', g: '有孚窒惕，中吉，终凶。利见大人，不利涉大川。', j: '争执之象，慎言戒斗' },
+        { n: '地水师', l: '010000', g: '贞，丈人吉，无咎。', j: '兴师动众，须有统帅' },
+        { n: '水地比', l: '000010', g: '吉。原筮，元永贞，无咎。不宁方来，后夫凶。', j: '相亲相辅，团结归附' },
+        { n: '风天小畜', l: '111011', g: '亨。密云不雨，自我西郊。', j: '小有积蓄，蓄势待发' },
+        { n: '天泽履', l: '110111', g: '履虎尾，不咥人，亨。', j: '如履虎尾，谨慎前行' },
+        { n: '地天泰', l: '111000', g: '小往大来，吉亨。', j: '通泰安和，上下交心' },
+        { n: '天地否', l: '000111', g: '否之匪人，不利君子贞，大往小来。', j: '闭塞不通，守正待时' },
+        { n: '天火同人', l: '101111', g: '同人于野，亨。利涉大川，利君子贞。', j: '志同道合，结伴同行' },
+        { n: '火天大有', l: '111101', g: '元亨。', j: '大有所获，满而不溢' },
+        { n: '地山谦', l: '001000', g: '亨，君子有终。', j: '谦逊有德，万事亨通' },
+        { n: '雷地豫', l: '000100', g: '利建侯行师。', j: '欢愉和乐，顺势而为' },
+        { n: '泽雷随', l: '100110', g: '元亨利贞，无咎。', j: '随顺时势，不违本心' },
+        { n: '山风蛊', l: '011001', g: '元亨，利涉大川。先甲三日，后甲三日。', j: '积弊待革，整饬更新' },
+        { n: '地泽临', l: '110000', g: '元亨利贞。至于八月有凶。', j: '以上临下，亲近督导' },
+        { n: '风地观', l: '000011', g: '盥而不荐，有孚颙若。', j: '观其气象，反观自身' },
+        { n: '火雷噬嗑', l: '100101', g: '亨。利用狱。', j: '咬合除障，明断刑罚' },
+        { n: '山火贲', l: '101001', g: '亨。小利有攸往。', j: '文饰之美，朴实为本' },
+        { n: '山地剥', l: '000001', g: '不利有攸往。', j: '剥落衰败，宜守不宜进' },
+        { n: '地雷复', l: '100000', g: '亨。出入无疾，朋来无咎。反复其道，七日来复，利有攸往。', j: '一阳来复，生机重现' },
+        { n: '天雷无妄', l: '100111', g: '元亨利贞。其匪正有眚，不利有攸往。', j: '不妄为则顺，妄为则灾' },
+        { n: '山天大畜', l: '111001', g: '利贞。不家食吉，利涉大川。', j: '大畜涵养，蓄德蓄力' },
+        { n: '山雷颐', l: '100001', g: '贞吉。观颐，自求口实。', j: '颐养之道，慎言节食' },
+        { n: '泽风大过', l: '011110', g: '栋桡。利有攸往，亨。', j: '负担过重，非常之时' },
+        { n: '坎为水', l: '010010', g: '习坎，有孚，维心亨，行有尚。', j: '重重险陷，守正脱困' },
+        { n: '离为火', l: '101101', g: '利贞，亨。畜牝牛吉。', j: '光明附丽，虚怀受明' },
+        { n: '泽山咸', l: '001110', g: '亨，利贞。取女吉。', j: '交感相应，情感互通' },
+        { n: '雷风恒', l: '011100', g: '亨，无咎，利贞。利有攸往。', j: '恒久之道，守常不乱' },
+        { n: '天山遁', l: '001111', g: '亨。小利贞。', j: '退避之时，全身远害' },
+        { n: '雷天大壮', l: '111100', g: '利贞。', j: '阳气壮盛，非礼勿行' },
+        { n: '火地晋', l: '000101', g: '康侯用锡马蕃庶，昼日三接。', j: '旭日东升，晋升发展' },
+        { n: '地火明夷', l: '101000', g: '利艰贞。', j: '光明受损，韬光养晦' },
+        { n: '风火家人', l: '101011', g: '利女贞。', j: '家道正伦，各安其位' },
+        { n: '火泽睽', l: '110101', g: '小事吉。', j: '乖离背反，求同存异' },
+        { n: '水山蹇', l: '001010', g: '利西南，不利东北。利见大人，贞吉。', j: '行路艰难，见险知止' },
+        { n: '雷水解', l: '010100', g: '利西南。无所往，其来复吉。有攸往，夙吉。', j: '险难化解，宜速不宜迟' },
+        { n: '山泽损', l: '110001', g: '有孚，元吉，无咎，可贞。利有攸往。曷之用？二簋可用享。', j: '损己利人，损中有益' },
+        { n: '风雷益', l: '100011', g: '利有攸往，利涉大川。', j: '增益进取，见善则迁' },
+        { n: '泽天夬', l: '111110', g: '扬于王庭，孚号有厉。告自邑，不利即戎，利有攸往。', j: '决断去邪，当机立断' },
+        { n: '天风姤', l: '011111', g: '女壮，勿用取女。', j: '阴气初生，谨防其渐' },
+        { n: '泽地萃', l: '000110', g: '亨。王假有庙，利见大人，亨，利贞。用大牲吉，利有攸往。', j: '荟萃聚合，诚敬相聚' },
+        { n: '地风升', l: '011000', g: '元亨。用见大人，勿恤，南征吉。', j: '积小成大，上升发展' },
+        { n: '泽水困', l: '010110', g: '亨，贞，大人吉，无咎。有言不信。', j: '困顿之境，守志待通' },
+        { n: '水风井', l: '011010', g: '改邑不改井，无丧无得，往来井井。汔至亦未繘井，羸其瓶，凶。', j: '井养不穷，修己惠人' },
+        { n: '泽火革', l: '101110', g: '已日乃孚。元亨利贞，悔亡。', j: '变革鼎新，顺天应人' },
+        { n: '火风鼎', l: '011101', g: '元吉，亨。', j: '鼎立新制，革故更新' },
+        { n: '震为雷', l: '100100', g: '亨。震来虩虩，笑言哑哑。震惊百里，不丧匕鬯。', j: '震动警醒，临危不乱' },
+        { n: '艮为山', l: '001001', g: '艮其背，不获其身；行其庭，不见其人，无咎。', j: '止其所止，动静有度' },
+        { n: '风山渐', l: '001011', g: '女归吉，利贞。', j: '循序渐进，水到渠成' },
+        { n: '雷泽归妹', l: '110100', g: '征凶，无攸利。', j: '归宿未宜，勿贪速成' },
+        { n: '雷火丰', l: '101100', g: '亨，王假之。勿忧，宜日中。', j: '丰盛盛大，日中则昃' },
+        { n: '火山旅', l: '001101', g: '小亨，旅贞吉。', j: '行旅在外，谦柔自守' },
+        { n: '巽为风', l: '011011', g: '小亨。利有攸往，利见大人。', j: '随风而变，柔顺入微' },
+        { n: '兑为泽', l: '110110', g: '亨，利贞。', j: '和悦沟通，言而有信' },
+        { n: '风水涣', l: '010011', g: '亨。王假有庙，利涉大川，利贞。', j: '涣散之时，聚拢人心' },
+        { n: '水泽节', l: '110010', g: '亨。苦节不可贞。', j: '节制有度，苦节不可' },
+        { n: '风泽中孚', l: '110011', g: '豚鱼吉，利涉大川，利贞。', j: '诚信感物，内诚外信' },
+        { n: '雷山小过', l: '001100', g: '亨，利贞。可小事，不可大事。飞鸟遗之音，不宜上，宜下，大吉。', j: '小有过越，宜下不宜上' },
+        { n: '水火既济', l: '101010', g: '亨小，利贞。初吉终乱。', j: '事已成时，慎防终乱' },
+        { n: '火水未济', l: '010101', g: '亨。小狐汔济，濡其尾，无攸利。', j: '事未成时，再接再厉' }
+      ];
+      var YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+      var previewStrip = document.getElementById('previewStrip');
+      var grid = document.getElementById('guaGrid');
+      var searchInput = document.getElementById('searchInput');
+      var countNote = document.getElementById('countNote');
+      var detailPanel = document.getElementById('detailPanel');
+
+      function buildYaoRow(line) {
+        var div = document.createElement('div');
+        div.className = 'yao ' + (line === '1' ? 'yang' : 'yin');
+        var segL = document.createElement('div');
+        segL.className = 'seg l';
+        var segR = document.createElement('div');
+        segR.className = 'seg r';
+        div.appendChild(segL);
+        div.appendChild(segR);
+        return div;
+      }
+
+      function buildYaoBox(bits, className, withLabels) {
+        var wrap = document.createElement('div');
+        wrap.className = className;
+        for (var i = 5; i >= 0; i--) {
+          var row = buildYaoRow(bits.charAt(i));
+          if (withLabels) {
+            var lab = document.createElement('span');
+            lab.style.cssText = 'position:absolute;right:100%;margin-right:8px;font-size:11px;color:var(--color-text-secondary);top:-2px;white-space:nowrap;';
+            lab.textContent = YAO_NAMES[i];
+            row.style.margin = '5px 0';
+            row.appendChild(lab);
+          }
+          wrap.appendChild(row);
+        }
+        return wrap;
+      }
+
+      function makeCard(item) {
+        var card = document.createElement('div');
+        card.className = 'gua-card';
+        var yao = buildYaoBox(item.l, 'card-yao');
+        var name = document.createElement('div');
+        name.className = 'gua-name';
+        name.textContent = item.n;
+        card.appendChild(yao);
+        card.appendChild(name);
+        card.addEventListener('mouseenter', function () {
+          previewStrip.innerHTML = '';
+          var nm = document.createElement('span');
+          nm.className = 'pv-name';
+          nm.textContent = item.n;
+          var gc = document.createElement('span');
+          gc.textContent = item.g;
+          previewStrip.appendChild(nm);
+          previewStrip.appendChild(gc);
+        });
+        card.addEventListener('click', function () {
+          showDetail(item);
+        });
+        return card;
+      }
+
+      function renderGrid() {
+        grid.innerHTML = '';
+        for (var i = 0; i < GUA.length; i++) {
+          grid.appendChild(makeCard(GUA[i]));
+        }
+        countNote.textContent = '共 ' + GUA.length + ' 卦';
+      }
+
+      function applyFilter() {
+        var kw = searchInput.value.replace(/^\s+|\s+$/g, '');
+        var cards = grid.children;
+        var shown = 0;
+        for (var i = 0; i < cards.length; i++) {
+          var item = GUA[i];
+          var hit = kw === '' || item.n.indexOf(kw) !== -1 || item.j.indexOf(kw) !== -1;
+          cards[i].className = 'gua-card' + (hit ? '' : ' hidden');
+          if (hit) shown += 1;
+        }
+        countNote.textContent = '共 ' + shown + '/' + GUA.length + ' 卦';
+      }
+
+      function showDetail(item) {
+        detailPanel.className = 'card detail-panel show';
+        document.getElementById('detailYao').innerHTML = '';
+        document.getElementById('detailYao').appendChild(buildYaoBox(item.l, 'detail-yao', true));
+        document.getElementById('detailName').textContent = item.n;
+        var TRIG = ['坤', '艮', '坎', '巽', '震', '离', '兑', '乾'];
+        var lo = parseInt(item.l.slice(0, 3), 2);
+        var up = parseInt(item.l.slice(3, 6), 2);
+        document.getElementById('detailSub').textContent = '下卦' + TRIG[lo] + ' · 上卦' + TRIG[up] + ' · 六爻卦象';
+        document.getElementById('detailGuaci').textContent = item.g;
+        document.getElementById('detailNote').textContent = item.j;
+        detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setStatus('正在查看：' + item.n);
+      }
+
+      document.getElementById('detailClose').addEventListener('click', function () {
+        detailPanel.className = 'card detail-panel';
+      });
+      searchInput.addEventListener('input', applyFilter);
+
+      renderGrid();
+      previewStrip.textContent = '悬停任意卦卡，此处预览卦辞';
+    })();
+  </script>
+</body>
+</html>

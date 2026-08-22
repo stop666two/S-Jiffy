@@ -906,12 +906,14 @@
           renderTools();
         });
         document.getElementById('clearHistoryBtn').addEventListener('click', function () {
-          if (!confirm('确定要清空全部历史记录吗？')) return;
+          showConfirm('确定要清空全部历史记录吗？', function (ok) {
+          if (!ok) return;
           savePreference('usage', {});
           setStatus('已清空全部历史记录');
           updateBadge();
           renderCategories();
           renderTools();
+        });
         });
       }
 

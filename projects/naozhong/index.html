@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>在线闹钟 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.clock-display{font-size:72px;font-weight:600;font-family:var(--font-mono);text-align:center;padding:var(--space-3) 0;line-height:1.1;}
+.clock-date{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
+.setting-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.setting-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);min-width:64px;}
+.setting-row select{height:48px;padding:0 var(--space-2);font-size:var(--font-size-base);border:1px solid #DDDDDD;border-radius:var(--radius-md);outline:none;background:var(--color-bg);}
+.setting-row select:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.opt-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-1);}
+.alarm-status{text-align:center;font-size:var(--font-size-base);font-weight:600;padding:var(--space-2);border-radius:var(--radius-md);margin-top:var(--space-2);}
+.alarm-status.on{background:var(--color-bg-soft);color:var(--color-text-primary);}
+.alarm-status.ring{background:#fff3e0;color:#e65100;}
+.alarm-overlay{position:fixed;inset:0;background:#111111;color:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-4);z-index:999;visibility:hidden;opacity:0;transition:opacity 0.2s;}
+.alarm-overlay.open{visibility:visible;opacity:1;}
+.alarm-overlay .big-text{font-size:64px;font-weight:600;text-align:center;}
+.alarm-overlay .ring-time{font-size:var(--font-size-lg);color:#BBBBBB;font-family:var(--font-mono);}
+.alarm-overlay .stop-btn{height:56px;padding:0 var(--space-5);font-size:var(--font-size-lg);border:none;border-radius:var(--radius-md);background:#FFFFFF;color:#111111;cursor:pointer;font-weight:600;}
+@media (max-width:600px){.clock-display{font-size:48px;}.setting-row label{min-width:100%;}}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>在线闹钟</h1><p class="tool-desc">网页定时闹钟，到点播放铃声提醒，支持整点报时，全程本地运行。</p>
+<div class="card">
+<div class="clock-date" id="clockDate"></div>
+<div class="clock-display" id="clockDisplay">--:--:--</div>
+</div>
+<div class="card">
+<div class="setting-row"><label>响铃时间</label><input id="timeInput" class="input" type="time" value="06:00:00" step="1" style="max-width:180px;"></div>
+<div class="setting-row"><label>铃声</label><select id="ringSelect">
+<option value="dingdong">叮咚</option>
+<option value="bird">鸟鸣</option>
+</select><button id="previewBtn" class="btn btn-secondary" style="height:48px;min-width:80px;">试听</button></div>
+<div class="setting-row"><label>响铃时长</label><select id="durationSelect">
+<option value="10">10 秒</option>
+<option value="30">30 秒</option>
+<option value="60" selected>1 分钟</option>
+<option value="120">2 分钟</option>
+<option value="180">3 分钟</option>
+<option value="300">5 分钟</option>
+<option value="600">10 分钟</option>
+<option value="0">一直响</option>
+</select></div>
+<div class="setting-row"><label>整点报时</label><label style="display:flex;align-items:center;gap:6px;min-width:0;"><input id="chimeCheck" type="checkbox"> 每小时整点播放提示音</label></div>
+<div class="setting-row"><button id="setBtn" class="btn btn-primary">设置闹钟</button><button id="cancelBtn" class="btn btn-secondary">取消闹钟</button></div>
+<div class="alarm-status" id="alarmStatus">未设置闹钟</div>
+</div>
+<div class="card">
+<p class="opt-hint">设置闹钟后可将本窗口最小化或切换到其他页面，到点仍会提醒。</p>
+<p class="opt-hint">闹钟全部在本地运行，断网后依然正常，响铃前请勿更换铃声。</p>
+<p class="opt-hint">响铃音量取决于设备的扬声器或耳机音量设置。</p>
+</div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="alarm-overlay" id="alarmOverlay">
+<div class="big-text">时间到了！</div>
+<div class="ring-time" id="ringTimeText"></div>
+<button class="stop-btn" id="stopRingBtn">停止闹钟</button>
+</div>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+var clockDisplay=document.getElementById('clockDisplay'),clockDate=document.getElementById('clockDate');
+var timeInput=document.getElementById('timeInput'),ringSelect=document.getElementById('ringSelect');
+var durationSelect=document.getElementById('durationSelect'),chimeCheck=document.getElementById('chimeCheck');
+var setBtn=document.getElementById('setBtn'),cancelBtn=document.getElementById('cancelBtn');
+var alarmStatus=document.getElementById('alarmStatus'),alarmOverlay=document.getElementById('alarmOverlay');
+var ringTimeText=document.getElementById('ringTimeText'),stopRingBtn=document.getElementById('stopRingBtn');
+var audioCtx=null,activeNotes=[],ringing=false,ringTimer=null,ringDeadline=0;
+var alarmSec=-1,lastChimeKey='',chimeEnabled=false,nextRingKey='';
+
+function pad(n){return n<10?'0'+n:''+n;}
+function ensureCtx(){
+if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){setStatus('浏览器不支持音频合成','error');return false;}}
+if(audioCtx.state==='suspended'){audioCtx.resume();}
+return true;}
+function tone(freq,start,dur,vol){
+if(!audioCtx)return;
+var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.type='sine';o.frequency.value=freq;
+var t=audioCtx.currentTime+start;
+g.gain.setValueAtTime(0.0001,t);
+g.gain.exponentialRampToValueAtTime(vol||0.3,t+0.02);
+g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+o.connect(g);g.connect(audioCtx.destination);
+o.start(t);o.stop(t+dur+0.05);
+activeNotes.push(o);
+o.onended=function(){var i=activeNotes.indexOf(o);if(i>-1)activeNotes.splice(i,1);};}
+function melodyDingDong(){tone(880,0,0.4,0.35);tone(659.25,0.5,0.7,0.35);}
+function melodyBird(){for(var i=0;i<5;i++){tone(1900+i*170,i*0.3,0.13,0.22);tone(2650+i*130,i*0.3+0.14,0.13,0.22);}}
+function playOnce(){
+if(!ensureCtx())return;
+if(ringSelect.value==='dingdong')melodyDingDong();else melodyBird();}
+function stopAll(){for(var i=0;i<activeNotes.length;i++){try{activeNotes[i].stop();}catch(e){}}
+activeNotes=[];}
+
+function startRing(){
+if(!ensureCtx())return;
+ringing=true;
+ringDeadline=0;
+var dur=parseInt(durationSelect.value,10)||0;
+if(dur>0)ringDeadline=Date.now()+dur*1000;
+alarmStatus.textContent='闹钟响铃中，点击停止或等待结束';
+alarmStatus.className='alarm-status ring';
+ringTimeText.textContent=timeInput.value||'';
+alarmOverlay.classList.add('open');
+ringLoop();}
+function ringLoop(){
+if(!ringing)return;
+if(ringSelect.value==='dingdong')melodyDingDong();else melodyBird();
+ringTimer=setTimeout(ringLoop,ringSelect.value==='dingdong'?1100:1600);}
+function stopRing(){
+ringing=false;
+if(ringTimer){clearTimeout(ringTimer);ringTimer=null;}
+stopAll();
+alarmOverlay.classList.remove('open');
+nextRingKey='';
+alarmStatus.textContent='闹钟已停止，如需再次提醒请重新设置';
+alarmStatus.className='alarm-status';}
+
+function parseTime(v){
+if(!v)return -1;
+var parts=v.split(':');
+var h=parseInt(parts[0],10)||0,m=parseInt(parts[1],10)||0,s=parts.length>2?(parseInt(parts[2],10)||0):0;
+if(isNaN(h)||isNaN(m)||isNaN(s))return -1;
+if(h<0||h>23||m<0||m>59||s<0||s>59)return -1;
+return h*3600+m*60+s;}
+function setAlarm(){
+var sec=parseTime(timeInput.value);
+if(sec<0){setStatus('请输入有效的响铃时间','error');return;}
+alarmSec=sec;
+nextRingKey='';
+var now=new Date();
+var target=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+target.setHours(0,0,0,0);
+target.setSeconds(sec);
+var sameDay=(target.getTime()-now.getTime())>=0;
+if(!sameDay)target.setDate(target.getDate()+1);
+nextRingKey=target.getFullYear()+'-'+(target.getMonth()+1)+'-'+target.getDate();
+var remain=Math.round((target.getTime()-now.getTime())/1000);
+var h=Math.floor(remain/3600),m=Math.floor((remain%3600)/60),s=remain%60;
+alarmStatus.textContent='已设置 '+timeInput.value+' 响铃'+(sameDay?'（还有 '+pad(h)+':'+pad(m)+':'+pad(s)+'）':'（已过今日该时刻，明日响铃）');
+alarmStatus.className='alarm-status on';
+setStatus('闹钟已设置');}
+function cancelAlarm(){
+alarmSec=-1;
+nextRingKey='';
+if(ringing)stopRing();
+alarmStatus.textContent='未设置闹钟';
+alarmStatus.className='alarm-status';
+setStatus('闹钟已取消');}
+
+function tick(){
+var now=new Date();
+clockDisplay.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+var week=['日','一','二','三','四','五','六'];
+clockDate.textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 星期'+week[now.getDay()];
+if(alarmSec>=0&&!ringing&&nextRingKey){
+var nowSec=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+var key=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+if(key===nextRingKey&&nowSec>=alarmSec)startRing();
+}
+if(chimeEnabled&&now.getMinutes()===0&&now.getSeconds()===0){
+var ckey=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+' '+now.getHours();
+if(lastChimeKey!==ckey){lastChimeKey=ckey;if(ensureCtx()){tone(1046.5,0,0.18,0.25);tone(1046.5,0.3,0.35,0.25);}}
+}
+if(ringing&&ringDeadline>0&&Date.now()>=ringDeadline)stopRing();}
+
+setBtn.addEventListener('click',function(){ensureCtx();setAlarm();});
+cancelBtn.addEventListener('click',cancelAlarm);
+document.getElementById('previewBtn').addEventListener('click',function(){ensureCtx();playOnce();setStatus('试听中…');});
+stopRingBtn.addEventListener('click',function(){stopRing();setStatus('闹钟已停止');});
+chimeCheck.addEventListener('change',function(){chimeEnabled=chimeCheck.checked;setStatus(chimeEnabled?'整点报时已开启':'整点报时已关闭');});
+setInterval(tick,1000);
+tick();
+})();
+</script></body></html>

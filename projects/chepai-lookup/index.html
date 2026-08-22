@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>车牌号归属地查询 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.lookup-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.lookup-row .input{max-width:280px;}
+.result-table{width:100%;border-collapse:collapse;margin-top:var(--space-2);}
+.result-table th,.result-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--color-border);font-size:14px;}
+.result-table th{background:var(--color-bg-soft);font-weight:600;}
+.knowledge-list{padding-left:var(--space-3);}
+.knowledge-list li{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-1);}
+.hint-line{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
+</style></head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1>车牌号归属地查询</h1><p class="tool-desc">输入车牌号或前缀，查询对应发牌地区的归属地信息。</p>
+<div class="card">
+<div class="lookup-row">
+<input id="plateInput" class="input js-focus-input" type="text" placeholder="例如：京A12345 或 粤B" maxlength="12">
+<button id="queryBtn" class="btn btn-primary">查询</button>
+<button id="clearBtn" class="btn btn-secondary">清空</button>
+</div>
+<p class="hint-line" id="matchHint"></p>
+<div id="resultBox" class="output-box" style="display:none"></div>
+</div>
+<div class="card">
+<h2 style="font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-2);">车牌结构说明</h2>
+<ul class="knowledge-list">
+<li>首位汉字：车辆注册地的省级行政区简称，如「京」为北京、「沪」为上海、「粤」为广东。</li>
+<li>第二位字母：发牌机关代号，一般对应地级市或特定区域，字母与城市的对应关系见上表。</li>
+<li>后五位：车辆序号，由数字或字母组合而成，用于区分具体车辆。</li>
+<li>特殊号牌：「使」字头为外国驻华使领馆车辆；「O」一般用于警用车辆；「学」字头为教练车。</li>
+<li>特殊前缀：如「粤Z」为港澳入内地车辆、「沪R」为崇明、「渝C」为永川、「陕V」为杨凌等，均已收录于表中。</li>
+<li>部分省份对同一城市发放多个字母段（如「鲁B」「鲁U」均为青岛），或存在历史区划代号，查询结果仅供参考。</li>
+</ul>
+</div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script>
+(function(){
+var DATA=[
+{p:'京A',a:'北京市'},{p:'京B',a:'北京市'},{p:'京C',a:'北京市'},{p:'京D',a:'北京市'},{p:'京E',a:'北京市'},{p:'京J',a:'北京市'},{p:'京K',a:'北京市'},{p:'京L',a:'北京市'},{p:'京M',a:'北京市'},{p:'京Y',a:'北京市'},
+{p:'沪A',a:'上海市'},{p:'沪B',a:'上海市'},{p:'沪C',a:'上海市'},{p:'沪D',a:'上海市'},{p:'沪R',a:'崇明区'},
+{p:'津A',a:'天津市'},{p:'津B',a:'天津市'},{p:'津C',a:'天津市'},{p:'津D',a:'天津市'},{p:'津E',a:'天津市'},
+{p:'渝A',a:'重庆市'},{p:'渝B',a:'重庆市'},{p:'渝C',a:'永川区'},{p:'渝F',a:'万州区'},{p:'渝G',a:'涪陵区'},{p:'渝H',a:'黔江区'},
+{p:'冀A',a:'石家庄市'},{p:'冀B',a:'唐山市'},{p:'冀C',a:'秦皇岛市'},{p:'冀D',a:'邯郸市'},{p:'冀E',a:'邢台市'},{p:'冀F',a:'保定市'},{p:'冀G',a:'张家口市'},{p:'冀H',a:'承德市'},{p:'冀J',a:'沧州市'},{p:'冀R',a:'廊坊市'},{p:'冀S',a:'沧州市'},{p:'冀T',a:'衡水市'},
+{p:'豫A',a:'郑州市'},{p:'豫B',a:'开封市'},{p:'豫C',a:'洛阳市'},{p:'豫D',a:'平顶山市'},{p:'豫E',a:'安阳市'},{p:'豫F',a:'鹤壁市'},{p:'豫G',a:'新乡市'},{p:'豫H',a:'焦作市'},{p:'豫J',a:'濮阳市'},{p:'豫K',a:'许昌市'},{p:'豫L',a:'漯河市'},{p:'豫M',a:'三门峡市'},{p:'豫N',a:'商丘市'},{p:'豫P',a:'周口市'},{p:'豫Q',a:'驻马店市'},{p:'豫R',a:'南阳市'},{p:'豫S',a:'信阳市'},{p:'豫U',a:'济源市'},
+{p:'云A',a:'昆明市'},{p:'云A-V',a:'东川区'},{p:'云C',a:'昭通市'},{p:'云D',a:'曲靖市'},{p:'云E',a:'楚雄彝族自治州'},{p:'云F',a:'玉溪市'},{p:'云G',a:'红河哈尼族彝族自治州'},{p:'云H',a:'文山壮族苗族自治州'},{p:'云J',a:'思茅区'},{p:'云K',a:'西双版纳傣族自治州'},{p:'云L',a:'大理白族自治州'},{p:'云M',a:'保山市'},{p:'云N',a:'德宏傣族景颇族自治州'},{p:'云P',a:'丽江市'},{p:'云Q',a:'怒江傈僳族自治州'},{p:'云R',a:'迪庆藏族自治州'},{p:'云S',a:'临沧市'},
+{p:'辽A',a:'沈阳市'},{p:'辽B',a:'大连市'},{p:'辽C',a:'鞍山市'},{p:'辽D',a:'抚顺市'},{p:'辽E',a:'本溪市'},{p:'辽F',a:'丹东市'},{p:'辽G',a:'锦州市'},{p:'辽H',a:'营口市'},{p:'辽J',a:'阜新市'},{p:'辽K',a:'辽阳市'},{p:'辽L',a:'盘锦市'},{p:'辽M',a:'铁岭市'},{p:'辽N',a:'朝阳市'},{p:'辽P',a:'葫芦岛市'},
+{p:'黑A',a:'哈尔滨市'},{p:'黑B',a:'齐齐哈尔市'},{p:'黑C',a:'牡丹江市'},{p:'黑D',a:'佳木斯市'},{p:'黑E',a:'大庆市'},{p:'黑F',a:'伊春市'},{p:'黑G',a:'鸡西市'},{p:'黑H',a:'鹤岗市'},{p:'黑J',a:'双鸭山市'},{p:'黑K',a:'七台河市'},{p:'黑L',a:'松花江地区（并入哈尔滨市）'},{p:'黑M',a:'绥化市'},{p:'黑N',a:'黑河市'},{p:'黑P',a:'大兴安岭地区'},{p:'黑R',a:'农垦系统'},
+{p:'湘A',a:'长沙市'},{p:'湘B',a:'株洲市'},{p:'湘C',a:'湘潭市'},{p:'湘D',a:'衡阳市'},{p:'湘E',a:'邵阳市'},{p:'湘F',a:'岳阳市'},{p:'湘G',a:'张家界市'},{p:'湘H',a:'益阳市'},{p:'湘J',a:'常德市'},{p:'湘K',a:'娄底市'},{p:'湘L',a:'郴州市'},{p:'湘M',a:'永州市'},{p:'湘N',a:'怀化市'},{p:'湘U',a:'湘西土家族苗族自治州'},
+{p:'皖A',a:'合肥市'},{p:'皖B',a:'芜湖市'},{p:'皖C',a:'蚌埠市'},{p:'皖D',a:'淮南市'},{p:'皖E',a:'马鞍山市'},{p:'皖F',a:'淮北市'},{p:'皖G',a:'铜陵市'},{p:'皖H',a:'安庆市'},{p:'皖J',a:'黄山市'},{p:'皖K',a:'阜阳市'},{p:'皖L',a:'宿州市'},{p:'皖M',a:'滁州市'},{p:'皖N',a:'六安市'},{p:'皖P',a:'宣城市'},{p:'皖Q',a:'巢湖市'},{p:'皖R',a:'池州市'},{p:'皖S',a:'亳州市'},
+{p:'鲁A',a:'济南市'},{p:'鲁B',a:'青岛市'},{p:'鲁C',a:'淄博市'},{p:'鲁D',a:'枣庄市'},{p:'鲁E',a:'东营市'},{p:'鲁F',a:'烟台市'},{p:'鲁G',a:'潍坊市'},{p:'鲁H',a:'济宁市'},{p:'鲁J',a:'泰安市'},{p:'鲁K',a:'威海市'},{p:'鲁L',a:'日照市'},{p:'鲁M',a:'滨州市'},{p:'鲁N',a:'德州市'},{p:'鲁P',a:'聊城市'},{p:'鲁Q',a:'临沂市'},{p:'鲁R',a:'菏泽市'},{p:'鲁S',a:'莱芜市'},{p:'鲁U',a:'青岛市'},{p:'鲁V',a:'潍坊市'},{p:'鲁Y',a:'烟台市'},
+{p:'新A',a:'乌鲁木齐市'},{p:'新B',a:'昌吉回族自治州'},{p:'新C',a:'石河子市'},{p:'新D',a:'奎屯市'},{p:'新E',a:'博尔塔拉蒙古自治州'},{p:'新F',a:'伊犁哈萨克自治州'},{p:'新G',a:'塔城地区'},{p:'新H',a:'阿勒泰地区'},{p:'新J',a:'克拉玛依市'},{p:'新K',a:'吐鲁番市'},{p:'新L',a:'哈密市'},{p:'新M',a:'巴音郭楞蒙古自治州'},{p:'新N',a:'阿克苏地区'},{p:'新P',a:'克孜勒苏柯尔克孜自治州'},{p:'新Q',a:'喀什地区'},{p:'新R',a:'和田地区'},
+{p:'苏A',a:'南京市'},{p:'苏B',a:'无锡市'},{p:'苏C',a:'徐州市'},{p:'苏D',a:'常州市'},{p:'苏E',a:'苏州市'},{p:'苏F',a:'南通市'},{p:'苏G',a:'连云港市'},{p:'苏H',a:'淮安市'},{p:'苏J',a:'盐城市'},{p:'苏K',a:'扬州市'},{p:'苏L',a:'镇江市'},{p:'苏M',a:'泰州市'},{p:'苏N',a:'宿迁市'},
+{p:'浙A',a:'杭州市'},{p:'浙B',a:'宁波市'},{p:'浙C',a:'温州市'},{p:'浙D',a:'绍兴市'},{p:'浙E',a:'湖州市'},{p:'浙F',a:'嘉兴市'},{p:'浙G',a:'金华市'},{p:'浙H',a:'衢州市'},{p:'浙J',a:'台州市'},{p:'浙K',a:'丽水市'},{p:'浙L',a:'舟山市'},
+{p:'赣A',a:'南昌市'},{p:'赣B',a:'赣州市'},{p:'赣C',a:'宜春市'},{p:'赣D',a:'吉安市'},{p:'赣E',a:'上饶市'},{p:'赣F',a:'抚州市'},{p:'赣G',a:'九江市'},{p:'赣H',a:'景德镇市'},{p:'赣J',a:'萍乡市'},{p:'赣K',a:'新余市'},{p:'赣L',a:'鹰潭市'},{p:'赣M',a:'南昌市'},
+{p:'鄂A',a:'武汉市'},{p:'鄂B',a:'黄石市'},{p:'鄂C',a:'十堰市'},{p:'鄂D',a:'荆州市'},{p:'鄂E',a:'宜昌市'},{p:'鄂F',a:'襄樊市'},{p:'鄂G',a:'鄂州市'},{p:'鄂H',a:'荆门市'},{p:'鄂J',a:'黄冈市'},{p:'鄂K',a:'孝感市'},{p:'鄂L',a:'咸宁市'},{p:'鄂M',a:'仙桃市'},{p:'鄂N',a:'潜江市'},{p:'鄂P',a:'神农架林区'},{p:'鄂Q',a:'恩施土家族苗族自治州'},{p:'鄂R',a:'天门市'},{p:'鄂S',a:'随州市'},
+{p:'桂A',a:'南宁市'},{p:'桂B',a:'柳州市'},{p:'桂C',a:'桂林市'},{p:'桂D',a:'梧州市'},{p:'桂E',a:'北海市'},{p:'桂F',a:'崇左市'},{p:'桂G',a:'来宾市'},{p:'桂H',a:'桂林市'},{p:'桂J',a:'贺州市'},{p:'桂K',a:'玉林市'},{p:'桂L',a:'百色市'},{p:'桂M',a:'河池市'},{p:'桂N',a:'钦州市'},{p:'桂P',a:'防城港市'},{p:'桂R',a:'贵港市'},
+{p:'甘A',a:'兰州市'},{p:'甘B',a:'嘉峪关市'},{p:'甘C',a:'金昌市'},{p:'甘D',a:'白银市'},{p:'甘E',a:'天水市'},{p:'甘F',a:'酒泉市'},{p:'甘G',a:'张掖市'},{p:'甘H',a:'武威市'},{p:'甘J',a:'定西市'},{p:'甘K',a:'陇南市'},{p:'甘L',a:'平凉市'},{p:'甘M',a:'庆阳市'},{p:'甘N',a:'临夏回族自治州'},{p:'甘P',a:'甘南藏族自治州'},
+{p:'晋A',a:'太原市'},{p:'晋B',a:'大同市'},{p:'晋C',a:'阳泉市'},{p:'晋D',a:'长治市'},{p:'晋E',a:'晋城市'},{p:'晋F',a:'朔州市'},{p:'晋H',a:'忻州市'},{p:'晋J',a:'吕梁市'},{p:'晋K',a:'晋中市'},{p:'晋L',a:'临汾市'},{p:'晋M',a:'运城市'},
+{p:'蒙A',a:'呼和浩特市'},{p:'蒙B',a:'包头市'},{p:'蒙C',a:'乌海市'},{p:'蒙D',a:'赤峰市'},{p:'蒙E',a:'呼伦贝尔市'},{p:'蒙F',a:'兴安盟'},{p:'蒙G',a:'通辽市'},{p:'蒙H',a:'锡林郭勒盟'},{p:'蒙J',a:'乌兰察布市'},{p:'蒙K',a:'鄂尔多斯市'},{p:'蒙L',a:'巴彦淖尔市'},{p:'蒙M',a:'阿拉善盟'},
+{p:'陕A',a:'西安市'},{p:'陕B',a:'铜川市'},{p:'陕C',a:'宝鸡市'},{p:'陕D',a:'咸阳市'},{p:'陕E',a:'渭南市'},{p:'陕F',a:'汉中市'},{p:'陕G',a:'安康市'},{p:'陕H',a:'商洛市'},{p:'陕J',a:'延安市'},{p:'陕K',a:'榆林市'},{p:'陕V',a:'杨凌区'},
+{p:'吉A',a:'长春市'},{p:'吉B',a:'吉林市'},{p:'吉C',a:'四平市'},{p:'吉D',a:'辽源市'},{p:'吉E',a:'通化市'},{p:'吉F',a:'白山市'},{p:'吉G',a:'白城市'},{p:'吉H',a:'延边朝鲜族自治州'},{p:'吉J',a:'松原市'},{p:'吉K',a:'长白朝鲜族自治县'},
+{p:'闽A',a:'福州市'},{p:'闽B',a:'莆田市'},{p:'闽C',a:'泉州市'},{p:'闽D',a:'厦门市'},{p:'闽E',a:'漳州市'},{p:'闽F',a:'龙岩市'},{p:'闽G',a:'三明市'},{p:'闽H',a:'南平市'},{p:'闽J',a:'宁德市'},{p:'闽K',a:'省直系统'},
+{p:'贵A',a:'贵阳市'},{p:'贵B',a:'六盘水市'},{p:'贵C',a:'遵义市'},{p:'贵D',a:'铜仁地区'},{p:'贵E',a:'黔西南布依族苗族自治州'},{p:'贵F',a:'毕节地区'},{p:'贵G',a:'安顺市'},{p:'贵H',a:'黔东南苗族侗族自治州'},{p:'贵J',a:'黔南布依族苗族自治州'},
+{p:'粤A',a:'广州市'},{p:'粤B',a:'深圳市'},{p:'粤C',a:'珠海市'},{p:'粤D',a:'汕头市'},{p:'粤E',a:'佛山市'},{p:'粤F',a:'韶关市'},{p:'粤G',a:'湛江市'},{p:'粤H',a:'肇庆市'},{p:'粤J',a:'江门市'},{p:'粤K',a:'茂名市'},{p:'粤L',a:'惠州市'},{p:'粤M',a:'梅州市'},{p:'粤N',a:'汕尾市'},{p:'粤P',a:'河源市'},{p:'粤Q',a:'阳江市'},{p:'粤R',a:'清远市'},{p:'粤S',a:'东莞市'},{p:'粤T',a:'中山市'},{p:'粤U',a:'潮州市'},{p:'粤V',a:'揭阳市'},{p:'粤W',a:'云浮市'},{p:'粤X',a:'顺德区'},{p:'粤Y',a:'南海区'},{p:'粤Z',a:'港澳进入内地车辆'},
+{p:'川A',a:'成都市'},{p:'川B',a:'绵阳市'},{p:'川C',a:'自贡市'},{p:'川D',a:'攀枝花市'},{p:'川E',a:'泸州市'},{p:'川F',a:'德阳市'},{p:'川G',a:'成都市'},{p:'川H',a:'广元市'},{p:'川J',a:'遂宁市'},{p:'川K',a:'内江市'},{p:'川L',a:'乐山市'},{p:'川M',a:'资阳市'},{p:'川Q',a:'宜宾市'},{p:'川R',a:'南充市'},{p:'川S',a:'达州市'},{p:'川T',a:'雅安市'},{p:'川U',a:'阿坝藏族羌族自治州'},{p:'川V',a:'甘孜藏族自治州'},{p:'川W',a:'凉山彝族自治州'},{p:'川X',a:'广安市'},{p:'川Y',a:'巴中市'},{p:'川Z',a:'眉山市'},
+{p:'青A',a:'西宁市'},{p:'青B',a:'海东地区'},{p:'青C',a:'海北藏族自治州'},{p:'青D',a:'黄南藏族自治州'},{p:'青E',a:'海南藏族自治州'},{p:'青F',a:'果洛藏族自治州'},{p:'青G',a:'玉树藏族自治州'},{p:'青H',a:'海西蒙古族藏族自治州'},
+{p:'藏A',a:'拉萨市'},{p:'藏B',a:'昌都地区'},{p:'藏C',a:'山南市'},{p:'藏D',a:'日喀则市'},{p:'藏E',a:'那曲地区'},{p:'藏F',a:'阿里地区'},{p:'藏G',a:'林芝市'},{p:'藏H',a:'驻四川省天全县车辆管理所'},{p:'藏J',a:'驻青海省格尔木市车辆管理所'},
+{p:'琼A',a:'海口市'},{p:'琼B',a:'三亚市'},{p:'琼C',a:'琼海市'},{p:'琼D',a:'五指山市'},{p:'琼E',a:'洋浦开发区'},
+{p:'宁A',a:'银川市'},{p:'宁B',a:'石嘴山市'},{p:'宁C',a:'银南市'},{p:'宁D',a:'固原市'},{p:'宁E',a:'中卫市'}
+];
+var input=document.getElementById('plateInput'),queryBtn=document.getElementById('queryBtn');
+var clearBtn=document.getElementById('clearBtn'),resultBox=document.getElementById('resultBox'),matchHint=document.getElementById('matchHint');
+
+function query(){
+var raw=(input.value||'').replace(/\s+/g,'');
+matchHint.textContent='';
+if(!raw){setStatus('请输入车牌号','error');resultBox.style.display='none';return;}
+var hits=[];
+for(var i=0;i<DATA.length;i++){
+if(raw.indexOf(DATA[i].p)!==-1)hits.push(DATA[i]);
+}
+if(hits.length===0){
+resultBox.style.display='block';
+resultBox.innerHTML='<p style="color:var(--color-error);font-size:14px;">未查询到「'+htmlEscape(raw)+'」对应的归属地，请检查车牌号前缀是否正确。</p>';
+setStatus('未匹配到结果','error');
+return;
+}
+hits.sort(function(x,y){return y.p.length-x.p.length;});
+var best=hits[0];
+var html='<table class="result-table"><thead><tr><th>车牌号</th><th>归属地</th></tr></thead><tbody>';
+html+='<tr><td>'+htmlEscape(best.p)+'</td><td>'+htmlEscape(best.a)+'</td></tr>';
+html+='</tbody></table>';
+resultBox.style.display='block';
+resultBox.innerHTML=html;
+matchHint.textContent='匹配到 '+hits.length+' 条记录，已取最长前缀。';
+setStatus('查询完成');}
+
+queryBtn.addEventListener('click',query);
+input.addEventListener('keydown',function(e){if(e.key==='Enter')query();});
+clearBtn.addEventListener('click',function(){input.value='';resultBox.style.display='none';matchHint.textContent='';input.focus();setStatus('');});
+})();
+</script></body></html>

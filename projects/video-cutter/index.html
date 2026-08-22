@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频剪切 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 36px var(--space-3);
+      text-align: center;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .drop-zone.dragging {
+      border-color: var(--color-text-primary);
+      background: var(--color-bg-soft);
+    }
+    .drop-zone .dz-name {
+      margin-top: 8px;
+      color: var(--color-text-primary);
+      word-break: break-all;
+      font-size: var(--font-size-base);
+    }
+    .dz-hint { margin-top: 6px; color: var(--color-text-disabled); font-size: var(--font-size-xs); }
+    .preview-wrap {
+      max-width: 100%;
+      margin-top: var(--space-2);
+    }
+    .preview-wrap video {
+      width: 100%;
+      max-height: 420px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: #000;
+      display: block;
+    }
+    .time-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: flex-end;
+      margin-top: var(--space-2);
+    }
+    .time-field { flex: 1 1 140px; }
+    .time-field label {
+      display: block;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: 4px;
+    }
+    .time-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-2); }
+    .time-actions .btn { height: 40px; min-width: 0; padding: 0 14px; font-size: 13px; }
+    .progress-track {
+      height: 8px;
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: var(--space-2);
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: var(--color-text-primary);
+      border-radius: 999px;
+      transition: width 0.2s;
+    }
+    .progress-text { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: 6px; }
+    .result-wrap { margin-top: var(--space-2); }
+    .result-wrap video {
+      width: 100%;
+      max-height: 420px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: #000;
+      display: block;
+    }
+    .engine-pill {
+      display: inline-block;
+      font-size: var(--font-size-xs);
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-2);
+    }
+    .engine-pill.ok { color: var(--color-success); border-color: var(--color-success); }
+    .engine-pill.bad { color: var(--color-error); border-color: var(--color-error); }
+    .note {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-disabled);
+      margin-top: var(--space-2);
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>视频剪切</h1>
+    <p class="tool-desc">选择本地视频与起止时间，在浏览器内完成剪切，全程无需上传。</p>
+    <div class="card">
+      <div class="drop-zone" id="dropZone">
+        <div>点击选择视频，或将视频文件拖拽到此处</div>
+        <div class="dz-name" id="fileName"></div>
+        <div class="dz-hint">支持 mp4 / mov / webm / m4v 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept=".mp4,.mov,.webm,.m4v,video/mp4,video/quicktime,video/webm,video/x-m4v" style="display:none">
+      <span class="engine-pill" id="enginePill">引擎：未加载</span>
+    </div>
+    <div class="card" id="setupCard" style="display:none">
+      <div class="preview-wrap">
+        <video id="player" controls preload="metadata"></video>
+      </div>
+      <div class="time-row">
+        <div class="time-field">
+          <label for="startTime">开始时间（秒）</label>
+          <input id="startTime" class="input" type="number" min="0" step="0.1" value="0">
+        </div>
+        <div class="time-field">
+          <label for="endTime">结束时间（秒）</label>
+          <input id="endTime" class="input" type="number" min="0" step="0.1" value="0">
+        </div>
+      </div>
+      <div class="time-actions">
+        <button id="setStartBtn" class="btn btn-secondary">设为开始时间</button>
+        <button id="setEndBtn" class="btn btn-secondary">设为结束时间</button>
+      </div>
+      <div class="note">提示：播放到目标位置后点击对应按钮即可自动填入当前时间（精确到 0.1 秒）。</div>
+    </div>
+    <div class="card" id="actionCard" style="display:none">
+      <button id="cutBtn" class="btn btn-primary" style="width:100%">开始剪切</button>
+      <div class="progress-track" id="progressTrack" style="display:none"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-text" id="progressText"></div>
+      <div class="result-wrap" id="resultWrap" style="display:none">
+        <video id="resultVideo" controls></video>
+        <div style="margin-top:12px">
+          <button id="downloadBtn" class="btn btn-primary">下载剪切结果</button>
+        </div>
+      </div>
+      <div class="note">视频仅在本机浏览器内处理，不上传任何数据；剪切采用无损复制，速度快且不损失画质，起止点会就近对齐到关键帧。</div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var FILE_LIMIT = 800 * 1024 * 1024;
+      var CORE_URL = '/projects/video-cutter/ffmpeg/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js';
+      var UMD_URL = 'ffmpeg/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+      var dropZone = document.getElementById('dropZone');
+      var fileInput = document.getElementById('fileInput');
+      var fileName = document.getElementById('fileName');
+      var enginePill = document.getElementById('enginePill');
+      var setupCard = document.getElementById('setupCard');
+      var actionCard = document.getElementById('actionCard');
+      var player = document.getElementById('player');
+      var startTime = document.getElementById('startTime');
+      var endTime = document.getElementById('endTime');
+      var setStartBtn = document.getElementById('setStartBtn');
+      var setEndBtn = document.getElementById('setEndBtn');
+      var cutBtn = document.getElementById('cutBtn');
+      var progressTrack = document.getElementById('progressTrack');
+      var progressBar = document.getElementById('progressBar');
+      var progressText = document.getElementById('progressText');
+      var resultWrap = document.getElementById('resultWrap');
+      var resultVideo = document.getElementById('resultVideo');
+      var downloadBtn = document.getElementById('downloadBtn');
+      var currentFile = null;
+      var engineReady = false;
+      var cutting = false;
+      var resultUrl = null;
+      var lastLog = '';
+      var ffmpegInst = null;
+
+      function setEnginePill(text, cls) {
+        enginePill.textContent = text;
+        enginePill.className = 'engine-pill' + (cls ? ' ' + cls : '');
+      }
+
+      function loadEngine() {
+        setEnginePill('引擎：正在加载…');
+        setStatus('正在加载视频处理引擎（首次加载约需数十秒）…');
+        var script = document.createElement('script');
+        script.src = UMD_URL;
+        script.onload = function () {
+          if (!window.FFmpegWASM || !window.FFmpegWASM.FFmpeg) {
+            setEnginePill('引擎：加载异常', 'bad');
+            setStatus('引擎脚本异常，请刷新页面重试', 'error');
+            return;
+          }
+          var inst = new window.FFmpegWASM.FFmpeg();
+          inst.on('log', function (msg) {
+            if (msg && msg.message) lastLog = msg.message;
+          });
+          inst.on('progress', function (p) {
+            if (p && typeof p.progress === 'number') {
+              var percent = Math.max(0, Math.min(100, Math.round(p.progress * 100)));
+              progressBar.style.width = percent + '%';
+              progressText.textContent = '处理中：' + percent + '%';
+            }
+          });
+          inst.load({
+            coreURL: CORE_URL,
+            wasmURL: CORE_URL.replace(/\.js$/, '.wasm')
+          }).then(function () {
+            engineReady = true;
+            ffmpegInst = inst;
+            setEnginePill('引擎：就绪', 'ok');
+            setStatus('视频处理引擎就绪');
+          }).catch(function (e) {
+            setEnginePill('引擎：加载失败', 'bad');
+            setStatus('引擎核心加载失败：' + (e && e.message ? e.message : '网络异常，请检查网络后刷新'), 'error');
+          });
+        };
+        script.onerror = function () {
+          setEnginePill('引擎：加载失败', 'bad');
+          setStatus('引擎加载失败：无法连接脚本服务，请检查网络后刷新页面', 'error');
+        };
+        document.body.appendChild(script);
+      }
+
+      function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      function acceptFile(file) {
+        if (!file) return false;
+        var name = file.name || '';
+        var ext = (name.split('.').pop() || '').toLowerCase();
+        if (['mp4', 'mov', 'webm', 'm4v'].indexOf(ext) === -1) {
+          setStatus('不支持的文件格式：' + htmlEscape(ext || '未知'), 'error');
+          return false;
+        }
+        if (file.size > FILE_LIMIT) {
+          setStatus('文件过大（超过 800MB），可能导致浏览器内存不足，请换用更小的视频', 'error');
+          return false;
+        }
+        return true;
+      }
+
+      function onFileSelected(file) {
+        if (!acceptFile(file)) return;
+        currentFile = file;
+        fileName.textContent = file.name + '（' + formatSize(file.size) + '）';
+        player.src = URL.createObjectURL(file);
+        player.load();
+        setupCard.style.display = 'block';
+        actionCard.style.display = 'block';
+        resultWrap.style.display = 'none';
+        startTime.value = '0';
+        endTime.value = '0';
+        player.onloadedmetadata = function () {
+          var d = player.duration;
+          if (isFinite(d)) {
+            endTime.value = Math.max(0, Math.round(d * 10) / 10);
+          }
+        };
+        setStatus('视频已载入，可拖动播放器定位剪切点');
+      }
+
+      dropZone.addEventListener('click', function () {
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', function () {
+        if (fileInput.files && fileInput.files.length > 0) onFileSelected(fileInput.files[0]);
+      });
+      ['dragenter', 'dragover'].forEach(function (ev) {
+        dropZone.addEventListener(ev, function (e) {
+          e.preventDefault();
+          dropZone.classList.add('dragging');
+        });
+      });
+      ['dragleave', 'drop'].forEach(function (ev) {
+        dropZone.addEventListener(ev, function (e) {
+          e.preventDefault();
+          dropZone.classList.remove('dragging');
+        });
+      });
+      dropZone.addEventListener('drop', function (e) {
+        var files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length > 0) onFileSelected(files[0]);
+      });
+
+      setStartBtn.addEventListener('click', function () {
+        if (!currentFile) return;
+        var t = player.currentTime;
+        if (isFinite(t)) startTime.value = Math.round(t * 10) / 10;
+        setStatus('已将当前播放位置设为开始时间');
+      });
+      setEndBtn.addEventListener('click', function () {
+        if (!currentFile) return;
+        var t = player.currentTime;
+        if (isFinite(t)) endTime.value = Math.round(t * 10) / 10;
+        setStatus('已将当前播放位置设为结束时间');
+      });
+
+      function readInput(el) {
+        var v = parseFloat(el.value);
+        return isNaN(v) ? -1 : v;
+      }
+
+      function doCut() {
+        if (cutting) return;
+        if (!currentFile) { setStatus('请先选择视频文件', 'error'); return; }
+        if (!engineReady) {
+          setStatus(enginePill.textContent.indexOf('失败') !== -1 ? '处理引擎未就绪，请刷新页面重试' : '处理引擎仍在加载，请稍候再试', 'error');
+          return;
+        }
+        var start = readInput(startTime);
+        var end = readInput(endTime);
+        if (start < 0) { setStatus('开始时间无效，请输入不小于 0 的数字', 'error'); return; }
+        if (end < 0) { setStatus('结束时间无效，请输入不小于 0 的数字', 'error'); return; }
+        if (start >= end) { setStatus('开始时间必须小于结束时间', 'error'); return; }
+        var dur = player.duration;
+        if (isFinite(dur) && end > dur + 0.05) {
+          setStatus('结束时间超出视频总时长（' + Math.round(dur * 10) / 10 + ' 秒）', 'error');
+          return;
+        }
+        var ext = (currentFile.name.split('.').pop() || 'mp4').toLowerCase();
+        var inName = 'input.' + ext;
+        var outName = 'output_cut.' + (ext === 'webm' ? 'webm' : 'mp4');
+        cutting = true;
+        cutBtn.disabled = true;
+        resultWrap.style.display = 'none';
+        progressTrack.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = '准备中…';
+        lastLog = '';
+        var clipSec = Math.round((end - start) * 10) / 10;
+        currentFile.arrayBuffer().then(function (buf) {
+          return ffmpegInst ? buf : null;
+        }).then(function (buf) {
+          if (!buf) throw new Error('引擎已失效');
+          return ffmpegInst.writeFile(inName, new Uint8Array(buf));
+        }).then(function () {
+          var args = ['-ss', String(start), '-i', inName, '-t', String(clipSec), '-c', 'copy', '-avoid_negative_ts', 'make_zero', '-movflags', '+faststart', outName];
+          if (ext === 'webm') return ffmpegInst.exec(args);
+          return ffmpegInst.exec(args).catch(function () {
+            progressText.textContent = '无损复制不可用，正在重新编码…';
+            var args2 = ['-i', inName, '-ss', String(start), '-t', String(clipSec), '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26', '-c:a', 'aac', '-movflags', '+faststart', outName];
+            return ffmpegInst.exec(args2);
+          });
+        }).then(function () {
+          return ffmpegInst.readFile(outName);
+        }).then(function (data) {
+          if (!data || data.length === 0) throw new Error('处理结果为空');
+          var blob = new Blob([data], { type: 'video/mp4' });
+          if (resultUrl) URL.revokeObjectURL(resultUrl);
+          resultUrl = URL.createObjectURL(blob);
+          resultVideo.src = resultUrl;
+          downloadBtn.href = resultUrl;
+          downloadBtn.setAttribute('download', outName);
+          resultWrap.style.display = 'block';
+          progressBar.style.width = '100%';
+          progressText.textContent = '剪切完成';
+          setStatus('剪切完成，可预览或下载结果');
+        }).catch(function (e) {
+          progressText.textContent = '处理失败';
+          var msg = e && e.message ? e.message : '未知错误';
+          setStatus('剪切失败：' + msg + (lastLog ? '（' + lastLog.slice(-120) + '）' : ''), 'error');
+        }).then(function () {
+          cutting = false;
+          cutBtn.disabled = false;
+          try { ffmpegInst.deleteFile(inName); } catch (ignore) {}
+          try { ffmpegInst.deleteFile(outName); } catch (ignore) {}
+        });
+      }
+
+      cutBtn.addEventListener('click', doCut);
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function () {
+          loadEngine();
+        }).catch(function () {
+          loadEngine();
+        });
+      } else {
+        loadEngine();
+      }
+    })();
+  </script>
+</body>
+</html>

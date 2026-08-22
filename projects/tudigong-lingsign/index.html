@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>土地公灵签 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+.logo-text { font-size: var(--font-size-lg); font-weight: 600; }
+.draw-card { text-align: center; }
+.draw-tip { max-width: 540px; margin: 0 auto var(--space-3); font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.7; }
+.qian-stage { position: relative; width: 120px; height: 230px; margin: 0 auto var(--space-3); }
+.qian-tube { position: absolute; left: 50%; bottom: 0; width: 92px; height: 170px; margin-left: -46px; border: 1px solid #5E2018; border-radius: 10px 10px 16px 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.22); z-index: 0; }
+.qian-tube::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 9px 9px 15px 15px; background: linear-gradient(180deg, #B3442F, #A03224 30%, #8A2B1E 70%, #7C2418); }
+.qian-tube::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 24px; border-radius: 9px 9px 0 0; background: linear-gradient(180deg, #C0533C, #A93824); box-shadow: inset 0 -4px 6px rgba(0,0,0,0.25), inset 0 2px 3px rgba(255,255,255,0.18); }
+.qian-slip { position: absolute; left: 50%; bottom: 20px; width: 56px; height: 96px; margin-left: -28px; z-index: -1; background: repeating-linear-gradient(90deg, transparent 0 26px, rgba(0,0,0,0.05) 26px 27px), linear-gradient(180deg, #FDF9EF, #F6EDD8); border: 1px solid #D8C79F; border-radius: 5px; }
+.qian-slip::after { content: "签"; position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 30px; color: #8A4A1F; font-weight: 600; }
+.qian-stage.drawing { animation: stageWiggle 2.6s ease-in-out both; }
+.qian-stage.drawing .qian-slip { animation: slipRise 2.6s ease-in-out both; }
+.qian-stage.drawing .qian-tube::after { animation: lipPulse 0.45s ease-in-out infinite alternate; }
+.qian-stage.drawn .qian-slip { animation: slipOut 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.qian-stage.drawn .qian-slip::after { content: "✓"; color: #346538; }
+@keyframes stageWiggle {
+  0% { transform: rotate(0deg) translateY(0); }
+  10% { transform: rotate(-5deg) translateY(-4px); }
+  20% { transform: rotate(4deg) translateY(-9px); }
+  35% { transform: rotate(-4deg) translateY(-13px); }
+  50% { transform: rotate(5deg) translateY(-11px); }
+  65% { transform: rotate(-3deg) translateY(-7px); }
+  80% { transform: rotate(2deg) translateY(-3px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+@keyframes slipRise {
+  0% { bottom: 20px; }
+  12% { bottom: 84px; }
+  24% { bottom: 24px; }
+  36% { bottom: 96px; }
+  48% { bottom: 26px; }
+  60% { bottom: 106px; }
+  72% { bottom: 28px; }
+  84% { bottom: 114px; }
+  100% { bottom: 118px; }
+}
+@keyframes slipOut {
+  0% { bottom: 118px; opacity: 1; }
+  100% { bottom: 132px; opacity: 1; }
+}
+@keyframes lipPulse { from { opacity: 1; } to { opacity: 0.55; } }
+.result-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+.qian-no { font-size: 28px; font-weight: 700; line-height: 1.2; }
+.qian-name { font-size: 15px; color: var(--color-text-secondary); font-weight: 600; }
+.ji-badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; border: 1px solid; font-size: var(--font-size-sm); }
+.jl-up { color: #2E5B31; background: #E9F1E9; border-color: #C4D8C6; }
+.jl-mid { color: #8A5B00; background: #F7EFDF; border-color: #E6D5AC; }
+.jl-down { color: #98302E; background: #F7E8E7; border-color: #E4C6C4; }
+.qian-poem { font-size: 17px; line-height: 2; margin-bottom: var(--space-2); }
+.qian-jie { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+.qian-extra-line { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.8; white-space: pre-wrap; word-break: break-word; margin-top: var(--space-1); }
+.result-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; }
+.result-card.show { animation: fadeUp 0.45s ease-out; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.all-actions { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); }
+.all-list { display: none; }
+.all-row { border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 8px; overflow: hidden; }
+.all-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--color-bg); border: none; cursor: pointer; font-family: var(--font-mono); font-size: 14px; color: var(--color-text-primary); text-align: left; }
+.all-head:hover { background: var(--color-bg-soft); }
+.all-head::after { content: "▸"; margin-left: auto; color: var(--color-text-secondary); }
+.all-row.open .all-head::after { content: "▾"; }
+.all-no { flex-shrink: 0; font-weight: 600; }
+.all-poem { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.all-body { display: none; padding: 12px 14px; border-top: 1px dashed var(--color-border); background: var(--color-bg-soft); font-size: var(--font-size-sm); line-height: 1.8; color: var(--color-text-secondary); white-space: pre-wrap; word-break: break-word; }
+.all-row.open .all-body { display: block; }
+.all-poem-full { color: var(--color-text-primary); margin-bottom: 6px; }
+.all-jie { margin-top: 4px; }
+.tool-note { margin-top: var(--space-4); font-size: var(--font-size-xs); color: var(--color-text-disabled); text-align: center; }
+footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px solid var(--color-border); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a class="back-btn" href="../../index.html">← 返回</a>
+    <span class="logo-text">S-Jiffy</span>
+  </header>
+  <main class="tool-workspace">
+    <h1>土地公灵签</h1>
+    <p class="tool-desc">土地公灵签共三十二支，护佑一方平安，问家宅、财运、出行等日常诸事皆宜。</p>
+    <div class="card draw-card">
+      <p class="draw-tip">请默念您的姓名与所求之事，诚心敬意，再开始抽签。</p>
+      <div class="qian-stage" id="qianStage">
+        <div class="qian-tube"><div class="qian-slip"></div></div>
+      </div>
+      <button id="drawBtn" class="btn btn-primary">开始抽签</button>
+    </div>
+    <div class="card result-card" id="resultCard" style="display:none" aria-live="polite">
+      <div class="result-head">
+        <span class="qian-no" id="resNo"></span>
+        <span class="qian-name" id="resName" style="display:none"></span>
+        <span id="resJi"></span>
+      </div>
+      <div class="qian-poem" id="resPoem"></div>
+      <div class="qian-jie" id="resJie"></div>
+      <div id="resExtra"></div>
+      <div class="result-actions">
+        <button id="againBtn" class="btn btn-secondary">重新抽签</button>
+        <button id="copyBtn" class="btn btn-secondary">复制结果</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="all-actions">
+        <button id="allToggle" class="btn btn-secondary">查看全部签文</button>
+      </div>
+      <div class="all-list" id="allList"></div>
+    </div>
+    <p class="tool-note">本工具数据源自公开传统文化资料，仅供娱乐参考。</p>
+  </main>
+  <footer class="tool-status" id="statusBar"></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+(function () {
+  var CFG = {"name":"土地公灵签","noLabel":"","noSuffix":"","nameField":"","jiField":"ji","poemField":"text","poemLabel":"签文","jieField":"","jieLabel":"解签","extra":[]};
+  var QIAN = [{"n":1,"no":"第 1 号签","ji":"上上签","text":"彩凤呈祥瑞，麒麟降帝都，祸除迎福至，喜气自然生。"},{"n":2,"no":"第 2 号签","ji":"上平签","text":"从革宜更变，时来合动迁，龙门鱼跃出，凡骨作神仙。"},{"n":3,"no":"第 3 号签","ji":"中平签","text":"动作因风便，求谋可托人，若逢戊己土，事事得遂心。"},{"n":4,"no":"第 4 号签","ji":"小平签","text":"船放江湖内，滩边获宝多，更宜将大用，灾散福来居。"},{"n":5,"no":"第 5 号签","ji":"下下签","text":"此签按南方，灾厄不可当，官司多不利，目下有灾殃。"},{"n":6,"no":"第 6 号签","ji":"中平签","text":"且安君子分，勿用小人言，凡事皆当谨，作福保安然。"},{"n":7,"no":"第 7 号签","ji":"上上签","text":"国治人安泰，家财渐渐兴，有财求望吉，有福亦平安。"},{"n":8,"no":"第 8 号签","ji":"上吉签","text":"好德承天佑，门招喜气新，有人相助力，获福尽欢欣。"},{"n":9,"no":"第 9 号签","ji":"中吉签","text":"目下如冬树，枯木未开花，看看春色动，渐渐发萌芽。"},{"n":10,"no":"第 10 号签","ji":"中平签","text":"时融逢和气，衰残物再兴，更逢微细雨，春色又还生。"},{"n":11,"no":"第 11 号签","ji":"大吉签","text":"灾散福门开，无边喜气来，目下相逢处，须当得横财。"},{"n":12,"no":"第 12 号签","ji":"上平签","text":"进取逢通达，寒儒衣锦归，何人占取卦，凡事任意为。"},{"n":13,"no":"第 13 号签","ji":"下凶签","text":"井底观明月，见影却无形，钱财多散失，谨守得安宁。"},{"n":14,"no":"第 14 号签","ji":"下中签","text":"心思多不定，求谋未得成，忍耐方为福，守分免灾星。"},{"n":15,"no":"第 15 号签","ji":"下凶签","text":"枯木逢霜雪，扁舟遇大风，惊心无可免，百事不行通。"},{"n":16,"no":"第 16 号签","ji":"平吉签","text":"日出临东海，光辉天下明，动用和合吉，百事自然成。"},{"n":17,"no":"第 17 号签","ji":"中吉签","text":"众恶皆消灭，端然福气生，如人行暗夜，今已得天明。"},{"n":18,"no":"第 18 号签","ji":"中平签","text":"服药将身保，缠绵词讼连，百凡宜守旧，作福自然安。"},{"n":19,"no":"第 19 号签","ji":"下下签","text":"签中多恍惚，钱财暗里磨，恩深成怨去，人事不须知。"},{"n":20,"no":"第 20 号签","ji":"上平签","text":"根实枝叶茂，林多格式高，经荣多得利，兰蕙似蓬蒿。"},{"n":21,"no":"第 21 号签","ji":"上吉签","text":"求名居禄位，笼鸟得逃生，出入多财宝，更宜远方行。"},{"n":22,"no":"第 22 号签","ji":"吉签","text":"明月清天上，今霄照绮筵，家家沾恩泽，万里净云烟。"},{"n":23,"no":"第 23 号签","ji":"吉签","text":"福禄得安康，荣华保吉昌，所得皆遂意，千里共兰香。"},{"n":24,"no":"第 24 号签","ji":"下签","text":"羸马登程去，饥人走远途，前人多阻厄，退后祸方无。"},{"n":25,"no":"第 25 号签","ji":"吉签","text":"三姓俱相伴，祥光得共生，更宜分造化，百福自然亨。"},{"n":26,"no":"第 26 号签","ji":"吉签","text":"此签占太和，求谋喜事多，远人归古里，身乐得欢歌。"},{"n":27,"no":"第 27 号签","ji":"大吉签","text":"霖雨滋稼穑，何愁不倍收，自然心得乐，安居总无忧。"},{"n":28,"no":"第 28 号签","ji":"下签","text":"迢递途中旅，云横日随山，羁心无可托，前后总皆难。"},{"n":29,"no":"第 29 号签","ji":"吉签","text":"畔中珠自见，石内玉争光，进财求望吉，有福不成殃。"},{"n":30,"no":"第 30 号签","ji":"吉签","text":"天兵诛贼寇，旌旗得胜回，功勋为将帅，门第有光辉。"},{"n":31,"no":"第 31 号签","ji":"平签","text":"履薄登水池，危桥得渡时，重重忧险过，春色自芳菲。"},{"n":32,"no":"第 32 号签","ji":"下签","text":"尘埋青钢钱，美玉陷淤泥，何时重出世，再得光辉显。"}];
+
+  var drawBtn = document.getElementById("drawBtn");
+  var againBtn = document.getElementById("againBtn");
+  var copyBtn = document.getElementById("copyBtn");
+  var allToggle = document.getElementById("allToggle");
+  var allList = document.getElementById("allList");
+  var qianStage = document.getElementById("qianStage");
+  var resultCard = document.getElementById("resultCard");
+  var resNo = document.getElementById("resNo");
+  var resName = document.getElementById("resName");
+  var resJi = document.getElementById("resJi");
+  var resPoem = document.getElementById("resPoem");
+  var resJie = document.getElementById("resJie");
+  var resExtra = document.getElementById("resExtra");
+  var drawing = false;
+  var lastText = "";
+
+  function jiLevel(ji) {
+    var s = String(ji || "").replace(/^\s+|\s+$/g, "");
+    if (!s) return "";
+    if (s.indexOf("下") !== -1 || s.indexOf("凶") !== -1) return "down";
+    if (s.indexOf("中") !== -1) return "mid";
+    if (s.indexOf("上") !== -1 || s.indexOf("大") !== -1) return "up";
+    return "mid";
+  }
+
+  function makeJiBadge(ji) {
+    var span = document.createElement("span");
+    span.className = "ji-badge jl-" + jiLevel(ji);
+    span.textContent = ji;
+    return span;
+  }
+
+  function clearChildren(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function normalize(q) {
+    var n = {
+      no: q.no || CFG.noLabel + q.n + CFG.noSuffix,
+      name: CFG.nameField ? (q[CFG.nameField] || "") : "",
+      ji: CFG.jiField ? (q[CFG.jiField] || "") : "",
+      poem: CFG.poemField ? (q[CFG.poemField] || "") : "",
+      jie: CFG.jieField ? (q[CFG.jieField] || "") : "",
+      extra: []
+    };
+    for (var i = 0; i < CFG.extra.length; i++) {
+      var e = CFG.extra[i];
+      if (q[e.key]) n.extra.push({ label: e.label, value: q[e.key] });
+    }
+    return n;
+  }
+
+  function buildText(q) {
+    var lines = [CFG.name + " · " + q.no];
+    if (q.name) lines.push(q.name);
+    if (q.ji) lines.push(q.ji);
+    if (q.poem) lines.push(CFG.poemLabel + "：" + q.poem);
+    if (q.jie) lines.push(CFG.jieLabel + "：" + q.jie);
+    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + "：" + q.extra[i].value);
+    return lines.join("\n");
+  }
+
+  function showResult(q) {
+    resNo.textContent = q.no;
+    resName.style.display = q.name ? "" : "none";
+    resName.textContent = q.name;
+    clearChildren(resJi);
+    if (q.ji) {
+      var b = makeJiBadge(q.ji);
+      if (b) resJi.appendChild(b);
+    }
+    resPoem.style.display = q.poem ? "" : "none";
+    resPoem.textContent = q.poem;
+    resJie.style.display = q.jie ? "" : "none";
+    resJie.textContent = q.jie ? CFG.jieLabel + "：" + q.jie : "";
+    clearChildren(resExtra);
+    for (var i = 0; i < q.extra.length; i++) {
+      var line = document.createElement("div");
+      line.className = "qian-extra-line";
+      line.textContent = q.extra[i].label + "：" + q.extra[i].value;
+      resExtra.appendChild(line);
+    }
+    resultCard.style.display = "block";
+    resultCard.classList.remove("show");
+    void resultCard.offsetWidth;
+    resultCard.classList.add("show");
+    lastText = buildText(q);
+  }
+
+  function startDraw() {
+    if (drawing) return;
+    if (!QIAN || !QIAN.length) {
+      setStatus("签文数据为空，无法抽签", "error");
+      return;
+    }
+    drawing = true;
+    drawBtn.textContent = "抽签中...";
+    drawBtn.disabled = true;
+    resultCard.style.display = "none";
+    resultCard.classList.remove("show");
+    qianStage.classList.remove("drawing", "drawn");
+    void qianStage.offsetWidth;
+    qianStage.classList.add("drawing");
+    var picked = QIAN[Math.floor(Math.random() * QIAN.length)];
+    setTimeout(function () {
+      qianStage.classList.remove("drawing");
+      qianStage.classList.add("drawn");
+      drawBtn.textContent = "开始抽签";
+      drawBtn.disabled = false;
+      drawing = false;
+      showResult(normalize(picked));
+    }, 2600);
+  }
+
+  drawBtn.addEventListener("click", startDraw);
+  againBtn.addEventListener("click", startDraw);
+
+  copyBtn.addEventListener("click", function () {
+    if (!lastText) return;
+    copyToClipboard(lastText, copyBtn);
+    setStatus("结果已复制到剪贴板");
+  });
+
+  allToggle.addEventListener("click", function () {
+    var open = allList.style.display !== "none";
+    allList.style.display = open ? "none" : "block";
+    allToggle.textContent = open ? "查看全部签文" : "收起全部签文";
+  });
+
+  (function buildAll() {
+    for (var i = 0; i < QIAN.length; i++) {
+      var q = normalize(QIAN[i]);
+      var row = document.createElement("div");
+      row.className = "all-row";
+      var head = document.createElement("button");
+      head.type = "button";
+      head.className = "all-head";
+      var noSpan = document.createElement("span");
+      noSpan.className = "all-no";
+      noSpan.textContent = q.no;
+      head.appendChild(noSpan);
+      if (q.ji) {
+        var b = makeJiBadge(q.ji);
+        if (b) head.appendChild(b);
+      }
+      var poemSpan = document.createElement("span");
+      poemSpan.className = "all-poem";
+      poemSpan.textContent = q.poem || q.name || q.jie;
+      head.appendChild(poemSpan);
+      var body = document.createElement("div");
+      body.className = "all-body";
+      var p = document.createElement("div");
+      p.className = "all-poem-full";
+      p.textContent = q.poem || q.name;
+      body.appendChild(p);
+      if (q.jie) {
+        var j = document.createElement("div");
+        j.className = "all-jie";
+        j.textContent = CFG.jieLabel + "：" + q.jie;
+        body.appendChild(j);
+      }
+      for (var k = 0; k < q.extra.length; k++) {
+        var line = document.createElement("div");
+        line.className = "all-jie";
+        line.textContent = q.extra[k].label + "：" + q.extra[k].value;
+        body.appendChild(line);
+      }
+      row.appendChild(head);
+      row.appendChild(body);
+      (function (r) {
+        head.addEventListener("click", function () { r.classList.toggle("open"); });
+      })(row);
+      allList.appendChild(row);
+    }
+  })();
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线鼓机 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .transport {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: flex-end;
+      margin-bottom: var(--space-2);
+    }
+    .ctl-group { display: flex; flex-direction: column; gap: 4px; }
+    .ctl-group label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+    }
+    .bpm-row { display: flex; gap: 6px; align-items: center; }
+    .bpm-row .input { width: 88px; height: 40px; text-align: center; padding: 0 4px; }
+    .bpm-row .btn { height: 40px; min-width: 40px; padding: 0 10px; }
+    .ctl-row { display: flex; gap: 12px; align-items: center; }
+    .ctl-row input[type=range] { width: 140px; }
+    .act-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .act-row .btn { height: 40px; min-width: 0; padding: 0 14px; font-size: 13px; }
+    .grid-wrap {
+      overflow-x: auto;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .drum-grid { min-width: 720px; }
+    .drum-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .drum-row:last-child { border-bottom: none; }
+    .track-label {
+      width: 52px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-align: right;
+      padding-right: 6px;
+    }
+    .track-btns { display: flex; gap: 3px; flex-shrink: 0; margin-right: 4px; }
+    .track-btns button {
+      width: 26px;
+      height: 24px;
+      font-size: 11px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    .track-btns button.on { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .cells { display: flex; gap: 3px; }
+    .cell {
+      width: 20px;
+      height: 24px;
+      border-radius: 3px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-soft);
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .cell.on { background: var(--color-text-primary); border-color: var(--color-text-primary); }
+    .cell.group-gap { margin-left: 10px; }
+    .cell.lit {
+      box-shadow: 0 0 0 2px var(--color-accent);
+      border-color: var(--color-text-primary);
+    }
+    .cell.lit.on { background: var(--color-accent-hover); }
+    .row-rev { margin-left: 6px; flex-shrink: 0; }
+    .row-rev button {
+      height: 24px;
+      font-size: 11px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      padding: 0 8px;
+    }
+    .kbd-hint {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-disabled);
+      margin-top: var(--space-2);
+      line-height: 1.8;
+    }
+    .preset-sel { height: 40px; border: 1px solid #DDDDDD; border-radius: var(--radius-md); background: var(--color-bg); padding: 0 8px; font-size: 13px; color: var(--color-text-primary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>在线鼓机</h1>
+    <p class="tool-desc">用 9 轨 × 32 步的步进音序器即兴编曲，所有声音均由浏览器实时合成，无需任何音频文件。</p>
+    <div class="card">
+      <div class="transport">
+        <div class="ctl-group">
+          <label>速度（BPM）</label>
+          <div class="bpm-row">
+            <button id="bpmMinus" class="btn btn-secondary">−10</button>
+            <input id="bpmInput" class="input" type="number" min="40" max="240" value="120">
+            <button id="bpmPlus" class="btn btn-secondary">+10</button>
+          </div>
+        </div>
+        <div class="ctl-group">
+          <label>摇摆 Swing</label>
+          <div class="ctl-row">
+            <input id="swingInput" type="range" min="0" max="100" value="0">
+            <span id="swingVal" style="font-size:12px;color:var(--color-text-secondary);width:34px">0%</span>
+          </div>
+        </div>
+        <div class="ctl-group">
+          <label>音量</label>
+          <div class="ctl-row">
+            <input id="volumeInput" type="range" min="0" max="100" value="80">
+            <span id="volumeVal" style="font-size:12px;color:var(--color-text-secondary);width:34px">80%</span>
+          </div>
+        </div>
+        <div class="ctl-group">
+          <label>预设节奏</label>
+          <select id="presetSel" class="preset-sel">
+            <option value="">— 不加载 —</option>
+            <option value="rock">摇滚</option>
+            <option value="electro">电子</option>
+            <option value="hiphop">嘻哈</option>
+            <option value="funk">放克</option>
+          </select>
+        </div>
+      </div>
+      <div class="act-row">
+        <button id="playBtn" class="btn btn-primary">播放</button>
+        <button id="undoBtn" class="btn btn-secondary">撤销</button>
+        <button id="redoBtn" class="btn btn-secondary">重做</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="exportBtn" class="btn btn-secondary">导出工程</button>
+        <button id="importBtn" class="btn btn-secondary">导入工程</button>
+      </div>
+      <input type="file" id="importInput" accept=".json,application/json" style="display:none">
+    </div>
+    <div class="card">
+      <div class="grid-wrap">
+        <div class="drum-grid" id="drumGrid"></div>
+      </div>
+      <div class="kbd-hint">点击或拖拽网格可绘制音符（每 4 步一组）；M 静音 / S 独奏 / 行末按钮反转整轨；空格键播放与停止；Ctrl+Z 撤销、Ctrl+Y 重做（最多 30 步）。</div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var TRACKS = [
+        { name: '底鼓' }, { name: '军鼓' }, { name: '闭镲' }, { name: '开镲' },
+        { name: '拍手' }, { name: '叮叮镲' }, { name: '高音鼓' }, { name: '中音鼓' }, { name: '低音鼓' }
+      ];
+      var STEP_COUNT = 32;
+      var MAX_HISTORY = 30;
+      var patterns = [];
+      var muted = [];
+      var solo = [];
+      var bpm = 120;
+      var swing = 0;
+      var volume = 80;
+      var playing = false;
+      var currentStep = 0;
+      var nextTime = 0;
+      var playStartTime = 0;
+      var timerId = null;
+      var visualTimer = null;
+      var history = [];
+      var redoStack = [];
+      var ctx = null;
+      var master = null;
+      var noiseBuf = null;
+      var painting = false;
+      var paintValue = 1;
+      var cellMap = [];
+      var presets = buildPresets();
+
+      function deepCopy(grid) {
+        var out = [];
+        for (var i = 0; i < grid.length; i++) out.push(grid[i].slice());
+        return out;
+      }
+
+      function snapshot() {
+        return deepCopy(patterns);
+      }
+
+      function pushHistory() {
+        history.push(snapshot());
+        if (history.length > MAX_HISTORY) history.shift();
+        redoStack = [];
+        syncUndoBtns();
+      }
+
+      function restore(grid) {
+        patterns = grid;
+        paintAll();
+        syncUndoBtns();
+      }
+
+      function undo() {
+        if (history.length === 0) return;
+        redoStack.push(snapshot());
+        restore(history.pop());
+        setStatus('已撤销');
+      }
+
+      function redo() {
+        if (redoStack.length === 0) return;
+        history.push(snapshot());
+        restore(redoStack.pop());
+        setStatus('已重做');
+      }
+
+      function syncUndoBtns() {
+        document.getElementById('undoBtn').disabled = history.length === 0;
+        document.getElementById('redoBtn').disabled = redoStack.length === 0;
+      }
+
+      function buildPresets() {
+        function p(kick, snare, hatC, hatO, clap, ride, tomH, tomM, tomL) {
+          var rows = [];
+          for (var i = 0; i < 9; i++) rows.push(new Array(STEP_COUNT).join('0').split('').map(Number));
+          var sets = [kick, snare, hatC, hatO, clap, ride, tomH, tomM, tomL];
+          for (var r = 0; r < 9; r++) {
+            for (var s = 0; s < sets[r].length; s++) rows[r][sets[r][s]] = 1;
+          }
+          return rows;
+        }
+        return {
+          rock: p([0, 6, 10, 16, 22, 26], [8, 24], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30], [], [], [], [30], [], [26]),
+          electro: p([0, 4, 8, 12, 16, 20, 24, 28], [], [2, 6, 10, 14, 18, 22, 26, 30], [14, 30], [8, 24], [2, 6, 10, 18, 22, 26], [28], [30], []),
+          hiphop: p([0, 7, 16, 23], [8, 24], [4, 12, 20, 28], [2, 6, 10, 14, 18, 22, 26, 30], [], [], [30], [14, 22], []),
+          funk: p([0, 6, 12, 16, 22, 26], [8, 24], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30], [4, 20], [], [12, 28], [], [14, 30], [18])
+        };
+      }
+
+      function buildGrid() {
+        var grid = document.getElementById('drumGrid');
+        cellMap = [];
+        for (var t = 0; t < TRACKS.length; t++) {
+          var row = document.createElement('div');
+          row.className = 'drum-row';
+          var label = document.createElement('div');
+          label.className = 'track-label';
+          label.textContent = TRACKS[t].name;
+          row.appendChild(label);
+          var btns = document.createElement('div');
+          btns.className = 'track-btns';
+          var mBtn = document.createElement('button');
+          mBtn.textContent = 'M';
+          mBtn.title = '静音';
+          mBtn.addEventListener('click', (function (tr) {
+            return function (e) {
+              muted[tr] = !muted[tr];
+              e.currentTarget.className = muted[tr] ? 'on' : '';
+              setStatus(TRACKS[tr].name + (muted[tr] ? ' 已静音' : ' 取消静音'));
+            };
+          })(t));
+          var sBtn = document.createElement('button');
+          sBtn.textContent = 'S';
+          sBtn.title = '独奏';
+          sBtn.addEventListener('click', (function (tr) {
+            return function (e) {
+              solo[tr] = !solo[tr];
+              e.currentTarget.className = solo[tr] ? 'on' : '';
+              setStatus(TRACKS[tr].name + (solo[tr] ? ' 已独奏' : ' 取消独奏'));
+            };
+          })(t));
+          btns.appendChild(mBtn);
+          btns.appendChild(sBtn);
+          row.appendChild(btns);
+          var cells = document.createElement('div');
+          cells.className = 'cells';
+          var rowCells = [];
+          for (var s = 0; s < STEP_COUNT; s++) {
+            (function (tr, st) {
+              var cell = document.createElement('button');
+              cell.className = 'cell';
+              cell.type = 'button';
+              if (st > 0 && st % 8 === 0) cell.classList.add('group-gap');
+              cell.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                painting = true;
+                paintValue = patterns[tr][st] ? 0 : 1;
+                toggleCell(tr, st);
+              });
+              cell.addEventListener('mouseover', function () {
+                if (painting) toggleCell(tr, st, paintValue);
+              });
+              cells.appendChild(cell);
+              rowCells.push(cell);
+            })(t, s);
+          }
+          row.appendChild(cells);
+          var rev = document.createElement('div');
+          rev.className = 'row-rev';
+          var revBtn = document.createElement('button');
+          revBtn.textContent = '反转';
+          revBtn.title = '反转整轨音符';
+          revBtn.addEventListener('click', (function (tr) {
+            return function () {
+              pushHistory();
+              patterns[tr].reverse();
+              paintRow(tr);
+              setStatus(TRACKS[tr].name + ' 已反转');
+            };
+          })(t));
+          rev.appendChild(revBtn);
+          row.appendChild(rev);
+          grid.appendChild(row);
+          cellMap.push(rowCells);
+        }
+        document.addEventListener('mouseup', function () { painting = false; });
+      }
+
+      function toggleCell(tr, st, force) {
+        var v = force !== undefined ? force : (patterns[tr][st] ? 0 : 1);
+        if (patterns[tr][st] === v) return;
+        pushHistory();
+        patterns[tr][st] = v;
+        paintCell(tr, st);
+      }
+
+      function paintCell(tr, st) {
+        var cell = cellMap[tr][st];
+        if (patterns[tr][st]) cell.classList.add('on');
+        else cell.classList.remove('on');
+      }
+
+      function paintRow(tr) {
+        for (var s = 0; s < STEP_COUNT; s++) paintCell(tr, s);
+      }
+
+      function paintAll() {
+        for (var t = 0; t < TRACKS.length; t++) paintRow(t);
+      }
+
+      function paintPlayhead(step) {
+        for (var t = 0; t < TRACKS.length; t++) {
+          var prev = (step - 1 + STEP_COUNT) % STEP_COUNT;
+          if (prev >= 0 && cellMap[t] && cellMap[t][prev]) cellMap[t][prev].classList.remove('lit');
+          if (cellMap[t] && cellMap[t][step]) cellMap[t][step].classList.add('lit');
+        }
+      }
+
+      function clearAll() {
+        pushHistory();
+        for (var t = 0; t < TRACKS.length; t++) {
+          for (var s = 0; s < STEP_COUNT; s++) patterns[t][s] = 0;
+        }
+        paintAll();
+        setStatus('已清空全部音符');
+      }
+
+      function applyPreset(key) {
+        if (!presets[key]) return;
+        pushHistory();
+        patterns = deepCopy(presets[key]);
+        paintAll();
+        setStatus('已加载预设：' + document.getElementById('presetSel').selectedOptions[0].textContent);
+      }
+
+      function ensureAudio() {
+        if (!ctx) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return false;
+          ctx = new AC();
+          master = ctx.createGain();
+          master.gain.value = volume / 100;
+          master.connect(ctx.destination);
+          noiseBuf = makeNoise();
+        }
+        if (ctx.state === 'suspended') ctx.resume();
+        return true;
+      }
+
+      function makeNoise() {
+        var len = ctx.sampleRate;
+        var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        return buf;
+      }
+
+      function envGain(t, peak, dur) {
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(peak, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        g.connect(master);
+        return g;
+      }
+
+      function vKick(t) {
+        var o = ctx.createOscillator();
+        var g = envGain(t, 1, 0.4);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(160, t);
+        o.frequency.exponentialRampToValueAtTime(45, t + 0.32);
+        o.connect(g);
+        o.start(t);
+        o.stop(t + 0.42);
+      }
+
+      function vSnare(t) {
+        var n = ctx.createBufferSource();
+        n.buffer = noiseBuf;
+        var bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 1800;
+        bp.Q.value = 0.9;
+        var g = envGain(t, 0.8, 0.2);
+        n.connect(bp);
+        bp.connect(g);
+        n.start(t);
+        n.stop(t + 0.22);
+        var o = ctx.createOscillator();
+        var g2 = envGain(t, 0.4, 0.1);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(190, t);
+        o.frequency.exponentialRampToValueAtTime(120, t + 0.1);
+        o.connect(g2);
+        o.start(t);
+        o.stop(t + 0.12);
+      }
+
+      function vHatC(t) {
+        var n = ctx.createBufferSource();
+        n.buffer = noiseBuf;
+        var hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 7000;
+        var g = envGain(t, 0.5, 0.08);
+        n.connect(hp);
+        hp.connect(g);
+        n.start(t);
+        n.stop(t + 0.1);
+      }
+
+      function vHatO(t) {
+        var n = ctx.createBufferSource();
+        n.buffer = noiseBuf;
+        var hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 6500;
+        var g = envGain(t, 0.45, 0.55);
+        n.connect(hp);
+        hp.connect(g);
+        n.start(t);
+        n.stop(t + 0.6);
+      }
+
+      function vClap(t) {
+        var n = ctx.createBufferSource();
+        n.buffer = noiseBuf;
+        var bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 1300;
+        bp.Q.value = 1.2;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(0.8, t + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.15, t + 0.012);
+        g.gain.linearRampToValueAtTime(0.8, t + 0.017);
+        g.gain.exponentialRampToValueAtTime(0.15, t + 0.024);
+        g.gain.linearRampToValueAtTime(0.8, t + 0.029);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        g.connect(master);
+        n.connect(bp);
+        bp.connect(g);
+        n.start(t);
+        n.stop(t + 0.22);
+      }
+
+      function vRide(t) {
+        var n = ctx.createBufferSource();
+        n.buffer = noiseBuf;
+        var hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 9000;
+        var g = envGain(t, 0.3, 0.5);
+        n.connect(hp);
+        hp.connect(g);
+        n.start(t);
+        n.stop(t + 0.55);
+      }
+
+      function vTom(tr, t) {
+        var freqs = [[340, 240, 0.1], [260, 180, 0.14], [200, 120, 0.18]];
+        var f = freqs[tr - 6];
+        var o = ctx.createOscillator();
+        var g = envGain(t, 0.7, f[2] + 0.08);
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(f[0], t);
+        o.frequency.exponentialRampToValueAtTime(f[1], t + f[2]);
+        o.connect(g);
+        o.start(t);
+        o.stop(t + f[2] + 0.1);
+      }
+
+      function playVoice(tr, t) {
+        switch (tr) {
+          case 0: vKick(t); break;
+          case 1: vSnare(t); break;
+          case 2: vHatC(t); break;
+          case 3: vHatO(t); break;
+          case 4: vClap(t); break;
+          case 5: vRide(t); break;
+          case 6: case 7: case 8: vTom(tr, t); break;
+        }
+      }
+
+      function isTrackAudible(tr) {
+        var hasSolo = false;
+        for (var i = 0; i < solo.length; i++) if (solo[i]) { hasSolo = true; break; }
+        if (hasSolo) return solo[tr];
+        return !muted[tr];
+      }
+
+      function stepDur() {
+        return 60 / bpm / 4;
+      }
+
+      function scheduleStep(step, t) {
+        for (var tr = 0; tr < TRACKS.length; tr++) {
+          if (patterns[tr][step] && isTrackAudible(tr)) playVoice(tr, t);
+        }
+      }
+
+      function schedulerTick() {
+        while (nextTime < ctx.currentTime + 0.12) {
+          var step = currentStep % STEP_COUNT;
+          var sw = (step % 2 === 1) ? (swing / 100) * stepDur() * 0.5 : 0;
+          scheduleStep(step, nextTime + sw);
+          nextTime += stepDur();
+          currentStep++;
+        }
+      }
+
+      function visualTick() {
+        var elapsed = ctx.currentTime - playStartTime;
+        var step = Math.floor(elapsed / stepDur()) % STEP_COUNT;
+        if (step !== currentStep % STEP_COUNT) {
+          paintPlayhead(step);
+        }
+      }
+
+      function play() {
+        if (!ensureAudio()) {
+          setStatus('当前浏览器不支持 Web Audio，无法播放', 'error');
+          return;
+        }
+        if (playing) return;
+        playing = true;
+        currentStep = 0;
+        nextTime = ctx.currentTime + 0.06;
+        playStartTime = ctx.currentTime;
+        document.getElementById('playBtn').textContent = '停止';
+        timerId = setInterval(schedulerTick, 25);
+        visualTimer = setInterval(visualTick, 25);
+        setStatus('播放中（空格键可停止）');
+      }
+
+      function stop() {
+        if (!playing) return;
+        playing = false;
+        clearInterval(timerId);
+        clearInterval(visualTimer);
+        timerId = null;
+        visualTimer = null;
+        for (var t = 0; t < TRACKS.length; t++) {
+          var cells = cellMap[t];
+          for (var s = 0; s < STEP_COUNT; s++) cells[s].classList.remove('lit');
+        }
+        document.getElementById('playBtn').textContent = '播放';
+        setStatus('已停止');
+      }
+
+      function togglePlay() {
+        if (playing) stop();
+        else play();
+      }
+
+      function exportProject() {
+        var data = {
+          name: 'S-Jiffy 鼓机工程',
+          version: 1,
+          bpm: bpm,
+          swing: swing,
+          volume: volume,
+          steps: STEP_COUNT,
+          tracks: []
+        };
+        for (var t = 0; t < TRACKS.length; t++) {
+          data.tracks.push({
+            name: TRACKS[t].name,
+            muted: !!muted[t],
+            solo: !!solo[t],
+            pattern: patterns[t].slice()
+          });
+        }
+        var blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 's-jiffy-drum-project.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setStatus('工程已导出为 JSON 文件');
+      }
+
+      function importProject(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var data = JSON.parse(reader.result);
+            if (!data || !data.tracks || data.tracks.length !== TRACKS.length) {
+              throw new Error('字段不完整');
+            }
+            var grid = [];
+            for (var t = 0; t < TRACKS.length; t++) {
+              var pat = data.tracks[t].pattern;
+              if (!pat || pat.length !== STEP_COUNT) throw new Error('音序长度不符');
+              var row = [];
+              for (var s = 0; s < STEP_COUNT; s++) row.push(pat[s] ? 1 : 0);
+              grid.push(row);
+            }
+            pushHistory();
+            patterns = grid;
+            for (var i = 0; i < TRACKS.length; i++) {
+              muted[i] = !!data.tracks[i].muted;
+              solo[i] = !!data.tracks[i].solo;
+            }
+            bpm = clampBpm(parseInt(data.bpm, 10));
+            swing = clampInt(data.swing, 0, 100);
+            volume = clampInt(data.volume, 0, 100);
+            document.getElementById('bpmInput').value = bpm;
+            document.getElementById('swingInput').value = swing;
+            document.getElementById('swingVal').textContent = swing + '%';
+            document.getElementById('volumeInput').value = volume;
+            document.getElementById('volumeVal').textContent = volume + '%';
+            if (master) master.gain.value = volume / 100;
+            paintAll();
+            syncMuteSolo();
+            setStatus('工程导入成功');
+          } catch (e) {
+            setStatus('导入失败：JSON 格式不正确或字段缺失', 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function syncMuteSolo() {
+        var grid = document.getElementById('drumGrid');
+        var rows = grid.children;
+        for (var t = 0; t < TRACKS.length; t++) {
+          var btns = rows[t].children[1];
+          btns.children[0].className = muted[t] ? 'on' : '';
+          btns.children[1].className = solo[t] ? 'on' : '';
+        }
+      }
+
+      function clampBpm(v) {
+        if (isNaN(v)) return 120;
+        return Math.max(40, Math.min(240, v));
+      }
+
+      function clampInt(v, lo, hi) {
+        if (isNaN(v)) return lo;
+        return Math.max(lo, Math.min(hi, v));
+      }
+
+      document.getElementById('playBtn').addEventListener('click', togglePlay);
+      document.getElementById('clearBtn').addEventListener('click', clearAll);
+      document.getElementById('undoBtn').addEventListener('click', undo);
+      document.getElementById('redoBtn').addEventListener('click', redo);
+      document.getElementById('bpmMinus').addEventListener('click', function () {
+        bpm = clampBpm(bpm - 10);
+        document.getElementById('bpmInput').value = bpm;
+      });
+      document.getElementById('bpmPlus').addEventListener('click', function () {
+        bpm = clampBpm(bpm + 10);
+        document.getElementById('bpmInput').value = bpm;
+      });
+      document.getElementById('bpmInput').addEventListener('change', function () {
+        bpm = clampBpm(parseInt(this.value, 10));
+        this.value = bpm;
+      });
+      document.getElementById('swingInput').addEventListener('input', function () {
+        swing = parseInt(this.value, 10);
+        document.getElementById('swingVal').textContent = swing + '%';
+      });
+      document.getElementById('volumeInput').addEventListener('input', function () {
+        volume = parseInt(this.value, 10);
+        document.getElementById('volumeVal').textContent = volume + '%';
+        if (master) master.gain.value = volume / 100;
+      });
+      document.getElementById('presetSel').addEventListener('change', function () {
+        if (this.value) applyPreset(this.value);
+        this.value = '';
+      });
+      document.getElementById('exportBtn').addEventListener('click', exportProject);
+      document.getElementById('importBtn').addEventListener('click', function () {
+        document.getElementById('importInput').click();
+      });
+      document.getElementById('importInput').addEventListener('change', function () {
+        if (this.files && this.files.length > 0) importProject(this.files[0]);
+        this.value = '';
+      });
+
+      document.addEventListener('keydown', function (e) {
+        var tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (e.key === ' ' || e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+          e.preventDefault();
+          undo();
+        } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+          e.preventDefault();
+          redo();
+        }
+      });
+
+      for (var t = 0; t < TRACKS.length; t++) {
+        patterns.push(new Array(STEP_COUNT).join('0').split('').map(Number));
+        muted.push(false);
+        solo.push(false);
+      }
+
+      buildGrid();
+      paintAll();
+      syncUndoBtns();
+    })();
+  </script>
+</body>
+</html>

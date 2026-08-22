@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>玉帝灵签 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+.logo-text { font-size: var(--font-size-lg); font-weight: 600; }
+.draw-card { text-align: center; }
+.draw-tip { max-width: 540px; margin: 0 auto var(--space-3); font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.7; }
+.qian-stage { position: relative; width: 120px; height: 230px; margin: 0 auto var(--space-3); }
+.qian-tube { position: absolute; left: 50%; bottom: 0; width: 92px; height: 170px; margin-left: -46px; border: 1px solid #5E2018; border-radius: 10px 10px 16px 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.22); z-index: 0; }
+.qian-tube::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 9px 9px 15px 15px; background: linear-gradient(180deg, #B3442F, #A03224 30%, #8A2B1E 70%, #7C2418); }
+.qian-tube::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 24px; border-radius: 9px 9px 0 0; background: linear-gradient(180deg, #C0533C, #A93824); box-shadow: inset 0 -4px 6px rgba(0,0,0,0.25), inset 0 2px 3px rgba(255,255,255,0.18); }
+.qian-slip { position: absolute; left: 50%; bottom: 20px; width: 56px; height: 96px; margin-left: -28px; z-index: -1; background: repeating-linear-gradient(90deg, transparent 0 26px, rgba(0,0,0,0.05) 26px 27px), linear-gradient(180deg, #FDF9EF, #F6EDD8); border: 1px solid #D8C79F; border-radius: 5px; }
+.qian-slip::after { content: "签"; position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 30px; color: #8A4A1F; font-weight: 600; }
+.qian-stage.drawing { animation: stageWiggle 2.6s ease-in-out both; }
+.qian-stage.drawing .qian-slip { animation: slipRise 2.6s ease-in-out both; }
+.qian-stage.drawing .qian-tube::after { animation: lipPulse 0.45s ease-in-out infinite alternate; }
+.qian-stage.drawn .qian-slip { animation: slipOut 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.qian-stage.drawn .qian-slip::after { content: "✓"; color: #346538; }
+@keyframes stageWiggle {
+  0% { transform: rotate(0deg) translateY(0); }
+  10% { transform: rotate(-5deg) translateY(-4px); }
+  20% { transform: rotate(4deg) translateY(-9px); }
+  35% { transform: rotate(-4deg) translateY(-13px); }
+  50% { transform: rotate(5deg) translateY(-11px); }
+  65% { transform: rotate(-3deg) translateY(-7px); }
+  80% { transform: rotate(2deg) translateY(-3px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+@keyframes slipRise {
+  0% { bottom: 20px; }
+  12% { bottom: 84px; }
+  24% { bottom: 24px; }
+  36% { bottom: 96px; }
+  48% { bottom: 26px; }
+  60% { bottom: 106px; }
+  72% { bottom: 28px; }
+  84% { bottom: 114px; }
+  100% { bottom: 118px; }
+}
+@keyframes slipOut {
+  0% { bottom: 118px; opacity: 1; }
+  100% { bottom: 132px; opacity: 1; }
+}
+@keyframes lipPulse { from { opacity: 1; } to { opacity: 0.55; } }
+.result-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+.qian-no { font-size: 28px; font-weight: 700; line-height: 1.2; }
+.qian-name { font-size: 15px; color: var(--color-text-secondary); font-weight: 600; }
+.ji-badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; border: 1px solid; font-size: var(--font-size-sm); }
+.jl-up { color: #2E5B31; background: #E9F1E9; border-color: #C4D8C6; }
+.jl-mid { color: #8A5B00; background: #F7EFDF; border-color: #E6D5AC; }
+.jl-down { color: #98302E; background: #F7E8E7; border-color: #E4C6C4; }
+.qian-poem { font-size: 17px; line-height: 2; margin-bottom: var(--space-2); }
+.qian-jie { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+.qian-extra-line { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.8; white-space: pre-wrap; word-break: break-word; margin-top: var(--space-1); }
+.result-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; }
+.result-card.show { animation: fadeUp 0.45s ease-out; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.all-actions { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); }
+.all-list { display: none; }
+.all-row { border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 8px; overflow: hidden; }
+.all-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--color-bg); border: none; cursor: pointer; font-family: var(--font-mono); font-size: 14px; color: var(--color-text-primary); text-align: left; }
+.all-head:hover { background: var(--color-bg-soft); }
+.all-head::after { content: "▸"; margin-left: auto; color: var(--color-text-secondary); }
+.all-row.open .all-head::after { content: "▾"; }
+.all-no { flex-shrink: 0; font-weight: 600; }
+.all-poem { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.all-body { display: none; padding: 12px 14px; border-top: 1px dashed var(--color-border); background: var(--color-bg-soft); font-size: var(--font-size-sm); line-height: 1.8; color: var(--color-text-secondary); white-space: pre-wrap; word-break: break-word; }
+.all-row.open .all-body { display: block; }
+.all-poem-full { color: var(--color-text-primary); margin-bottom: 6px; }
+.all-jie { margin-top: 4px; }
+.tool-note { margin-top: var(--space-4); font-size: var(--font-size-xs); color: var(--color-text-disabled); text-align: center; }
+footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px solid var(--color-border); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a class="back-btn" href="../../index.html">← 返回</a>
+    <span class="logo-text">S-Jiffy</span>
+  </header>
+  <main class="tool-workspace">
+    <h1>玉帝灵签</h1>
+    <p class="tool-desc">玉帝灵签共二十八支，敬问天庭主宰，卜问吉凶祸福、前程际遇。</p>
+    <div class="card draw-card">
+      <p class="draw-tip">请默念您的姓名、生日与所问之事，一日一签，心诚则灵。</p>
+      <div class="qian-stage" id="qianStage">
+        <div class="qian-tube"><div class="qian-slip"></div></div>
+      </div>
+      <button id="drawBtn" class="btn btn-primary">开始抽签</button>
+    </div>
+    <div class="card result-card" id="resultCard" style="display:none" aria-live="polite">
+      <div class="result-head">
+        <span class="qian-no" id="resNo"></span>
+        <span class="qian-name" id="resName" style="display:none"></span>
+        <span id="resJi"></span>
+      </div>
+      <div class="qian-poem" id="resPoem"></div>
+      <div class="qian-jie" id="resJie"></div>
+      <div id="resExtra"></div>
+      <div class="result-actions">
+        <button id="againBtn" class="btn btn-secondary">重新抽签</button>
+        <button id="copyBtn" class="btn btn-secondary">复制结果</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="all-actions">
+        <button id="allToggle" class="btn btn-secondary">查看全部签文</button>
+      </div>
+      <div class="all-list" id="allList"></div>
+    </div>
+    <p class="tool-note">本工具数据源自公开传统文化资料，仅供娱乐参考。</p>
+  </main>
+  <footer class="tool-status" id="statusBar"></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+(function () {
+  var CFG = {"name":"玉帝灵签","noLabel":"第 ","noSuffix":" 签","nameField":"","jiField":"ji","poemField":"text","poemLabel":"签文","jieField":"jie","jieLabel":"解签","extra":[]};
+  var QIAN = [{"n":1,"ji":"上灵签","text":"福如东海寿南山，君尔何故苦中间？富贵荣华天注定，太白贵人守身边。","jie":"凡事大吉，暗劝世人。","jieyue":"好花芳菲，未曾结籽，狂风吹着，依旧和平，故事相同。","diangu":"在唐朝时期，郭子仪是一位杰出的将领和政治家。他在战争中表现出色，被封为“全禄大夫”，并担任了多个重要职位，包括东都留守、京兆尹等。他对巩固唐朝政权，发展农业和商业都做出了重要贡献。然而，他在安史之乱期间曾与叛军联手，这使他的名声受到一定影响。尽管如此，郭子仪的战术和管理技能仍然被后人称赞，并被视为中国历史上著名的军事家之一。"},{"n":2,"ji":"上灵签","text":"风恬浪静好行舟，高歌鼓舞乐悠悠；四皓八仙齐畅饮，十八学士登瀛洲。","jie":"功名大吉，出外大吉。","jieyue":"天地祥和，龙门方开，功名守得，好事自来，东风不顺，祇于南州。","diangu":"相传古时候有十八位学士，他们游历四方，一路上到处传授学问，受到了众人的敬仰和爱戴。有一天，他们来到了神话中的蓬莱仙境——瀛洲。站在瀛台之巅，十八学士看到了一个全新的世界，他们感慨万千，心中充满了感慨和敬畏。他们体会到了天地间的无限奥妙，也更加坚定了自己学习的决心。登上瀛台之后，十八学士离开了瀛洲，前往更加广阔的天地中，寻找更多的学问和真理。他们不断的学习进修，成为了后世的学术泰斗和伟大的文化传承者。"},{"n":3,"ji":"下下灵签","text":"鬼门关上撞无常，破船更遇浪头风；久远冤家相罗网，运交吉时也遭殃。","jie":"暗阴有财气，光阳则不吉。","jieyue":"卦有异象，暗内穿针，只得小心，凡事莫急。","diangu":"武则天在唐朝晚期统治了中国。她是中国历史上唯一的女皇帝，也是唐朝历史上最具有争议性的统治者之一。在她的统治下，中国经济繁荣，文化发展，政治稳定。她通过实施一系列政治和经济改革，加强了中央政府的控制力，促进了社会的稳定和繁荣。虽然她在统治期间面临一些挑战和反对，但她最终坐稳了天下，为唐朝的繁荣和发展做出了重要贡献。"},{"n":4,"ji":"中平灵签","text":"哑子得梦事难言，瞎子穿针更不然；九曲明珠穿得过，在陈绝粮全因贤。","jie":"凡事艰难，有贵人助。","jieyue":"哑子得梦，前程阻扰，贵人扶事，喜得平安，到老双全。","diangu":"孔子在陈：春秋时，孔子应楚国之聘，拟往一展抱负。孔子是中国古代思想家。他出生于公元前551年，去世于公元前479年，在春秋时期陈国的赫赫威望民间流传着关于他的大量故事，这些故事经过演变汇集而成，形成了《陈典故》。"},{"n":5,"ji":"上灵签","text":"宝镜团圆似月明，琴瑟和鸣畅我情；红杏枝头春意闹，登科一举状元名。","jie":"照时婚姻买卖大吉，初一至十五求大吉。","jieyue":"缺月再圆，并蒂莲开，千年宝镜，故月重新，依旧成双。","diangu":"王安石小登科指的是王安石在他初次参加科举考试时的表现。王安石是北宋时期著名的政治家、改革家和文学家，他小登科的时间约在1040年左右。当时，王安石还是一名年轻的学生，但因为他具有出色的才华和学识，他成功地通过了科举考试，得以成为一名进士，并开始了他的政治生涯。王安石在政治生涯中秉持着自己的改革理念，为宋朝政治、经济和文化的进步做出了卓越的贡献。"},{"n":6,"ji":"中平灵签","text":"叶落根深霜不怕，枯木逢春再发芽；虽是中间多进退，钱财到底属我家。","jie":"求财照时吉，事磨但终成。","jieyue":"凿石得玉，淘沙见金，小船过滩，前程有路，贵人扶持。","diangu":"刘福妻劝夫典故发生在春秋时期，当时刘福是齐国的大臣，他被困在五里外的一个小山洞里。他有一位非常勤劳而忠心的夫人，她不惜一切代价将丈夫营救出来。当刘福重获自由之后，他对夫人说：“这次营救你未免有些冒险，我以后再也不会让你冒这样的危险了!”夫人的回答很简单，只是叮嘱：“夫君，明智点，不要再冒这样的危险了!”"},{"n":7,"ji":"中平灵签","text":"梅花冻雪抖芳菲，江上渔翁把钓飞；夜静水寒鱼不饵，满船空载月明归。","jie":"凡事平常，心诚运至。","jieyue":"劝读书，功名遂，清云有路，开山得宝，宽心待时。","diangu":"三国时期蜀汉名将张飞在战斗中打败了名将严颜，并将其押回蜀汉，张飞问严颜：“大军至，何以不降而敢拒战？”严颜回答：“卿等无状，侵夺我州，我州但有断头将军，无降将军也！”张飞生气，命左右将严颜牵去砍头，严颜面不改容说：“砍头便砍头，何为怒邪！”张飞敬佩严颜的忠心和勇气，就释放了严颜并当他宾客。"},{"n":8,"ji":"上吉灵签","text":"皇天降下紫微星，除妖灭怪得安宁；二十八宿扶圣主，汉王家国再重兴。","jie":"暗时星出大吉，凡事二次大吉。","jieyue":"人生志健，星宿相扶，惊天动地，得水还衬，明月照旧，二次大吉。","diangu":"刘秀(5年—57年)，字文叔，汉朝东汉时期的创业者、开国皇帝。南阳郡蔡阳县人(今河南省南阳市邓州市蔡阳镇)，汉景帝刘启的九世孙，妻子阴丽华是南阳恭已侯阴陵侯阴识之孙女，自幼聪慧过人，勤奋好学，有才华。王莽篡汉后，有志之士纷纷起义，刘秀加入反王莽，后在刘縯组织的农民起义中当任军师，最终继承刘縯的事业，荡平各地反王莽的势力，建立汉朝东汉，即汉光武帝(或称汉刘秀)。其帝号为光武中兴皇帝，葬于洛阳陵园。"},{"n":9,"ji":"上吉灵签","text":"富贵总是天注定，五谷丰登胜上年；共享太平歌舜日，含哺鼓腹乐尧天。","jie":"凡事大吉，白天大吉。","jieyue":"日月被云遮，云开依旧明，前世婚缘，万物生来。","diangu":"舜是中国古代传说中的圣人，在中国文化中占有重要地位。据传，舜是一位善良、聪明、有才干的人，他治理国家十分成功，使百姓安居乐业，建立了伟大的人类社会。舜登临山巅，俯视四野，感受到万物生长，深刻理解了土地的重要性，于是开始耕种山地，种下了各种作物。他将农业视为国家的基础，通过劳动，使人们生产出更多的食物，从而改善了人民的生活状况，实现了国家的繁荣昌盛。"},{"n":10,"ji":"中吉灵签","text":"鲤鱼志气本英雄，屈守池中运未通；一旦峥嵘头角现，风云际会化成龙。","jie":"求财潮涨吉，出外风雨吉。","jieyue":"一时鲤鱼变成龙，西京有路直透天，平安走马，顺利行舟。","diangu":"吕蒙正是宋朝时期的一个着名将领，他在南宋时期任职于福建等地的军队中。据传说，吕蒙正曾经在一次训练中破坏了窑厂的瓷器，被指控犯了“破坏公物”的罪名。吕蒙正为此非常气愤，他认为这些艺术家缺乏良心和责任心，于是他决定采取行动。他带领军队包围了窑厂，并威胁要摧毁所有的瓷器，如果艺术家不退还赔偿款。最终艺术家感到威胁到自己的产业，同意向他赔偿。"},{"n":11,"ji":"下下灵签","text":"白虎出山欲害人，鱼入罗网难脱身；害人之心则害己，飞虫扑火自伤生。","jie":"宜守本份，谨防口舌。","jieyue":"自食恶果，寒心鬼扰，凡事虽成，不宜安身。","diangu":"这是一个关于韩信和钟离的传说。传说，韩信带着五千支军队来到钟离家中，钟离一见到军队就很害怕，怕他会杀掉他及家人，但韩信说他只要看看钟离的弓，不会害他们。钟离也不敢违背韩信的命令，于是将自己的弓树示他，但结果韩信却说他不会杀害他，而是要求他学习弓术，受他的教导。"},{"n":12,"ji":"中吉灵签","text":"太公钓鱼八十秋，除商灭纣再兴周；民安国定太平日，江山万里任君游。","jie":"凡事照旧，潮涨大吉。","jieyue":"身闲不闲卜中知，知足常乐自有福。","diangu":"相传太公是周朝的第一个宰相，为帮助周武王推翻商朝，他在寻求战友和支持者的过程中，来到了周武王的文王的领地。太公听到文王的话，知道他绝对不是一个只顾自己的人。于是，他帮助文王终于推翻了商朝，建立了周朝。"},{"n":13,"ji":"下下灵签","text":"鱼在小涧生长难，深处安身浅水寒；清冷香中抱膝吟，夷齐饿死首阳山。","jie":"头好尾衰，财气趋淡。","jieyue":"万里家州好，作事虎问龙，饶人不可进，息人应自洁。","diangu":"夷和齐两个隐士，不敢吃周朝的粮食，觉得这是一种耻辱，因为周朝在当时是中国的中央王朝，夷和齐则是其前朝国家的人，两个人就一同到首阳山里去隐居了，采了薇草来吃着，后来就在首阳山下饿死了。"},{"n":14,"ji":"中吉灵签","text":"释迦幻化妙应身，老君抛送玉麒麟；真宗求嗣生太子，梁纥祷丘出圣人。","jie":"诚信立世，有求必应，添油向善。","jieyue":"逢事须心诚，自有贵人扶。","diangu":"释迦幻化妙应身，是佛教中的一个概念，意为佛陀能随时随地以不同的身体出现，以方便众生的救渡。这种幻化的能力被称为“神力”，佛陀通过神力，可以在世间出现各种形态，如修行者、僧侣、皇帝、普通人等等，以便面对不同的众生和环境。这种幻化身的能力，既是佛陀智慧和慈悲的表现，也是教育和启迪众生的方法之一。"},{"n":15,"ji":"上吉灵签","text":"日上东方如火轮，十分光彩照乾坤；二十四气尽清洁，一年四季太平春。","jie":"凡事大吉，日照大吉。","jieyue":"前人栽果后人收，凡事迟疑不可取，当时进步，退后难留。","diangu":"观世音菩萨出身于兴林国妙庄王，以慈悲心超渡众生，在南海普陀洛迦山修成正果，号“正法明如来”，她以誓愿救护无明众生苦海，不脱免苦难，则不成佛。观世音菩萨渡人脱离苦海，神通广大。凡有哀求，祈求得到佛恩无量。在中国佛教历史上，观音渡众生一直被认为是佛法之大慈悲，是佛慈悲渡世的极大功德。"},{"n":16,"ji":"中平灵签","text":"一盏孤灯对面休，富贵钱财水上舟；任他险处不见险，主人有福再添油。","jie":"凡事不须强求，向善即逢凶化吉。","jieyue":"摘来钱财，如何得久，免伤和气，且宜退后，多种善果，恶事莫为。","diangu":"朱寿昌弃官寻母典故是一个传说中的故事，讲述的是一个北宋时期的叫朱寿昌的人，他从小失去了母亲，后来他从皇帝那里被收容，考上了官，随后他发誓要找出他的母亲，于是他潜心学习，终于成功了，最终还找到了自己的七十多岁的老母亲。此故事反映了对亲人的情义之深，也反映了勤奋学习的重要性。"},{"n":17,"ji":"中吉灵签","text":"三人各姓同一心，桃园结义情意深；山中石头皆是宝，运来都能变成金。","jie":"凡事人和，能成事业。","jieyue":"志同道合能成事，开花逢春喜气扬，步步相宜，宅旺家兴。","diangu":"桃园结义是指刘备、关羽、张飞三人在桃园结拜为兄弟的典故。三国乱世之时，刘备因对曹操的忠诚感到失望，决定与关羽、张飞一起离开，寻求自己的道路。三人在夜晚相遇于桃园，饮酒高歌，相约结义。通过握手誓言，三人一同宣誓成为兄弟，肝胆相照，同盟共抗曹操。桃园结义的故事象征着忠诚、义气和团结，也成为中华文化中的经典形象之一。"},{"n":18,"ji":"中平灵签","text":"囚人出禁上酒楼，畅饮宽杯解闷头；劝君慎忍一时气，非干己事且相饶。","jie":"宜守本份，以退为进。","jieyue":"好花冽雪里，开时不遇春，宜退不可进，宜守免灾殃。","diangu":"程咬金是唐朝末年的著名将领，他是唐代的豪杰，极有威名，曾经屡建战功，但因为一次意外的失策而被废黜为庶人，家破人亡，孤苦伶仃地流落江湖。据传说，唐朝时期，程咬金被废黜为庶人后，过着极苦的生活。一天，他听说皇帝要为百姓赦免一批罪犯，并且招募战士，让他们重新回到军队中去。于是，程咬金来到了皇宫，请求皇帝给他一个机会，让他重新回到战场上来为国效命。当时的皇帝看到程咬金的忠诚和勇气，便亲自为他恢复了他的官职。从此之后，程咬金又成为了唐朝的一位重要将领，取得了更多的胜利。这个故事告诉我们，即使陷入了困境，也不要失去信心和奋斗的勇气，只要毫不放弃，坚持不懈地努力，就有可能获得成功。"},{"n":19,"ji":"下下灵签","text":"若要求财未得时，只恐鬼贼相侵害；关门闭户家中坐，灾祸偏从天上来。","jie":"遇事不吉，须防小人，防患灾祸。","jieyue":"人逢恶贼心存扰虑，虽有贵人徒劳开心，休贪他人马，自失手中牛。","diangu":"唐玄宗李隆基苦等武惠妃过世后，宦官高力士在民间寻得江采萍，她被封为梅妃。梅妃是才貌双全的女子，唐玄宗对她甚是宠爱，在宫殿周围种上梅树，使她能望见最爱的梅花。但失宠与宠爱更替时，美人杨玉环的到来，最终梅妃只剩下陪伴她的梅花，梅阁成为了冷宫。"},{"n":20,"ji":"中吉灵签","text":"夫妇有意两相求，绸缪未合各成愁；心有灵犀一点通，天注姻缘不须忧。","jie":"逢春大吉，暗事大吉，凡事有成。","jieyue":"先取无长，后取无短，问事迟疑，眼前未遂，日后遇时，云开见日，依旧光辉。","diangu":"宋朝的苏小妹是苏东坡之妹，博学多才，脑筋聪明，个性顽皮。当苏小妹渐渐长大后，她的婚姻成为苏家考虑的问题。当时苏东坡认识了秦少游，就将他相亲给苏小妹。苏小妹新婚之夜准备了三个难题考夫婿，秦少游顺利回答前二题，苏轼暗暗发笑，提示秦少游最后一题答案，秦少游欣然入洞房，于是两人顺利在洞房内云雨交欢。"},{"n":21,"ji":"中吉灵签","text":"牛郎织女各天边，阻隔银河路杳然；百年富贵风前烛，一旦荣华云里仙。","jie":"凡事无实，财气五分。","jieyue":"牛郎识女难会，佳期好事难过，不可向前。","diangu":"七夕相会典故起源于古代中国，也被称为“乞巧节”或“女儿节”。这个节日通常在农历七月七日庆祝，这一天是牛郎和织女相会的日子。传说称，牛郎是一个聪明勤劳的农夫，织女是机智美丽的女神，两人相遇相爱，但是天帝不满意他们的婚姻。他将织女带回天上，并禁止两人相见。但是，他们的爱情感动众神，天鹅帮助牛郎跨越天河，让两人重逢，并且从此地上每年七月七日，牛郎和织女都能在天上相会。这个传说被人们传颂了很久，并演变成了七夕节，这一天人们崇敬美好爱情，祈求自己的爱情能够长久美满。"},{"n":22,"ji":"中平灵签","text":"张弓射日总虚空，朽木难雕白费工；平生常念千声佛，作恶枉烧万主香。","jie":"凡事慎言，事满招损。","jieyue":"他要进前，事有难言，梦中得宝，醒后全无。","diangu":"后羿射日和嫦娥奔月是中国传统神话故事中的两个著名人物。传说，后羿是上古时期的一个英雄，他有一把神奇的弓箭，可以射击远处的目标。当时，天空里出现了十个太阳，使得大地干旱、人民疲劳。后羿便用他的神弓，一箭射下了九个太阳，为人民带来了解脱。而嫦娥则是一位美丽的仙女，丈夫是后羿。她偷吃了后羿得到的不死药后，便飞升上月成为月宫中的仙女。她每天都在月宫里度过孤独的时光，思念丈夫和故乡。这两个故事都寄托了中国人对英雄、仙女和生命的向往和追求，而且在中华文化中既有着载体又有着象征意义。"},{"n":23,"ji":"中平灵签","text":"雷霆霹雳震虚空，天公差我察吉凶；积善之家有馀庆，积恶之家有馀殃。","jie":"作事应随运，求财遇春吉。","jieyue":"世事混吨没定数，劝君宽心莫嗟迟，天高地低原有意，远处晚景不胜情。","diangu":"刘文定买父典故是一个历史上著名的故事，讲述的是唐朝时期一位名叫刘文定的官员因为想要买一部《左传》(一部古代文献)而去找自己的父亲借钱。刘文定的父亲却问他，如果只是为了买一部书而去借债的话，那么这部书到底有多重要呢?刘文定想了一想，回答道：“《左传》可比我父亲的家业还要重要。”他的父亲听到这话后，非常欣慰，借给他了钱。这个故事表达了家教重于历史文化传承的思想，也成为了中国文化中的经典典故之一。"},{"n":24,"ji":"中平灵签","text":"伏羲八卦最精灵，六十甲子推五星；暗虚亏心天地见，举头三尺有神明。","jie":"隐忍则善，静以待时，夜求昌吉，财气三分。","jieyue":"无私作事最开心，前路受阻必有因。","diangu":"伏羲是中国古代神话中被尊为“阴阳之祖”，是古代文明的创始人之一。传说他画出了八卦，用来研究天地间的自然现象，探索宇宙的秩序。伏羲把八卦分为天、地、山、水、澜、雷、火、风，每个卦代表着一种自然现象或力量，让人们对未知事物有一定的理解。"},{"n":25,"ji":"下下灵签","text":"昔日螳螂去捕蝉，岂知黄雀在后边；莫信他人直中直，须防心里仁不仁。","jie":"凡事太险，谨防则吉。","jieyue":"往事劳伤，求财问事，家破人亡，食无求饱，居无求安。","diangu":"作为汉武帝的皇后，吕后确实对韩信有所害处。韩信是汉朝初期的杰出将领，曾帮助刘邦夺取天下，并在刘邦去世后维护过汉王室的稳定。然而，韩信的权力和威望逐渐超过了汉王室，甚至有篡位的嫌疑。吕后对韩信心存戒备和嫉妒，于是在汉武帝亲政后密谋陷害韩信。吕后先是让韩信去边疆镇压叛乱，然后派人暗中向叛军泄露韩信的计划，导致他被包围和击败。随后，吕后又谎称韩信暗中谋反，将他投入大牢，并拒绝释放。最终，韩信在牢狱中自杀身亡。"},{"n":26,"ji":"中平灵签","text":"三藏取经往西天，路途险阻劳圣贤；云横秦岭家何在？雪拥蓝关马不前。","jie":"凡事艰难，财运未到，忍以待时。","jieyue":"凡事多磨，小船过河，流急滩险，往西无路，石头粉碎。","diangu":"说中，唐玄宗下令三藏取经是在公元647年发生的，当时唐玄宗派遣了一位叫做玄奘大师的僧人(又叫三藏)，前往西天取经。三藏取经行程非常艰苦，他历经十八年，最终获得了圣经《释迦牟尼经》。后来，三藏又经过十六年繁琐而艰辛的旅行，最终回到故乡，将取回的《释迦牟尼经》献给唐玄宗，以此使佛教传播开来。"},{"n":27,"ji":"中平灵签","text":"八仙过海赴蟠桃，龙王降夺蓝采和；因贪玉皮动刀战，慈心惟佛来讲和。","jie":"凡事曲折，有贵人助，财运未到。","jieyue":"求财问事，退步回头，枉费心机，贪财人散。","diangu":"“八仙”是指铁拐李、汉钟离、张果老、吕洞宾、何仙姑、蓝采和、韩湘子和曹国舅。八仙因为听说东海海龙王的生日会庆典会很盛大，所以一起坐云兴风，飞往东海参加庆典。八仙中最滑稽的是铁拐李，他不识字，迷路后误入富家子弟家居住，被家人待如上宾，铁拐李半年后被富家千金鞋子上的一个小孔所惊动，得知非常后匆匆离去。八仙终于到达东海，大家一同献礼，玉皇大帝授予他们神仙之名。八仙过海典故寓意着主动参加生日宴请，增进友谊，共庆太平的意义。成语“八仙过海，各显神通”也因此而来。"},{"n":28,"ji":"下下灵签","text":"口占昆山玉，行人问吉凶；劝君急退步，不久落坑中。","jie":"歹心作恶，天降横祸。","jieyue":"神龙伐恶，吉者没事，歹人遭殃，天诛地灭，会有预兆。","diangu":"赛卢医歹心害人是一个历史典故，相传发生在中国南北朝时期。赛卢医是当时著名的医生，他深得皇帝信任，被任命为宫廷医生。然而，赛卢医性格狠毒，常常利用医学知识害人。他经常给病人开错药方，导致病人病情加重，甚至死亡。有一次，赛卢医给一位年轻的妇女开了一剂毒药，导致她死亡。这个事件震惊了整个宫廷，皇帝下令对赛卢医进行调查。调查结果证实了赛卢医的罪行，皇帝下令处死了他。这个典故告诉我们，医生是保护和拯救生命的职业，必须严格遵守职业道德和医学伦理。任何利用医学知识损害人民利益的行为都将受到严厉的惩罚。"}];
+
+  var drawBtn = document.getElementById("drawBtn");
+  var againBtn = document.getElementById("againBtn");
+  var copyBtn = document.getElementById("copyBtn");
+  var allToggle = document.getElementById("allToggle");
+  var allList = document.getElementById("allList");
+  var qianStage = document.getElementById("qianStage");
+  var resultCard = document.getElementById("resultCard");
+  var resNo = document.getElementById("resNo");
+  var resName = document.getElementById("resName");
+  var resJi = document.getElementById("resJi");
+  var resPoem = document.getElementById("resPoem");
+  var resJie = document.getElementById("resJie");
+  var resExtra = document.getElementById("resExtra");
+  var drawing = false;
+  var lastText = "";
+
+  function jiLevel(ji) {
+    var s = String(ji || "").replace(/^\s+|\s+$/g, "");
+    if (!s) return "";
+    if (s.indexOf("下") !== -1 || s.indexOf("凶") !== -1) return "down";
+    if (s.indexOf("中") !== -1) return "mid";
+    if (s.indexOf("上") !== -1 || s.indexOf("大") !== -1) return "up";
+    return "mid";
+  }
+
+  function makeJiBadge(ji) {
+    var span = document.createElement("span");
+    span.className = "ji-badge jl-" + jiLevel(ji);
+    span.textContent = ji;
+    return span;
+  }
+
+  function clearChildren(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function normalize(q) {
+    var n = {
+      no: q.no || CFG.noLabel + q.n + CFG.noSuffix,
+      name: CFG.nameField ? (q[CFG.nameField] || "") : "",
+      ji: CFG.jiField ? (q[CFG.jiField] || "") : "",
+      poem: CFG.poemField ? (q[CFG.poemField] || "") : "",
+      jie: CFG.jieField ? (q[CFG.jieField] || "") : "",
+      extra: []
+    };
+    for (var i = 0; i < CFG.extra.length; i++) {
+      var e = CFG.extra[i];
+      if (q[e.key]) n.extra.push({ label: e.label, value: q[e.key] });
+    }
+    return n;
+  }
+
+  function buildText(q) {
+    var lines = [CFG.name + " · " + q.no];
+    if (q.name) lines.push(q.name);
+    if (q.ji) lines.push(q.ji);
+    if (q.poem) lines.push(CFG.poemLabel + "：" + q.poem);
+    if (q.jie) lines.push(CFG.jieLabel + "：" + q.jie);
+    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + "：" + q.extra[i].value);
+    return lines.join("\n");
+  }
+
+  function showResult(q) {
+    resNo.textContent = q.no;
+    resName.style.display = q.name ? "" : "none";
+    resName.textContent = q.name;
+    clearChildren(resJi);
+    if (q.ji) {
+      var b = makeJiBadge(q.ji);
+      if (b) resJi.appendChild(b);
+    }
+    resPoem.style.display = q.poem ? "" : "none";
+    resPoem.textContent = q.poem;
+    resJie.style.display = q.jie ? "" : "none";
+    resJie.textContent = q.jie ? CFG.jieLabel + "：" + q.jie : "";
+    clearChildren(resExtra);
+    for (var i = 0; i < q.extra.length; i++) {
+      var line = document.createElement("div");
+      line.className = "qian-extra-line";
+      line.textContent = q.extra[i].label + "：" + q.extra[i].value;
+      resExtra.appendChild(line);
+    }
+    resultCard.style.display = "block";
+    resultCard.classList.remove("show");
+    void resultCard.offsetWidth;
+    resultCard.classList.add("show");
+    lastText = buildText(q);
+  }
+
+  function startDraw() {
+    if (drawing) return;
+    if (!QIAN || !QIAN.length) {
+      setStatus("签文数据为空，无法抽签", "error");
+      return;
+    }
+    drawing = true;
+    drawBtn.textContent = "抽签中...";
+    drawBtn.disabled = true;
+    resultCard.style.display = "none";
+    resultCard.classList.remove("show");
+    qianStage.classList.remove("drawing", "drawn");
+    void qianStage.offsetWidth;
+    qianStage.classList.add("drawing");
+    var picked = QIAN[Math.floor(Math.random() * QIAN.length)];
+    setTimeout(function () {
+      qianStage.classList.remove("drawing");
+      qianStage.classList.add("drawn");
+      drawBtn.textContent = "开始抽签";
+      drawBtn.disabled = false;
+      drawing = false;
+      showResult(normalize(picked));
+    }, 2600);
+  }
+
+  drawBtn.addEventListener("click", startDraw);
+  againBtn.addEventListener("click", startDraw);
+
+  copyBtn.addEventListener("click", function () {
+    if (!lastText) return;
+    copyToClipboard(lastText, copyBtn);
+    setStatus("结果已复制到剪贴板");
+  });
+
+  allToggle.addEventListener("click", function () {
+    var open = allList.style.display !== "none";
+    allList.style.display = open ? "none" : "block";
+    allToggle.textContent = open ? "查看全部签文" : "收起全部签文";
+  });
+
+  (function buildAll() {
+    for (var i = 0; i < QIAN.length; i++) {
+      var q = normalize(QIAN[i]);
+      var row = document.createElement("div");
+      row.className = "all-row";
+      var head = document.createElement("button");
+      head.type = "button";
+      head.className = "all-head";
+      var noSpan = document.createElement("span");
+      noSpan.className = "all-no";
+      noSpan.textContent = q.no;
+      head.appendChild(noSpan);
+      if (q.ji) {
+        var b = makeJiBadge(q.ji);
+        if (b) head.appendChild(b);
+      }
+      var poemSpan = document.createElement("span");
+      poemSpan.className = "all-poem";
+      poemSpan.textContent = q.poem || q.name || q.jie;
+      head.appendChild(poemSpan);
+      var body = document.createElement("div");
+      body.className = "all-body";
+      var p = document.createElement("div");
+      p.className = "all-poem-full";
+      p.textContent = q.poem || q.name;
+      body.appendChild(p);
+      if (q.jie) {
+        var j = document.createElement("div");
+        j.className = "all-jie";
+        j.textContent = CFG.jieLabel + "：" + q.jie;
+        body.appendChild(j);
+      }
+      for (var k = 0; k < q.extra.length; k++) {
+        var line = document.createElement("div");
+        line.className = "all-jie";
+        line.textContent = q.extra[k].label + "：" + q.extra[k].value;
+        body.appendChild(line);
+      }
+      row.appendChild(head);
+      row.appendChild(body);
+      (function (r) {
+        head.addEventListener("click", function () { r.classList.toggle("open"); });
+      })(row);
+      allList.appendChild(row);
+    }
+  })();
+})();
+  </script>
+</body>
+</html>

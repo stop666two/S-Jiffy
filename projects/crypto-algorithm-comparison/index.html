@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加密算法对比 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cmp-toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-2);
+    }
+    .select {
+      background: var(--color-bg);
+      flex: 0 0 180px;
+    }
+    .cmp-search {
+      flex: 1;
+      min-width: 200px;
+    }
+    .cmp-table-wrap {
+      overflow-x: auto;
+    }
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+    .cmp-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--color-border);
+      white-space: nowrap;
+    }
+    .cmp-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+    .cmp-table tbody tr {
+      cursor: pointer;
+    }
+    .cmp-table tbody tr:hover {
+      background: var(--color-bg-soft);
+    }
+    .cmp-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: var(--font-size-xs);
+      white-space: nowrap;
+    }
+    .cmp-status-ok {
+      color: var(--color-success);
+      background: rgba(52, 101, 56, 0.1);
+    }
+    .cmp-status-old {
+      color: var(--color-text-secondary);
+      background: rgba(120, 119, 116, 0.12);
+    }
+    .cmp-status-bad {
+      color: var(--color-error);
+      background: rgba(159, 47, 45, 0.1);
+    }
+    .cmp-empty {
+      padding: var(--space-3);
+      text-align: center;
+      color: var(--color-text-disabled);
+      font-size: var(--font-size-sm);
+    }
+    .cmp-tip {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-disabled);
+      margin-top: var(--space-1);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>加密算法对比</h1>
+    <p class="tool-desc">内置 19 种主流加密算法参数速查，支持按状态筛选、搜索与点击行复制算法名</p>
+    <div class="card">
+      <div class="cmp-toolbar">
+        <select id="statusFilter" class="input select">
+          <option value="all">全部状态</option>
+          <option value="推荐">推荐</option>
+          <option value="过时">过时</option>
+          <option value="不安全">不安全</option>
+        </select>
+        <input id="searchInput" class="input cmp-search js-focus-input" placeholder="搜索算法名称或用途关键词...">
+      </div>
+      <div class="cmp-table-wrap">
+        <table class="cmp-table">
+          <thead>
+            <tr>
+              <th>算法</th>
+              <th>类型</th>
+              <th>密钥长度 / 块大小</th>
+              <th>状态</th>
+              <th>典型用途</th>
+            </tr>
+          </thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+      <p class="cmp-tip">点击任意行可复制该算法名称；状态「推荐」可用于新系统，「过时」仅兼容遗留系统，「不安全」禁止用于安全场景。</p>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var statusFilter = document.getElementById('statusFilter');
+      var searchInput = document.getElementById('searchInput');
+      var cmpBody = document.getElementById('cmpBody');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var ALGOS = [
+        { name: 'AES-128', type: '对称', param: '128 位密钥 / 128 位块', status: '推荐', use: '数据加密、TLS 传输、磁盘加密' },
+        { name: 'AES-192', type: '对称', param: '192 位密钥 / 128 位块', status: '推荐', use: '高安全等级数据加密' },
+        { name: 'AES-256', type: '对称', param: '256 位密钥 / 128 位块', status: '推荐', use: '最高安全等级加密（FIPS 认证）' },
+        { name: 'DES', type: '对称', param: '56 位密钥 / 64 位块', status: '不安全', use: '仅用于解析遗留数据，已可被暴力破解' },
+        { name: '3DES', type: '对称', param: '112/168 位有效密钥 / 64 位块', status: '过时', use: '旧支付与金融系统兼容（逐步淘汰）' },
+        { name: 'ChaCha20', type: '对称', param: '256 位密钥 / 512 位块', status: '推荐', use: '移动端与软件实现的高性能流加密（TLS 1.3）' },
+        { name: 'RC4', type: '对称', param: '40-2048 位可变 / 流式', status: '不安全', use: '已全面禁用（WEP、TLS 旧实现的攻击）' },
+        { name: 'RSA', type: '非对称', param: '2048/3072/4096 位', status: '推荐', use: '密钥交换、数字签名、证书' },
+        { name: 'ECC / P-256', type: '非对称', param: '256 位（约 128 位安全强度）', status: '推荐', use: 'TLS 证书、TLS 1.3 密钥交换、签名' },
+        { name: 'DSA', type: '非对称', param: '1024/2048/3072 位', status: '过时', use: '仅用于政府与遗留系统兼容' },
+        { name: 'Ed25519', type: '非对称', param: '256 位', status: '推荐', use: '现代签名（SSH、TLS、区块链）' },
+        { name: 'MD5', type: '哈希', param: '128 位输出', status: '不安全', use: '仅用于非安全校验和（如文件完整性非对抗场景）' },
+        { name: 'SHA-1', type: '哈希', param: '160 位输出', status: '过时', use: '仅用于兼容旧协议，已发现碰撞攻击' },
+        { name: 'SHA-2', type: '哈希', param: '256/384/512 位输出', status: '推荐', use: '通用安全哈希、数字签名、TLS' },
+        { name: 'SHA-3', type: '哈希', param: '224/256/384/512 位输出', status: '推荐', use: '备用哈希标准（Sponge 结构）' },
+        { name: 'BLAKE2', type: '哈希', param: '256/512 位输出', status: '推荐', use: '高性能哈希，比 SHA-2 更快' },
+        { name: 'bcrypt', type: '密码 KDF', param: '内置盐 / cost 因子可调', status: '推荐', use: '密码存储（输出 60 字符，抗 GPU 加速）' },
+        { name: 'scrypt', type: '密码 KDF', param: '内存硬 / N、r、p 可调', status: '推荐', use: '密码存储，抗定制硬件暴力破解' },
+        { name: 'Argon2', type: '密码 KDF', param: 'Argon2id / 内存与时间可调', status: '推荐', use: '密码存储首选（Password Hashing Competition 冠军）' }
+      ];
+
+      function statusClass(s) {
+        if (s === '推荐') return 'cmp-status-ok';
+        if (s === '过时') return 'cmp-status-old';
+        return 'cmp-status-bad';
+      }
+
+      function render() {
+        var f = statusFilter.value;
+        var kw = searchInput.value.trim().toLowerCase();
+        var list = [];
+        for (var i = 0; i < ALGOS.length; i++) {
+          var a = ALGOS[i];
+          if (f !== 'all' && a.status !== f) continue;
+          if (kw) {
+            var hay = (a.name + ' ' + a.type + ' ' + a.param + ' ' + a.use).toLowerCase();
+            if (hay.indexOf(kw) === -1) continue;
+          }
+          list.push(a);
+        }
+        var html = '';
+        for (var j = 0; j < list.length; j++) {
+          var it = list[j];
+          html += '<tr data-name="' + htmlEscape(it.name) + '">' +
+            '<td>' + htmlEscape(it.name) + '</td>' +
+            '<td>' + htmlEscape(it.type) + '</td>' +
+            '<td>' + htmlEscape(it.param) + '</td>' +
+            '<td><span class="cmp-status ' + statusClass(it.status) + '">' + htmlEscape(it.status) + '</span></td>' +
+            '<td>' + htmlEscape(it.use) + '</td>' +
+            '</tr>';
+        }
+        if (list.length === 0) {
+          html = '<tr><td colspan="5"><div class="cmp-empty">没有符合条件的算法</div></td></tr>';
+        }
+        cmpBody.innerHTML = html;
+        var okCount = 0;
+        var oldCount = 0;
+        var badCount = 0;
+        for (var k = 0; k < list.length; k++) {
+          if (list[k].status === '推荐') okCount++;
+          else if (list[k].status === '过时') oldCount++;
+          else badCount++;
+        }
+        outputText.textContent = '共 ' + list.length + ' 条记录（推荐 ' + okCount + ' · 过时 ' + oldCount + ' · 不安全 ' + badCount + '）｜筛选：' + statusFilter.options[statusFilter.selectedIndex].text;
+      }
+
+      cmpBody.addEventListener('click', function (e) {
+        var node = e.target;
+        while (node && node !== cmpBody && !node.getAttribute) {
+          node = node.parentNode;
+        }
+        if (!node || node === cmpBody) return;
+        while (node && node !== cmpBody && !node.getAttribute('data-name')) {
+          node = node.parentNode;
+        }
+        if (!node || node === cmpBody) return;
+        var name = node.getAttribute('data-name');
+        if (name) {
+          copyToClipboard(name, copyBtn);
+          setStatus('已复制算法名：' + name);
+        }
+      });
+
+      statusFilter.addEventListener('change', function () {
+        render();
+      });
+      searchInput.addEventListener('input', function () {
+        render();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent) {
+          copyToClipboard(outputText.textContent, copyBtn);
+          setStatus('已复制');
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

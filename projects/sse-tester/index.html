@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSE 事件流测试器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .form-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .form-row .input { flex: 1; min-width: 220px; }
+    .conn-status { font-size: var(--font-size-sm); margin-bottom: var(--space-2); padding: 8px 12px; border-radius: var(--radius-sm); background: var(--color-bg-soft); color: var(--color-text-secondary); }
+    .conn-status.on { color: var(--color-success); }
+    .conn-status.off { color: var(--color-error); }
+    .log-item { margin: 0; font-size: var(--font-size-sm); line-height: 1.6; word-break: break-all; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>SSE 事件流测试器</h1>
+    <p class="tool-desc">连接 Server-Sent Events 事件流地址，实时列出事件名、数据与连接状态。跨域受限时需目标站点允许 CORS。</p>
+    <div class="card">
+      <div class="form-row">
+        <input id="urlInput" class="input js-focus-input" placeholder="事件流 URL，如 https://example.com/events">
+        <button class="btn btn-primary" id="connectBtn">连接</button>
+        <button class="btn btn-secondary" id="stopBtn" disabled>停止</button>
+      </div>
+      <div class="conn-status" id="connStatus">未连接</div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var es = null;
+      var logs = [];
+      var output = document.getElementById('outputText');
+      var current = '';
+
+      function pad(x) {
+        return x < 10 ? '0' + x : String(x);
+      }
+
+      function stamp() {
+        var d = new Date();
+        return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      }
+
+      function appendLog(line) {
+        logs.push(stamp() + '  ' + line);
+        if (logs.length > 200) logs.shift();
+        current = logs.join('\n');
+        var html = '';
+        for (var i = 0; i < logs.length; i++) html += '<p class="log-item">' + htmlEscape(logs[i]) + '</p>';
+        output.innerHTML = html;
+      }
+
+      function setConn(text, cls) {
+        var el = document.getElementById('connStatus');
+        el.textContent = text;
+        el.className = 'conn-status' + (cls ? ' ' + cls : '');
+      }
+
+      function connect() {
+        var url = document.getElementById('urlInput').value.trim();
+        if (!url) {
+          setStatus('请输入事件流 URL', 'error');
+          return;
+        }
+        if (es) es.close();
+        logs = [];
+        output.innerHTML = '';
+        current = '';
+        appendLog('正在连接：' + url);
+        setConn('连接中…');
+        try {
+          es = new EventSource(url);
+        } catch (e) {
+          setConn('连接失败：URL 不合法', 'off');
+          appendLog('错误：URL 不合法，请检查地址格式');
+          setStatus('URL 不合法，无法建立连接', 'error');
+          es = null;
+          return;
+        }
+        document.getElementById('connectBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        var dispatch = es.dispatchEvent.bind(es);
+        es.dispatchEvent = function (ev) {
+          var name = ev && ev.type ? ev.type : '未知';
+          var data = ev && typeof ev.data !== 'undefined' ? ev.data : '';
+          appendLog('事件 ' + name + (ev && ev.lastEventId ? '（id=' + ev.lastEventId + '）' : ''));
+          if (data !== '') appendLog('  data: ' + String(data));
+          return dispatch(ev);
+        };
+        es.onopen = function () {
+          setConn('已连接，等待事件…', 'on');
+          appendLog('连接成功（EventSource 已建立）');
+          setStatus('连接成功');
+        };
+        es.onerror = function () {
+          setConn('连接中断，浏览器将自动重连…', 'off');
+          appendLog('错误：连接中断（若跨域受限，目标站需允许 CORS；服务器无响应也会触发）');
+          setStatus('连接中断，正在等待自动重连', 'error');
+        };
+      }
+
+      function stop() {
+        if (es) {
+          es.close();
+          es = null;
+        }
+        document.getElementById('connectBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        setConn('已断开连接', 'off');
+        appendLog('已手动断开连接');
+        setStatus('已断开');
+      }
+
+      document.getElementById('connectBtn').addEventListener('click', connect);
+      document.getElementById('stopBtn').addEventListener('click', stop);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!current) return;
+        copyToClipboard(current, this);
+        setStatus('已复制事件日志');
+      });
+    })();
+  </script>
+</body>
+</html>

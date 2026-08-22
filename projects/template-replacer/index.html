@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模板替换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .var-tbl{width:100%;border-collapse:collapse;margin-top:var(--space-2);font-size:var(--font-size-sm)}
+    .var-tbl th,.var-tbl td{border:1px solid var(--color-border);padding:6px 10px;text-align:left}
+    .var-tbl th{background:var(--color-bg-soft);font-weight:600;color:var(--color-text-secondary);white-space:nowrap}
+    .var-tbl .input{width:100%}
+    .var-actions{margin-top:var(--space-2)}
+    .warn-line{margin-top:var(--space-2);font-size:var(--font-size-sm)}
+    .warn-line .bad{color:var(--color-error)}
+    .warn-line .ok{color:var(--color-success)}
+    .out-panel{font-family:var(--font-mono);font-size:var(--font-size-xs);line-height:1.7;white-space:pre-wrap;word-break:break-all;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);max-height:340px;overflow:auto}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>模板替换器</h1>
+    <p class="tool-desc">将模板中的 ${var} 或 {{var}} 占位符替换为变量值，并提示未匹配的占位符。</p>
+    <div class="card">
+      <textarea id="templateInput" class="input textarea js-focus-input" placeholder="输入模板，支持 ${var} 或 {{var}} 占位符..." style="min-height:120px;"></textarea>
+      <table class="var-tbl">
+        <thead>
+          <tr><th style="width:38%">变量名</th><th style="width:47%">值</th><th></th></tr>
+        </thead>
+        <tbody id="varBody"></tbody>
+      </table>
+      <div class="var-actions">
+        <button id="addBtn" class="btn btn-secondary">添加变量</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var templateEl = document.getElementById('templateInput');
+      var varBody = document.getElementById('varBody');
+      var addBtn = document.getElementById('addBtn');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+      var rowSeq = 0;
+
+      function addRow(name, value) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-seq', String(rowSeq));
+        tr.innerHTML = '<td><input type="text" class="input js-var-name" placeholder="变量名，如 name" value="' + htmlEscape(name || '') + '"></td>' +
+          '<td><input type="text" class="input js-var-val" placeholder="值" value="' + htmlEscape(value || '') + '"></td>' +
+          '<td><button type="button" class="btn btn-secondary js-var-del">删除</button></td>';
+        varBody.appendChild(tr);
+        rowSeq++;
+      }
+
+      function collectVars() {
+        var map = {};
+        var rows = varBody.querySelectorAll('tr');
+        for (var i = 0; i < rows.length; i++) {
+          var nameInput = rows[i].querySelector('.js-var-name');
+          var valInput = rows[i].querySelector('.js-var-val');
+          var name = nameInput ? nameInput.value : '';
+          var val = valInput ? valInput.value : '';
+          if (name) map[name] = val;
+        }
+        return map;
+      }
+
+      function render() {
+        var tpl = templateEl.value;
+        if (!tpl) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          setStatus('');
+          return;
+        }
+        var vars = collectVars();
+        var unmatched = {};
+        var result = tpl.replace(/\$\{([^${}]+)\}|{{([^${}]+)}}/g, function (all, g1, g2) {
+          var key = g1 !== undefined ? g1 : g2;
+          key = key.replace(/^\s+|\s+$/g, '');
+          if (vars[key] !== undefined) return vars[key];
+          unmatched[key] = (unmatched[key] || 0) + 1;
+          return all;
+        });
+        var html = [];
+        html.push('<div class="out-panel">' + htmlEscape(result) + '</div>');
+        if (tpl.indexOf('${') !== -1 || tpl.indexOf('{{') !== -1) {
+          html.push('<div class="warn-line">');
+          var keys = Object.keys(unmatched);
+          if (keys.length) {
+            var parts = [];
+            for (var i = 0; i < keys.length; i++) {
+              parts.push(htmlEscape(keys[i]) + ' ×' + unmatched[keys[i]]);
+            }
+            html.push('<span class="bad">⚠ 未替换占位符：' + parts.join('，') + '</span>');
+          } else {
+            html.push('<span class="ok">✓ 全部占位符已替换</span>');
+          }
+          html.push('</div>');
+        }
+        outputEl.innerHTML = html.join('');
+        lastPlain = result;
+        setStatus('已替换 ' + (Object.keys(unmatched).length ? '部分' : '全部') + ' 占位符');
+      }
+
+      addBtn.addEventListener('click', function () {
+        addRow('', '');
+      });
+      varBody.addEventListener('input', render);
+      varBody.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.className && t.className.indexOf('js-var-del') !== -1) {
+          var tr = t.parentNode.parentNode;
+          if (tr && tr.parentNode === varBody) {
+            varBody.removeChild(tr);
+            render();
+          }
+        }
+      });
+      templateEl.addEventListener('input', render);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+      addRow('', '');
+    })();
+  </script>
+</body>
+</html>

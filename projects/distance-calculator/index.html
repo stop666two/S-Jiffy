@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>距离计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .dc-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .point-box { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); margin-bottom: var(--space-2); }
+    .point-box .p-title { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-1); display: block; }
+    .point-box .inputs { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .coord-field { display: flex; flex-direction: column; gap: 4px; }
+    .coord-field label { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+    .coord-field .input { width: 110px; font-family: var(--font-mono); }
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+    .res-item { background: var(--color-bg-soft); border-radius: var(--radius-md); padding: var(--space-2); }
+    .res-item .res-label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .res-item .res-value { font-size: var(--font-size-lg); font-family: var(--font-mono); color: var(--color-text-primary); display: block; margin-top: var(--space-1); }
+    .formula-note { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-2); }
+    .formula-note .sqrt { position: relative; display: inline-block; white-space: nowrap; padding-left: 1.15em; }
+    .formula-note .sqrt::before { content: '\221A'; position: absolute; left: 0; top: -0.18em; font-size: 1.3em; }
+    .formula-note .sqrt-body { border-top: 1px solid currentColor; display: inline-block; padding: 0 0.1em; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>距离计算器</h1>
+    <p class="tool-desc">计算二维、三维欧氏距离或经纬度球面距离（Haversine），并换算公里、米、英里与海里。</p>
+    <div class="card">
+      <div class="dc-row">
+        <label for="modeSelect">计算模式</label>
+        <select id="modeSelect" class="input">
+          <option value="2d">二维坐标</option>
+          <option value="3d">三维坐标</option>
+          <option value="geo">经纬度（Haversine）</option>
+        </select>
+      </div>
+      <div class="point-box">
+        <span class="p-title">点 1</span>
+        <div class="inputs" id="p1Box"></div>
+      </div>
+      <div class="point-box">
+        <span class="p-title">点 2</span>
+        <div class="inputs" id="p2Box"></div>
+      </div>
+      <div style="margin-top:var(--space-2);">
+        <button class="btn btn-primary" id="calcBtn">计算距离</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var modeEl = document.getElementById('modeSelect');
+      var p1Box = document.getElementById('p1Box');
+      var p2Box = document.getElementById('p2Box');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var fields = {
+        p1: {},
+        p2: {}
+      };
+
+      function makeField(box, key, label) {
+        var wrap = document.createElement('div');
+        wrap.className = 'coord-field';
+        var lab = document.createElement('label');
+        lab.textContent = label;
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'input';
+        input.placeholder = '0';
+        if (label === 'x' && box === p1Box) {
+          input.className = 'input js-focus-input';
+        }
+        wrap.appendChild(lab);
+        wrap.appendChild(input);
+        box.appendChild(wrap);
+        fields[key] = input;
+      }
+
+      function renderFields() {
+        var mode = modeEl.value;
+        p1Box.innerHTML = '';
+        p2Box.innerHTML = '';
+        if (mode === 'geo') {
+          makeField(p1Box, 'lat1', '纬度 (°)');
+          makeField(p1Box, 'lon1', '经度 (°)');
+          makeField(p2Box, 'lat2', '纬度 (°)');
+          makeField(p2Box, 'lon2', '经度 (°)');
+        } else if (mode === '3d') {
+          makeField(p1Box, 'x1', 'x');
+          makeField(p1Box, 'y1', 'y');
+          makeField(p1Box, 'z1', 'z');
+          makeField(p2Box, 'x2', 'x');
+          makeField(p2Box, 'y2', 'y');
+          makeField(p2Box, 'z2', 'z');
+        } else {
+          makeField(p1Box, 'x1', 'x');
+          makeField(p1Box, 'y1', 'y');
+          makeField(p2Box, 'x2', 'x');
+          makeField(p2Box, 'y2', 'y');
+        }
+      }
+
+      function parseCoord(v, name) {
+        var s = String(v).trim();
+        if (s === '') {
+          return { empty: true };
+        }
+        if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(s)) {
+          return { error: name + ' 不是有效数字' };
+        }
+        return { value: parseFloat(s) };
+      }
+
+      function fmt(v) {
+        if (v < 1e-6 && v > 0) {
+          return v.toExponential(6);
+        }
+        return String(Math.round(v * 10000) / 10000);
+      }
+
+      function item(label, value) {
+        return '<div class="res-item"><span class="res-label">' + htmlEscape(label) + '</span><span class="res-value">' + htmlEscape(value) + '</span></div>';
+      }
+
+      function sqrtSpan(inner) {
+        return '<span class="sqrt"><span class="sqrt-body">' + inner + '</span></span>';
+      }
+
+      function run() {
+        var mode = modeEl.value;
+        var keys;
+        var labels;
+        if (mode === 'geo') {
+          keys = ['lat1', 'lon1', 'lat2', 'lon2'];
+          labels = ['纬度1', '经度1', '纬度2', '经度2'];
+        } else if (mode === '3d') {
+          keys = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2'];
+          labels = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2'];
+        } else {
+          keys = ['x1', 'y1', 'x2', 'y2'];
+          labels = ['x1', 'y1', 'x2', 'y2'];
+        }
+        var allEmpty = true;
+        var vals = [];
+        for (var i = 0; i < keys.length; i++) {
+          var f = fields[keys[i]];
+          if (!f) {
+            return;
+          }
+          if (f.value.trim() !== '') {
+            allEmpty = false;
+          }
+          var p = parseCoord(f.value, labels[i]);
+          if (p.error) {
+            setStatus(p.error, 'error');
+            return;
+          }
+          vals.push(p.empty ? null : p.value);
+        }
+        if (allEmpty) {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        for (var j = 0; j < vals.length; j++) {
+          if (vals[j] === null) {
+            setStatus('请填写完整的 ' + labels[j] + '（所有坐标必填）', 'error');
+            return;
+          }
+        }
+        var km;
+        var formulaNote;
+        if (mode === 'geo') {
+          var lat1 = vals[0] * Math.PI / 180;
+          var lon1 = vals[1] * Math.PI / 180;
+          var lat2 = vals[2] * Math.PI / 180;
+          var lon2 = vals[3] * Math.PI / 180;
+          if (lat1 < -Math.PI / 2 || lat1 > Math.PI / 2 || lat2 < -Math.PI / 2 || lat2 > Math.PI / 2) {
+            setStatus('纬度必须在 -90 至 90 之间', 'error');
+            return;
+          }
+          var dLat = lat2 - lat1;
+          var dLon = lon2 - lon1;
+          var ha = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          ha = Math.min(1, Math.max(0, ha));
+          var ang = 2 * Math.atan2(Math.sqrt(ha), Math.sqrt(1 - ha));
+          km = 6371 * ang;
+          formulaNote = '球面距离（Haversine 公式，地球半径 6371 km）';
+        } else if (mode === '3d') {
+          var dx = vals[3] - vals[0];
+          var dy = vals[4] - vals[1];
+          var dz = vals[5] - vals[2];
+          km = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          formulaNote = '三维欧氏距离 d = ' + sqrtSpan('((x2-x1)² + (y2-y1)² + (z2-z1)²)');
+        } else {
+          var dxx = vals[2] - vals[0];
+          var dyy = vals[3] - vals[1];
+          km = Math.sqrt(dxx * dxx + dyy * dyy);
+          formulaNote = '二维欧氏距离 d = ' + sqrtSpan('((x2-x1)² + (y2-y1)²)');
+        }
+        var meters = km * 1000;
+        var miles = km * 0.621371;
+        var nautical = km * 0.539957;
+        var html = '';
+        html += '<div class="res-grid">';
+        html += item('公里 (km)', fmt(km));
+        html += item('米 (m)', fmt(meters));
+        html += item('英里 (mi)', fmt(miles));
+        html += item('海里 (nmi)', fmt(nautical));
+        html += '</div>';
+        html += '<div class="formula-note">' + formulaNote + '</div>';
+        outputText.innerHTML = html;
+        setStatus('计算完成');
+      }
+
+      modeEl.addEventListener('change', function () {
+        renderFields();
+        run();
+      });
+      calcBtn.addEventListener('click', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+      renderFields();
+    })();
+  </script>
+</body>
+</html>

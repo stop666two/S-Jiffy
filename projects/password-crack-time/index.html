@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>密码破解时间估算 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .form-row { margin-bottom: 14px; }
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 6px; }
+    .pwd-row { display: flex; align-items: center; gap: 8px; }
+    .pwd-row .input { flex: 1; }
+    .pwd-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-size-sm); color: var(--color-text-secondary); white-space: nowrap; cursor: pointer; }
+    .pwd-toggle input { accent-color: var(--color-accent); }
+    .len-hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); white-space: nowrap; }
+    .chk-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chk-item { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-size-sm); cursor: pointer; }
+    .chk-item input { accent-color: var(--color-accent); }
+    .out-lines div { line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>密码破解时间估算</h1>
+    <p class="tool-desc">根据密码长度、字符集与攻击速度，估算暴力破解所需时间并评估密码强度。</p>
+    <div class="card">
+      <div class="form-row">
+        <label class="field-label" for="passwordInput">密码</label>
+        <div class="pwd-row">
+          <input id="passwordInput" class="input js-focus-input" type="password" maxlength="128" placeholder="请输入要评估的密码">
+          <label class="pwd-toggle"><input id="showPwd" type="checkbox"> 显示</label>
+          <span class="len-hint">长度：<span id="lenText">0</span></span>
+        </div>
+      </div>
+      <div class="form-row">
+        <span class="field-label">字符集（可能使用的字符种类）</span>
+        <div class="chk-group">
+          <label class="chk-item"><input type="checkbox" id="chkLower" checked> 小写字母 (26)</label>
+          <label class="chk-item"><input type="checkbox" id="chkUpper"> 大写字母 (26)</label>
+          <label class="chk-item"><input type="checkbox" id="chkDigit"> 数字 (10)</label>
+          <label class="chk-item"><input type="checkbox" id="chkSymbol"> 符号 (32)</label>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label class="field-label" for="speedSelect">攻击速度</label>
+        <select id="speedSelect" class="input">
+          <option value="10">慢速在线攻击（10 次/秒）</option>
+          <option value="1000">快速在线攻击（1,000 次/秒）</option>
+          <option value="1000000000">离线 GPU 攻击（100 亿次/秒）</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var pwdEl = document.getElementById('passwordInput');
+      var showEl = document.getElementById('showPwd');
+      var lenEl = document.getElementById('lenText');
+      var speedEl = document.getElementById('speedSelect');
+      var outEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var chkIds = ['chkLower', 'chkUpper', 'chkDigit', 'chkSymbol'];
+      var chkSizes = { chkLower: 26, chkUpper: 26, chkDigit: 10, chkSymbol: 32 };
+      var chkNames = { chkLower: '小写字母', chkUpper: '大写字母', chkDigit: '数字', chkSymbol: '符号' };
+      var copyText = '';
+
+      function fmtInt(n) {
+        return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+
+      function fmtNum(n) {
+        var s = n.toFixed(1);
+        if (s.lastIndexOf('.0') === s.length - 2) s = s.slice(0, -2);
+        return s;
+      }
+
+      function fmtSeconds(sec) {
+        if (sec < 60) return fmtNum(sec) + ' 秒';
+        if (sec < 3600) return fmtInt(sec / 60) + ' 分钟';
+        if (sec < 86400) return fmtInt(sec / 3600) + ' 小时';
+        if (sec < 31536000) return fmtInt(sec / 86400) + ' 天';
+        var years = sec / 31536000;
+        if (years < 1e4) return fmtNum(years) + ' 年';
+        if (years < 1e8) return fmtNum(years / 1e4) + ' 万年';
+        if (years < 1e12) return fmtNum(years / 1e8) + ' 亿年';
+        return years.toExponential(2) + ' 年';
+      }
+
+      function fmtSpace(n) {
+        if (n >= 1e15) return n.toExponential(2);
+        return fmtInt(n);
+      }
+
+      function gradeOf(sec) {
+        if (sec < 60) return { text: '极弱', color: 'var(--color-error)' };
+        if (sec < 3600) return { text: '弱', color: 'var(--color-error)' };
+        if (sec < 86400) return { text: '一般', color: 'var(--color-text-secondary)' };
+        if (sec < 3153600000) return { text: '强', color: 'var(--color-success)' };
+        return { text: '不可破解', color: 'var(--color-success)' };
+      }
+
+      function adviceOf(grade) {
+        if (grade === '极弱') return '密码可被瞬间破解。请加长密码至 12 位以上，并启用多种字符集，避免使用常见单词、生日或连续数字。';
+        if (grade === '弱') return '密码较脆弱。建议加长密码并增加字符集种类，最好使用密码管理器生成随机密码。';
+        if (grade === '一般') return '密码强度一般。建议加长至 12-16 位并启用全部字符集，优先使用密码管理器。';
+        if (grade === '强') return '密码强度良好。继续保持随机性与长度，并开启双因素认证进一步提升安全性。';
+        return '密码几乎不可被暴力破解。请使用密码管理器妥善保管，并避免在不同站点重复使用同一密码。';
+      }
+
+      function calc() {
+        var len = pwdEl.value.length;
+        lenEl.textContent = len;
+        if (len === 0) {
+          outEl.innerHTML = '';
+          copyText = '';
+          setStatus('');
+          return;
+        }
+        var spaceSize = 0;
+        var parts = [];
+        for (var i = 0; i < chkIds.length; i++) {
+          var id = chkIds[i];
+          if (document.getElementById(id).checked) {
+            spaceSize += chkSizes[id];
+            parts.push(chkNames[id] + ' ' + chkSizes[id]);
+          }
+        }
+        if (spaceSize === 0) {
+          outEl.innerHTML = '';
+          copyText = '';
+          setStatus('请至少选择一种字符集', 'error');
+          return;
+        }
+        var speed = parseFloat(speedEl.value);
+        var space = Math.pow(spaceSize, len);
+        if (!isFinite(space)) {
+          outEl.innerHTML = '';
+          copyText = '';
+          setStatus('组合空间超出可计算范围，请缩短密码长度', 'error');
+          return;
+        }
+        var sec = (space / 2) / speed;
+        var timeText = fmtSeconds(sec);
+        var g = gradeOf(sec);
+        var lines = [
+          '密码长度：' + len + ' 位',
+          '字符集：' + parts.join(' + ') + '（共 ' + spaceSize + ' 种字符）',
+          '组合空间：' + fmtSpace(space) + ' 种组合',
+          '攻击速度：' + speedEl.options[speedEl.selectedIndex].text,
+          '破解时间（平均）：' + timeText,
+          '强度分级：' + g.text,
+          '建议：' + adviceOf(g.text)
+        ];
+        copyText = lines.join('\n');
+        var html = '';
+        for (var j = 0; j < lines.length; j++) {
+          var color = (j === 5) ? ' style="color:' + g.color + ';font-weight:600"' : '';
+          html += '<div' + color + '>' + htmlEscape(lines[j]) + '</div>';
+        }
+        outEl.innerHTML = html;
+        setStatus('估算完成');
+      }
+
+      pwdEl.addEventListener('input', calc);
+      for (var k = 0; k < chkIds.length; k++) {
+        document.getElementById(chkIds[k]).addEventListener('change', calc);
+      }
+      speedEl.addEventListener('change', calc);
+      showEl.addEventListener('change', function () {
+        pwdEl.type = showEl.checked ? 'text' : 'password';
+      });
+      copyBtn.addEventListener('click', function () {
+        if (!copyText) return;
+        copyToClipboard(copyText, copyBtn);
+        setStatus('已复制');
+      });
+      calc();
+    })();
+  </script>
+</body>
+</html>

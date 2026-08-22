@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAPI 查看器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .api-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); margin-top: var(--space-2); }
+    .api-table th, .api-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; word-break: break-all; }
+    .api-table th { color: var(--color-text-secondary); font-weight: 500; white-space: nowrap; }
+    .method-tag { display: inline-block; padding: 1px 8px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--font-size-xs); }
+    .m-get { background: #E8F5E9; color: #2E7D32; }
+    .m-post { background: #E3F2FD; color: #1565C0; }
+    .m-put { background: #FFF8E1; color: #B8860B; }
+    .m-delete { background: #FFEBEE; color: #C62828; }
+    .m-patch { background: #F3E5F5; color: #6A1B9A; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>OpenAPI 查看器</h1>
+    <p class="tool-desc">粘贴 OpenAPI 3.x 的 JSON 或 YAML 定义，自动提取全部端点，生成方法/路径/操作摘要表格。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" rows="12" placeholder="粘贴 OpenAPI 3.x JSON 或 YAML 内容，例如：&#10;openapi: 3.0.0&#10;paths:&#10;  /users:&#10;    get:&#10;      summary: 获取用户列表&#10;      operationId: listUsers"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var METHODS = ['get', 'post', 'put', 'delete', 'patch'];
+      var input = document.getElementById('inputText');
+      var output = document.getElementById('outputText');
+      var current = '';
+
+      function parseJson(text) {
+        var obj = JSON.parse(text);
+        var rows = [];
+        var paths = obj && obj.paths;
+        if (paths && typeof paths === 'object') {
+          var keys = Object.keys(paths);
+          for (var i = 0; i < keys.length; i++) {
+            var path = keys[i];
+            var node = paths[path];
+            if (!node || typeof node !== 'object') continue;
+            for (var m = 0; m < METHODS.length; m++) {
+              var op = node[METHODS[m]];
+              if (op && typeof op === 'object') {
+                rows.push({ method: METHODS[m], path: path, opId: op.operationId || '', summary: op.summary || '' });
+              }
+            }
+          }
+        }
+        return rows;
+      }
+
+      function parseYaml(text) {
+        var lines = text.split(/\r?\n/);
+        var rows = [];
+        var curPath = null;
+        var curOp = null;
+        var opIndent = -1;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var match = line.match(/^(\s*)(.*?)\s*$/);
+          if (!match) continue;
+          var indent = match[1].length;
+          var body = match[2];
+          if (!body || body.charAt(0) === '#') continue;
+          var pathMatch = body.match(/^(\/[\w\-./{}:]+):\s*$/);
+          if (pathMatch && indent >= 2) {
+            curPath = pathMatch[1];
+            curOp = null;
+            continue;
+          }
+          if (!curPath) continue;
+          var opMatch = body.match(/^(get|post|put|delete|patch):\s*$/);
+          if (opMatch && indent > 0) {
+            curOp = opMatch[1];
+            opIndent = indent;
+            rows.push({ method: curOp, path: curPath, opId: '', summary: '' });
+            continue;
+          }
+          if (!curOp) continue;
+          if (indent <= opIndent) {
+            curOp = null;
+            continue;
+          }
+          var last = rows[rows.length - 1];
+          if (!last.summary) {
+            var sumMatch = body.match(/^summary:\s*(.*)$/);
+            if (sumMatch) last.summary = sumMatch[1];
+          }
+          if (!last.opId) {
+            var idMatch = body.match(/^operationId:\s*(.*)$/);
+            if (idMatch) last.opId = idMatch[1];
+          }
+        }
+        return rows;
+      }
+
+      function methodClass(method) {
+        return 'm-' + method;
+      }
+
+      function render(rows) {
+        var lines = ['共 ' + rows.length + ' 个端点：'];
+        for (var i = 0; i < rows.length; i++) {
+          lines.push(rows[i].method.toUpperCase() + ' ' + rows[i].path +
+            (rows[i].opId ? '  [' + rows[i].opId + ']' : '') +
+            (rows[i].summary ? '  ' + rows[i].summary : ''));
+        }
+        current = lines.join('\n');
+        var html = '<table class="api-table"><tr><th>方法</th><th>路径</th><th>operationId</th><th>summary</th></tr>';
+        for (var k = 0; k < rows.length; k++) {
+          html += '<tr><td><span class="method-tag ' + methodClass(rows[k].method) + '">' + htmlEscape(rows[k].method.toUpperCase()) + '</span></td>';
+          html += '<td>' + htmlEscape(rows[k].path) + '</td>';
+          html += '<td>' + htmlEscape(rows[k].opId || '-') + '</td>';
+          html += '<td>' + htmlEscape(rows[k].summary || '-') + '</td></tr>';
+        }
+        html += '</table>';
+        output.innerHTML = html;
+        setStatus('解析成功，共 ' + rows.length + ' 个端点');
+      }
+
+      function clearResult() {
+        output.innerHTML = '';
+        current = '';
+        setStatus('');
+      }
+
+      function update() {
+        var text = input.value;
+        if (!text || !text.trim()) {
+          clearResult();
+          return;
+        }
+        var rows = null;
+        try {
+          rows = parseJson(text.trim());
+        } catch (e) {
+          rows = null;
+        }
+        if (!rows) {
+          try {
+            rows = parseYaml(text);
+          } catch (e2) {
+            clearResult();
+            setStatus('解析失败：内容既不是有效 JSON，也不符合可识别的 YAML 结构', 'error');
+            return;
+          }
+        }
+        if (!rows.length) {
+          clearResult();
+          setStatus('未找到任何端点：JSON 需包含 paths 节点，YAML 需包含缩进的 /路径: 行与 get:/post: 等方法行', 'error');
+          return;
+        }
+        render(rows);
+      }
+
+      input.addEventListener('input', update);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!current) return;
+        copyToClipboard(current, this);
+        setStatus('已复制端点清单');
+      });
+      update();
+    })();
+  </script>
+</body>
+</html>

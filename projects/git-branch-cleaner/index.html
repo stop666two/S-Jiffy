@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git 分支清理器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .form-row { margin-bottom: 14px; }
+    .branch-group { margin-bottom: 12px; }
+    .branch-group h3 { font-size: var(--font-size-sm); font-weight: 600; margin-bottom: 6px; }
+    .branch-item { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 5px; font-size: var(--font-size-sm); }
+    .branch-item code { color: var(--color-text-primary); }
+    .branch-item.current { background: var(--color-bg-soft); }
+    .branch-item .branch-tag { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+    .branch-item.merged { border-color: rgba(52,101,56,0.4); }
+    .branch-item.merged .branch-tag { color: var(--color-success); }
+    .branch-item.unmerged .branch-tag { color: var(--color-error); }
+    .branch-empty { font-size: var(--font-size-sm); color: var(--color-text-disabled); padding: 8px 0; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Git 分支清理器</h1>
+    <p class="tool-desc">粘贴 git branch 输出，勾选要清理的分支，一键生成 git branch -d / -D 与远端删除清理脚本。</p>
+    <div class="card">
+      <div class="form-row">
+        <label for="branchInput" class="field-label">git branch 输出（必填，每行一个分支，* 表示当前分支）</label>
+        <textarea id="branchInput" class="input textarea js-focus-input" style="min-height:140px;" placeholder="* main&#10;feature/login&#10;feature/pay&#10;fix/typo&#10;experiment/cache"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="mergedInput" class="field-label">git branch --merged 输出（可选，用于标记已合并分支，留空则全部按未合并处理）</label>
+        <textarea id="mergedInput" class="input textarea" style="min-height:90px;" placeholder="* main&#10;fix/typo&#10;feature/login"></textarea>
+      </div>
+      <div class="form-row">
+        <label style="display:flex;align-items:center;gap:6px;font-size:var(--font-size-sm);">
+          <input type="checkbox" id="remoteDel"> 同时生成远端删除命令（git push origin --delete）
+        </label>
+      </div>
+      <div id="branchList"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var branchEl = document.getElementById('branchInput');
+      var mergedEl = document.getElementById('mergedInput');
+      var remoteEl = document.getElementById('remoteDel');
+      var listEl = document.getElementById('branchList');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function parseNames(text) {
+        var lines = text.split(/\r?\n/);
+        var names = [];
+        var skipped = 0;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line) continue;
+          var name = line.replace(/^[*+\s]+/, '').trim();
+          if (!name) continue;
+          if (/^remotes\//.test(name)) { skipped++; continue; }
+          names.push(name);
+        }
+        return { names: names, skipped: skipped };
+      }
+
+      function render() {
+        var branches = parseNames(branchEl.value);
+        var merged = parseNames(mergedEl.value);
+        if (!branches.names.length) {
+          listEl.innerHTML = '<div class="branch-empty">请粘贴 git branch 输出</div>';
+          outputEl.textContent = '';
+          setStatus('');
+          return;
+        }
+        var current = null;
+        var others = [];
+        var lines = branchEl.value.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var t = line.trim();
+          if (!t) continue;
+          if (/^\s*\*/.test(line)) {
+            current = t.replace(/^\*/, '').trim();
+          }
+        }
+        var mergedSet = {};
+        for (var j = 0; j < merged.names.length; j++) {
+          mergedSet[merged.names[j]] = true;
+        }
+        var html = '';
+        if (current) {
+          html += '<div class="branch-group"><h3>当前分支（不可删除）</h3><div class="branch-item current"><input type="checkbox" disabled><code>' + htmlEscape(current) + '</code><span class="branch-tag">当前所在分支，跳过</span></div></div>';
+        }
+        var mergedList = [];
+        var unmergedList = [];
+        for (var k = 0; k < branches.names.length; k++) {
+          var name = branches.names[k];
+          if (name === current) continue;
+          if (mergedSet[name]) {
+            mergedList.push(name);
+          } else {
+            unmergedList.push(name);
+          }
+        }
+        if (mergedList.length) {
+          html += '<div class="branch-group"><h3>已合并分支（可安全删除）</h3>';
+          for (var m = 0; m < mergedList.length; m++) {
+            html += '<div class="branch-item merged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(mergedList[m]) + '" checked><code>' + htmlEscape(mergedList[m]) + '</code><span class="branch-tag">已合并，使用 -d</span></div>';
+          }
+          html += '</div>';
+        }
+        html += '<div class="branch-group"><h3>未合并分支（需谨慎）</h3>';
+        if (unmergedList.length) {
+          for (var n = 0; n < unmergedList.length; n++) {
+            html += '<div class="branch-item unmerged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(unmergedList[n]) + '"><code>' + htmlEscape(unmergedList[n]) + '</code><span class="branch-tag">未合并，使用 -D</span></div>';
+          }
+        } else {
+          html += '<div class="branch-empty">没有未合并分支</div>';
+        }
+        html += '</div>';
+        listEl.innerHTML = html;
+        var boxes = listEl.querySelectorAll('.del-box');
+        for (var p = 0; p < boxes.length; p++) {
+          boxes[p].addEventListener('change', generate);
+        }
+        generate();
+      }
+
+      function generate() {
+        var branches = parseNames(branchEl.value);
+        if (!branches.names.length) {
+          outputEl.textContent = '';
+          return;
+        }
+        var boxes = listEl.querySelectorAll('.del-box');
+        var picked = [];
+        for (var i = 0; i < boxes.length; i++) {
+          if (boxes[i].checked) {
+            picked.push(boxes[i].getAttribute('data-name'));
+          }
+        }
+        var mergedSet = {};
+        var mergedLines = parseNames(mergedEl.value);
+        for (var j = 0; j < mergedLines.names.length; j++) {
+          mergedSet[mergedLines.names[j]] = true;
+        }
+        var safe = [];
+        var force = [];
+        for (var k = 0; k < picked.length; k++) {
+          if (mergedSet[picked[k]]) safe.push(picked[k]);
+          else force.push(picked[k]);
+        }
+        var lines = ['#!/bin/bash', ''];
+        if (safe.length) {
+          lines.push('# 删除已合并分支（-d 安全删除）');
+          for (var s = 0; s < safe.length; s++) lines.push('git branch -d ' + safe[s]);
+          lines.push('');
+        }
+        if (force.length) {
+          lines.push('# 删除未合并分支（-D 强制删除，请先确认未合并内容）');
+          for (var f = 0; f < force.length; f++) lines.push('git branch -D ' + force[f]);
+          lines.push('');
+        }
+        if (remoteEl.checked && picked.length) {
+          lines.push('# 同步删除远程分支');
+          for (var r = 0; r < picked.length; r++) lines.push('git push origin --delete ' + picked[r]);
+        }
+        if (!safe.length && !force.length) {
+          outputEl.textContent = '';
+          setStatus('请至少勾选一个要清理的分支', 'error');
+          return;
+        }
+        outputEl.textContent = lines.join('\n');
+        setStatus('已生成清理脚本（' + picked.length + ' 个分支）');
+      }
+
+      branchEl.addEventListener('input', render);
+      mergedEl.addEventListener('input', render);
+      remoteEl.addEventListener('change', generate);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

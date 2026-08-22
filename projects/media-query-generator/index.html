@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>媒体查询生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 110px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .field-row select { width: 200px; }
+    .field-row input[type="number"] { width: 100px; }
+    .check-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .check-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    .code-block { margin: 0; font-family: inherit; font-size: var(--font-size-sm); white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>媒体查询生成器</h1>
+    <p class="tool-desc">按设备类型或自定义断点生成 @media 代码块，支持叠加色彩偏好与减少动效条件。</p>
+    <div class="card">
+      <div class="field-row">
+        <label>设备类型</label>
+        <select id="deviceSelect" class="input">
+          <option value="phone">手机（max-width 767px）</option>
+          <option value="tablet">平板（768–1023px）</option>
+          <option value="desktop">桌面（min-width 1024px）</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>min-width</label>
+        <input id="minInput" class="input js-focus-input" type="number" min="0" step="1" value="">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">px（留空表示不限）</span>
+      </div>
+      <div class="field-row">
+        <label>max-width</label>
+        <input id="maxInput" class="input" type="number" min="0" step="1" value="767">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">px（留空表示不限）</span>
+      </div>
+      <div class="field-row">
+        <label>色彩偏好</label>
+        <select id="schemeSelect" class="input">
+          <option value="none">不使用</option>
+          <option value="dark">prefers-color-scheme: dark</option>
+          <option value="light">prefers-color-scheme: light</option>
+        </select>
+      </div>
+      <div class="check-row">
+        <label><input type="checkbox" id="reducedCheck"> 叠加 prefers-reduced-motion: reduce</label>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var PRESETS = {
+        phone: { min: '', max: '767' },
+        tablet: { min: '768', max: '1023' },
+        desktop: { min: '1024', max: '' }
+      };
+      var deviceSelect = document.getElementById('deviceSelect');
+      var minInput = document.getElementById('minInput');
+      var maxInput = document.getElementById('maxInput');
+      var schemeSelect = document.getElementById('schemeSelect');
+      var reducedCheck = document.getElementById('reducedCheck');
+      var outputText = document.getElementById('outputText');
+      var currentCode = '';
+
+      function applyPreset() {
+        var p = PRESETS[deviceSelect.value];
+        if (p) {
+          minInput.value = p.min;
+          maxInput.value = p.max;
+        }
+        render();
+      }
+
+      function markCustom() {
+        if (deviceSelect.value !== 'custom') {
+          deviceSelect.value = 'custom';
+        }
+        render();
+      }
+
+      function render() {
+        var min = minInput.value.trim();
+        var max = maxInput.value.trim();
+        var scheme = schemeSelect.value;
+        var reduced = reducedCheck.checked;
+        if (!min && !max) {
+          outputText.textContent = '';
+          currentCode = '';
+          setStatus('请填写 min-width 或 max-width');
+          return;
+        }
+        var minNum = min === '' ? null : parseFloat(min);
+        var maxNum = max === '' ? null : parseFloat(max);
+        if ((min !== '' && !isFinite(minNum)) || (max !== '' && !isFinite(maxNum))) {
+          outputText.textContent = '';
+          currentCode = '';
+          setStatus('请输入有效的像素值', 'error');
+          return;
+        }
+        if (minNum !== null && minNum < 0) {
+          outputText.textContent = '';
+          currentCode = '';
+          setStatus('min-width 不能为负数', 'error');
+          return;
+        }
+        if (maxNum !== null && maxNum < 0) {
+          outputText.textContent = '';
+          currentCode = '';
+          setStatus('max-width 不能为负数', 'error');
+          return;
+        }
+        if (minNum !== null && maxNum !== null && minNum > maxNum) {
+          outputText.textContent = '';
+          currentCode = '';
+          setStatus('min-width 不能大于 max-width', 'error');
+          return;
+        }
+        var conds = [];
+        if (minNum !== null) conds.push('(min-width: ' + minNum + 'px)');
+        if (maxNum !== null) conds.push('(max-width: ' + maxNum + 'px)');
+        if (scheme !== 'none') conds.push('(prefers-color-scheme: ' + scheme + ')');
+        if (reduced) conds.push('(prefers-reduced-motion: reduce)');
+        currentCode = '@media screen and ' + conds.join(' and ') + ' {\n  /* 在此编写你的样式 */\n}';
+        outputText.innerHTML = '<pre class="code-block">' + htmlEscape(currentCode) + '</pre>';
+        setStatus('已生成媒体查询代码');
+      }
+
+      deviceSelect.addEventListener('change', applyPreset);
+      minInput.addEventListener('input', markCustom);
+      maxInput.addEventListener('input', markCustom);
+      schemeSelect.addEventListener('change', render);
+      reducedCheck.addEventListener('change', render);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!currentCode) return;
+        copyToClipboard(currentCode, this);
+        setStatus('已复制媒体查询代码');
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

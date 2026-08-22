@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编码转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .enc-list{margin-top:var(--space-1)}
+    .enc-block{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);margin-bottom:var(--space-2);position:relative;padding-right:64px}
+    .enc-block .lbl{font-size:var(--font-size-sm);font-weight:600;margin-bottom:var(--space-1);color:var(--color-text-secondary)}
+    .enc-block .lbl .cnt{font-weight:400;font-size:var(--font-size-xs)}
+    .enc-block .val{font-family:var(--font-mono);font-size:var(--font-size-xs);line-height:1.7;word-break:break-all;background:var(--color-bg-soft);border-radius:var(--radius-sm);padding:var(--space-1);max-height:140px;overflow:auto}
+    .enc-block .enc-copy{position:absolute;top:var(--space-2);right:var(--space-2);font-size:var(--font-size-xs)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>编码转换器</h1>
+    <p class="tool-desc">实时查看文本的多种编码表示：UTF-8、UTF-16LE、Base64、URL 编码、Unicode 转义、HTML 实体。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本，实时显示各编码表示..." style="min-height:120px;"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var blocks = [];
+      var lastSummary = '';
+
+      function utf8Bytes(str) {
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          if (code >= 0xD800 && code <= 0xDBFF && i + 1 < str.length) {
+            var low = str.charCodeAt(i + 1);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+              code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+              i++;
+            }
+          }
+          if (code <= 0x7F) {
+            bytes.push(code);
+          } else if (code <= 0x7FF) {
+            bytes.push(0xC0 | (code >> 6), 0x80 | (code & 0x3F));
+          } else if (code <= 0xFFFF) {
+            bytes.push(0xE0 | (code >> 12), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F));
+          } else {
+            bytes.push(0xF0 | (code >> 18), 0x80 | ((code >> 12) & 0x3F), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F));
+          }
+        }
+        return bytes;
+      }
+
+      function hexByte(b) {
+        var h = b.toString(16).toUpperCase();
+        return h.length < 2 ? '0' + h : h;
+      }
+
+      function toBase64(bytes) {
+        var alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        var out = [];
+        for (var i = 0; i < bytes.length; i += 3) {
+          var b0 = bytes[i];
+          var b1 = i + 1 < bytes.length ? bytes[i + 1] : null;
+          var b2 = i + 2 < bytes.length ? bytes[i + 2] : null;
+          out.push(alpha.charAt(b0 >> 2));
+          out.push(alpha.charAt(((b0 & 3) << 4) | (b1 === null ? 0 : b1 >> 4)));
+          out.push(b1 === null ? '=' : alpha.charAt(((b1 & 15) << 2) | (b2 === null ? 0 : b2 >> 6)));
+          out.push(b2 === null ? '=' : alpha.charAt(b2 & 63));
+        }
+        return out.join('');
+      }
+
+      function isUnreserved(code) {
+        return (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || (code >= 48 && code <= 57) ||
+          code === 45 || code === 95 || code === 46 || code === 33 || code === 126 || code === 42 || code === 39 || code === 40 || code === 41;
+      }
+
+      function toUrl(bytes) {
+        var out = [];
+        for (var i = 0; i < bytes.length; i++) {
+          if (isUnreserved(bytes[i])) {
+            out.push(String.fromCharCode(bytes[i]));
+          } else {
+            out.push('%' + hexByte(bytes[i]));
+          }
+        }
+        return out.join('');
+      }
+
+      function toUnicodeEscape(str) {
+        var out = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          var h = code.toString(16).toUpperCase();
+          while (h.length < 4) h = '0' + h;
+          out.push('\\u' + h);
+        }
+        return out.join('');
+      }
+
+      function toHtmlEntities(str) {
+        var out = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          if (code === 38) out.push('&amp;');
+          else if (code === 60) out.push('&lt;');
+          else if (code === 62) out.push('&gt;');
+          else if (code === 34) out.push('&quot;');
+          else if (code === 39) out.push('&#39;');
+          else if (code < 128) out.push(str.charAt(i));
+          else out.push('&#' + code + ';');
+        }
+        return out.join('');
+      }
+
+      function render() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          blocks = [];
+          lastSummary = '';
+          setStatus('');
+          return;
+        }
+        var bytes = utf8Bytes(text);
+        var utf8hex = [];
+        for (var i = 0; i < bytes.length; i++) utf8hex.push(hexByte(bytes[i]));
+        var utf16 = [];
+        for (var j = 0; j < text.length; j++) {
+          var cu = text.charCodeAt(j);
+          utf16.push(hexByte(cu & 0xFF), hexByte(cu >> 8));
+        }
+        blocks = [
+          { label: 'UTF-8 十六进制', cnt: bytes.length + ' 字节', val: utf8hex.join(' ') },
+          { label: 'UTF-16LE 十六进制', cnt: text.length * 2 + ' 字节', val: utf16.join(' ') },
+          { label: 'Base64', cnt: '', val: toBase64(bytes) },
+          { label: 'URL 编码', cnt: '', val: toUrl(bytes) },
+          { label: 'Unicode 转义', cnt: text.length + ' 个码元', val: toUnicodeEscape(text) },
+          { label: 'HTML 实体', cnt: '', val: toHtmlEntities(text) }
+        ];
+        var html = [];
+        html.push('<div class="enc-list">');
+        for (var k = 0; k < blocks.length; k++) {
+          html.push('<div class="enc-block"><div class="lbl">' + htmlEscape(blocks[k].label) + (blocks[k].cnt ? ' <span class="cnt">(' + htmlEscape(blocks[k].cnt) + ')</span>' : '') + '</div>');
+          html.push('<div class="val">' + htmlEscape(blocks[k].val) + '</div>');
+          html.push('<button class="btn btn-secondary enc-copy" data-idx="' + k + '">复制</button></div>');
+        }
+        html.push('</div>');
+        outputEl.innerHTML = html.join('');
+        var lines = [];
+        for (var m = 0; m < blocks.length; m++) {
+          lines.push(blocks[m].label + '：' + blocks[m].val);
+        }
+        lastSummary = lines.join('\n');
+        setStatus('已生成 6 种编码表示');
+      }
+
+      outputEl.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.className && t.className.indexOf('enc-copy') !== -1) {
+          var idx = parseInt(t.getAttribute('data-idx'), 10);
+          if (idx >= 0 && idx < blocks.length) {
+            copyToClipboard(blocks[idx].val, t);
+          }
+        }
+      });
+      inputEl.addEventListener('input', render);
+      copyBtn.addEventListener('click', function () {
+        if (lastSummary) copyToClipboard(lastSummary, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

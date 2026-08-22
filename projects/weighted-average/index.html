@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加权平均计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .wa-row { display: flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-1); }
+    .wa-row .input { width: 130px; font-family: var(--font-mono); }
+    .wa-row .row-index { width: 24px; color: var(--color-text-secondary); font-size: var(--font-size-sm); text-align: right; }
+    .wa-head { display: flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-1); }
+    .wa-head .h1 { width: 130px; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .wa-head .h2 { flex: 1; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .add-btn { margin-top: var(--space-1); }
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+    .res-item { background: var(--color-bg-soft); border-radius: var(--radius-md); padding: var(--space-2); }
+    .res-item .res-label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .res-item .res-value { font-size: var(--font-size-lg); font-family: var(--font-mono); color: var(--color-text-primary); display: block; margin-top: var(--space-1); }
+    .bar-list { margin-top: var(--space-3); }
+    .bar-item { margin-bottom: var(--space-2); }
+    .bar-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .bar-track { background: var(--color-bg-soft); border-radius: var(--radius-sm); height: 14px; overflow: hidden; }
+    .bar-fill { background: var(--color-accent); height: 100%; border-radius: var(--radius-sm); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>加权平均计算器</h1>
+    <p class="tool-desc">为每个数值设定权重，计算加权平均，并与简单平均对比，展示各项贡献占比。</p>
+    <div class="card">
+      <div class="wa-head">
+        <span class="h1">数值</span>
+        <span class="h1">权重</span>
+        <span class="h2"></span>
+      </div>
+      <div id="rowsBox"></div>
+      <button class="btn btn-secondary add-btn" id="addBtn">+ 添加一行</button>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var rowsBox = document.getElementById('rowsBox');
+      var addBtn = document.getElementById('addBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var rowCount = 0;
+
+      function parseNum(v) {
+        var s = String(v).trim();
+        if (s === '') {
+          return null;
+        }
+        if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(s)) {
+          return NaN;
+        }
+        return parseFloat(s);
+      }
+
+      function addRow(value, weight, focusFirst) {
+        rowCount++;
+        var row = document.createElement('div');
+        row.className = 'wa-row';
+        var idx = document.createElement('span');
+        idx.className = 'row-index';
+        idx.textContent = String(rowCount);
+        var vInput = document.createElement('input');
+        vInput.type = 'text';
+        vInput.className = focusFirst ? 'input js-focus-input' : 'input';
+        vInput.placeholder = '数值';
+        if (value !== undefined) {
+          vInput.value = value;
+        }
+        var wInput = document.createElement('input');
+        wInput.type = 'text';
+        wInput.className = 'input';
+        wInput.placeholder = '权重';
+        if (weight !== undefined) {
+          wInput.value = weight;
+        }
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn btn-secondary';
+        delBtn.textContent = '删除';
+        delBtn.style.padding = '6px 10px';
+        delBtn.addEventListener('click', function () {
+          rowsBox.removeChild(row);
+          reindex();
+          run();
+        });
+        row.appendChild(idx);
+        row.appendChild(vInput);
+        row.appendChild(wInput);
+        row.appendChild(delBtn);
+        rowsBox.appendChild(row);
+        vInput.addEventListener('input', run);
+        wInput.addEventListener('input', run);
+        return vInput;
+      }
+
+      function reindex() {
+        var rows = rowsBox.querySelectorAll('.wa-row');
+        for (var i = 0; i < rows.length; i++) {
+          rows[i].querySelector('.row-index').textContent = String(i + 1);
+        }
+      }
+
+      function collect() {
+        var rows = rowsBox.querySelectorAll('.wa-row');
+        var items = [];
+        var filled = false;
+        for (var i = 0; i < rows.length; i++) {
+          var vInput = rows[i].querySelectorAll('input')[0];
+          var wInput = rows[i].querySelectorAll('input')[1];
+          var vs = vInput.value.trim();
+          var ws = wInput.value.trim();
+          if (vs === '' && ws === '') {
+            continue;
+          }
+          filled = true;
+          var v = parseNum(vs);
+          var w = parseNum(ws);
+          if (v === null || isNaN(v)) {
+            return { error: '第 ' + (i + 1) + ' 行的数值无效' };
+          }
+          if (w === null || isNaN(w)) {
+            return { error: '第 ' + (i + 1) + ' 行的权重无效' };
+          }
+          items.push({ v: v, w: w, idx: i + 1 });
+        }
+        if (!filled) {
+          return { empty: true };
+        }
+        if (items.length === 0) {
+          return { empty: true };
+        }
+        return { items: items };
+      }
+
+      function run() {
+        var data = collect();
+        if (data.empty) {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        if (data.error) {
+          setStatus(data.error, 'error');
+          return;
+        }
+        var items = data.items;
+        var sumW = 0;
+        var sumVW = 0;
+        var sumV = 0;
+        for (var i = 0; i < items.length; i++) {
+          sumW += items[i].w;
+          sumVW += items[i].v * items[i].w;
+          sumV += items[i].v;
+        }
+        if (sumW === 0) {
+          setStatus('权重总和为 0，无法计算加权平均', 'error');
+          return;
+        }
+        var wa = sumVW / sumW;
+        var sa = sumV / items.length;
+        var absSum = 0;
+        for (var j = 0; j < items.length; j++) {
+          absSum += Math.abs(items[j].v * items[j].w);
+        }
+        var html = '';
+        html += '<div class="res-grid">';
+        html += '<div class="res-item"><span class="res-label">加权平均</span><span class="res-value">' + htmlEscape(fmt(wa)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">简单平均</span><span class="res-value">' + htmlEscape(fmt(sa)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">权重总和</span><span class="res-value">' + htmlEscape(fmt(sumW)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">数据项数</span><span class="res-value">' + htmlEscape(String(items.length)) + '</span></div>';
+        html += '</div>';
+        html += '<div class="bar-list">';
+        for (var k = 0; k < items.length; k++) {
+          var contrib = items[k].v * items[k].w;
+          var pct = absSum === 0 ? 0 : Math.abs(contrib) / absSum * 100;
+          html += '<div class="bar-item">';
+          html += '<div class="bar-label"><span>第 ' + items[k].idx + ' 项：' + htmlEscape(fmt(items[k].v)) + ' × ' + htmlEscape(fmt(items[k].w)) + ' = ' + htmlEscape(fmt(contrib)) + '</span><span>' + htmlEscape(fmt(pct)) + '%</span></div>';
+          html += '<div class="bar-track"><div class="bar-fill" style="width:' + Math.min(pct, 100) + '%;"></div></div>';
+          html += '</div>';
+        }
+        html += '</div>';
+        outputText.innerHTML = html;
+        setStatus('计算完成');
+      }
+
+      function fmt(v) {
+        var r = Math.round(v * 1e6) / 1e6;
+        if (Math.abs(r) < 5e-7) {
+          r = 0;
+        }
+        return String(r);
+      }
+
+      var firstInput = addRow('80', '2', true);
+      addRow('90', '1');
+      addRow('70', '3');
+      firstInput.focus();
+      addBtn.addEventListener('click', function () {
+        addRow();
+        run();
+      });
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+      run();
+    })();
+  </script>
+</body>
+</html>

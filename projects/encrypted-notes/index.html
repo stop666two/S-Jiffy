@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加密便签 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label {
+      display: block;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+    .note-input {
+      margin-bottom: var(--space-2);
+    }
+    .note-list-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-2);
+    }
+    .note-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .note-item:last-child {
+      border-bottom: none;
+    }
+    .note-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .note-name {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .note-time {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-disabled);
+      margin-top: 2px;
+    }
+    .note-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .note-btn {
+      padding: 6px 14px;
+      font-size: var(--font-size-sm);
+      border-radius: var(--radius-sm);
+      border: 1px solid #DDDDDD;
+      background: transparent;
+      color: var(--color-text-primary);
+      cursor: pointer;
+    }
+    .note-btn:hover {
+      background: var(--color-bg-soft);
+    }
+    .note-btn-danger {
+      color: var(--color-error);
+    }
+    .note-empty {
+      text-align: center;
+      color: var(--color-text-disabled);
+      font-size: var(--font-size-sm);
+      padding: var(--space-3) 0;
+    }
+    .note-unavail {
+      font-size: var(--font-size-sm);
+      color: var(--color-error);
+      line-height: 1.7;
+      border: 1px solid rgba(159, 47, 45, 0.3);
+      background: rgba(159, 47, 45, 0.05);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+    .note-hint {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-disabled);
+      margin-top: var(--space-1);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>加密便签</h1>
+    <p class="tool-desc">使用 AES-GCM + PBKDF2 在浏览器本地加密便签，密文仅存于 localStorage，明文不落盘</p>
+    <div id="unavailBox" class="note-unavail" style="display:none;"></div>
+    <div class="card">
+      <label class="field-label" for="noteName">便签名称</label>
+      <input id="noteName" class="input note-input js-focus-input" placeholder="如：服务器密码备忘">
+      <label class="field-label" for="notePassword">加密密码</label>
+      <input id="notePassword" class="input note-input" type="password" placeholder="用于加密/解密的密码，请牢记">
+      <label class="field-label" for="noteText">便签内容</label>
+      <textarea id="noteText" class="input textarea" placeholder="输入要加密保存的内容..."></textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;">
+        <button id="saveBtn" class="btn btn-primary">加密保存</button>
+        <button id="clearBtn" class="btn btn-secondary">清空输入</button>
+      </div>
+      <p class="note-hint">加密过程全部在本机完成（PBKDF2 派生密钥 + AES-GCM 加密，随机 salt 与 iv）。数据仅保存在当前浏览器 localStorage，清除浏览器数据将永久丢失；请勿用于存储密码管理器等极端敏感信息。</p>
+    </div>
+    <div class="card">
+      <p class="note-list-title">便签列表（<span id="noteCount">0</span>）</p>
+      <div id="noteList"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var noteName = document.getElementById('noteName');
+      var notePassword = document.getElementById('notePassword');
+      var noteText = document.getElementById('noteText');
+      var saveBtn = document.getElementById('saveBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var unavailBox = document.getElementById('unavailBox');
+      var noteList = document.getElementById('noteList');
+      var noteCount = document.getElementById('noteCount');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var LS_KEY = 'encrypted-notes:v1';
+      var PBKDF2_ITERATIONS = 150000;
+      var supported = false;
+
+      function isCryptoSupported() {
+        return window.crypto && window.crypto.subtle && window.crypto.getRandomValues && typeof TextEncoder !== 'undefined' && typeof TextDecoder !== 'undefined' && isSecureContext();
+      }
+
+      function bytesToBase64(bytes) {
+        var CHUNK = 0x8000;
+        var binary = '';
+        for (var i = 0; i < bytes.length; i += CHUNK) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+        }
+        return btoa(binary);
+      }
+
+      function base64ToBytes(b64) {
+        var binary = atob(b64);
+        var len = binary.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function deriveKey(password, salt, usage) {
+        var enc = new TextEncoder();
+        return crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']).then(function (material) {
+          return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+            material,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            [usage]
+          );
+        });
+      }
+
+      function encryptNote(text, password) {
+        var enc = new TextEncoder();
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        return deriveKey(password, salt, 'encrypt').then(function (key) {
+          return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(text));
+        }).then(function (cipher) {
+          return {
+            salt: bytesToBase64(salt),
+            iv: bytesToBase64(iv),
+            data: bytesToBase64(new Uint8Array(cipher))
+          };
+        });
+      }
+
+      function decryptNote(bundle, password) {
+        var dec = new TextDecoder();
+        var salt = base64ToBytes(bundle.salt);
+        var iv = base64ToBytes(bundle.iv);
+        var data = base64ToBytes(bundle.data);
+        return deriveKey(password, salt, 'decrypt').then(function (key) {
+          return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, data);
+        }).then(function (plain) {
+          return dec.decode(plain);
+        });
+      }
+
+      function loadNotes() {
+        try {
+          var raw = localStorage.getItem(LS_KEY);
+          if (!raw) return [];
+          var list = JSON.parse(raw);
+          return Array.isArray(list) ? list : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveNotes(list) {
+        try {
+          localStorage.setItem(LS_KEY, JSON.stringify(list));
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function fmtTime(ts) {
+        var d = new Date(ts);
+        function p(n) {
+          return (n < 10 ? '0' : '') + n;
+        }
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+      }
+
+      function renderList() {
+        var list = loadNotes();
+        noteCount.textContent = list.length;
+        if (list.length === 0) {
+          noteList.innerHTML = '<div class="note-empty">暂无便签，填写上方内容后点击「加密保存」</div>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < list.length; i++) {
+          var it = list[i];
+          html += '<div class="note-item">' +
+            '<div class="note-info">' +
+            '<div class="note-name">' + htmlEscape(it.name) + '</div>' +
+            '<div class="note-time">' + htmlEscape(fmtTime(it.created)) + ' 创建</div>' +
+            '</div>' +
+            '<div class="note-actions">' +
+            '<button type="button" class="note-btn" data-action="view" data-id="' + htmlEscape(it.id) + '">查看</button>' +
+            '<button type="button" class="note-btn note-btn-danger" data-action="delete" data-id="' + htmlEscape(it.id) + '">删除</button>' +
+            '</div>' +
+            '</div>';
+        }
+        noteList.innerHTML = html;
+      }
+
+      function findNote(id) {
+        var list = loadNotes();
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === id) return list[i];
+        }
+        return null;
+      }
+
+      function handleSave() {
+        var name = noteName.value.trim();
+        var password = notePassword.value;
+        var text = noteText.value;
+        if (!name) {
+          setStatus('请输入便签名称', 'error');
+          noteName.focus();
+          return;
+        }
+        if (!password) {
+          setStatus('请输入加密密码', 'error');
+          notePassword.focus();
+          return;
+        }
+        if (!text.trim()) {
+          setStatus('请输入便签内容', 'error');
+          noteText.focus();
+          return;
+        }
+        saveBtn.disabled = true;
+        encryptNote(text, password).then(function (bundle) {
+          var list = loadNotes();
+          var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+          list.unshift({
+            id: id,
+            name: name,
+            salt: bundle.salt,
+            iv: bundle.iv,
+            data: bundle.data,
+            created: Date.now()
+          });
+          if (!saveNotes(list)) {
+            setStatus('保存失败：浏览器存储空间不足或不可用', 'error');
+            return;
+          }
+          noteText.value = '';
+          noteName.value = '';
+          outputText.textContent = '';
+          renderList();
+          setStatus('已加密保存：' + name);
+        }).catch(function () {
+          setStatus('加密失败，请重试', 'error');
+        }).then(function () {
+          saveBtn.disabled = false;
+        });
+      }
+
+      function handleView(id) {
+        var note = findNote(id);
+        if (!note) {
+          setStatus('便签不存在或已被删除', 'error');
+          renderList();
+          return;
+        }
+        showPrompt('输入密码解密「' + note.name + '」', '加密密码', '', function (pwd) {
+          if (pwd === null) return;
+          if (!pwd) {
+            setStatus('请输入密码', 'error');
+            return;
+          }
+          decryptNote(note, pwd).then(function (plain) {
+            outputText.textContent = '【' + note.name + '】' + '\n' + plain;
+            setStatus('解密成功');
+          }).catch(function () {
+            outputText.textContent = '';
+            setStatus('解密失败：密码错误或数据已损坏', 'error');
+          });
+        });
+      }
+
+      function handleDelete(id) {
+        var note = findNote(id);
+        if (!note) {
+          renderList();
+          return;
+        }
+        showConfirm('确定删除便签「' + note.name + '」？删除后无法恢复。', function (ok) {
+          if (!ok) return;
+          var list = loadNotes();
+          for (var i = 0; i < list.length; i++) {
+            if (list[i].id === id) {
+              list.splice(i, 1);
+              break;
+            }
+          }
+          saveNotes(list);
+          if (outputText.textContent.indexOf('【' + note.name + '】') === 0) {
+            outputText.textContent = '';
+          }
+          renderList();
+          setStatus('已删除便签');
+        });
+      }
+
+      noteList.addEventListener('click', function (e) {
+        var node = e.target;
+        while (node && node !== noteList && !node.getAttribute) {
+          node = node.parentNode;
+        }
+        if (!node || node === noteList) return;
+        while (node && node !== noteList && !node.getAttribute('data-action')) {
+          node = node.parentNode;
+        }
+        if (!node || node === noteList) return;
+        var action = node.getAttribute('data-action');
+        var id = node.getAttribute('data-id');
+        if (action === 'view') handleView(id);
+        else if (action === 'delete') handleDelete(id);
+      });
+
+      saveBtn.addEventListener('click', function () {
+        if (!supported) return;
+        handleSave();
+      });
+      clearBtn.addEventListener('click', function () {
+        noteName.value = '';
+        notePassword.value = '';
+        noteText.value = '';
+        outputText.textContent = '';
+        setStatus('');
+        noteName.focus();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent) {
+          copyToClipboard(outputText.textContent, copyBtn);
+          setStatus('已复制');
+        }
+      });
+
+      if (isCryptoSupported()) {
+        supported = true;
+        renderList();
+      } else {
+        unavailBox.style.display = 'block';
+        unavailBox.textContent = '当前环境不支持 Web Crypto（crypto.subtle）或非安全上下文（需要 HTTPS 或 localhost），无法使用加密功能。请使用最新版 Chrome / Firefox / Edge，并通过 HTTPS 或 localhost 访问本站。';
+        saveBtn.disabled = true;
+        noteList.innerHTML = '<div class="note-empty">加密功能不可用，便签列表暂不可用</div>';
+      }
+    })();
+  </script>
+</body>
+</html>

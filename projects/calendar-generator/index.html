@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日历生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cal-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+    .cal-controls input { width: 140px; }
+    .cal-head { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-2); }
+    .cal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .cal-table th { padding: 6px 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 500; border-bottom: 1px solid var(--color-border); }
+    .cal-table td { text-align: center; padding: 6px 0; font-size: var(--font-size-sm); border: 1px solid var(--color-border); }
+    .cal-cell-other { color: var(--color-text-disabled); background: var(--color-bg-soft); }
+    .cal-cell-today { background: var(--color-accent); color: #fff; font-weight: 600; }
+    .cal-cell-holiday { color: var(--color-error); font-weight: 600; }
+    .cal-hints { margin-top: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.7; }
+    .cal-hints b { color: var(--color-text-primary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>日历生成器</h1>
+    <p class="tool-desc">生成任意月份日历（周日开头），内置固定日期节假日提示。</p>
+    <div class="card">
+      <div class="cal-controls">
+        <input id="yearInput" type="number" min="1900" max="2100" class="input js-focus-input" placeholder="年份 1900-2100">
+        <select id="monthSelect" class="input" style="width:auto;">
+          <option value="1">1 月</option>
+          <option value="2">2 月</option>
+          <option value="3">3 月</option>
+          <option value="4">4 月</option>
+          <option value="5">5 月</option>
+          <option value="6">6 月</option>
+          <option value="7">7 月</option>
+          <option value="8">8 月</option>
+          <option value="9">9 月</option>
+          <option value="10">10 月</option>
+          <option value="11">11 月</option>
+          <option value="12">12 月</option>
+        </select>
+        <button id="prevBtn" class="btn btn-secondary">上月</button>
+        <button id="nextBtn" class="btn btn-secondary">下月</button>
+        <button id="todayBtn" class="btn btn-secondary">回到本月</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var yearInput = document.getElementById('yearInput');
+    var monthSelect = document.getElementById('monthSelect');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var todayBtn = document.getElementById('todayBtn');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var holidays = [
+      { m: 1, d: 1, name: '元旦' },
+      { m: 2, d: 14, name: '情人节' },
+      { m: 3, d: 8, name: '妇女节' },
+      { m: 4, d: 5, name: '清明节' },
+      { m: 5, d: 1, name: '劳动节' },
+      { m: 6, d: 1, name: '儿童节' },
+      { m: 7, d: 1, name: '建党节' },
+      { m: 8, d: 1, name: '建军节' },
+      { m: 9, d: 10, name: '教师节' },
+      { m: 10, d: 1, name: '国庆节' },
+      { m: 12, d: 25, name: '圣诞节' }
+    ];
+
+    function daysInMonth(y, m) {
+      return new Date(y, m, 0).getDate();
+    }
+
+    function isHoliday(m, d) {
+      for (var i = 0; i < holidays.length; i++) {
+        if (holidays[i].m === m && holidays[i].d === d) { return true; }
+      }
+      return false;
+    }
+
+    function shiftMonth(delta) {
+      var y = parseInt(yearInput.value, 10);
+      var m = parseInt(monthSelect.value, 10);
+      if (isNaN(y) || y < 1900 || y > 2100) {
+        setStatus('请先输入 1900-2100 之间的年份', 'error');
+        return;
+      }
+      var total = y * 12 + (m - 1) + delta;
+      var ny = Math.floor(total / 12);
+      var nm = (total % 12) + 1;
+      if (ny < 1900 || ny > 2100) {
+        setStatus('已超出可查看范围（1900-2100）', 'error');
+        return;
+      }
+      yearInput.value = ny;
+      monthSelect.value = '' + nm;
+      render();
+    }
+
+    function render() {
+      var raw = yearInput.value;
+      if (!raw) {
+        outputText.innerHTML = '';
+        setStatus('');
+        return;
+      }
+      var y = parseInt(raw, 10);
+      var m = parseInt(monthSelect.value, 10);
+      if (isNaN(y) || y < 1900 || y > 2100) {
+        outputText.innerHTML = '';
+        setStatus('年份需为 1900-2100 之间的整数', 'error');
+        return;
+      }
+      var now = new Date();
+      var dim = daysInMonth(y, m);
+      var prevDim = daysInMonth(m === 1 ? y - 1 : y, m === 1 ? 12 : m - 1);
+      var firstDow = new Date(y, m - 1, 1).getDay();
+      var cells = [];
+      var i, j, d;
+      for (i = firstDow - 1; i >= 0; i--) { cells.push({ num: prevDim - i, other: true }); }
+      for (d = 1; d <= dim; d++) { cells.push({ num: d, other: false }); }
+      var rem = cells.length % 7;
+      if (rem !== 0) {
+        for (i = 1; i <= 7 - rem; i++) { cells.push({ num: i, other: true }); }
+      }
+      var hints = [];
+      for (i = 0; i < holidays.length; i++) {
+        if (holidays[i].m === m) {
+          hints.push(holidays[i].m + ' 月 ' + holidays[i].d + ' 日 · ' + holidays[i].name);
+        }
+      }
+      var html = '<div class="cal-head">' + htmlEscape(y) + ' 年 ' + htmlEscape(m) + ' 月</div>';
+      html += '<table class="cal-table"><thead><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr></thead><tbody>';
+      for (i = 0; i < cells.length; i += 7) {
+        html += '<tr>';
+        for (j = 0; j < 7; j++) {
+          var c = cells[i + j];
+          var cls = 'cal-cell';
+          if (c.other) {
+            cls += ' cal-cell-other';
+          } else {
+            if (y === now.getFullYear() && m === now.getMonth() + 1 && c.num === now.getDate()) { cls += ' cal-cell-today'; }
+            if (isHoliday(m, c.num)) { cls += ' cal-cell-holiday'; }
+          }
+          html += '<td class="' + cls + '">' + htmlEscape(c.num) + '</td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      html += '<div class="cal-hints">' + (hints.length ? '<b>本月节假日：</b>' + htmlEscape(hints.join('；')) : '本月无内置固定节假日') + '</div>';
+      outputText.innerHTML = html;
+      var lines = [y + ' 年 ' + m + ' 月'];
+      for (i = 0; i < cells.length; i += 7) {
+        var row = [];
+        for (j = 0; j < 7; j++) { row.push(cells[i + j].num); }
+        lines.push(row.join(' '));
+      }
+      if (hints.length) { lines.push(''); lines.push('节假日：' + hints.join('；')); }
+      copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
+      setStatus('已生成 ' + y + ' 年 ' + m + ' 月日历');
+    }
+
+    yearInput.addEventListener('input', render);
+    monthSelect.addEventListener('change', render);
+    prevBtn.addEventListener('click', function () { shiftMonth(-1); });
+    nextBtn.addEventListener('click', function () { shiftMonth(1); });
+    todayBtn.addEventListener('click', function () {
+      var now = new Date();
+      yearInput.value = now.getFullYear();
+      monthSelect.value = '' + (now.getMonth() + 1);
+      render();
+    });
+
+    var now = new Date();
+    yearInput.value = now.getFullYear();
+    monthSelect.value = '' + (now.getMonth() + 1);
+    render();
+  })();
+  </script>
+</body>
+</html>

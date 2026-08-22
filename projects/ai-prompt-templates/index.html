@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 提示词模板 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .pt-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-2); }
+    .pt-controls input { width: 240px; }
+    .pt-cats { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-2); }
+    .pt-cat-btn { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; font-size: var(--font-size-sm); cursor: pointer; background: var(--color-bg); color: var(--color-text-secondary); }
+    .pt-cat-btn.on { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+    .pt-list { display: flex; flex-direction: column; gap: var(--space-1); max-height: 420px; overflow-y: auto; }
+    .pt-item { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); cursor: pointer; }
+    .pt-item:hover { border-color: var(--color-accent); box-shadow: var(--shadow-focus); }
+    .pt-item-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-1); margin-bottom: 4px; }
+    .pt-title { font-weight: 600; font-size: var(--font-size-sm); }
+    .pt-cat { font-size: var(--font-size-xs); color: var(--color-text-secondary); background: var(--color-bg-soft); padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+    .pt-scene { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+    .pt-vars { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
+    .pt-var-field { display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1; }
+    .pt-var-field label { font-size: var(--font-size-xs); color: var(--color-text-secondary); font-family: var(--font-mono); }
+    .pt-empty { color: var(--color-text-secondary); font-size: var(--font-size-sm); padding: var(--space-2) 0; }
+    .pt-hint { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-bottom: var(--space-1); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>AI 提示词模板</h1>
+    <p class="tool-desc">30+ 程序员向 AI 提示词模板：点击选用，填写占位符后一键复制。</p>
+    <div class="card">
+      <div class="pt-controls">
+        <input id="searchInput" type="text" class="input js-focus-input" placeholder="搜索模板关键词...">
+      </div>
+      <div class="pt-cats" id="catBar"></div>
+      <div class="pt-list" id="ptList"></div>
+    </div>
+    <div class="card">
+      <div class="pt-hint">已选模板的占位符变量（可留空，留空的占位符将保持原样）</div>
+      <div class="pt-vars" id="varBox"></div>
+      <textarea id="promptArea" class="input textarea" rows="8" placeholder="点击上方模板后，提示词会出现在这里，也可手动编辑"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;white-space:pre-wrap;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var searchInput = document.getElementById('searchInput');
+    var catBar = document.getElementById('catBar');
+    var ptList = document.getElementById('ptList');
+    var varBox = document.getElementById('varBox');
+    var promptArea = document.getElementById('promptArea');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var currentCat = '全部';
+    var varDefs = [];
+
+    var items = [
+      { cat: '代码审查', title: '代码审查', scene: '提交前让 AI 全面审查代码', text: '请对以下代码做严格审查，按严重程度列出问题：逻辑错误、边界条件、安全漏洞、可维护性，并给出修改建议。\n\n语言：{{语言}}\n代码：\n{{代码}}' },
+      { cat: '代码审查', title: '代码走查', scene: '资深工程师视角走查代码', text: '请以团队资深工程师的视角走查以下代码，输出问题清单（含行号）与改进建议：\n\n{{代码}}' },
+      { cat: '代码审查', title: '架构评审', scene: '评审系统架构设计', text: '从扩展性、耦合度、可测试性与性能角度评审以下架构设计，指出风险点并给出改进方向：\n\n{{架构描述}}' },
+      { cat: '代码审查', title: '提交前检查清单', scene: '提交前逐项核对', text: '这是一次代码提交的变更说明，请按提交前检查清单逐项核对：是否缺少错误处理、是否遗漏测试、是否有调试残留，输出核对结果：\n\n{{变更}}' },
+      { cat: '测试', title: '单元测试编写', scene: '为函数生成完整单测', text: '为以下函数编写完整的单元测试，覆盖正常路径、边界值与异常输入：\n\n语言：{{语言}}\n测试框架：{{框架}}\n函数：\n{{函数}}' },
+      { cat: '测试', title: '测试用例设计', scene: '设计边界测试用例清单', text: '针对以下功能点设计一份边界测试用例清单，标注优先级与预期结果：\n\n{{功能点}}' },
+      { cat: '重构', title: '重构建议', scene: '得到重构方案与理由', text: '对以下代码给出重构建议，说明每项的理由、风险与收益：\n\n{{代码}}\n约束：{{约束}}' },
+      { cat: '重构', title: '函数拆分', scene: '拆分长函数', text: '将以下长函数拆分为职责单一的小函数，保持对外行为完全一致：\n\n{{代码}}' },
+      { cat: '重构', title: '代码风格统一', scene: '统一代码风格', text: '将以下代码统一为 {{风格}} 代码风格，逻辑保持不变，并说明修改点：\n\n{{代码}}' },
+      { cat: '调试', title: '解释代码', scene: '逐行理解陌生代码', text: '用通俗的语言逐行解释以下代码的用途与执行流程，并指出潜在问题：\n\n{{代码}}' },
+      { cat: '调试', title: '找 Bug', scene: '结果与预期不符时定位根因', text: '以下代码运行结果与预期不符，请分析根因并给出修复代码：\n\n预期结果：{{预期}}\n实际结果：{{实际}}\n代码：\n{{代码}}' },
+      { cat: '调试', title: '报错排查', scene: '根据报错定位问题', text: '我遇到了以下报错，请分析原因并给出排查步骤：\n\n报错信息：{{报错}}\n运行环境：{{环境}}\n相关代码：\n{{代码}}' },
+      { cat: '调试', title: '内存泄漏排查', scene: '内存持续增长的排查思路', text: '我的程序内存持续增长，请给出系统化的排查思路、常用工具与修复方向：\n\n语言：{{语言}}\n现象：{{现象}}' },
+      { cat: '调试', title: '并发问题修复', scene: '修复竞态条件', text: '以下并发代码存在竞态条件，请指出问题并给出修复方案：\n\n语言：{{语言}}\n代码：\n{{代码}}' },
+      { cat: '文档', title: '生成模块文档', scene: '为代码生成说明文档', text: '为以下代码生成模块文档，包含：功能说明、参数说明、返回值、使用示例与注意事项：\n\n{{代码}}' },
+      { cat: '文档', title: '生成 README', scene: '快速产出项目 README', text: '为项目「{{项目名}}」生成 README.md，包含：项目简介、安装方式、使用说明、目录结构、贡献指南：\n\n补充信息：{{补充}}' },
+      { cat: '文档', title: 'API 接口文档', scene: '为接口生成文档', text: '为以下 API 生成接口文档（Markdown 格式），包含请求方法、路径、参数、响应示例与错误码：\n\n{{接口描述}}' },
+      { cat: '文档', title: '生成中文注释', scene: '为代码补注释', text: '为以下代码生成规范的中文注释，注释要说明用途、参数与边界条件：\n\n{{代码}}' },
+      { cat: '性能', title: '性能优化', scene: '分析瓶颈并优化', text: '分析以下代码的性能瓶颈，给出可落地的优化方案并说明预期收益：\n\n代码：{{代码}}\n运行环境：{{环境}}' },
+      { cat: '数据库', title: '数据库表设计', scene: '从业务描述设计表结构', text: '为以下业务场景设计数据库表结构，包含字段类型、索引、外键与关系说明：\n\n{{业务场景}}' },
+      { cat: '数据库', title: 'SQL 优化', scene: '优化慢查询', text: '优化以下 SQL 的查询性能，分析执行计划并给出改写建议：\n\nSQL：{{SQL}}\n表结构：{{表结构}}\n数据量：{{数据量}}' },
+      { cat: '安全', title: '代码安全审计', scene: '检查注入与越权等漏洞', text: '对以下代码做安全审计，重点检查注入、XSS、越权访问、敏感信息泄漏，按漏洞严重程度输出：\n\n{{代码}}' },
+      { cat: '设计', title: '算法设计', scene: '设计算法并分析复杂度', text: '为以下问题设计一个算法，给出思路、伪代码、时间与空间复杂度分析：\n\n{{问题描述}}' },
+      { cat: '设计', title: '正则表达式生成', scene: '按需求生成正则', text: '编写一个匹配「{{需求}}」的正则表达式，解释每个分组含义，并给出 3 个正例与 3 个反例：' },
+      { cat: '设计', title: '技术选型对比', scene: '对比两个技术方案', text: '对比 {{技术A}} 与 {{技术B}} 在「{{场景}}」下的优劣，从性能、生态、学习成本、维护性给出推荐与理由：' },
+      { cat: '设计', title: '需求转实现方案', scene: '需求变技术方案', text: '根据需求「{{需求}}」给出完整技术实现方案，包括模块划分、接口设计与数据流：' },
+      { cat: '设计', title: 'TypeScript 类型定义', scene: '为数据定义类型', text: '为以下数据结构定义 TypeScript 类型，注意可选字段与联合类型的处理：\n\n{{数据描述}}' },
+      { cat: '写作', title: 'Git 提交信息', scene: '生成规范提交信息', text: '根据以下改动生成符合 Conventional Commits 规范的提交信息（type(scope): subject 格式）：\n\n{{改动描述}}' },
+      { cat: '写作', title: '代码转语言', scene: '跨语言移植代码', text: '将以下代码从 {{源语言}} 移植为 {{目标语言}}，保持行为与边界处理一致：\n\n{{代码}}' },
+      { cat: '学习', title: '学习计划制定', scene: '按周拆解学习目标', text: '为掌握「{{技能}}」制定一份 {{周期}} 的学习计划，按周划分里程碑，每周包含练习任务与自测方式：' },
+      { cat: '学习', title: '面试题出题', scene: '出题并附参考答案', text: '针对「{{岗位}}」岗位，出 5 道考察「{{技能}}」的面试题，每题附参考答案与考察点：' },
+      { cat: '其他', title: '功能实现', scene: '按需求直接写代码', text: '用 {{语言}} 实现以下功能：\n{{功能}}\n\n要求：{{要求}}\n输入输出约定：{{输入输出}}' }
+    ];
+
+    var cats = ['全部', '代码审查', '测试', '重构', '调试', '文档', '性能', '数据库', '安全', '设计', '写作', '学习', '其他'];
+
+    function buildCats() {
+      var html = '';
+      for (var i = 0; i < cats.length; i++) {
+        html += '<button class="pt-cat-btn' + (cats[i] === currentCat ? ' on' : '') + '" data-cat="' + cats[i] + '">' + htmlEscape(cats[i]) + '</button>';
+      }
+      catBar.innerHTML = html;
+      var btns = catBar.querySelectorAll('.pt-cat-btn');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].onclick = (function (cat) {
+          return function () { currentCat = cat; buildCats(); render(); };
+        })(cats[j]);
+      }
+    }
+
+    function extractVars(text) {
+      var names = [];
+      var re = /\{\{([^{}]+)\}\}/g;
+      var m;
+      while ((m = re.exec(text)) !== null) {
+        var n = m[1].trim();
+        var dup = false;
+        for (var i = 0; i < names.length; i++) {
+          if (names[i] === n) { dup = true; break; }
+        }
+        if (!dup) { names.push(n); }
+      }
+      return names;
+    }
+
+    function refreshPreview() {
+      var t = promptArea.value;
+      for (var i = 0; i < varDefs.length; i++) {
+        if (!varDefs[i].value) { continue; }
+        var re = new RegExp('\\{\\{\\s*' + varDefs[i].name + '\\s*\\}\\}', 'g');
+        t = t.replace(re, varDefs[i].value);
+      }
+      outputText.innerHTML = htmlEscape(t).replace(/\n/g, '<br>');
+    }
+
+    function selectTemplate(idx) {
+      var it = items[idx];
+      promptArea.value = it.text;
+      var names = extractVars(it.text);
+      var html = '';
+      var defs = [];
+      if (!names.length) {
+        html = '<span class="pt-empty">该模板无占位符，可直接使用或编辑后复制</span>';
+      } else {
+        for (var i = 0; i < names.length; i++) {
+          defs.push({ name: names[i], value: '' });
+          html += '<div class="pt-var-field"><label>{{' + htmlEscape(names[i]) + '}}</label><input type="text" class="input" data-var="' + htmlEscape(names[i]) + '"></div>';
+        }
+      }
+      varBox.innerHTML = html;
+      varDefs = defs;
+      var inputs = varBox.querySelectorAll('input[data-var]');
+      for (var j = 0; j < inputs.length; j++) {
+        inputs[j].addEventListener('input', (function (el) {
+          return function () {
+            for (var k = 0; k < varDefs.length; k++) {
+              if (varDefs[k].name === el.getAttribute('data-var')) { varDefs[k].value = el.value; }
+            }
+            refreshPreview();
+          };
+        })(inputs[j]));
+      }
+      refreshPreview();
+      setStatus('已载入「' + it.title + '」模板，填写占位符后点击复制');
+    }
+
+    function render() {
+      var q = searchInput.value.toLowerCase();
+      var filtered = [];
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (currentCat !== '全部' && it.cat !== currentCat) { continue; }
+        if (q && it.title.toLowerCase().indexOf(q) === -1 && it.text.toLowerCase().indexOf(q) === -1) { continue; }
+        filtered.push(it);
+      }
+      if (!filtered.length) {
+        ptList.innerHTML = '<div class="pt-empty">没有匹配的模板</div>';
+        return;
+      }
+      var html = '';
+      for (var k = 0; k < filtered.length; k++) {
+        html += '<div class="pt-item" data-idx="' + k + '">';
+        html += '<div class="pt-item-head"><span class="pt-title">' + htmlEscape(filtered[k].title) + '</span><span class="pt-cat">' + htmlEscape(filtered[k].cat) + '</span></div>';
+        html += '<div class="pt-scene">适用：' + htmlEscape(filtered[k].scene) + '</div>';
+        html += '</div>';
+      }
+      ptList.innerHTML = html;
+      var cards = ptList.querySelectorAll('.pt-item');
+      for (var m = 0; m < cards.length; m++) {
+        cards[m].onclick = (function (idx) {
+          return function () { selectTemplate(idx); };
+        })(m);
+      }
+    }
+
+    promptArea.addEventListener('input', refreshPreview);
+    copyBtn.onclick = function () { copyToClipboard(outputText.textContent, copyBtn); };
+    searchInput.addEventListener('input', render);
+    buildCats();
+    render();
+    refreshPreview();
+  })();
+  </script>
+</body>
+</html>

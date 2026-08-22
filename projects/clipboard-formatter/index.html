@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>剪贴板格式化器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .op-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin-top: var(--space-2);
+    }
+    .detect-hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-1);
+      min-height: 18px;
+    }
+    .csv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+      margin-top: var(--space-2);
+    }
+    .csv-table th, .csv-table td {
+      border: 1px solid var(--color-border);
+      padding: 4px 8px;
+      text-align: left;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .csv-table th {
+      background: var(--color-bg-soft);
+      color: var(--color-text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>剪贴板格式化器</h1>
+    <p class="tool-desc">粘贴文本，进行 JSON / XML 美化、空白清理、换行符统一与 CSV 表格预览。</p>
+    <div class="card">
+      <label for="inputText" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">粘贴文本</label>
+      <textarea id="inputText" class="input textarea js-focus-input" rows="10" placeholder="在此粘贴 JSON、XML、CSV 或任意文本…"></textarea>
+      <div class="detect-hint" id="detectHint"></div>
+      <div class="op-row">
+        <button id="jsonBtn" class="btn btn-primary">JSON 美化</button>
+        <button id="xmlBtn" class="btn btn-secondary">XML 美化</button>
+        <button id="spaceBtn" class="btn btn-secondary">去多余空白</button>
+        <button id="emptyBtn" class="btn btn-secondary">去空行</button>
+        <button id="newlineBtn" class="btn btn-secondary">统一换行符 CRLF→LF</button>
+        <button id="csvBtn" class="btn btn-secondary">CSV 转表格预览</button>
+      </div>
+    </div>
+    <div id="csvPreviewWrap"></div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;white-space:pre-wrap;word-break:break-all;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var hintEl = document.getElementById('detectHint');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var jsonBtn = document.getElementById('jsonBtn');
+      var xmlBtn = document.getElementById('xmlBtn');
+      var spaceBtn = document.getElementById('spaceBtn');
+      var emptyBtn = document.getElementById('emptyBtn');
+      var newlineBtn = document.getElementById('newlineBtn');
+      var csvBtn = document.getElementById('csvBtn');
+      var csvWrap = document.getElementById('csvPreviewWrap');
+
+      function getInput() {
+        var v = inputEl.value;
+        if (!String(v).trim()) {
+          outputEl.textContent = '';
+          csvWrap.innerHTML = '';
+          setStatus('');
+          return null;
+        }
+        return String(v);
+      }
+
+      function formatJson(text) {
+        var parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch (e) {
+          setStatus('JSON 解析失败：' + e.message, 'error');
+          return false;
+        }
+        outputEl.textContent = JSON.stringify(parsed, null, 2);
+        setStatus('JSON 美化完成');
+        return true;
+      }
+
+      function formatXml(text) {
+        var s = String(text);
+        var out = '';
+        var indent = 0;
+        var i = 0;
+        var n = s.length;
+        function pad(d) {
+          var p = '';
+          var k;
+          for (k = 0; k < d; k++) p += '  ';
+          return p;
+        }
+        while (i < n) {
+          if (s.charAt(i) !== '<') {
+            var te = s.indexOf('<', i);
+            if (te === -1) te = n;
+            var chunk = s.substring(i, te).replace(/\s+/g, ' ').trim();
+            if (chunk) out += pad(indent) + chunk + '\n';
+            i = te;
+            continue;
+          }
+          var gt = s.indexOf('>', i);
+          if (gt === -1) {
+            setStatus('XML 解析失败：标签未闭合', 'error');
+            return false;
+          }
+          var tag = s.substring(i, gt + 1);
+          i = gt + 1;
+          if (tag.indexOf('<!--') === 0 || tag.indexOf('<?') === 0 || tag.indexOf('<!') === 0) {
+            out += pad(indent) + tag + '\n';
+          } else if (tag.indexOf('</') === 0) {
+            indent = Math.max(0, indent - 1);
+            out += pad(indent) + tag + '\n';
+          } else if (tag.charAt(tag.length - 2) === '/') {
+            out += pad(indent) + tag + '\n';
+          } else {
+            out += pad(indent) + tag + '\n';
+            indent++;
+          }
+        }
+        if (!out.trim()) {
+          setStatus('XML 解析失败：未识别到任何标签', 'error');
+          return false;
+        }
+        outputEl.textContent = out.replace(/\n+$/, '');
+        setStatus('XML 美化完成');
+        return true;
+      }
+
+      function collapseWhitespace(text) {
+        var lines = String(text).split('\n');
+        var i;
+        for (i = 0; i < lines.length; i++) {
+          lines[i] = lines[i].replace(/[ \t]+/g, ' ').replace(/^\s+|\s+$/g, '');
+        }
+        outputEl.textContent = lines.join('\n');
+        setStatus('已清理多余空白');
+      }
+
+      function removeEmptyLines(text) {
+        var lines = String(text).split('\n');
+        var out = [];
+        var i;
+        for (i = 0; i < lines.length; i++) {
+          if (String(lines[i]).trim()) out.push(lines[i]);
+        }
+        outputEl.textContent = out.join('\n');
+        setStatus('已删除 ' + (lines.length - out.length) + ' 个空行');
+      }
+
+      function normalizeNewlines(text) {
+        outputEl.textContent = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        setStatus('换行符已统一为 LF');
+      }
+
+      function parseCsvLine(line) {
+        var cells = [];
+        var cur = '';
+        var inQ = false;
+        var i;
+        for (i = 0; i < line.length; i++) {
+          var ch = line.charAt(i);
+          if (inQ) {
+            if (ch === '"') {
+              if (line.charAt(i + 1) === '"') {
+                cur += '"';
+                i++;
+              } else {
+                inQ = false;
+              }
+            } else {
+              cur += ch;
+            }
+          } else if (ch === '"') {
+            inQ = true;
+          } else if (ch === ',') {
+            cells.push(cur);
+            cur = '';
+          } else {
+            cur += ch;
+          }
+        }
+        cells.push(cur);
+        return cells;
+      }
+
+      function csvPreview(text) {
+        var lines = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        while (lines.length && !String(lines[lines.length - 1]).trim()) {
+          lines.pop();
+        }
+        if (!lines.length) {
+          setStatus('没有可预览的行', 'error');
+          return;
+        }
+        var rows = [];
+        var maxCols = 0;
+        var i;
+        var limit = 200;
+        var total = lines.length;
+        if (lines.length > limit) lines = lines.slice(0, limit);
+        for (i = 0; i < lines.length; i++) {
+          var cells = parseCsvLine(lines[i]);
+          rows.push(cells);
+          if (cells.length > maxCols) maxCols = cells.length;
+        }
+        var html = '<table class="csv-table"><thead><tr>';
+        var j;
+        for (j = 0; j < rows[0].length; j++) {
+          html += '<th>' + htmlEscape(rows[0][j]) + '</th>';
+        }
+        html += '</tr></thead><tbody>';
+        for (i = 1; i < rows.length; i++) {
+          html += '<tr>';
+          for (j = 0; j < rows[i].length; j++) {
+            html += '<td title="' + htmlEscape(rows[i][j]) + '">' + htmlEscape(rows[i][j]) + '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        csvWrap.innerHTML = html;
+        outputEl.textContent = 'CSV 预览：共 ' + total + ' 行 × ' + maxCols + ' 列' + (total > limit ? '（仅显示前 ' + limit + ' 行）' : '');
+        setStatus('CSV 表格预览已生成');
+      }
+
+      function detect() {
+        var v = inputEl.value;
+        if (!String(v).trim()) {
+          hintEl.textContent = '';
+          return;
+        }
+        var t = String(v).trim();
+        var hint = '';
+        if (t.charAt(0) === '{' || t.charAt(0) === '[') {
+          hint = '检测：文本以 { 或 [ 开头，可能是 JSON，可尝试「JSON 美化」。';
+        } else if (t.charAt(0) === '<') {
+          hint = '检测：文本以 < 开头，可能是 XML / HTML，可尝试「XML 美化」。';
+        } else if (String(v).indexOf(',') !== -1 && String(v).split('\n').length > 1) {
+          hint = '检测：文本含逗号且多行，可能是 CSV，可尝试「CSV 转表格预览」。';
+        }
+        hintEl.textContent = hint;
+      }
+
+      inputEl.addEventListener('input', function () {
+        if (!String(inputEl.value).trim()) {
+          outputEl.textContent = '';
+          csvWrap.innerHTML = '';
+          hintEl.textContent = '';
+          setStatus('');
+          return;
+        }
+        detect();
+      });
+
+      jsonBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvWrap.innerHTML = '';
+        formatJson(text);
+      });
+
+      xmlBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvWrap.innerHTML = '';
+        formatXml(text);
+      });
+
+      spaceBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvWrap.innerHTML = '';
+        collapseWhitespace(text);
+      });
+
+      emptyBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvWrap.innerHTML = '';
+        removeEmptyLines(text);
+      });
+
+      newlineBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvWrap.innerHTML = '';
+        normalizeNewlines(text);
+      });
+
+      csvBtn.addEventListener('click', function () {
+        var text = getInput();
+        if (text === null) return;
+        csvPreview(text);
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

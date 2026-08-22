@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件名重命名器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ren-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-top:var(--space-2)}
+    .ren-controls .input{flex:1 1 150px}
+    .ren-table{width:100%;border-collapse:collapse;margin-top:var(--space-2);font-size:var(--font-size-sm)}
+    .ren-table th,.ren-table td{border:1px solid var(--color-border);padding:6px 10px;text-align:left;vertical-align:top}
+    .ren-table th{background:var(--color-bg-soft);font-weight:600;color:var(--color-text-secondary)}
+    .ren-table .arrow{color:var(--color-text-disabled);white-space:nowrap}
+    .ren-conflict{color:var(--color-error);font-weight:600}
+    .ren-note{margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文件名重命名器</h1>
+    <p class="tool-desc">批量重命名文件名：替换、加前后缀、转换扩展名、序号重命名，自动检测重名冲突。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文件名列表，每行一个..." style="min-height:130px;"></textarea>
+      <div class="ren-controls">
+        <select id="opSelect" class="input">
+          <option value="replace">替换文本</option>
+          <option value="prefix">加前缀</option>
+          <option value="suffix">加后缀</option>
+          <option value="ext">扩展名转换</option>
+          <option value="seq">序号重命名</option>
+        </select>
+        <input id="param1" type="text" class="input" placeholder="查找文本">
+        <input id="param2" type="text" class="input" placeholder="替换为" style="display:none;">
+        <input id="param3" type="text" class="input" placeholder="起始序号" style="display:none;">
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var opEl = document.getElementById('opSelect');
+      var p1 = document.getElementById('param1');
+      var p2 = document.getElementById('param2');
+      var p3 = document.getElementById('param3');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+
+      function syncParams() {
+        var op = opEl.value;
+        p1.style.display = 'none';
+        p2.style.display = 'none';
+        p3.style.display = 'none';
+        if (op === 'replace') {
+          p1.style.display = '';
+          p1.placeholder = '查找文本';
+          p2.style.display = '';
+          p2.placeholder = '替换为';
+        } else if (op === 'prefix') {
+          p1.style.display = '';
+          p1.placeholder = '前缀';
+        } else if (op === 'suffix') {
+          p1.style.display = '';
+          p1.placeholder = '后缀';
+        } else if (op === 'ext') {
+          p1.style.display = '';
+          p1.placeholder = '新扩展名（如 txt）';
+        } else if (op === 'seq') {
+          p1.style.display = '';
+          p1.placeholder = '基础名（如 file）';
+          p2.style.display = '';
+          p2.placeholder = '起始序号（默认为 1）';
+          p3.style.display = '';
+          p3.placeholder = '数字位数（如 3）';
+        }
+      }
+
+      function getExt(name) {
+        var dot = name.lastIndexOf('.');
+        return dot > 0 ? name.slice(dot + 1) : '';
+      }
+
+      function renameOne(name, op, find, repl, startNum, digits, idx) {
+        if (op === 'replace') {
+          return name.split(find).join(repl);
+        }
+        if (op === 'prefix') return find + name;
+        if (op === 'suffix') return name + find;
+        if (op === 'ext') {
+          var ext = find.replace(/^\./, '');
+          var dot = name.lastIndexOf('.');
+          var base = dot > 0 ? name.slice(0, dot) : name;
+          return ext ? base + '.' + ext : base;
+        }
+        if (op === 'seq') {
+          var num = String(startNum + idx);
+          if (digits > 0) {
+            while (num.length < digits) num = '0' + num;
+          }
+          var ext2 = getExt(name);
+          return find + num + (ext2 ? '.' + ext2 : '');
+        }
+        return name;
+      }
+
+      function render() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          setStatus('');
+          return;
+        }
+        var op = opEl.value;
+        var find = p1.value;
+        var repl = p2.value;
+        var startNum = 1;
+        var digits = 0;
+        if (op === 'replace' && !find) {
+          outputEl.innerHTML = '';
+          setStatus('查找文本不能为空', 'error');
+          return;
+        }
+        if (op === 'seq') {
+          if (p2.value !== '') {
+            var sn = parseInt(p2.value, 10);
+            if (isNaN(sn) || sn < 0) {
+              outputEl.innerHTML = '';
+              setStatus('起始序号必须是大于等于 0 的整数', 'error');
+              return;
+            }
+            startNum = sn;
+          }
+          if (p3.value !== '') {
+            var dg = parseInt(p3.value, 10);
+            if (isNaN(dg) || dg < 1 || dg > 10) {
+              outputEl.innerHTML = '';
+              setStatus('数字位数必须是 1 到 10 的整数', 'error');
+              return;
+            }
+            digits = dg;
+          }
+        }
+        var names = text.split(/\r?\n/);
+        var rows = [];
+        var newNames = [];
+        var idx = 0;
+        var skipped = 0;
+        for (var i = 0; i < names.length; i++) {
+          var name = names[i].replace(/\r$/, '');
+          if (!name) {
+            skipped++;
+            continue;
+          }
+          var newName = renameOne(name, op, find, repl, startNum, digits, idx);
+          rows.push({ oldName: name, newName: newName });
+          newNames.push(newName);
+          idx++;
+        }
+        var countMap = {};
+        for (var j = 0; j < newNames.length; j++) {
+          countMap[newNames[j]] = (countMap[newNames[j]] || 0) + 1;
+        }
+        var usedOriginals = {};
+        for (var k = 0; k < rows.length; k++) {
+          usedOriginals[rows[k].oldName] = true;
+        }
+        var conflicts = 0;
+        var html = [];
+        html.push('<div style="overflow-x:auto;"><table class="ren-table"><thead><tr><th>原名</th><th></th><th>新名</th></tr></thead><tbody>');
+        for (var m = 0; m < rows.length; m++) {
+          var row = rows[m];
+          var dup = countMap[row.newName] > 1;
+          var clash = row.newName !== row.oldName && usedOriginals[row.newName];
+          var flag = '';
+          if (dup || clash) {
+            conflicts++;
+            flag = ' <span class="ren-conflict">重名</span>';
+          }
+          html.push('<tr><td>' + htmlEscape(row.oldName) + '</td><td class="arrow">→</td><td>' + htmlEscape(row.newName) + flag + '</td></tr>');
+        }
+        html.push('</tbody></table></div>');
+        html.push('<div class="ren-note">共处理 ' + rows.length + ' 个文件' + (skipped ? '，跳过空行 ' + skipped + ' 个' : '') + (conflicts ? '，发现 <span class="ren-conflict">' + conflicts + ' 处重名冲突</span>' : '，无重名冲突') + '</div>');
+        outputEl.innerHTML = html.join('');
+        lastPlain = newNames.join('\n');
+        setStatus('已生成 ' + rows.length + ' 个新文件名');
+      }
+
+      opEl.addEventListener('change', function () {
+        syncParams();
+        render();
+      });
+      inputEl.addEventListener('input', render);
+      p1.addEventListener('input', render);
+      p2.addEventListener('input', render);
+      p3.addEventListener('input', render);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+      syncParams();
+    })();
+  </script>
+</body>
+</html>

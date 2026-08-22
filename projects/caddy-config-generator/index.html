@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caddy 配置生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .field .textarea { min-height: 90px; font-family: var(--font-mono); font-size: var(--font-size-sm); }
+    .radio-group { display: flex; gap: var(--space-3); margin-bottom: var(--space-2); }
+    .radio-group label { display: flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); color: var(--color-text-primary); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Caddy 配置生成器</h1>
+    <p class="tool-desc">生成静态站点或反向代理的 Caddyfile 配置。</p>
+    <div class="card">
+      <div class="field">
+        <label>域名（留空则监听 :80）</label>
+        <input id="domain" class="input js-focus-input" placeholder="如 example.com">
+      </div>
+      <div class="radio-group">
+        <label><input type="radio" name="siteType" value="static" checked> 静态站点</label>
+        <label><input type="radio" name="siteType" value="proxy"> 反向代理</label>
+      </div>
+      <div class="field" id="rootRow">
+        <label>站点根目录</label>
+        <input id="rootPath" class="input" value="/var/www/example.com" placeholder="如 /var/www/example.com">
+      </div>
+      <div class="field" id="portRow" style="display:none;">
+        <label>后端服务端口</label>
+        <input id="proxyPort" class="input" value="3000" placeholder="如 3000">
+      </div>
+      <div class="field">
+        <label>额外指令（每行一条，可选）</label>
+        <textarea id="extra" class="input textarea" placeholder="如 encode gzip&#10;header X-Frame-Options DENY"></textarea>
+      </div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成 Caddyfile</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var domainInput = document.getElementById('domain');
+      var rootRow = document.getElementById('rootRow');
+      var portRow = document.getElementById('portRow');
+      var rootInput = document.getElementById('rootPath');
+      var portInput = document.getElementById('proxyPort');
+      var extraInput = document.getElementById('extra');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function currentType() {
+        var radios = document.getElementsByName('siteType');
+        for (var i = 0; i < radios.length; i++) {
+          if (radios[i].checked) return radios[i].value;
+        }
+        return 'static';
+      }
+
+      function syncRows() {
+        var isProxy = currentType() === 'proxy';
+        rootRow.style.display = isProxy ? 'none' : 'block';
+        portRow.style.display = isProxy ? 'block' : 'none';
+      }
+
+      var radios = document.getElementsByName('siteType');
+      for (var i = 0; i < radios.length; i++) {
+        radios[i].addEventListener('change', syncRows);
+      }
+
+      function buildCaddyfile() {
+        var domain = domainInput.value.trim();
+        var type = currentType();
+        var root = rootInput.value.trim();
+        var port = portInput.value.trim();
+        var extra = extraInput.value;
+
+        if (/\s/.test(domain)) { setStatus('域名不能包含空格', 'error'); return null; }
+        if (type === 'static' && !root) { setStatus('请输入站点根目录', 'error'); return null; }
+        if (type === 'proxy') {
+          if (!port) { setStatus('请输入后端服务端口', 'error'); return null; }
+          if (!/^\d+$/.test(port)) { setStatus('端口必须是数字', 'error'); return null; }
+          var p = parseInt(port, 10);
+          if (p < 1 || p > 65535) { setStatus('端口必须在 1-65535 之间', 'error'); return null; }
+        }
+
+        var listen = domain || ':80';
+        var cfg = listen + ' {\n';
+        if (type === 'static') {
+          cfg += '  root * ' + root + '\n';
+          cfg += '  file_server\n';
+        } else {
+          cfg += '  reverse_proxy 127.0.0.1:' + port + '\n';
+        }
+        var lines = extra.split('\n');
+        for (var j = 0; j < lines.length; j++) {
+          var line = lines[j].trim();
+          if (!line) continue;
+          cfg += '  ' + line + '\n';
+        }
+        cfg += '}\n';
+        return cfg;
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var cfg = buildCaddyfile();
+        if (cfg === null) { output.textContent = ''; return; }
+        output.textContent = cfg;
+        setStatus('Caddyfile 已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

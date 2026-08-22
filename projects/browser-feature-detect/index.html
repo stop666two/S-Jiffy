@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>浏览器特性检测 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ua-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .ua-item {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+    }
+    .feat-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+    .feat-table th, .feat-table td {
+      border: 1px solid var(--color-border);
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .feat-table th {
+      background: var(--color-bg-soft);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+    .feat-name {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-xs);
+    }
+    .feat-ok {
+      color: var(--color-success);
+      font-weight: 600;
+    }
+    .feat-no {
+      color: var(--color-error);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>浏览器特性检测</h1>
+    <p class="tool-desc">页面加载即检测当前浏览器对 30+ 项 Web 特性的支持情况，并解析 User-Agent 摘要。</p>
+    <div class="card">
+      <div id="uaBox" style="display:flex;flex-direction:column;gap:var(--space-2);"></div>
+    </div>
+    <div style="margin-top:var(--space-2);">
+      <table class="feat-table">
+        <thead>
+          <tr><th style="width:220px;">特性</th><th>支持状态</th></tr>
+        </thead>
+        <tbody id="featBody"></tbody>
+      </table>
+    </div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var featBody = document.getElementById('featBody');
+      var uaBox = document.getElementById('uaBox');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function probeSyntax(probeCode, marker) {
+        var oldOnerror = window.onerror;
+        var failed = false;
+        window.onerror = function (msg) {
+          if (String(msg).indexOf('SyntaxError') !== -1) {
+            failed = true;
+            return true;
+          }
+          if (oldOnerror) return oldOnerror.apply(window, arguments);
+          return false;
+        };
+        try {
+          var s = document.createElement('script');
+          s.textContent = 'window[' + JSON.stringify(marker) + ']=true;' + probeCode;
+          document.head.appendChild(s);
+          document.head.removeChild(s);
+        } catch (e) {
+          failed = true;
+        }
+        var ok = !failed && window[marker] === true;
+        window.onerror = oldOnerror;
+        return ok;
+      }
+
+      function webglSupported() {
+        try {
+          var c = document.createElement('canvas');
+          return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function localStorageSupported() {
+        try {
+          var t = '__s_jiffy_t__';
+          window.localStorage.setItem(t, '1');
+          window.localStorage.removeItem(t);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function dragDropSupported() {
+        return 'draggable' in document.createElement('div');
+      }
+
+      var features = [
+        { name: 'WebGL', detect: function () { return webglSupported(); } },
+        { name: 'WebAssembly', detect: function () { return typeof window.WebAssembly === 'object'; } },
+        { name: 'ServiceWorker', detect: function () { return 'serviceWorker' in navigator; } },
+        { name: 'WebWorker', detect: function () { return typeof window.Worker === 'function'; } },
+        { name: 'WebSocket', detect: function () { return typeof window.WebSocket === 'function'; } },
+        { name: 'localStorage', detect: function () { return localStorageSupported(); } },
+        { name: 'IndexedDB', detect: function () { return 'indexedDB' in window; } },
+        { name: 'crypto.subtle', detect: function () { return window.crypto && typeof window.crypto.subtle === 'object'; } },
+        { name: 'Geolocation', detect: function () { return 'geolocation' in navigator; } },
+        { name: 'Notifications', detect: function () { return 'Notification' in window; } },
+        { name: 'Clipboard API', detect: function () { return navigator.clipboard && typeof navigator.clipboard.writeText === 'function'; } },
+        { name: 'Canvas', detect: function () { return !!(document.createElement('canvas').getContext); } },
+        { name: 'SVG', detect: function () { return !!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect; } },
+        { name: 'fetch', detect: function () { return typeof window.fetch === 'function'; } },
+        { name: 'IntersectionObserver', detect: function () { return typeof window.IntersectionObserver === 'function'; } },
+        { name: 'ResizeObserver', detect: function () { return typeof window.ResizeObserver === 'function'; } },
+        { name: 'MutationObserver', detect: function () { return typeof window.MutationObserver === 'function'; } },
+        { name: 'WebRTC', detect: function () { return !!(window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection); } },
+        { name: 'SpeechSynthesis', detect: function () { return 'speechSynthesis' in window; } },
+        { name: 'WebAudio', detect: function () { return !!(window.AudioContext || window.webkitAudioContext); } },
+        { name: 'FileReader', detect: function () { return typeof window.FileReader === 'function'; } },
+        { name: 'Fullscreen', detect: function () { return !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.documentElement.msRequestFullscreen); } },
+        { name: 'Drag & Drop', detect: function () { return dragDropSupported(); } },
+        { name: 'TouchEvent', detect: function () { return 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0); } },
+        { name: 'DeviceOrientation', detect: function () { return 'ondeviceorientation' in window; } },
+        { name: 'BigInt', detect: function () { return typeof window.BigInt === 'function'; } },
+        { name: 'optional chaining', detect: function () { return probeSyntax('var __ocp={a:1};__ocp?.a;', '__probe_optchain_' + Date.now()); } },
+        { name: 'nullish coalescing', detect: function () { return probeSyntax('var __ncp=null;__ncp ?? 1;', '__probe_nullish_' + Date.now()); } },
+        { name: 'structuredClone', detect: function () { return typeof window.structuredClone === 'function'; } }
+      ];
+
+      function parseUA() {
+        var ua = navigator.userAgent;
+        var p;
+        var name = '未知浏览器';
+        var version = '—';
+        if ((p = ua.match(/Edg\/([\d.]+)/))) {
+          name = 'Edge';
+          version = p[1];
+        } else if ((p = ua.match(/OPR\/([\d.]+)/))) {
+          name = 'Opera';
+          version = p[1];
+        } else if ((p = ua.match(/Chrome\/([\d.]+)/)) && ua.indexOf('CriOS') === -1) {
+          name = 'Chrome';
+          version = p[1];
+        } else if ((p = ua.match(/Firefox\/([\d.]+)/))) {
+          name = 'Firefox';
+          version = p[1];
+        } else if ((p = ua.match(/Version\/([\d.]+)/)) && ua.indexOf('Safari') !== -1) {
+          name = 'Safari';
+          version = p[1];
+        } else if ((p = ua.match(/CriOS\/([\d.]+)/))) {
+          name = 'Chrome (iOS)';
+          version = p[1];
+        } else if (ua.indexOf('MSIE') !== -1 && (p = ua.match(/MSIE ([\d.]+)/))) {
+          name = 'Internet Explorer';
+          version = p[1];
+        } else if (ua.indexOf('Trident') !== -1 && (p = ua.match(/rv:([\d.]+)/))) {
+          name = 'Internet Explorer';
+          version = p[1];
+        } else if ((p = ua.match(/SamsungBrowser\/([\d.]+)/))) {
+          name = 'Samsung Internet';
+          version = p[1];
+        }
+        var platform = '未知平台';
+        if (/iPhone|iPad|iPod/.test(ua)) {
+          platform = /iPad/.test(ua) ? 'iOS (iPad)' : 'iOS (iPhone)';
+        } else if (/Android/.test(ua)) {
+          platform = 'Android';
+        } else if (/Windows/.test(ua)) {
+          platform = 'Windows';
+        } else if (/Mac OS X|Macintosh/.test(ua)) {
+          platform = 'macOS';
+        } else if (/Linux/.test(ua)) {
+          platform = 'Linux';
+        }
+        return { name: name, version: version, platform: platform };
+      }
+
+      function init() {
+        var uaInfo = parseUA();
+        var html = '<div class="ua-item">浏览器：' + htmlEscape(uaInfo.name) + '</div>'
+          + '<div class="ua-item">版本：' + htmlEscape(uaInfo.version) + '</div>'
+          + '<div class="ua-item">平台：' + htmlEscape(uaInfo.platform) + '</div>'
+          + '<div class="ua-item" style="flex-basis:100%;word-break:break-all;">UA：' + htmlEscape(navigator.userAgent) + '</div>';
+        uaBox.innerHTML = html;
+
+        var supported = 0;
+        var rows = '';
+        var i;
+        for (i = 0; i < features.length; i++) {
+          var ok = false;
+          try {
+            ok = features[i].detect();
+          } catch (e) {
+            ok = false;
+          }
+          if (ok) supported++;
+          rows += '<tr><td class="feat-name">' + htmlEscape(features[i].name) + '</td>'
+            + '<td class="' + (ok ? 'feat-ok' : 'feat-no') + '">' + (ok ? '支持' : '不支持') + '</td></tr>';
+        }
+        featBody.innerHTML = rows;
+        outputEl.textContent = '共检测 ' + features.length + ' 项特性，支持 ' + supported + ' 项，不支持 ' + (features.length - supported) + ' 项。';
+        setStatus('检测完成');
+      }
+
+      copyBtn.addEventListener('click', function () {
+        var lines = [];
+        var i;
+        var trs = featBody.querySelectorAll('tr');
+        for (i = 0; i < trs.length; i++) {
+          var cells = trs[i].querySelectorAll('td');
+          lines.push(cells[0].textContent + ' : ' + cells[1].textContent);
+        }
+        var text = outputEl.textContent + '\n' + lines.join('\n');
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>

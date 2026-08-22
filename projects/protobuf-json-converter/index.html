@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protobuf JSON 互转 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .opt-row { display: -webkit-box; display: -ms-flexbox; display: flex; -ms-flex-wrap: wrap; flex-wrap: wrap; gap: var(--space-2); -webkit-box-align: center; -ms-flex-align: center; align-items: center; margin-bottom: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-primary); }
+    .opt-row label { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; gap: 4px; cursor: pointer; }
+    .pair-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); margin-top: var(--space-2); }
+    .pair-table th { text-align: left; padding: 8px 12px; background: var(--color-bg-soft); border-bottom: 2px solid var(--color-border); }
+    .pair-table td { padding: 6px 12px; border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); }
+    .pair-table tr:hover { background: var(--color-bg-soft); }
+    .section-title { font-size: var(--font-size-sm); font-weight: 600; margin: var(--space-2) 0 var(--space-1); color: var(--color-text-primary); }
+    .empty-tip { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Protobuf JSON 互转</h1>
+    <p class="tool-desc">在 proto3 JSON（camelCase）与数据库风格（snake_case）之间递归转换字段名，并支持 int64 大整数字符串化。</p>
+    <div class="card">
+      <div class="opt-row">
+        <label><input type="radio" name="dir" value="to-snake" checked> proto3 JSON (camelCase) → 数据库风格 (snake_case)</label>
+        <label><input type="radio" name="dir" value="to-camel"> 数据库风格 (snake_case) → proto3 JSON (camelCase)</label>
+      </div>
+      <div class="opt-row">
+        <label><input type="checkbox" id="int64Opt" checked> int64 转字符串（超出安全范围的整数自动加引号输出）</label>
+      </div>
+      <textarea id="jsonInput" class="input textarea js-focus-input" rows="10" placeholder='{"userId": 1, "userName": "alice", "createdAt": "2024-01-01", "bigId": 9223372036854775807}'></textarea>
+      <div class="section-title">字段对照表</div>
+      <div id="pairWrap"><p class="empty-tip">输入 JSON 后自动生成对照表。</p></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var jsonInput = document.getElementById('jsonInput');
+    var int64Opt = document.getElementById('int64Opt');
+    var pairWrap = document.getElementById('pairWrap');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var pairs = [];
+
+    function camelToSnake(s) {
+      return s.replace(/([a-z0-9])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase();
+    }
+
+    function snakeToCamel(s) {
+      return s.replace(/_([a-z])/g, function (m, c) { return c.toUpperCase(); });
+    }
+
+    function protectInt64(text) {
+      text = text.replace(/(:\s*)(-?\d{16,})(\s*[,}\]])/g, '$1"$2"$3');
+      text = text.replace(/(\[\s*)(-?\d{16,})(\s*[,}\]])/g, '$1"$2"$3');
+      return text;
+    }
+
+    function walk(obj, transform) {
+      if (Object.prototype.toString.call(obj) === '[object Array]') {
+        var arr = [];
+        for (var i = 0; i < obj.length; i++) {
+          arr.push(walk(obj[i], transform));
+        }
+        return arr;
+      }
+      if (obj && typeof obj === 'object') {
+        var out = {};
+        var keys = Object.keys(obj);
+        for (var j = 0; j < keys.length; j++) {
+          var newKey = transform(keys[j]);
+          if (newKey !== keys[j]) {
+            pairs.push({ from: keys[j], to: newKey });
+          }
+          out[newKey] = walk(obj[keys[j]], transform);
+        }
+        return out;
+      }
+      return obj;
+    }
+
+    function getDirection() {
+      var radios = document.getElementsByName('dir');
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) return radios[i].value;
+      }
+      return 'to-snake';
+    }
+
+    function update() {
+      var raw = jsonInput.value;
+      if (!raw || !raw.trim()) {
+        outputText.textContent = '';
+        pairWrap.innerHTML = '<p class="empty-tip">输入 JSON 后自动生成对照表。</p>';
+        setStatus('');
+        return;
+      }
+      var text = raw.trim();
+      if (int64Opt.checked) {
+        text = protectInt64(text);
+      }
+      var parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        outputText.textContent = 'JSON 解析失败：' + e.message + '。请检查括号、引号与逗号是否完整。';
+        pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
+        setStatus('JSON 解析失败', 'error');
+        return;
+      }
+      if (!parsed || (typeof parsed !== 'object')) {
+        outputText.textContent = '请输入 JSON 对象或数组，不能是裸字符串 / 数字 / null。';
+        pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
+        setStatus('输入格式错误', 'error');
+        return;
+      }
+      var dir = getDirection();
+      var transform = dir === 'to-snake' ? camelToSnake : snakeToCamel;
+      pairs = [];
+      var result = walk(parsed, transform);
+      outputText.textContent = JSON.stringify(result, null, 2);
+      var tableHtml = '';
+      if (pairs.length === 0) {
+        tableHtml = '<p class="empty-tip">未发现需要转换的字段（可能均为单段小写命名）。</p>';
+      } else {
+        tableHtml = '<table class="pair-table"><thead><tr><th>原字段</th><th>转换后</th></tr></thead><tbody>';
+        for (var i = 0; i < pairs.length; i++) {
+          tableHtml += '<tr><td>' + htmlEscape(pairs[i].from) + '</td><td>' + htmlEscape(pairs[i].to) + '</td></tr>';
+        }
+        tableHtml += '</tbody></table>';
+      }
+      pairWrap.innerHTML = tableHtml;
+      setStatus('转换成功，共 ' + pairs.length + ' 个字段发生变更');
+    }
+
+    jsonInput.oninput = update;
+    int64Opt.onchange = update;
+    var radios = document.getElementsByName('dir');
+    for (var i = 0; i < radios.length; i++) {
+      radios[i].onchange = update;
+    }
+    copyBtn.onclick = function () {
+      if (!outputText.textContent) {
+        setStatus('没有可复制的内容', 'error');
+        return;
+      }
+      copyToClipboard(outputText.textContent, copyBtn);
+    };
+    update();
+  })();
+  </script>
+</body>
+</html>

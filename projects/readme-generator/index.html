@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .form-row { margin-bottom: 14px; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: var(--font-size-sm); }
+    .badge-row label { display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>README 生成器</h1>
+    <p class="tool-desc">填写项目信息表单，自动生成结构完整的 README.md 文档（标题/徽章/简介/特性/安装/使用/许可证）。</p>
+    <div class="card">
+      <div class="form-row">
+        <label for="projName" class="field-label">项目名称（必填）</label>
+        <input id="projName" class="input js-focus-input" placeholder="my-project">
+      </div>
+      <div class="form-row">
+        <label for="projDesc" class="field-label">一行描述</label>
+        <input id="projDesc" class="input" placeholder="一个简洁高效的示例项目">
+      </div>
+      <div class="form-row">
+        <label for="projDetail" class="field-label">详细说明</label>
+        <textarea id="projDetail" class="input textarea" placeholder="介绍项目解决的问题、核心特性与适用场景…"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="installCmd" class="field-label">安装命令</label>
+        <input id="installCmd" class="input" placeholder="npm install my-project">
+      </div>
+      <div class="form-row">
+        <label for="usageCode" class="field-label">使用示例代码</label>
+        <textarea id="usageCode" class="input textarea" style="min-height:120px;" placeholder="const myProject = require('my-project');&#10;myProject.run();"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="featureList" class="field-label">特性列表（每行一个）</label>
+        <textarea id="featureList" class="input textarea" style="min-height:100px;" placeholder="零依赖，开箱即用&#10;支持 TypeScript 类型提示&#10;完善的错误处理"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="licenseSel" class="field-label">许可证</label>
+        <select id="licenseSel" class="input" style="height:44px;">
+          <option value="MIT">MIT</option>
+          <option value="Apache-2.0">Apache-2.0</option>
+          <option value="GPL-3.0">GPL-3.0</option>
+          <option value="BSD-3">BSD-3</option>
+          <option value="ISC">ISC</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="field-label" style="margin-bottom:6px;">徽章选项</div>
+        <div class="badge-row">
+          <label><input type="checkbox" id="badgeVersion"> 版本徽章</label>
+          <label><input type="checkbox" id="badgeLicense"> 许可证徽章</label>
+          <label><input type="checkbox" id="badgeBuild"> 构建状态徽章</label>
+          <label><input type="checkbox" id="badgeDownloads"> 下载量徽章</label>
+        </div>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var nameEl = document.getElementById('projName');
+      var descEl = document.getElementById('projDesc');
+      var detailEl = document.getElementById('projDetail');
+      var installEl = document.getElementById('installCmd');
+      var usageEl = document.getElementById('usageCode');
+      var featureEl = document.getElementById('featureList');
+      var licenseEl = document.getElementById('licenseSel');
+      var badgeVersionEl = document.getElementById('badgeVersion');
+      var badgeLicenseEl = document.getElementById('badgeLicense');
+      var badgeBuildEl = document.getElementById('badgeBuild');
+      var badgeDownloadsEl = document.getElementById('badgeDownloads');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function getBadges() {
+        var badges = [];
+        if (badgeVersionEl.checked) {
+          badges.push('![version](https://img.shields.io/badge/version-1.0.0-blue)');
+        }
+        if (badgeLicenseEl.checked) {
+          badges.push('![license](https://img.shields.io/badge/license-' + licenseEl.value + '-green)');
+        }
+        if (badgeBuildEl.checked) {
+          badges.push('![build](https://img.shields.io/badge/build-passing-brightgreen)');
+        }
+        if (badgeDownloadsEl.checked) {
+          badges.push('![downloads](https://img.shields.io/badge/downloads-1k-blue)');
+        }
+        return badges;
+      }
+
+      function getFeatures() {
+        var result = [];
+        var lines = featureEl.value.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (line) result.push(line);
+        }
+        return result;
+      }
+
+      function generate() {
+        var name = nameEl.value.trim();
+        if (!name) {
+          outputEl.textContent = '';
+          setStatus('请填写项目名称', 'error');
+          return;
+        }
+        var desc = descEl.value.trim();
+        var detail = detailEl.value.trim();
+        var install = installEl.value.trim();
+        var usage = usageEl.value.trim();
+        var features = getFeatures();
+        var badges = getBadges();
+        var lines = [];
+        lines.push('# ' + name);
+        lines.push('');
+        if (badges.length) {
+          lines.push(badges.join('  '));
+          lines.push('');
+        }
+        if (desc) {
+          lines.push(desc);
+          lines.push('');
+        }
+        if (detail) {
+          lines.push('## 简介');
+          lines.push('');
+          lines.push(detail);
+          lines.push('');
+        }
+        if (features.length) {
+          lines.push('## 特性');
+          lines.push('');
+          for (var i = 0; i < features.length; i++) {
+            lines.push('- ' + features[i]);
+          }
+          lines.push('');
+        }
+        if (install) {
+          lines.push('## 安装');
+          lines.push('');
+          lines.push('```bash');
+          lines.push(install);
+          lines.push('```');
+          lines.push('');
+        }
+        if (usage) {
+          lines.push('## 使用');
+          lines.push('');
+          lines.push('```javascript');
+          lines.push(usage);
+          lines.push('```');
+          lines.push('');
+        }
+        lines.push('## 许可证');
+        lines.push('');
+        lines.push('[' + licenseEl.value + '](https://choosealicense.com/licenses/' + licenseEl.value.toLowerCase() + '/)');
+        outputEl.textContent = lines.join('\n');
+        setStatus('已生成 README.md');
+      }
+
+      var inputs = [nameEl, descEl, detailEl, installEl, usageEl, featureEl];
+      for (var i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('input', generate);
+      }
+      licenseEl.addEventListener('change', generate);
+      [badgeVersionEl, badgeLicenseEl, badgeBuildEl, badgeDownloadsEl].forEach(function (el) {
+        el.addEventListener('change', generate);
+      });
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      generate();
+    })();
+  </script>
+</body>
+</html>

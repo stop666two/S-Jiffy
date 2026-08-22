@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prometheus 构建器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-3); }
+    .label-row { display: grid; grid-template-columns: 1fr 1fr 48px; gap: var(--space-1); margin-bottom: var(--space-1); }
+    .label-row .input { width: 100%; }
+    .labels-title { display: flex; align-items: center; justify-content: space-between; margin: var(--space-2) 0 var(--space-1); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    @media (max-width: 700px) { .label-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Prometheus 构建器</h1>
+    <p class="tool-desc">配置指标定义与标签，生成 Go / Python / Java 埋点代码与 scrape 配置。</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label>指标名</label>
+          <input id="metricName" class="input js-focus-input" value="http_requests_total" placeholder="如 http_requests_total">
+        </div>
+        <div class="field">
+          <label>指标类型</label>
+          <select id="metricType" class="input">
+            <option value="counter" selected>counter（计数器）</option>
+            <option value="gauge">gauge（仪表）</option>
+            <option value="histogram">histogram（直方图）</option>
+            <option value="summary">summary（摘要）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>帮助文本</label>
+          <input id="helpText" class="input" value="Total HTTP requests">
+        </div>
+        <div class="field">
+          <label>输出语言</label>
+          <select id="language" class="input">
+            <option value="go" selected>Go</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+          </select>
+        </div>
+      </div>
+      <div class="labels-title">
+        <span>标签（可选，键值对）</span>
+        <button id="addLabelBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px">+ 添加标签</button>
+      </div>
+      <div id="labelRows"></div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成代码</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var labelRows = document.getElementById('labelRows');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var rowSeq = 0;
+
+      function addLabelRow() {
+        var id = ++rowSeq;
+        var div = document.createElement('div');
+        div.className = 'label-row';
+        div.innerHTML = '<input class="label-key input" placeholder="标签名，如 method">'
+          + '<input class="label-val input" placeholder="示例值，如 GET">'
+          + '<button class="btn btn-secondary label-del" type="button">删</button>';
+        div.querySelector('.label-del').addEventListener('click', function () {
+          div.parentNode.removeChild(div);
+        });
+        labelRows.appendChild(div);
+        return div;
+      }
+
+      function collectLabels() {
+        var rows = labelRows.querySelectorAll('.label-row');
+        var labels = [];
+        for (var i = 0; i < rows.length; i++) {
+          var key = rows[i].querySelector('.label-key').value.trim();
+          var val = rows[i].querySelector('.label-val').value.trim();
+          if (!key && !val) continue;
+          if (!key) { setStatus('第 ' + (i + 1) + ' 行标签缺少标签名', 'error'); return null; }
+          if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) { setStatus('标签名「' + key + '」只能包含字母、数字、下划线且不能以数字开头', 'error'); return null; }
+          labels.push({ key: key, val: val });
+        }
+        return labels;
+      }
+
+      function camelName(name) {
+        var parts = name.replace(/:/g, '_').split('_');
+        var out = parts[0];
+        for (var i = 1; i < parts.length; i++) {
+          if (parts[i]) out += parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
+        }
+        return out;
+      }
+
+      function quoteStr(v) {
+        return '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+      }
+
+      function labelList(labels) {
+        var arr = [];
+        for (var i = 0; i < labels.length; i++) arr.push(quoteStr(labels[i].key));
+        return arr.join(', ');
+      }
+
+      function buildGo(name, type, help, labels, varName) {
+        var code = 'package main\n\n';
+        code += 'import (\n';
+        code += '  "net/http"\n\n';
+        code += '  "github.com/prometheus/client_golang/prometheus"\n';
+        code += '  "github.com/prometheus/client_golang/prometheus/promhttp"\n';
+        code += ')\n\n';
+        if (type === 'histogram') {
+          code += 'var ' + varName + ' = prometheus.NewHistogramVec(\n';
+          code += '  prometheus.HistogramOpts{\n';
+          code += '    Name: ' + quoteStr(name) + ',\n';
+          code += '    Help: ' + quoteStr(help) + ',\n';
+          code += '    Buckets: prometheus.DefBuckets,\n';
+          code += '  },\n';
+          code += '  []string{' + labelList(labels) + '},\n';
+          code += ')\n\n';
+        } else if (type === 'summary') {
+          code += 'var ' + varName + ' = prometheus.NewSummaryVec(\n';
+          code += '  prometheus.SummaryOpts{\n';
+          code += '    Name: ' + quoteStr(name) + ',\n';
+          code += '    Help: ' + quoteStr(help) + ',\n';
+          code += '  },\n';
+          code += '  []string{' + labelList(labels) + '},\n';
+          code += ')\n\n';
+        } else if (type === 'gauge') {
+          code += 'var ' + varName + ' = prometheus.NewGaugeVec(\n';
+          code += '  prometheus.GaugeOpts{\n';
+          code += '    Name: ' + quoteStr(name) + ',\n';
+          code += '    Help: ' + quoteStr(help) + ',\n';
+          code += '  },\n';
+          code += '  []string{' + labelList(labels) + '},\n';
+          code += ')\n\n';
+        } else {
+          code += 'var ' + varName + ' = prometheus.NewCounterVec(\n';
+          code += '  prometheus.CounterOpts{\n';
+          code += '    Name: ' + quoteStr(name) + ',\n';
+          code += '    Help: ' + quoteStr(help) + ',\n';
+          code += '  },\n';
+          code += '  []string{' + labelList(labels) + '},\n';
+          code += ')\n\n';
+        }
+        code += 'func init() {\n';
+        code += '  prometheus.MustRegister(' + varName + ')\n';
+        code += '}\n\n';
+        code += 'func main() {\n';
+        code += '  http.Handle("/metrics", promhttp.Handler())\n';
+        code += '  http.ListenAndServe(":8080", nil)\n';
+        code += '}\n';
+        code += '\n// 埋点示例：' + varName + '.WithLabelValues(' + (labels.length ? quoteStr(labels[0].val || 'example') : '"example"') + ').Inc()\n';
+        return { code: code, port: 8080 };
+      }
+
+      function buildPython(name, type, help, labels) {
+        var Type = type.charAt(0).toUpperCase() + type.slice(1);
+        var code = 'from prometheus_client import ' + Type + ', start_http_server\n\n';
+        code += name + ' = ' + Type + '(\n';
+        code += '    ' + quoteStr(name) + ',\n';
+        code += '    ' + quoteStr(help) + ',\n';
+        if (labels.length) code += '    [' + labelList(labels) + '],\n';
+        code += ')\n\n';
+        code += 'if __name__ == "__main__":\n';
+        code += '    start_http_server(8000)\n';
+        code += '    # 埋点示例：' + name + '.labels(' + (labels.length ? quoteStr(labels[0].val || 'example') : '"example"') + ').inc()\n';
+        return { code: code, port: 8000 };
+      }
+
+      function buildJava(name, type, help, labels, varName) {
+        var Type = type.charAt(0).toUpperCase() + type.slice(1);
+        var code = 'import io.prometheus.client.' + Type + ';\n';
+        code += 'import io.prometheus.client.exporter.HTTPServer;\n\n';
+        code += Type + ' ' + varName + ' = ' + Type + '.build()\n';
+        code += '    .name(' + quoteStr(name) + ')\n';
+        code += '    .help(' + quoteStr(help) + ')\n';
+        if (labels.length) code += '    .labelNames(' + labelList(labels) + ')\n';
+        code += '    .register();\n\n';
+        code += 'HTTPServer server = new HTTPServer(8080);\n';
+        return { code: code, port: 8080 };
+      }
+
+      function buildScrape(name, port) {
+        var s = '# prometheus.yml scrape 配置片段\n';
+        s += 'scrape_configs:\n';
+        s += '  - job_name: ' + quoteStr(name) + '\n';
+        s += '    static_configs:\n';
+        s += '      - targets: [' + quoteStr('localhost:' + port) + ']\n';
+        return s;
+      }
+
+      document.getElementById('addLabelBtn').addEventListener('click', addLabelRow);
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var name = document.getElementById('metricName').value.trim();
+        var type = document.getElementById('metricType').value;
+        var help = document.getElementById('helpText').value.trim();
+        var lang = document.getElementById('language').value;
+        var labels = collectLabels();
+        if (labels === null) { output.textContent = ''; return; }
+        if (!name) { setStatus('请输入指标名', 'error'); return; }
+        if (!/^[a-zA-Z_][a-zA-Z0-9_:]*$/.test(name)) { setStatus('指标名只能包含字母、数字、下划线和冒号，且不能以数字开头', 'error'); return; }
+        if (name.indexOf(':') !== -1) { setStatus('指标名不能包含冒号（冒号仅供规则使用）', 'error'); return; }
+        if (!help) { setStatus('请输入帮助文本', 'error'); return; }
+
+        var varName = camelName(name);
+        var out;
+        if (lang === 'go') out = buildGo(name, type, help, labels, varName);
+        else if (lang === 'python') out = buildPython(name, type, help, labels);
+        else out = buildJava(name, type, help, labels, varName);
+
+        var full = out.code + '\n' + buildScrape(name, out.port);
+        output.textContent = full;
+        setStatus('埋点代码与 scrape 配置已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+
+      addLabelRow();
+    })();
+  </script>
+</body>
+</html>

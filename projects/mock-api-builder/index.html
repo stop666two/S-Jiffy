@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock API 设计器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mock-row { display: flex; gap: var(--space-1); margin-bottom: var(--space-1); align-items: flex-start; flex-wrap: wrap; }
+    .mock-row .path-input { flex: 0 0 220px; min-width: 140px; }
+    .mock-row select { flex: 0 0 auto; width: 104px; }
+    .mock-row textarea { flex: 1; min-width: 240px; min-height: 56px; resize: vertical; }
+    .mock-row .del-btn { flex: 0 0 auto; }
+    .btn-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+    .form-hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Mock API 设计器</h1>
+    <p class="tool-desc">表格编辑端点（路径/方法/响应），占位符 {int} {name} {email} {timestamp} {uuid} 等自动替换为随机值，输出 JSON Server 格式的 mock 配置。</p>
+    <div class="card">
+      <div class="form-hint">响应支持 JSON 对象与占位符语法，例如 {"id":"{int}","name":"{name}","email":"{email}","ts":"{timestamp}"}</div>
+      <div id="rowsBox"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="addRowBtn">+ 添加端点</button>
+        <button class="btn btn-primary" id="generateBtn">生成 Mock 配置</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var FIRST = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'grace', 'henry', 'irene', 'jack'];
+      var LAST = ['smith', 'johnson', 'brown', 'taylor', 'wilson', 'moore', 'lee', 'chen', 'kim', 'davis'];
+      var DOMAINS = ['example.com', 'demo.org', 'mail.test', 'corp.dev'];
+      var output = document.getElementById('outputText');
+      var current = '';
+
+      function rand(n) {
+        return Math.floor(Math.random() * n);
+      }
+
+      function pick(arr) {
+        return arr[rand(arr.length)];
+      }
+
+      function hex(n) {
+        var s = '';
+        for (var i = 0; i < n; i++) s += rand(16).toString(16);
+        return s;
+      }
+
+      function uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = rand(16);
+          var v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      function name() {
+        return pick(FIRST).charAt(0).toUpperCase() + pick(FIRST).slice(1) + ' ' + pick(LAST).charAt(0).toUpperCase() + pick(LAST).slice(1);
+      }
+
+      function email() {
+        return pick(FIRST) + rand(999) + '@' + pick(DOMAINS);
+      }
+
+      function placeholder(key) {
+        if (key === 'int') return String(rand(999999) + 1);
+        if (key === 'float') return (Math.random() * 100).toFixed(2);
+        if (key === 'bool') return Math.random() < 0.5 ? 'true' : 'false';
+        if (key === 'name') return name();
+        if (key === 'email') return email();
+        if (key === 'timestamp') return String(Math.floor(Date.now() / 1000));
+        if (key === 'uuid') return uuid();
+        if (key === 'string') return hex(8);
+        return null;
+      }
+
+      function fillPlaceholders(value) {
+        if (Object.prototype.toString.call(value) === '[object Array]') {
+          for (var i = 0; i < value.length; i++) value[i] = fillPlaceholders(value[i]);
+          return value;
+        }
+        if (value && typeof value === 'object') {
+          var keys = Object.keys(value);
+          for (var k = 0; k < keys.length; k++) value[keys[k]] = fillPlaceholders(value[keys[k]]);
+          return value;
+        }
+        if (typeof value === 'string') {
+          return value.replace(/\{(\w+)\}/g, function (m, key) {
+            var rep = placeholder(key);
+            return rep === null ? m : rep;
+          });
+        }
+        return value;
+      }
+
+      function rowHtml(path, method, resp, first) {
+        var methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+        var opts = '';
+        for (var i = 0; i < methods.length; i++) {
+          opts += '<option' + (methods[i] === method ? ' selected' : '') + '>' + methods[i] + '</option>';
+        }
+        return '<div class="mock-row">' +
+          '<input class="input path-input js-focus-input" placeholder="/api/users" value="' + htmlEscape(path) + '">' +
+          '<select class="input">' + opts + '</select>' +
+          '<textarea class="input textarea" placeholder="响应 JSON，如 {&quot;id&quot;:&quot;{int}&quot;,&quot;name&quot;:&quot;{name}&quot;}">' + htmlEscape(resp) + '</textarea>' +
+          '<button class="btn btn-secondary del-btn">删除</button>' +
+          '</div>';
+      }
+
+      function renderRows() {
+        var box = document.getElementById('rowsBox');
+        box.innerHTML = rowHtml('/api/users', 'GET', '{"id":"{int}","name":"{name}","email":"{email}","ts":"{timestamp}"}', true) +
+          rowHtml('/api/users/{id}', 'GET', '{"id":"{int}","name":"{name}","email":"{email}"}', false);
+        bindRows();
+      }
+
+      function bindRows() {
+        var rows = document.querySelectorAll('#rowsBox .mock-row');
+        for (var i = 0; i < rows.length; i++) {
+          var btn = rows[i].querySelector('.del-btn');
+          btn.onclick = function (e) {
+            var row = e.target.parentNode;
+            if (document.querySelectorAll('#rowsBox .mock-row').length <= 1) {
+              setStatus('至少保留一个端点', 'error');
+              return;
+            }
+            row.parentNode.removeChild(row);
+          };
+        }
+      }
+
+      function generate() {
+        var rows = document.querySelectorAll('#rowsBox .mock-row');
+        var mock = {};
+        var used = {};
+        for (var i = 0; i < rows.length; i++) {
+          var inputs = rows[i].querySelectorAll('.input');
+          var path = inputs[0].value.trim();
+          var method = inputs[1].value;
+          var respText = inputs[2].value.trim();
+          if (!path) {
+            output.innerHTML = '';
+            current = '';
+            setStatus('第 ' + (i + 1) + ' 行路径为空，请填写路径', 'error');
+            return;
+          }
+          if (path.charAt(0) !== '/') path = '/' + path;
+          var parsed;
+          try {
+            parsed = JSON.parse(respText || '{}');
+          } catch (e) {
+            output.innerHTML = '';
+            current = '';
+            setStatus('第 ' + (i + 1) + ' 行响应 JSON 解析失败：' + e.message, 'error');
+            return;
+          }
+          var filled = fillPlaceholders(parsed);
+          if (!mock[path]) mock[path] = {};
+          var key = method.toUpperCase();
+          if (used[path + key]) {
+            output.innerHTML = '';
+            current = '';
+            setStatus('路径 ' + path + ' 的 ' + key + ' 方法重复定义', 'error');
+            return;
+          }
+          used[path + key] = true;
+          mock[path][key] = filled;
+        }
+        current = JSON.stringify(mock, null, 2);
+        output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
+        setStatus('已生成 Mock 配置，共 ' + rows.length + ' 个端点');
+      }
+
+      document.getElementById('addRowBtn').addEventListener('click', function () {
+        var box = document.getElementById('rowsBox');
+        var div = document.createElement('div');
+        div.innerHTML = rowHtml('/api/items', 'GET', '{"id":"{int}","name":"{name}"}', false);
+        box.appendChild(div.firstChild);
+        bindRows();
+      });
+      document.getElementById('generateBtn').addEventListener('click', generate);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!current) return;
+        copyToClipboard(current, this);
+        setStatus('已复制 Mock 配置');
+      });
+      renderRows();
+    })();
+  </script>
+</body>
+</html>

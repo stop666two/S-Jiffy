@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 表格格式化器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .form-row { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Markdown 表格格式化器</h1>
+    <p class="tool-desc">粘贴 Markdown 表格或 CSV 数据，自动对齐列宽、重排分隔行，输出规范的 Markdown 表格。</p>
+    <div class="card">
+      <div class="form-row">
+        <label for="tableInput" class="field-label">表格内容（支持 Markdown 表格或 CSV，首行为表头）</label>
+        <textarea id="tableInput" class="input textarea js-focus-input" style="min-height:180px;" placeholder="名称,数量,价格&#10;苹果,3,2.5&#10;香蕉,5,1.8&#10;橙子,2,3.2"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="alignSel" class="field-label">列对齐方式</label>
+        <select id="alignSel" class="input" style="height:44px;max-width:240px;">
+          <option value="left">左对齐</option>
+          <option value="center">居中对齐</option>
+          <option value="right">右对齐</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('tableInput');
+      var alignEl = document.getElementById('alignSel');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function parseCsvLine(line) {
+        var cells = [];
+        var cur = '';
+        var inQuote = false;
+        for (var i = 0; i < line.length; i++) {
+          var ch = line.charAt(i);
+          if (inQuote) {
+            if (ch === '"') {
+              if (line.charAt(i + 1) === '"') { cur += '"'; i++; }
+              else inQuote = false;
+            } else {
+              cur += ch;
+            }
+          } else {
+            if (ch === '"') inQuote = true;
+            else if (ch === ',') { cells.push(cur); cur = ''; }
+            else cur += ch;
+          }
+        }
+        cells.push(cur);
+        return cells;
+      }
+
+      function parseMarkdownLine(line) {
+        var s = line.trim();
+        if (s.charAt(0) === '|') s = s.substring(1);
+        if (s.charAt(s.length - 1) === '|') s = s.substring(0, s.length - 1);
+        var cells = s.split('|');
+        for (var i = 0; i < cells.length; i++) {
+          cells[i] = cells[i].trim();
+        }
+        return cells;
+      }
+
+      function isSeparator(cells) {
+        if (!cells.length) return false;
+        for (var i = 0; i < cells.length; i++) {
+          if (!/^:?-+:?$/.test(cells[i])) return false;
+        }
+        return true;
+      }
+
+      function format() {
+        var raw = inputEl.value;
+        if (!raw.trim()) {
+          outputEl.textContent = '';
+          setStatus('');
+          return;
+        }
+        var lines = raw.split(/\r?\n/);
+        var isMarkdown = false;
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].indexOf('|') !== -1) { isMarkdown = true; break; }
+        }
+        var rows = [];
+        if (isMarkdown) {
+          for (var j = 0; j < lines.length; j++) {
+            var line = lines[j].trim();
+            if (!line || line.indexOf('|') === -1) continue;
+            rows.push(parseMarkdownLine(line));
+          }
+        } else {
+          for (var k = 0; k < lines.length; k++) {
+            var cline = lines[k].trim();
+            if (!cline) continue;
+            rows.push(parseCsvLine(cline));
+          }
+        }
+        if (!rows.length) {
+          outputEl.textContent = '';
+          setStatus('未解析到任何表格数据', 'error');
+          return;
+        }
+        var sepIdx = -1;
+        if (isMarkdown) {
+          for (var s = 0; s < rows.length; s++) {
+            if (isSeparator(rows[s])) { sepIdx = s; break; }
+          }
+        }
+        var header;
+        var data = [];
+        if (sepIdx >= 0) {
+          header = rows[sepIdx - 1] || [];
+          for (var d = sepIdx + 1; d < rows.length; d++) {
+            data.push(rows[d]);
+          }
+        } else {
+          header = rows[0];
+          for (var d2 = 1; d2 < rows.length; d2++) {
+            data.push(rows[d2]);
+          }
+        }
+        var maxCols = header.length;
+        for (var c = 0; c < data.length; c++) {
+          if (data[c].length > maxCols) maxCols = data[c].length;
+        }
+        if (maxCols === 0) {
+          outputEl.textContent = '';
+          setStatus('表头为空，无法格式化', 'error');
+          return;
+        }
+        var widths = [];
+        for (var w = 0; w < maxCols; w++) widths.push(0);
+        for (var h = 0; h < header.length; h++) {
+          if (header[h].length > widths[h]) widths[h] = header[h].length;
+        }
+        for (var r = 0; r < data.length; r++) {
+          for (var c2 = 0; c2 < data[r].length; c2++) {
+            if (data[r][c2].length > widths[c2]) widths[c2] = data[r][c2].length;
+          }
+        }
+        var sepChar;
+        if (alignEl.value === 'center') sepChar = ':---:';
+        else if (alignEl.value === 'right') sepChar = '---:';
+        else sepChar = '---';
+        var out = [];
+        out.push(buildRow(header, widths));
+        var sepCells = [];
+        for (var sc = 0; sc < maxCols; sc++) sepCells.push(sepChar);
+        out.push(buildRow(sepCells, widths));
+        for (var d3 = 0; d3 < data.length; d3++) {
+          var padded = [];
+          for (var c3 = 0; c3 < maxCols; c3++) {
+            padded.push(c3 < data[d3].length ? data[d3][c3] : '');
+          }
+          out.push(buildRow(padded, widths));
+        }
+        outputEl.textContent = out.join('\n');
+        setStatus('已生成 ' + (data.length + 1) + ' 行 × ' + maxCols + ' 列表格（' + (isMarkdown ? 'Markdown 模式' : 'CSV 模式') + '）');
+      }
+
+      function buildRow(cells, widths) {
+        var parts = [];
+        for (var i = 0; i < cells.length; i++) {
+          var cell = cells[i];
+          var pad = widths[i] - cell.length;
+          var spaced = cell;
+          for (var p = 0; p < pad; p++) spaced += ' ';
+          parts.push(spaced);
+        }
+        return '| ' + parts.join(' | ') + ' |';
+      }
+
+      inputEl.addEventListener('input', format);
+      alignEl.addEventListener('change', format);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      format();
+    })();
+  </script>
+</body>
+</html>

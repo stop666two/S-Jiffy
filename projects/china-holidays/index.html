@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国节假日速查 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .holiday-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+    .holiday-controls input { width: 140px; }
+    .holiday-controls select { width: auto; }
+    .holiday-table { width: 100%; border-collapse: collapse; }
+    .holiday-table th { text-align: left; padding: 8px 10px; font-size: var(--font-size-sm); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+    .holiday-table td { padding: 8px 10px; font-size: var(--font-size-sm); border-bottom: 1px solid var(--color-border); }
+    .holiday-table tr { cursor: pointer; }
+    .holiday-table tr:hover { background: var(--color-bg-soft); }
+    .holiday-table .holiday-name { font-weight: 600; color: var(--color-error); }
+    .holiday-none { color: var(--color-text-secondary); font-size: var(--font-size-sm); padding: var(--space-2) 0; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>中国节假日速查</h1>
+    <p class="tool-desc">查询 2024-2027 年法定节假日与调休上班日安排，点击行可复制日期。</p>
+    <div class="card">
+      <div class="holiday-controls">
+        <input id="yearInput" type="number" min="2024" max="2027" class="input js-focus-input" placeholder="年份 2024-2027">
+        <select id="viewSelect" class="input">
+          <option value="holiday">法定节假日</option>
+          <option value="workday">调休上班日</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var yearInput = document.getElementById('yearInput');
+    var viewSelect = document.getElementById('viewSelect');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var data = {
+      2024: [
+        { name: '元旦', start: '2023-12-30', end: '2024-01-01', work: [] },
+        { name: '春节', start: '2024-02-10', end: '2024-02-17', work: ['2024-02-04', '2024-02-18'] },
+        { name: '清明节', start: '2024-04-04', end: '2024-04-06', work: ['2024-04-07'] },
+        { name: '劳动节', start: '2024-05-01', end: '2024-05-05', work: ['2024-04-28', '2024-05-11'] },
+        { name: '端午节', start: '2024-06-08', end: '2024-06-10', work: [] },
+        { name: '中秋节', start: '2024-09-15', end: '2024-09-17', work: ['2024-09-14'] },
+        { name: '国庆节', start: '2024-10-01', end: '2024-10-07', work: ['2024-09-29', '2024-10-12'] }
+      ],
+      2025: [
+        { name: '元旦', start: '2025-01-01', end: '2025-01-01', work: [] },
+        { name: '春节', start: '2025-01-28', end: '2025-02-04', work: ['2025-01-26', '2025-02-08'] },
+        { name: '清明节', start: '2025-04-04', end: '2025-04-06', work: [] },
+        { name: '劳动节', start: '2025-05-01', end: '2025-05-05', work: ['2025-04-27'] },
+        { name: '端午节', start: '2025-05-31', end: '2025-06-02', work: [] },
+        { name: '国庆中秋', start: '2025-10-01', end: '2025-10-08', work: ['2025-09-28', '2025-10-11'] }
+      ],
+      2026: [
+        { name: '春节', start: '2026-02-15', end: '2026-02-23', work: [] },
+        { name: '国庆中秋', start: '2026-10-01', end: '2026-10-08', work: [] }
+      ],
+      2027: []
+    };
+
+    function daysBetween(a, b) {
+      var da = new Date(a);
+      var db = new Date(b);
+      return Math.round((db.getTime() - da.getTime()) / 86400000) + 1;
+    }
+
+    function render() {
+      var raw = yearInput.value;
+      if (!raw) {
+        outputText.innerHTML = '';
+        setStatus('');
+        return;
+      }
+      var y = parseInt(raw, 10);
+      if (isNaN(y) || y < 2024 || y > 2027) {
+        outputText.innerHTML = '';
+        setStatus('年份需在 2024-2027 之间（暂未收录其他年份）', 'error');
+        return;
+      }
+      var list = data[y] || [];
+      var view = viewSelect.value;
+      var html = '';
+      var copyText = '';
+      if (view === 'holiday') {
+        if (!list.length) {
+          html = '<div class="holiday-none">暂无 ' + y + ' 年节假日数据</div>';
+        } else {
+          html = '<table class="holiday-table"><thead><tr><th>节日</th><th>日期</th><th>天数</th><th>调休上班日</th></tr></thead><tbody>';
+          for (var i = 0; i < list.length; i++) {
+            var h = list[i];
+            var days = daysBetween(h.start, h.end);
+            var workTxt = h.work.length ? htmlEscape(h.work.join('、')) : '无';
+            html += '<tr data-copy="' + htmlEscape(h.start + ' 至 ' + h.end) + '" title="点击复制日期">';
+            html += '<td class="holiday-name">' + htmlEscape(h.name) + '</td>';
+            html += '<td>' + htmlEscape(h.start + ' 至 ' + h.end) + '</td>';
+            html += '<td>' + htmlEscape('' + days) + ' 天</td>';
+            html += '<td>' + workTxt + '</td>';
+            html += '</tr>';
+          }
+          html += '</tbody></table>';
+          copyText = y + ' 年法定节假日：\n';
+          for (var j = 0; j < list.length; j++) {
+            copyText += list[j].name + '：' + list[j].start + ' 至 ' + list[j].end + '（' + daysBetween(list[j].start, list[j].end) + ' 天）\n';
+          }
+        }
+      } else {
+        var items = [];
+        for (var k = 0; k < list.length; k++) {
+          for (var w = 0; w < list[k].work.length; w++) {
+            items.push({ date: list[k].work[w], name: list[k].name });
+          }
+        }
+        if (!items.length) {
+          html = '<div class="holiday-none">' + (list.length ? y + ' 年暂无已公布的调休上班日' : '暂无 ' + y + ' 年数据') + '</div>';
+        } else {
+          html = '<table class="holiday-table"><thead><tr><th>调休上班日</th><th>为哪个节日调休</th></tr></thead><tbody>';
+          for (var m = 0; m < items.length; m++) {
+            html += '<tr data-copy="' + htmlEscape(items[m].date) + '" title="点击复制日期">';
+            html += '<td>' + htmlEscape(items[m].date) + '</td>';
+            html += '<td>' + htmlEscape(items[m].name) + '</td>';
+            html += '</tr>';
+          }
+          html += '</tbody></table>';
+          copyText = y + ' 年调休上班日：\n';
+          for (var n = 0; n < items.length; n++) {
+            copyText += items[n].date + '（' + items[n].name + '）\n';
+          }
+        }
+      }
+      outputText.innerHTML = html;
+      var rows = outputText.querySelectorAll('tr[data-copy]');
+      for (var r = 0; r < rows.length; r++) {
+        rows[r].onclick = (function (el) {
+          return function () {
+            copyToClipboard(el.getAttribute('data-copy'), copyBtn);
+          };
+        })(rows[r]);
+      }
+      copyBtn.onclick = function () {
+        if (copyText) { copyToClipboard(copyText.replace(/\n$/, ''), copyBtn); }
+      };
+      if (copyText) { setStatus('已加载 ' + y + ' 年数据，点击行可复制日期'); }
+      else { setStatus(''); }
+    }
+
+    yearInput.addEventListener('input', render);
+    viewSelect.addEventListener('change', render);
+    yearInput.value = '2024';
+    render();
+  })();
+  </script>
+</body>
+</html>

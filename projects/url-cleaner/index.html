@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL 跟踪参数清理器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .uc-hint { font-size:var(--font-size-sm); color:var(--color-text-secondary); line-height:1.6; margin-bottom:var(--space-2); }
+    .uc-actions { display:flex; gap:12px; margin-top:var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1>URL 跟踪参数清理器</h1>
+    <p class="tool-desc">批量删除 URL 中的跟踪参数（utm、fbclid、gclid 等），还原干净链接。</p>
+    <div class="card">
+      <p class="uc-hint">每行粘贴一个 URL。将删除 utm_*、fbclid、gclid、mc_cid、mc_eid、yclid、igshid、twclid、li_fat_id、ref_src、ref_url、spm、from、from_channel 等跟踪参数（忽略大小写），其余参数与锚点保留。</p>
+      <textarea id="urlInput" class="input textarea js-focus-input" rows="8" placeholder="https://example.com/page?utm_source=x&amp;id=1&amp;fbclid=abc&#10;https://shop.com/item?id=2&amp;spm=a1b2&amp;from=feed"></textarea>
+      <div class="uc-actions"><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+    </div>
+    <div id="resultBox" class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制结果</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var inputEl = document.getElementById('urlInput');
+    var clearBtn = document.getElementById('clearBtn');
+    var outputEl = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var lastPlain = '';
+    var trackParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'mc_cid', 'mc_eid', 'yclid', 'igshid', 'twclid', 'li_fat_id', 'ref_src', 'ref_url', 'spm', 'from', 'from_channel'];
+
+    function isTrackParam(name) {
+      if (name.indexOf('utm_') === 0) return true;
+      for (var i = 0; i < trackParams.length; i++) {
+        if (name === trackParams[i]) return true;
+      }
+      return false;
+    }
+
+    function decodeName(raw) {
+      try {
+        return decodeURIComponent(raw);
+      } catch (e) {
+        return raw;
+      }
+    }
+
+    function cleanLine(line, removedMap) {
+      var hash = '';
+      var hashIdx = line.indexOf('#');
+      if (hashIdx !== -1) {
+        hash = line.slice(hashIdx);
+        line = line.slice(0, hashIdx);
+      }
+      var qIdx = line.indexOf('?');
+      if (qIdx === -1) return { url: line + hash, removed: 0 };
+      var base = line.slice(0, qIdx);
+      var query = line.slice(qIdx + 1);
+      var kept = [];
+      var removed = 0;
+      if (query) {
+        var parts = query.split('&');
+        for (var i = 0; i < parts.length; i++) {
+          var pair = parts[i];
+          if (!pair) continue;
+          var eqIdx = pair.indexOf('=');
+          var rawName = eqIdx === -1 ? pair : pair.slice(0, eqIdx);
+          var name = decodeName(rawName).toLowerCase();
+          if (isTrackParam(name)) {
+            removed++;
+            if (removedMap[name]) removedMap[name]++;
+            else removedMap[name] = 1;
+          } else {
+            kept.push(pair);
+          }
+        }
+      }
+      var out = base;
+      if (kept.length > 0) out += '?' + kept.join('&');
+      out += hash;
+      return { url: out, removed: removed };
+    }
+
+    function process() {
+      var raw = inputEl.value;
+      if (!raw || raw.trim() === '') {
+        outputEl.textContent = '';
+        lastPlain = '';
+        setStatus('');
+        return;
+      }
+      var lines = raw.split('\n');
+      var removedMap = {};
+      var cleaned = [];
+      var totalRemoved = 0;
+      var invalid = 0;
+      var inputCount = 0;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line) continue;
+        inputCount++;
+        if (/\s/.test(line)) {
+          cleaned.push(line);
+          invalid++;
+          continue;
+        }
+        var res = cleanLine(line, removedMap);
+        cleaned.push(res.url);
+        totalRemoved += res.removed;
+      }
+      var linesOut = [];
+      linesOut.push('【清理后的 URL】');
+      for (var j = 0; j < cleaned.length; j++) linesOut.push(cleaned[j]);
+      linesOut.push('');
+      linesOut.push('【被删除的参数】');
+      var keys = Object.keys(removedMap);
+      if (keys.length === 0) {
+        linesOut.push('无');
+      } else {
+        for (var k = 0; k < keys.length; k++) {
+          linesOut.push(keys[k] + ' × ' + removedMap[keys[k]]);
+        }
+      }
+      linesOut.push('');
+      linesOut.push('【统计】输入 ' + inputCount + ' 行，输出 ' + cleaned.length + ' 行，共删除 ' + totalRemoved + ' 个跟踪参数' + (invalid ? '，其中 ' + invalid + ' 行含空格未处理' : ''));
+      lastPlain = linesOut.join('\n');
+      outputEl.innerHTML = htmlEscape(lastPlain).replace(/\n/g, '<br>');
+      if (invalid > 0) setStatus('第 ' + invalid + ' 个非空行含空格，不是有效 URL，已原样保留', 'error');
+      else setStatus('已清理 ' + totalRemoved + ' 个跟踪参数');
+    }
+
+    inputEl.addEventListener('input', process);
+    clearBtn.addEventListener('click', function() {
+      inputEl.value = '';
+      process();
+      inputEl.focus();
+    });
+    copyBtn.addEventListener('click', function() {
+      if (lastPlain) {
+        copyToClipboard(lastPlain, copyBtn);
+        setStatus('已复制');
+      }
+    });
+  })();</script>
+</body>
+</html>

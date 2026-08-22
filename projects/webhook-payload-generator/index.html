@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webhook 负载生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .select-row { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-2); }
+    .select-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .select-row select { flex: 1; min-width: 220px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Webhook 负载生成器</h1>
+    <p class="tool-desc">选择事件类型，生成 GitHub/GitLab/Stripe/支付宝/微信支付/Slack 等平台的示例 Webhook 负载 JSON（含随机数据）。</p>
+    <div class="card">
+      <div class="select-row">
+        <label for="eventSel">事件类型</label>
+        <select id="eventSel" class="input js-focus-input">
+          <option value="github-push">GitHub push</option>
+          <option value="github-pr">GitHub pull_request</option>
+          <option value="gitlab-push">GitLab push</option>
+          <option value="stripe-paid">Stripe invoice.paid</option>
+          <option value="alipay-notify">支付宝异步通知</option>
+          <option value="wechat-pay">微信支付回调</option>
+          <option value="slack-event">Slack event</option>
+        </select>
+        <button class="btn btn-secondary" id="regenBtn">重新生成随机数据</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var NAMES = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'grace', 'henry', 'irene', 'jack', 'kate', 'liam'];
+      var DOMAINS = ['example.com', 'mail.test', 'demo.org', 'corp.dev', 'hello.io', 'webhook.local'];
+      var output = document.getElementById('outputText');
+      var current = '';
+
+      function rand(n) {
+        return Math.floor(Math.random() * n);
+      }
+
+      function pick(arr) {
+        return arr[rand(arr.length)];
+      }
+
+      function hex(n) {
+        var s = '';
+        for (var i = 0; i < n; i++) s += rand(16).toString(16);
+        return s;
+      }
+
+      function uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = rand(16);
+          var v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      function digits(n) {
+        var s = '';
+        for (var i = 0; i < n; i++) s += rand(10);
+        return s;
+      }
+
+      function email() {
+        return pick(NAMES) + digits(3) + '@' + pick(DOMAINS);
+      }
+
+      function nowSec() {
+        return Math.floor(Date.now() / 1000);
+      }
+
+      function nowIso() {
+        var d = new Date();
+        function pad(x) { return x < 10 ? '0' + x : String(x); }
+        return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + 'T' +
+          pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + 'Z';
+      }
+
+      function nowCn() {
+        var d = new Date();
+        function pad(x) { return x < 10 ? '0' + x : String(x); }
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
+          pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      }
+
+      function repo() {
+        return {
+          id: rand(900000000) + 100000000,
+          name: 'my-repo',
+          full_name: 'octocat/my-repo',
+          private: false,
+          html_url: 'https://github.com/octocat/my-repo',
+          default_branch: 'main'
+        };
+      }
+
+      function commit(sha) {
+        return {
+          id: sha,
+          message: pick(['fix: 修复登录 bug', 'feat: 新增导出功能', 'docs: 更新 README', 'refactor: 重构缓存逻辑']),
+          timestamp: nowIso(),
+          author: { name: 'octocat', email: email() }
+        };
+      }
+
+      function githubPush() {
+        var sha = hex(40);
+        return {
+          ref: 'refs/heads/main',
+          before: hex(40),
+          after: sha,
+          repository: repo(),
+          pusher: { name: 'octocat', email: 'octocat@github.com' },
+          commits: [commit(sha)],
+          head_commit: commit(sha),
+          sender: { login: 'octocat', id: rand(900000000) + 100000000 }
+        };
+      }
+
+      function githubPr() {
+        var sha = hex(40);
+        return {
+          action: 'opened',
+          number: rand(500) + 1,
+          pull_request: {
+            id: rand(900000000) + 100000000,
+            number: rand(500) + 1,
+            title: 'feat: 添加新功能',
+            state: 'open',
+            merged: false,
+            created_at: nowIso(),
+            updated_at: nowIso(),
+            user: { login: 'octocat', id: 1 },
+            head: { ref: 'feature/hello', sha: sha },
+            base: { ref: 'main', sha: hex(40) }
+          },
+          repository: repo(),
+          sender: { login: 'octocat', id: 1 }
+        };
+      }
+
+      function gitlabPush() {
+        var sha = hex(40);
+        return {
+          object_kind: 'push',
+          event_name: 'push',
+          before: hex(40),
+          after: sha,
+          ref: 'refs/heads/main',
+          user_name: 'octocat',
+          user_email: 'octocat@example.com',
+          project_id: rand(900000) + 100000,
+          project: {
+            id: rand(900000) + 100000,
+            name: 'my-project',
+            path_with_namespace: 'octocat/my-project',
+            web_url: 'https://gitlab.com/octocat/my-project'
+          },
+          commits: [commit(sha)],
+          total_commits_count: 1
+        };
+      }
+
+      function stripePaid() {
+        return {
+          id: 'evt_' + hex(24),
+          object: 'event',
+          api_version: '2024-06-20',
+          created: nowSec(),
+          type: 'invoice.paid',
+          data: {
+            object: {
+              id: 'in_' + hex(24),
+              object: 'invoice',
+              amount_due: 4999,
+              amount_paid: 4999,
+              currency: 'usd',
+              customer: 'cus_' + hex(14),
+              customer_email: email(),
+              status: 'paid',
+              paid: true,
+              created: nowSec(),
+              invoice_pdf: 'https://pay.stripe.com/invoice/' + hex(24)
+            }
+          },
+          livemode: false
+        };
+      }
+
+      function alipayNotify() {
+        return {
+          notify_time: nowCn(),
+          notify_type: 'trade_status_sync',
+          notify_id: hex(32),
+          app_id: '2021' + digits(12),
+          charset: 'utf-8',
+          version: '1.0',
+          sign_type: 'RSA2',
+          sign: hex(256),
+          trade_no: '20260821' + digits(20),
+          out_trade_no: 'ORDER' + digits(12),
+          trade_status: 'TRADE_SUCCESS',
+          total_amount: '99.00',
+          buyer_id: '2088' + digits(18),
+          buyer_email: email(),
+          seller_id: '2088' + digits(18),
+          gmt_payment: nowCn()
+        };
+      }
+
+      function wechatPay() {
+        return {
+          id: 'EV-' + hex(32),
+          create_time: nowIso(),
+          resource_type: 'encrypt-resource',
+          event_type: 'TRANSACTION.SUCCESS',
+          summary: '支付成功',
+          resource: {
+            original_type: 'transaction',
+            algorithm: 'AEAD_AES_256_GCM',
+            ciphertext: hex(128),
+            associated_data: 'transaction',
+            nonce: hex(12)
+          }
+        };
+      }
+
+      function slackEvent() {
+        return {
+          token: hex(32),
+          team_id: 'T0' + digits(6),
+          api_app_id: 'A0' + digits(8),
+          event: {
+            type: 'message',
+            user: 'U0' + digits(6),
+            text: 'Hello from S-Jiffy!',
+            ts: String(nowSec()) + '.' + digits(6),
+            channel: 'C0' + digits(6),
+            event_ts: String(nowSec()) + '.' + digits(6)
+          },
+          type: 'event_callback',
+          event_id: 'Ev0' + hex(13),
+          event_time: nowSec(),
+          authed_users: ['U0' + digits(6)]
+        };
+      }
+
+      function build() {
+        var type = document.getElementById('eventSel').value;
+        var payload = {
+          'github-push': githubPush,
+          'github-pr': githubPr,
+          'gitlab-push': gitlabPush,
+          'stripe-paid': stripePaid,
+          'alipay-notify': alipayNotify,
+          'wechat-pay': wechatPay,
+          'slack-event': slackEvent
+        }[type]();
+        current = JSON.stringify(payload, null, 2);
+        output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
+        var label = document.getElementById('eventSel').options[document.getElementById('eventSel').selectedIndex].text;
+        setStatus('已生成：' + label);
+      }
+
+      document.getElementById('eventSel').addEventListener('change', build);
+      document.getElementById('regenBtn').addEventListener('click', build);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!current) return;
+        copyToClipboard(current, this);
+        setStatus('已复制负载 JSON');
+      });
+      build();
+    })();
+  </script>
+</body>
+</html>

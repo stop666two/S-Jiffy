@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ansible Playbook 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-3); }
+    .task-row { display: grid; grid-template-columns: 160px 110px 1fr 48px; gap: var(--space-1); margin-bottom: var(--space-1); align-items: start; }
+    .task-row .input { width: 100%; }
+    .task-row .textarea { min-height: 60px; font-family: var(--font-mono); font-size: var(--font-size-xs); resize: vertical; }
+    .tasks-title { display: flex; align-items: center; justify-content: space-between; margin: var(--space-2) 0 var(--space-1); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .toggle-row { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); margin-bottom: var(--space-2); cursor: pointer; }
+    .toggle-row input { accent-color: var(--color-accent); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    @media (max-width: 700px) { .task-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Ansible Playbook 生成器</h1>
+    <p class="tool-desc">填写 Play 信息与任务列表，生成可执行的 Ansible Playbook YAML。</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label>Play 名称</label>
+          <input id="playName" class="input js-focus-input" value="Deploy">
+        </div>
+        <div class="field">
+          <label>主机组</label>
+          <input id="hosts" class="input" value="web">
+        </div>
+        <div class="field">
+          <label>远程用户</label>
+          <input id="remoteUser" class="input" value="ubuntu">
+        </div>
+        <div class="field">
+          <label>远程端口</label>
+          <input id="remotePort" class="input" value="22" placeholder="SSH 端口">
+        </div>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="become" checked> become（提权执行）</label>
+      <div class="tasks-title">
+        <span>任务列表（模块：apt/yum/copy/service/command/shell/user/systemd）</span>
+        <button id="addTaskBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px">+ 添加任务</button>
+      </div>
+      <div id="taskRows"></div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成 Playbook</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var MODULES = ['apt', 'yum', 'copy', 'service', 'command', 'shell', 'user', 'systemd'];
+      var taskRows = document.getElementById('taskRows');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var rowSeq = 0;
+
+      function yamlQuote(value) {
+        if (/^[A-Za-z0-9_\-./=@+ ]+$/.test(value) && value === value.trim() && value.indexOf('#') === -1) return value;
+        return '"' + String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+      }
+
+      function addRow() {
+        var id = ++rowSeq;
+        var div = document.createElement('div');
+        div.className = 'task-row';
+        div.innerHTML = '<input class="task-name input" placeholder="任务名，如 安装 nginx">'
+          + '<select class="task-module input">' + MODULES.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select>'
+          + '<textarea class="task-params input textarea" placeholder="每行一个参数，如 name=nginx&#10;state=present"></textarea>'
+          + '<button class="btn btn-secondary task-del" type="button">删</button>';
+        div.querySelector('.task-del').addEventListener('click', function () {
+          div.parentNode.removeChild(div);
+        });
+        taskRows.appendChild(div);
+        div.querySelector('.task-name').focus();
+        return div;
+      }
+
+      function collectTasks() {
+        var rows = taskRows.querySelectorAll('.task-row');
+        var tasks = [];
+        for (var i = 0; i < rows.length; i++) {
+          var name = rows[i].querySelector('.task-name').value.trim();
+          var module = rows[i].querySelector('.task-module').value;
+          var paramsText = rows[i].querySelector('.task-params').value;
+          if (!name) { setStatus('第 ' + (i + 1) + ' 个任务缺少任务名', 'error'); return null; }
+          var params = [];
+          var lines = paramsText.split('\n');
+          for (var j = 0; j < lines.length; j++) {
+            var line = lines[j].trim();
+            if (!line) continue;
+            var eq = line.indexOf('=');
+            if (eq <= 0) { setStatus('任务「' + name + '」第 ' + (j + 1) + ' 行参数格式应为 key=value', 'error'); return null; }
+            var key = line.slice(0, eq).trim();
+            if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) { setStatus('任务「' + name + '」参数名非法：' + key, 'error'); return null; }
+            params.push({ key: key, value: line.slice(eq + 1).trim() });
+          }
+          tasks.push({ name: name, module: module, params: params });
+        }
+        return tasks;
+      }
+
+      function buildYaml() {
+        var play = document.getElementById('playName').value.trim();
+        var hosts = document.getElementById('hosts').value.trim();
+        var user = document.getElementById('remoteUser').value.trim();
+        var port = document.getElementById('remotePort').value.trim();
+        var become = document.getElementById('become').checked;
+        var tasks = collectTasks();
+        if (tasks === null) return null;
+        if (!play) { setStatus('请输入 Play 名称', 'error'); return null; }
+        if (!hosts) { setStatus('请输入主机组', 'error'); return null; }
+        if (!user) { setStatus('请输入远程用户', 'error'); return null; }
+        if (!port) { setStatus('请输入远程端口', 'error'); return null; }
+        if (!/^\d+$/.test(port)) { setStatus('远程端口必须是数字', 'error'); return null; }
+        if (tasks.length === 0) { setStatus('请至少添加一个任务', 'error'); return null; }
+
+        var yaml = '---\n';
+        yaml += '- name: ' + yamlQuote(play) + '\n';
+        yaml += '  hosts: ' + yamlQuote(hosts) + '\n';
+        yaml += '  remote_user: ' + yamlQuote(user) + '\n';
+        yaml += '  port: ' + port + '\n';
+        yaml += '  become: ' + (become ? 'true' : 'false') + '\n';
+        yaml += '\n';
+        yaml += '  tasks:\n';
+        for (var i = 0; i < tasks.length; i++) {
+          var t = tasks[i];
+          yaml += '    - name: ' + yamlQuote(t.name) + '\n';
+          yaml += '      ' + t.module + ':\n';
+          if (t.params.length === 0) {
+            yaml += '        # 请填写该模块的参数\n';
+          }
+          for (var j = 0; j < t.params.length; j++) {
+            yaml += '        ' + t.params[j].key + ': ' + yamlQuote(t.params[j].value) + '\n';
+          }
+        }
+        return yaml;
+      }
+
+      document.getElementById('addTaskBtn').addEventListener('click', addRow);
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var yaml = buildYaml();
+        if (yaml === null) { output.textContent = ''; return; }
+        output.textContent = yaml;
+        setStatus('Playbook 已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+
+      addRow();
+    })();
+  </script>
+</body>
+</html>

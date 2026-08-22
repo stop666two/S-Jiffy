@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时间单位转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .conv-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+    .conv-controls input { width: 180px; }
+    .conv-controls select { width: auto; }
+    .conv-result { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-2); }
+    .conv-reverse { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-2); }
+    .conv-table { width: 100%; border-collapse: collapse; margin-bottom: var(--space-2); }
+    .conv-table th { text-align: left; padding: 6px 10px; font-size: var(--font-size-sm); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+    .conv-table td { padding: 5px 10px; font-size: var(--font-size-sm); border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); }
+    .conv-table tr:last-child td { border-bottom: none; }
+    .conv-tips { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.8; }
+    .conv-tips b { color: var(--color-text-primary); font-family: var(--font-mono); }
+    .conv-tip-hit { color: var(--color-success); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>时间单位转换器</h1>
+    <p class="tool-desc">毫秒、秒、分钟、小时、天、周、月、年之间双向换算，并展示全单位对照。</p>
+    <div class="card">
+      <div class="conv-controls">
+        <input id="numInput" type="number" step="any" class="input js-focus-input" placeholder="输入数值" value="1">
+        <select id="fromSelect" class="input"></select>
+        <button id="swapBtn" class="btn btn-secondary">⇄ 互换</button>
+        <span>→</span>
+        <select id="toSelect" class="input"></select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var numInput = document.getElementById('numInput');
+    var fromSelect = document.getElementById('fromSelect');
+    var toSelect = document.getElementById('toSelect');
+    var swapBtn = document.getElementById('swapBtn');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var units = [
+      { id: 'ms', name: '毫秒', ms: 1 },
+      { id: 's', name: '秒', ms: 1000 },
+      { id: 'min', name: '分钟', ms: 60000 },
+      { id: 'hour', name: '小时', ms: 3600000 },
+      { id: 'day', name: '天', ms: 86400000 },
+      { id: 'week', name: '周', ms: 604800000 },
+      { id: 'month', name: '月', ms: 2592000000 },
+      { id: 'year', name: '年', ms: 31536000000 }
+    ];
+
+    var scenarios = [
+      { ms: 1000, label: '1000 ms = 1 秒' },
+      { ms: 60000, label: '60000 ms = 1 分钟' },
+      { ms: 3600000, label: '3600000 ms = 1 小时' },
+      { ms: 86400000, label: '86400000 ms = 1 天' },
+      { ms: 604800000, label: '604800000 ms = 1 周' },
+      { ms: 2592000000, label: '2592000000 ms = 1 月（按 30 天）' },
+      { ms: 31536000000, label: '31536000000 ms = 1 年（按 365 天）' }
+    ];
+
+    function fillSelect(sel, selected) {
+      var html = '';
+      for (var i = 0; i < units.length; i++) {
+        html += '<option value="' + units[i].id + '"' + (units[i].id === selected ? ' selected' : '') + '>' + units[i].name + '</option>';
+      }
+      sel.innerHTML = html;
+    }
+
+    function findUnit(id) {
+      for (var i = 0; i < units.length; i++) {
+        if (units[i].id === id) { return units[i]; }
+      }
+      return units[0];
+    }
+
+    function fmt(n) {
+      if (!isFinite(n)) { return '0'; }
+      if (n === 0) { return '0'; }
+      var abs = Math.abs(n);
+      if (abs >= 1e13 || abs < 1e-6) { return n.toExponential(4); }
+      var r = parseFloat(n.toFixed(6));
+      var s = String(r);
+      if (abs >= 1e6) {
+        var parts = s.split('.');
+        var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.length > 1 ? intPart + '.' + parts[1] : intPart;
+      }
+      return s;
+    }
+
+    function render() {
+      var raw = numInput.value;
+      if (raw === '') {
+        outputText.innerHTML = '';
+        setStatus('');
+        return;
+      }
+      var n = parseFloat(raw);
+      if (isNaN(n)) {
+        outputText.innerHTML = '';
+        setStatus('请输入有效的数字', 'error');
+        return;
+      }
+      var from = findUnit(fromSelect.value);
+      var to = findUnit(toSelect.value);
+      var totalMs = n * from.ms;
+      var converted = totalMs / to.ms;
+      var html = '<div class="conv-result">' + htmlEscape(fmt(n)) + ' ' + htmlEscape(from.name) + ' = ' + htmlEscape(fmt(converted)) + ' ' + htmlEscape(to.name) + '</div>';
+      var perOne = from.ms / to.ms;
+      html += '<div class="conv-reverse">反向换算：1 ' + htmlEscape(to.name) + ' = ' + htmlEscape(fmt(perOne)) + ' ' + htmlEscape(from.name) + '</div>';
+      html += '<table class="conv-table"><thead><tr><th>单位</th><th>数值</th></tr></thead><tbody>';
+      for (var i = 0; i < units.length; i++) {
+        var val = totalMs / units[i].ms;
+        html += '<tr><td>' + htmlEscape(units[i].name) + '</td><td>' + htmlEscape(fmt(val)) + ' ' + htmlEscape(units[i].id) + '</td></tr>';
+      }
+      html += '</tbody></table>';
+      html += '<div class="conv-tips"><b>常用场景：</b><br>';
+      for (var j = 0; j < scenarios.length; j++) {
+        var hit = Math.abs(totalMs - scenarios[j].ms) < 0.5;
+        var mark = hit ? ' ✓ 当前输入' : '';
+        html += '<span class="' + (hit ? 'conv-tip-hit' : '') + '">' + htmlEscape(scenarios[j].label + mark) + '</span><br>';
+      }
+      html += '</div>';
+      outputText.innerHTML = html;
+      var lines = [fmt(n) + ' ' + from.name + ' = ' + fmt(converted) + ' ' + to.name];
+      lines.push('');
+      lines.push('全单位对照：');
+      for (var k = 0; k < units.length; k++) {
+        lines.push(fmt(totalMs / units[k].ms) + ' ' + units[k].name);
+      }
+      copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
+      setStatus('转换完成');
+    }
+
+    fillSelect(fromSelect, 'hour');
+    fillSelect(toSelect, 's');
+    numInput.addEventListener('input', render);
+    fromSelect.addEventListener('change', render);
+    toSelect.addEventListener('change', render);
+    swapBtn.addEventListener('click', function () {
+      var tmp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = tmp;
+      render();
+    });
+    render();
+  })();
+  </script>
+</body>
+</html>

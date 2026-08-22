@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分隔符检测器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .det-summary{margin-bottom:var(--space-2);line-height:1.9;font-size:var(--font-size-sm)}
+    .det-summary b{color:var(--color-text-primary)}
+    .det-tbl{width:100%;border-collapse:collapse;margin-top:var(--space-2);font-size:var(--font-size-xs)}
+    .det-tbl th,.det-tbl td{border:1px solid var(--color-border);padding:5px 9px;text-align:left;vertical-align:top;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+    .det-tbl th{background:var(--color-bg-soft);font-weight:600;color:var(--color-text-secondary)}
+    .det-tbl td:first-child{max-width:300px}
+    .det-winner{font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-1)}
+    .det-cands{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:var(--space-2)}
+    .det-quote{color:var(--color-text-secondary)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>分隔符检测器</h1>
+    <p class="tool-desc">自动检测 CSV/TSV 文本的分隔符（逗号、制表符、分号、竖线、空格），识别引号规则并渲染表格预览。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 CSV/TSV 文本（多行）..." style="min-height:160px;"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+      var lastDelim = ',';
+      var lastRows = [];
+
+      var delims = [
+        { name: '逗号 ,', ch: ',' },
+        { name: '制表符 Tab', ch: '\t' },
+        { name: '分号 ;', ch: ';' },
+        { name: '竖线 |', ch: '|' },
+        { name: '空格', ch: ' ' }
+      ];
+
+      function countChar(line, ch) {
+        var c = 0;
+        for (var i = 0; i < line.length; i++) {
+          if (line.charAt(i) === ch) c++;
+        }
+        return c;
+      }
+
+      function parseLine(line, ch) {
+        var fields = [];
+        var cur = '';
+        var inQuote = false;
+        for (var i = 0; i < line.length; i++) {
+          var c = line.charAt(i);
+          if (inQuote) {
+            if (c === '"') {
+              if (i + 1 < line.length && line.charAt(i + 1) === '"') {
+                cur += '"';
+                i++;
+              } else {
+                inQuote = false;
+              }
+            } else {
+              cur += c;
+            }
+          } else if (c === '"') {
+            inQuote = true;
+          } else if (c === ch) {
+            fields.push(cur);
+            cur = '';
+          } else {
+            cur += c;
+          }
+        }
+        fields.push(cur);
+        return fields;
+      }
+
+      function analyze() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          lastRows = [];
+          setStatus('');
+          return;
+        }
+        var lines = text.split(/\r?\n/);
+        var nonEmpty = [];
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].replace(/[\s\uFEFF]/g, '')) nonEmpty.push(lines[i]);
+        }
+        if (!nonEmpty.length) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          lastRows = [];
+          setStatus('未找到有效数据行', 'error');
+          return;
+        }
+        var cands = [];
+        for (var d = 0; d < delims.length; d++) {
+          var ch = delims[d].ch;
+          var counts = [];
+          var mode = 0;
+          var modeCount = 0;
+          for (var l = 0; l < nonEmpty.length; l++) {
+            var c = countChar(nonEmpty[l], ch);
+            counts.push(c);
+          }
+          var freq = {};
+          for (var f = 0; f < counts.length; f++) {
+            freq[counts[f]] = (freq[counts[f]] || 0) + 1;
+          }
+          for (var key in freq) {
+            if (freq[key] > modeCount) {
+              modeCount = freq[key];
+              mode = parseInt(key, 10);
+            }
+          }
+          var consistency = modeCount / nonEmpty.length;
+          var avgCols = 0;
+          for (var g = 0; g < counts.length; g++) avgCols += counts[g] + 1;
+          avgCols = avgCols / nonEmpty.length;
+          cands.push({ name: delims[d].name, ch: ch, consistency: consistency, avgCols: avgCols });
+        }
+        var best = 0;
+        for (var b = 1; b < cands.length; b++) {
+          var better = cands[b].consistency > cands[best].consistency;
+          var same = Math.abs(cands[b].consistency - cands[best].consistency) < 0.0001;
+          if (better) {
+            best = b;
+          } else if (same && cands[b].ch !== ' ' && cands[best].ch === ' ') {
+            best = b;
+          } else if (same && cands[b].ch !== ' ' && cands[best].ch !== ' ' && cands[b].avgCols > cands[best].avgCols) {
+            best = b;
+          }
+        }
+        var delim = cands[best];
+        var quoted = false;
+        for (var q = 0; q < nonEmpty.length; q++) {
+          if (nonEmpty[q].indexOf('"') !== -1) {
+            quoted = true;
+            break;
+          }
+        }
+        var rows = [];
+        var maxCols = 0;
+        for (var r = 0; r < nonEmpty.length; r++) {
+          var fields = parseLine(nonEmpty[r], delim.ch);
+          if (fields.length > maxCols) maxCols = fields.length;
+          rows.push(fields);
+        }
+        lastRows = rows;
+        lastDelim = delim.ch;
+        var html = [];
+        html.push('<div class="det-winner">检测结果：' + htmlEscape(delim.name) + '</div>');
+        html.push('<div class="det-summary">一致性评分 <b>' + Math.round(delim.consistency * 100) + '%</b> · 平均列数 <b>' + delim.avgCols.toFixed(1) + '</b> · 最大列数 <b>' + maxCols + '</b> · 数据行 <b>' + nonEmpty.length + '</b></div>');
+        html.push('<div class="det-quote">引号规则：' + (quoted ? '检测到双引号包裹字段，解析时已去除引号并支持 "" 转义' : '未检测到引号包裹字段') + '</div>');
+        html.push('<div class="det-cands">候选评分：' + htmlEscape(cands.map(function (c) { return c.name + ' ' + Math.round(c.consistency * 100) + '%'; }).join('，')) + '</div>');
+        html.push('<div style="overflow-x:auto;"><table class="det-tbl">');
+        for (var t = 0; t < rows.length; t++) {
+          html.push('<tr>');
+          for (var c2 = 0; c2 < rows[t].length; c2++) {
+            html.push('<td>' + htmlEscape(rows[t][c2]) + '</td>');
+          }
+          html.push('</tr>');
+        }
+        html.push('</table></div>');
+        outputEl.innerHTML = html.join('');
+        var tsv = [];
+        for (var t2 = 0; t2 < rows.length; t2++) {
+          tsv.push(rows[t2].map(function (f) { return '"' + f.split('"').join('""') + '"'; }).join(delim.ch));
+        }
+        lastPlain = tsv.join('\n');
+        setStatus('已识别分隔符：' + delim.name);
+      }
+
+      inputEl.addEventListener('input', analyze);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

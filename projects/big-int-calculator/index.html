@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大整数计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .big-grid { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .big-field { display: flex; flex-direction: column; gap: var(--space-1); }
+    .big-field label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .big-field .input { font-family: var(--font-mono); min-width: 260px; }
+    .op-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .op-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .res-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: block; margin-bottom: var(--space-1); }
+    .res-value { font-size: var(--font-size-base); font-family: var(--font-mono); color: var(--color-text-primary); word-break: break-all; line-height: 1.6; }
+    .res-meta { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-1); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>大整数计算器</h1>
+    <p class="tool-desc">支持任意长度整数的加、减、乘、幂、阶乘、最大公约数与素性检查，全部字符串逐位运算。</p>
+    <div class="card">
+      <div class="op-row">
+        <label for="modeSelect">模式</label>
+        <select id="modeSelect" class="input">
+          <option value="two">双数模式</option>
+          <option value="single">单数模式</option>
+        </select>
+      </div>
+      <div class="big-grid">
+        <div class="big-field">
+          <label for="num1Input">整数 A</label>
+          <input type="text" id="num1Input" class="input js-focus-input" placeholder="如 123456789012345678901234567890">
+        </div>
+        <div class="big-field" id="num2Field">
+          <label for="num2Input">整数 B</label>
+          <input type="text" id="num2Input" class="input" placeholder="如 987654321">
+        </div>
+      </div>
+      <div class="op-row">
+        <label for="opSelect">运算</label>
+        <select id="opSelect" class="input">
+          <option value="add">加法 A + B</option>
+          <option value="subtract">减法 A - B</option>
+          <option value="multiply">乘法 A × B</option>
+          <option value="power">幂 A^B（B 为非负整数）</option>
+          <option value="gcd">最大公约数</option>
+        </select>
+        <button class="btn btn-primary" id="calcBtn">计算</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var modeEl = document.getElementById('modeSelect');
+      var num1El = document.getElementById('num1Input');
+      var num2El = document.getElementById('num2Input');
+      var num2Field = document.getElementById('num2Field');
+      var opEl = document.getElementById('opSelect');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var MAX_LEN = 50000;
+      var MAX_INPUT_LEN = 100;
+      var MAX_EXP = '10000';
+      var MAX_FACT = 1500;
+
+      function trimZero(s) {
+        s = s.replace(/^0+/, '');
+        return s === '' ? '0' : s;
+      }
+
+      function bigAddAbs(a, b) {
+        var i = a.length - 1;
+        var j = b.length - 1;
+        var carry = 0;
+        var out = '';
+        while (i >= 0 || j >= 0 || carry) {
+          var d = carry;
+          if (i >= 0) {
+            d += a.charCodeAt(i) - 48;
+          }
+          if (j >= 0) {
+            d += b.charCodeAt(j) - 48;
+          }
+          out = String(d % 10) + out;
+          carry = d > 9 ? 1 : 0;
+          i--;
+          j--;
+        }
+        return out;
+      }
+
+      function bigSubAbs(a, b) {
+        var i = a.length - 1;
+        var j = b.length - 1;
+        var borrow = 0;
+        var out = '';
+        while (i >= 0) {
+          var d = (a.charCodeAt(i) - 48) - borrow;
+          if (j >= 0) {
+            d -= b.charCodeAt(j) - 48;
+          }
+          if (d < 0) {
+            d += 10;
+            borrow = 1;
+          } else {
+            borrow = 0;
+          }
+          out = String(d) + out;
+          i--;
+          j--;
+        }
+        return trimZero(out);
+      }
+
+      function bigCmpAbs(a, b) {
+        if (a.length !== b.length) {
+          return a.length > b.length ? 1 : -1;
+        }
+        if (a === b) {
+          return 0;
+        }
+        return a > b ? 1 : -1;
+      }
+
+      function bigAdd(a, b) {
+        var na = a.charAt(0) === '-';
+        var nb = b.charAt(0) === '-';
+        var sa = na ? a.slice(1) : a;
+        var sb = nb ? b.slice(1) : b;
+        if (na === nb) {
+          return (na ? '-' : '') + bigAddAbs(sa, sb);
+        }
+        var c = bigCmpAbs(sa, sb);
+        if (c === 0) {
+          return '0';
+        }
+        if (c > 0) {
+          return (na ? '-' : '') + bigSubAbs(sa, sb);
+        }
+        return (nb ? '-' : '') + bigSubAbs(sb, sa);
+      }
+
+      function bigSub(a, b) {
+        if (b === '0') {
+          return a;
+        }
+        return bigAdd(a, b.charAt(0) === '-' ? b.slice(1) : '-' + b);
+      }
+
+      function bigMul(a, b) {
+        var na = a.charAt(0) === '-';
+        var nb = b.charAt(0) === '-';
+        var sa = na ? a.slice(1) : a;
+        var sb = nb ? b.slice(1) : b;
+        if (sa === '0' || sb === '0') {
+          return '0';
+        }
+        var res = [];
+        var i;
+        var j;
+        for (i = 0; i < sa.length + sb.length; i++) {
+          res.push(0);
+        }
+        for (i = 0; i < sa.length; i++) {
+          var da = sa.charCodeAt(sa.length - 1 - i) - 48;
+          if (da === 0) {
+            continue;
+          }
+          for (j = 0; j < sb.length; j++) {
+            res[i + j] += da * (sb.charCodeAt(sb.length - 1 - j) - 48);
+          }
+        }
+        var carry = 0;
+        var out = '';
+        for (i = 0; i < res.length; i++) {
+          var v = res[i] + carry;
+          out = String(v % 10) + out;
+          carry = Math.floor(v / 10);
+        }
+        out = trimZero(out);
+        if (out.length > MAX_LEN) {
+          return null;
+        }
+        return (na !== nb) ? '-' + out : out;
+      }
+
+      function bigMod(a, m) {
+        if (m === '1') {
+          return '0';
+        }
+        var rem = '';
+        for (var i = 0; i < a.length; i++) {
+          rem = trimZero(rem + a.charAt(i));
+          while (bigCmpAbs(rem, m) >= 0) {
+            rem = bigSubAbs(rem, m);
+          }
+        }
+        return trimZero(rem);
+      }
+
+      function bigDiv2(s) {
+        var out = '';
+        var carry = 0;
+        for (var i = 0; i < s.length; i++) {
+          var d = carry * 10 + (s.charCodeAt(i) - 48);
+          out += String(Math.floor(d / 2));
+          carry = d % 2;
+        }
+        return trimZero(out);
+      }
+
+      function bigMulMod(a, b, m) {
+        var p = bigMul(a, b);
+        if (p === null) {
+          return null;
+        }
+        return bigMod(p, m);
+      }
+
+      function bigModPow(a, e, m) {
+        var result = '1';
+        var base = bigMod(a, m);
+        while (bigCmpAbs(e, '0') > 0) {
+          if (bigMod(e, '2') === '1') {
+            result = bigMulMod(result, base, m);
+            if (result === null) {
+              return null;
+            }
+          }
+          base = bigMulMod(base, base, m);
+          if (base === null) {
+            return null;
+          }
+          e = bigDiv2(e);
+        }
+        return result;
+      }
+
+      function bigPow(base, exp) {
+        var neg = base.charAt(0) === '-';
+        var s = neg ? base.slice(1) : base;
+        var result = '1';
+        var b = s;
+        var e = exp;
+        while (bigCmpAbs(e, '0') > 0) {
+          if (bigMod(e, '2') === '1') {
+            result = bigMul(result, b);
+            if (result === null) {
+              return null;
+            }
+          }
+          b = bigMul(b, b);
+          if (b === null) {
+            return null;
+          }
+          e = bigDiv2(e);
+        }
+        if (neg && bigMod(exp, '2') === '1' && result !== '0') {
+          result = '-' + result;
+        }
+        return result;
+      }
+
+      function bigGcd(a, b) {
+        var x = trimZero(a.charAt(0) === '-' ? a.slice(1) : a);
+        var y = trimZero(b.charAt(0) === '-' ? b.slice(1) : b);
+        if (x === '0') {
+          return y;
+        }
+        if (y === '0') {
+          return x;
+        }
+        while (y !== '0') {
+          var t = bigMod(x, y);
+          x = y;
+          y = t;
+        }
+        return x;
+      }
+
+      var SMALL_PRIMES = [5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+
+      function isPrime(n) {
+        var s = trimZero(n);
+        if (s === '2' || s === '3') {
+          return true;
+        }
+        if (bigMod(s, '2') === '0' || bigMod(s, '3') === '0') {
+          return false;
+        }
+        for (var i = 0; i < SMALL_PRIMES.length; i++) {
+          var p = String(SMALL_PRIMES[i]);
+          if (bigCmpAbs(s, p) === 0) {
+            return true;
+          }
+          if (bigMod(s, p) === '0') {
+            return false;
+          }
+        }
+        var n1 = bigSub(s, '1');
+        var d = n1;
+        var r = 0;
+        while (bigMod(d, '2') === '0') {
+          d = bigDiv2(d);
+          r++;
+        }
+        var bases = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+        for (var b = 0; b < bases.length; b++) {
+          var a = String(bases[b]);
+          if (bigCmpAbs(a, s) >= 0) {
+            continue;
+          }
+          var x = bigModPow(a, d, s);
+          if (x === null) {
+            return null;
+          }
+          if (x === '1' || bigCmpAbs(x, n1) === 0) {
+            continue;
+          }
+          var witness = true;
+          for (var t = 0; t < r - 1; t++) {
+            x = bigMulMod(x, x, s);
+            if (x === null) {
+              return null;
+            }
+            if (bigCmpAbs(x, n1) === 0) {
+              witness = false;
+              break;
+            }
+            if (x === '1') {
+              break;
+            }
+          }
+          if (witness) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function bigFactorial(n) {
+        var res = '1';
+        for (var i = 2; i <= n; i++) {
+          res = bigMul(res, String(i));
+          if (res === null) {
+            return null;
+          }
+        }
+        return res;
+      }
+
+      function digitCount(v) {
+        var s = v.charAt(0) === '-' ? v.slice(1) : v;
+        return s === '0' ? 1 : s.length;
+      }
+
+      function validateInt(v, fieldName) {
+        if (!/^[+-]?\d+$/.test(v)) {
+          return fieldName + ' 必须是整数';
+        }
+        var digits = v.charAt(0) === '-' ? v.slice(1) : v;
+        if (digits.length > MAX_INPUT_LEN) {
+          return fieldName + ' 位数过多（最多 ' + MAX_INPUT_LEN + ' 位）';
+        }
+        return null;
+      }
+
+      function run() {
+        var mode = modeEl.value;
+        var op = opEl.value;
+        if (num1El.value.trim() === '') {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        var a = num1El.value.trim();
+        var err = validateInt(a, '整数 A');
+        if (err) {
+          setStatus(err, 'error');
+          return;
+        }
+        if (mode === 'single') {
+          if (op === 'factorial') {
+            if (a.charAt(0) === '-') {
+              setStatus('阶乘要求非负整数', 'error');
+              return;
+            }
+            var n = parseInt(a, 10);
+            if (String(n) !== trimZero(a)) {
+              setStatus('阶乘数值过大，请直接输入不超过 ' + MAX_FACT + ' 的数字', 'error');
+              return;
+            }
+            if (n > MAX_FACT) {
+              setStatus('阶乘上限为 ' + MAX_FACT + '（再大计算量过大）', 'error');
+              return;
+            }
+            var f = bigFactorial(n);
+            if (f === null) {
+              setStatus('结果超过 ' + MAX_LEN + ' 位，无法计算', 'error');
+              return;
+            }
+            outputText.innerHTML = '<span class="res-label">结果 ' + htmlEscape(String(n)) + '!</span><span class="res-value">' + htmlEscape(f) + '</span><div class="res-meta">共 ' + digitCount(f) + ' 位</div>';
+            setStatus('计算完成');
+            return;
+          }
+          if (a.charAt(0) === '-') {
+            setStatus('素性检查要求正整数', 'error');
+            return;
+          }
+          var p = isPrime(a);
+          if (p === null) {
+            setStatus('数位过多或计算量过大', 'error');
+            return;
+          }
+          outputText.innerHTML = '<span class="res-label">素性检查结果</span><span class="res-value">' + htmlEscape(a) + (p ? ' 是素数' : ' 不是素数（合数）') + '</span>';
+          setStatus('检查完成');
+          return;
+        }
+        if (num2El.value.trim() === '') {
+          setStatus('请填写整数 B', 'error');
+          return;
+        }
+        var b = num2El.value.trim();
+        err = validateInt(b, '整数 B');
+        if (err) {
+          setStatus(err, 'error');
+          return;
+        }
+        var res;
+        var label;
+        if (op === 'add') {
+          res = bigAdd(a, b);
+          label = 'A + B';
+        } else if (op === 'subtract') {
+          res = bigSub(a, b);
+          label = 'A - B';
+        } else if (op === 'multiply') {
+          res = bigMul(a, b);
+          label = 'A × B';
+        } else if (op === 'power') {
+          if (b.charAt(0) === '-') {
+            setStatus('幂运算要求指数为非负整数', 'error');
+            return;
+          }
+          if (bigCmpAbs(b, MAX_EXP) > 0) {
+            setStatus('指数过大（最多 ' + MAX_EXP + '）', 'error');
+            return;
+          }
+          res = bigPow(a, b);
+          label = 'A^B';
+        } else {
+          res = bigGcd(a, b);
+          label = 'gcd(A, B)';
+        }
+        if (res === null) {
+          setStatus('结果超过 ' + MAX_LEN + ' 位，无法计算', 'error');
+          return;
+        }
+        outputText.innerHTML = '<span class="res-label">结果（' + htmlEscape(label) + '）</span><span class="res-value">' + htmlEscape(res) + '</span><div class="res-meta">共 ' + digitCount(res) + ' 位</div>';
+        setStatus('计算完成');
+      }
+
+      function syncMode() {
+        var single = modeEl.value === 'single';
+        num2Field.style.display = single ? 'none' : '';
+        opEl.innerHTML = '';
+        if (single) {
+          var o1 = document.createElement('option');
+          o1.value = 'factorial';
+          o1.textContent = '阶乘 A!';
+          var o2 = document.createElement('option');
+          o2.value = 'isprime';
+          o2.textContent = '素性检查（Miller-Rabin）';
+          opEl.appendChild(o1);
+          opEl.appendChild(o2);
+        } else {
+          var ops = [
+            ['add', '加法 A + B'],
+            ['subtract', '减法 A - B'],
+            ['multiply', '乘法 A × B'],
+            ['power', '幂 A^B（B 为非负整数）'],
+            ['gcd', '最大公约数']
+          ];
+          for (var i = 0; i < ops.length; i++) {
+            var o = document.createElement('option');
+            o.value = ops[i][0];
+            o.textContent = ops[i][1];
+            opEl.appendChild(o);
+          }
+        }
+      }
+
+      modeEl.addEventListener('change', function () {
+        syncMode();
+        run();
+      });
+      calcBtn.addEventListener('click', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

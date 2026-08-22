@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL 查询参数构建器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .param-row { display: flex; gap: var(--space-1); margin-bottom: var(--space-1); align-items: center; }
+    .param-row .input { flex: 1; min-width: 0; }
+    .param-row .key-input { flex: 0 0 220px; }
+    .param-row .del-btn { flex: 0 0 auto; }
+    .btn-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+    .base-row { margin-bottom: var(--space-2); }
+    .preview-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-1); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>URL 查询参数构建器</h1>
+    <p class="tool-desc">动态维护键值对参数表，实时生成 URL 编码的查询字符串、完整 URL 与解码后的可读预览，一键复制查询串。</p>
+    <div class="card">
+      <div class="base-row">
+        <input id="baseUrl" class="input js-focus-input" placeholder="基础 URL，如 https://api.example.com/search">
+      </div>
+      <div id="rowsBox"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="addBtn">+ 添加参数</button>
+        <button class="btn btn-secondary" id="clearBtn">清空参数</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var output = document.getElementById('outputText');
+      var queryText = '';
+
+      function rowHtml(key, value) {
+        return '<div class="param-row">' +
+          '<input class="input key-input" placeholder="参数名，如 keyword" value="' + htmlEscape(key) + '">' +
+          '<input class="input value-input" placeholder="参数值，如 hello world" value="' + htmlEscape(value) + '">' +
+          '<button class="btn btn-secondary del-btn">删除</button>' +
+          '</div>';
+      }
+
+      function renderRows() {
+        var box = document.getElementById('rowsBox');
+        box.innerHTML = rowHtml('', '') + rowHtml('', '') + rowHtml('', '');
+        bindRows();
+      }
+
+      function bindRows() {
+        var rows = document.querySelectorAll('#rowsBox .param-row');
+        for (var i = 0; i < rows.length; i++) {
+          var inputs = rows[i].querySelectorAll('input');
+          inputs[0].addEventListener('input', build);
+          inputs[1].addEventListener('input', build);
+          rows[i].querySelector('.del-btn').addEventListener('click', function (e) {
+            var row = e.target.parentNode;
+            if (document.querySelectorAll('#rowsBox .param-row').length <= 1) {
+              setStatus('至少保留一个参数行', 'error');
+              return;
+            }
+            row.parentNode.removeChild(row);
+            build();
+          });
+        }
+      }
+
+      function collectPairs() {
+        var pairs = [];
+        var rows = document.querySelectorAll('#rowsBox .param-row');
+        for (var i = 0; i < rows.length; i++) {
+          var inputs = rows[i].querySelectorAll('input');
+          var key = inputs[0].value.trim();
+          var val = inputs[1].value;
+          if (!key) continue;
+          pairs.push({ key: key, value: val });
+        }
+        return pairs;
+      }
+
+      function build() {
+        var base = document.getElementById('baseUrl').value.trim();
+        var pairs = collectPairs();
+        var encoded = [];
+        var readable = [];
+        for (var i = 0; i < pairs.length; i++) {
+          var ek = '';
+          var ev = '';
+          try {
+            ek = encodeURIComponent(pairs[i].key);
+            ev = encodeURIComponent(pairs[i].value);
+          } catch (e) {
+            output.innerHTML = '';
+            queryText = '';
+            setStatus('参数包含无法编码的字符（如孤立代理项）', 'error');
+            return;
+          }
+          encoded.push(ek + '=' + ev);
+          readable.push(decodeURIComponent(ek) + ' = ' + decodeURIComponent(ev));
+        }
+        queryText = encoded.join('&');
+        var full = base;
+        if (queryText) {
+          var sep = '?';
+          if (base.indexOf('?') !== -1) sep = '&';
+          full = base + sep + queryText;
+        }
+        var lines = [];
+        lines.push('【查询字符串】');
+        lines.push(queryText || '（暂无参数）');
+        lines.push('');
+        lines.push('【完整 URL】');
+        lines.push(full || '（请输入基础 URL 或添加参数）');
+        lines.push('');
+        lines.push('【解码预览】');
+        if (readable.length) {
+          for (var k = 0; k < readable.length; k++) lines.push(readable[k]);
+        } else {
+          lines.push('（暂无参数）');
+        }
+        var text = lines.join('\n');
+        output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(text) + '</pre>';
+        setStatus(pairs.length ? '已生成 ' + pairs.length + ' 个参数' : '');
+      }
+
+      document.getElementById('baseUrl').addEventListener('input', build);
+      document.getElementById('addBtn').addEventListener('click', function () {
+        var box = document.getElementById('rowsBox');
+        var div = document.createElement('div');
+        div.innerHTML = rowHtml('', '');
+        box.appendChild(div.firstChild);
+        bindRows();
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        var box = document.getElementById('rowsBox');
+        box.innerHTML = '';
+        for (var i = 0; i < 3; i++) {
+          var div = document.createElement('div');
+          div.innerHTML = rowHtml('', '');
+          box.appendChild(div.firstChild);
+        }
+        bindRows();
+        build();
+        setStatus('已重置为 3 行空参数');
+      });
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!queryText) {
+          setStatus('当前没有可复制的查询串', 'error');
+          return;
+        }
+        copyToClipboard(queryText, this);
+        setStatus('已复制查询字符串');
+      });
+      renderRows();
+    })();
+  </script>
+</body>
+</html>

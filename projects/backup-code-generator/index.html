@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2FA 备份码生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .bk-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .bk-row .field { flex:1; min-width:120px; }
+    .bk-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .bk-hint { font-size:var(--font-size-sm); color:var(--color-text-secondary); line-height:1.6; margin-bottom:var(--space-2); }
+    .bk-codes { font-family:var(--font-mono); font-size:var(--font-size-base); line-height:1.9; word-break:break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1>2FA 备份码生成器</h1>
+    <p class="tool-desc">生成一次性 2FA 备份码，用于双因素认证失效时的应急登录。</p>
+    <div class="card">
+      <p class="bk-hint">备份码仅生成一次，请立即打印或存入密码管理器。字符集已剔除 0/O/1/l/I 等易混淆字符，每 4 位一组便于抄写。</p>
+      <div class="bk-row">
+        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input js-focus-input" type="number" value="10" min="1" max="50"></div>
+        <div class="field"><label for="lenVal">每码位数</label><input id="lenVal" class="input" type="number" value="8" min="4" max="32"></div>
+      </div>
+      <div><button id="genBtn" class="btn btn-primary">重新生成</button></div>
+    </div>
+    <div id="resultBox" class="output-box"><span id="outputText" class="bk-codes" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制全部</button></div>
+  </main>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>(function(){
+    var countEl = document.getElementById('countVal');
+    var lenEl = document.getElementById('lenVal');
+    var genBtn = document.getElementById('genBtn');
+    var outputEl = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var lastPlain = '';
+
+    function formatCode(code) {
+      var parts = [];
+      for (var i = 0; i < code.length; i += 4) {
+        parts.push(code.slice(i, i + 4));
+      }
+      return parts.join('-');
+    }
+
+    function generate() {
+      var count = parseInt(countEl.value, 10);
+      var len = parseInt(lenEl.value, 10);
+      if (isNaN(count) || count < 1 || count > 50) {
+        setStatus('数量需为 1-50 之间的整数', 'error');
+        return;
+      }
+      if (isNaN(len) || len < 4 || len > 32) {
+        setStatus('每码位数需为 4-32 之间的整数', 'error');
+        return;
+      }
+      var codes = [];
+      for (var n = 0; n < count; n++) {
+        var bytes = new Uint8Array(len);
+        crypto.getRandomValues(bytes);
+        var code = '';
+        for (var i = 0; i < len; i++) {
+          code += chars[bytes[i] % chars.length];
+        }
+        codes.push(formatCode(code));
+      }
+      lastPlain = codes.join('\n');
+      outputEl.innerHTML = htmlEscape(lastPlain).replace(/\n/g, '<br>');
+      setStatus('已生成 ' + count + ' 个备份码，请立即妥善保存');
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', function() {
+      if (lastPlain) {
+        copyToClipboard(lastPlain, copyBtn);
+        setStatus('已复制全部备份码');
+      }
+    });
+    generate();
+  })();</script>
+</body>
+</html>

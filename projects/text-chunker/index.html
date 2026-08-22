@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本分块器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .chunk-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-top:var(--space-2)}
+    .chunk-controls .input{flex:1 1 160px}
+    .chunk-list{margin-top:var(--space-2)}
+    .chunk-item{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);margin-bottom:var(--space-2);position:relative;padding-right:72px}
+    .chunk-item .head{font-size:var(--font-size-sm);font-weight:600;margin-bottom:var(--space-1);color:var(--color-text-secondary)}
+    .chunk-item .body{font-family:var(--font-mono);font-size:var(--font-size-xs);line-height:1.6;white-space:pre-wrap;word-break:break-all;background:var(--color-bg-soft);border-radius:var(--radius-sm);padding:var(--space-1)}
+    .chunk-item .copy-chunk{position:absolute;top:var(--space-2);right:var(--space-2);font-size:var(--font-size-xs)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>文本分块器</h1>
+    <p class="tool-desc">按字符数、行数或段落将长文本切分为多个块，支持逐块复制。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要分块的文本..." style="min-height:140px;"></textarea>
+      <div class="chunk-controls">
+        <input id="sizeInput" type="text" class="input" placeholder="每块数量（字符/行）">
+        <select id="modeSelect" class="input">
+          <option value="char">按字符硬切</option>
+          <option value="line">按行分组</option>
+          <option value="para">按段落（空行分隔）</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var sizeEl = document.getElementById('sizeInput');
+      var modeEl = document.getElementById('modeSelect');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var chunks = [];
+
+      function codePoints(str) {
+        var arr = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          if (code >= 0xD800 && code <= 0xDBFF && i + 1 < str.length) {
+            var low = str.charCodeAt(i + 1);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+              arr.push(str.slice(i, i + 2));
+              i++;
+              continue;
+            }
+          }
+          arr.push(str.charAt(i));
+        }
+        return arr;
+      }
+
+      function parseSize() {
+        var raw = sizeEl.value;
+        if (raw === '') {
+          setStatus('请输入每块数量', 'error');
+          return null;
+        }
+        var n = parseInt(raw, 10);
+        if (isNaN(n) || n < 1) {
+          setStatus('每块数量必须是大于等于 1 的整数', 'error');
+          return null;
+        }
+        return n;
+      }
+
+      function build() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          chunks = [];
+          setStatus('');
+          return;
+        }
+        var mode = modeEl.value;
+        var n = 0;
+        if (mode === 'char' || mode === 'line') {
+          n = parseSize();
+          if (n === null) {
+            outputEl.innerHTML = '';
+            chunks = [];
+            return;
+          }
+        }
+        var list = [];
+        if (mode === 'char') {
+          var cps = codePoints(text);
+          for (var i = 0; i < cps.length; i += n) {
+            list.push(cps.slice(i, i + n).join(''));
+          }
+        } else if (mode === 'line') {
+          var lines = text.split(/\r?\n/);
+          for (var j = 0; j < lines.length; j += n) {
+            list.push(lines.slice(j, j + n).join('\n'));
+          }
+        } else {
+          var paras = text.split(/\n\s*\n+/);
+          for (var k = 0; k < paras.length; k++) {
+            var p = paras[k].replace(/^\s+|\s+$/g, '');
+            if (p) list.push(p);
+          }
+        }
+        chunks = list;
+        var html = [];
+        html.push('<div class="chunk-list">');
+        for (var m = 0; m < list.length; m++) {
+          html.push('<div class="chunk-item"><div class="head">块 ' + (m + 1) + ' · ' + list[m].length + ' 字符</div>');
+          html.push('<div class="body">' + htmlEscape(list[m]) + '</div>');
+          html.push('<button class="btn btn-secondary copy-chunk" data-idx="' + m + '">复制</button></div>');
+        }
+        html.push('</div>');
+        outputEl.innerHTML = html.join('');
+        setStatus('共切分为 ' + list.length + ' 块');
+      }
+
+      function copyOne(idx, btnEl) {
+        if (idx >= 0 && idx < chunks.length) {
+          copyToClipboard(chunks[idx], btnEl);
+        }
+      }
+
+      outputEl.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.className && t.className.indexOf('copy-chunk') !== -1) {
+          var idx = parseInt(t.getAttribute('data-idx'), 10);
+          copyOne(idx, t);
+        }
+      });
+      inputEl.addEventListener('input', build);
+      sizeEl.addEventListener('input', build);
+      modeEl.addEventListener('change', build);
+      copyBtn.addEventListener('click', function () {
+        if (chunks.length) copyToClipboard(chunks.join('\n\n'), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

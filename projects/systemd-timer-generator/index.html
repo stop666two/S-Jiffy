@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>systemd 定时器生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-3); }
+    .form-grid .full { grid-column: 1 / -1; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    .hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: 4px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>systemd 定时器生成器</h1>
+    <p class="tool-desc">生成 systemd 定时器与配套服务文件，支持 cron 表达式自动转换。</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label>目标服务名</label>
+          <input id="serviceName" class="input js-focus-input" placeholder="如 backup">
+        </div>
+        <div class="field">
+          <label>触发方式</label>
+          <select id="trigger" class="input">
+            <option value="daily">每天（OnCalendar=*-*-* 00:00:00）</option>
+            <option value="hourly">每小时（*-*-* *:00:00）</option>
+            <option value="weekly">每周（Mon *-*-* 00:00:00）</option>
+            <option value="monthly">每月（*-*-01 00:00:00）</option>
+            <option value="reboot">开机后（OnBootSec）</option>
+            <option value="custom">自定义 cron 表达式</option>
+          </select>
+        </div>
+        <div class="field full" id="cronRow" style="display:none;">
+          <label>cron 表达式（分 时 日 月 周）</label>
+          <input id="cronExpr" class="input" value="0 2 * * *" placeholder="如 0 2 * * *">
+          <div class="hint" id="cronPreview"></div>
+        </div>
+        <div class="field">
+          <label>精度 AccuracySec</label>
+          <input id="accuracy" class="input" value="1min" placeholder="如 1min / 5s / 1h">
+        </div>
+        <div class="field">
+          <label>延迟启动（OnBootSec，reboot 触发时）</label>
+          <input id="bootDelay" class="input" value="5min" placeholder="如 5min">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成定时器</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var nameInput = document.getElementById('serviceName');
+      var triggerSelect = document.getElementById('trigger');
+      var cronRow = document.getElementById('cronRow');
+      var cronInput = document.getElementById('cronExpr');
+      var cronPreview = document.getElementById('cronPreview');
+      var accInput = document.getElementById('accuracy');
+      var bootInput = document.getElementById('bootDelay');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      function pad2(v) {
+        var n = parseInt(v, 10);
+        if (/^\d+$/.test(v) && n < 10) return '0' + n;
+        return v;
+      }
+
+      function inRange(v, min, max, name) {
+        if (v === '*') return true;
+        if (/^\*\//.test(v)) {
+          var step = parseInt(v.slice(2), 10);
+          if (isNaN(step) || step < 1) return false;
+          return true;
+        }
+        if (!/^\d+$/.test(v)) return false;
+        var n = parseInt(v, 10);
+        if (n < min || n > max) { setStatus('cron 字段 ' + name + ' 取值超出范围', 'error'); return false; }
+        return true;
+      }
+
+      function cronToOnCalendar(expr) {
+        var parts = expr.trim().split(/\s+/);
+        if (parts.length !== 5) { setStatus('cron 表达式必须包含 5 个字段（分 时 日 月 周）', 'error'); return null; }
+        var minute = parts[0];
+        var hour = parts[1];
+        var dom = parts[2];
+        var month = parts[3];
+        var dow = parts[4];
+        if (!inRange(minute, 0, 59, '分')) return null;
+        if (!inRange(hour, 0, 23, '时')) return null;
+        if (!inRange(dom, 1, 31, '日')) return null;
+        if (!inRange(month, 1, 12, '月')) return null;
+        if (!inRange(dow, 0, 7, '周')) return null;
+        var dowLabel = '';
+        if (dow !== '*') {
+          var d = parseInt(dow, 10) % 7;
+          dowLabel = DAYS[d] + ' ';
+        }
+        return dowLabel + month + '-' + dom + ' ' + pad2(hour) + ':' + pad2(minute) + ':00';
+      }
+
+      function buildTimer() {
+        var name = nameInput.value.trim();
+        var acc = accInput.value.trim();
+        var boot = bootInput.value.trim();
+        if (!name) { setStatus('请输入目标服务名', 'error'); return null; }
+        if (!/^[a-zA-Z0-9._-]+$/.test(name)) { setStatus('服务名只能包含字母、数字、点、下划线和连字符', 'error'); return null; }
+        if (!acc) { setStatus('请输入精度 AccuracySec', 'error'); return null; }
+        if (!/^\d+(\.\d+)?(s|min|m|h|d|w|month|y)$/.test(acc)) { setStatus('精度格式应为数字加单位（s/min/h/d 等）', 'error'); return null; }
+
+        var timer = '[Unit]\n';
+        timer += 'Description=Timer for ' + name + '\n\n';
+        timer += '[Timer]\n';
+        var mode = triggerSelect.value;
+        if (mode === 'reboot') {
+          if (!boot) { setStatus('请输入延迟启动时长', 'error'); return null; }
+          if (!/^\d+(\.\d+)?(s|min|m|h|d)$/.test(boot)) { setStatus('延迟启动格式应为数字加单位（s/min/h/d）', 'error'); return null; }
+          timer += 'OnBootSec=' + boot + '\n';
+        } else if (mode === 'custom') {
+          var cal = cronToOnCalendar(cronInput.value);
+          if (cal === null) return null;
+          timer += 'OnCalendar=' + cal + '\n';
+        } else {
+          var PRESETS = {
+            daily: '*-*-* 00:00:00',
+            hourly: '*-*-* *:00:00',
+            weekly: 'Mon *-*-* 00:00:00',
+            monthly: '*-*-01 00:00:00'
+          };
+          timer += 'OnCalendar=' + PRESETS[mode] + '\n';
+        }
+        timer += 'AccuracySec=' + acc + '\n';
+        timer += 'Persistent=true\n\n';
+        timer += '[Install]\n';
+        timer += 'WantedBy=timers.target\n';
+
+        var service = '[Unit]\n';
+        service += 'Description=Run ' + name + ' on schedule\n\n';
+        service += '[Service]\n';
+        service += 'Type=oneshot\n';
+        service += 'ExecStart=/usr/bin/systemctl start ' + name + '.service\n';
+
+        var enable = '启用步骤：\n';
+        enable += 'sudo cp ' + name + '.timer /etc/systemd/system/\n';
+        enable += 'sudo cp ' + name + '.service /etc/systemd/system/\n';
+        enable += 'sudo systemctl daemon-reload\n';
+        enable += 'sudo systemctl enable --now ' + name + '.timer\n';
+        enable += 'sudo systemctl list-timers ' + name + '.timer\n';
+
+        return name + '.timer\n' + timer + '\n' + name + '.service\n' + service + '\n' + enable;
+      }
+
+      function syncCronRow() {
+        var show = triggerSelect.value === 'custom';
+        cronRow.style.display = show ? 'block' : 'none';
+        if (show) {
+          var cal = cronToOnCalendar(cronInput.value);
+          if (cal !== null) cronPreview.textContent = '转换结果：OnCalendar=' + cal;
+          else cronPreview.textContent = '';
+        }
+      }
+
+      triggerSelect.addEventListener('change', syncCronRow);
+      cronInput.addEventListener('input', syncCronRow);
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var out = buildTimer();
+        if (out === null) { output.textContent = ''; return; }
+        output.textContent = out;
+        setStatus('定时器与服务文件已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

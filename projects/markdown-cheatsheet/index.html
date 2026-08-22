@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 速查卡 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .md-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-2); }
+    .md-controls input { width: 240px; }
+    .md-cats { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-2); }
+    .md-cat-btn { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; font-size: var(--font-size-sm); cursor: pointer; background: var(--color-bg); color: var(--color-text-secondary); }
+    .md-cat-btn.on { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+    .md-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    @media (max-width: 720px) { .md-grid { grid-template-columns: 1fr; } }
+    .md-item { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); cursor: pointer; }
+    .md-item:hover { border-color: var(--color-accent); box-shadow: var(--shadow-focus); }
+    .md-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-1); }
+    .md-item-name { font-weight: 600; font-size: var(--font-size-sm); }
+    .md-item-cat { font-size: var(--font-size-xs); color: var(--color-text-secondary); background: var(--color-bg-soft); padding: 1px 8px; border-radius: 999px; }
+    .md-syntax { font-family: var(--font-mono); font-size: var(--font-size-sm); background: var(--color-bg-soft); border-radius: var(--radius-sm); padding: 6px 10px; margin-bottom: var(--space-1); white-space: pre-wrap; word-break: break-all; }
+    .md-preview { font-size: var(--font-size-sm); line-height: 1.6; border-left: 3px solid var(--color-border); padding-left: var(--space-2); }
+    .md-preview code { font-family: var(--font-mono); background: var(--color-bg-soft); padding: 1px 5px; border-radius: var(--radius-sm); font-size: 12px; }
+    .md-preview pre { background: var(--color-bg-soft); border-radius: var(--radius-sm); padding: var(--space-1); overflow-x: auto; margin: 4px 0; }
+    .md-preview pre code { background: none; padding: 0; }
+    .md-preview blockquote { margin: 4px 0; padding-left: var(--space-2); border-left: 3px solid var(--color-border); color: var(--color-text-secondary); }
+    .md-preview table { border-collapse: collapse; font-size: 12px; margin: 4px 0; }
+    .md-preview th, .md-preview td { border: 1px solid var(--color-border); padding: 2px 8px; }
+    .md-preview ul, .md-preview ol { margin: 4px 0; padding-left: 20px; }
+    .md-preview img { display: none; }
+    .md-empty { color: var(--color-text-secondary); font-size: var(--font-size-sm); padding: var(--space-2) 0; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Markdown 速查卡</h1>
+    <p class="tool-desc">常用 Markdown 语法与渲染预览，点击条目复制语法。</p>
+    <div class="card">
+      <div class="md-controls">
+        <input id="searchInput" type="text" class="input js-focus-input" placeholder="搜索语法关键词...">
+      </div>
+      <div class="md-cats" id="catBar"></div>
+      <div class="md-grid" id="mdGrid"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var searchInput = document.getElementById('searchInput');
+    var catBar = document.getElementById('catBar');
+    var mdGrid = document.getElementById('mdGrid');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var currentCat = '全部';
+    var lastCopy = '';
+
+    var items = [
+      { cat: '标题', name: '标题', syntax: '# 一级标题\n## 二级标题\n### 三级标题', preview: '<h4 style="margin:2px 0;">一级标题</h4><h5 style="margin:2px 0;">二级标题</h5><h6 style="margin:2px 0;">三级标题</h6>' },
+      { cat: '文本样式', name: '粗体', syntax: '**加粗文字**', preview: '<strong>加粗文字</strong>' },
+      { cat: '文本样式', name: '斜体', syntax: '*斜体文字*', preview: '<em>斜体文字</em>' },
+      { cat: '文本样式', name: '删除线', syntax: '~~删除线文字~~', preview: '<del>删除线文字</del>' },
+      { cat: '列表', name: '无序列表', syntax: '- 项目一\n- 项目二', preview: '<ul><li>项目一</li><li>项目二</li></ul>' },
+      { cat: '列表', name: '有序列表', syntax: '1. 第一项\n2. 第二项', preview: '<ol><li>第一项</li><li>第二项</li></ol>' },
+      { cat: '列表', name: '任务列表', syntax: '- [x] 已完成任务\n- [ ] 待办任务', preview: '<ul><li><input type="checkbox" checked disabled> 已完成任务</li><li><input type="checkbox" disabled> 待办任务</li></ul>' },
+      { cat: '链接与图片', name: '链接', syntax: '[链接文字](https://example.com)', preview: '<a href="#">链接文字</a>' },
+      { cat: '链接与图片', name: '图片', syntax: '![替代文字](图片地址)', preview: '<span style="color:var(--color-text-secondary);">[图片] 替代文字</span>' },
+      { cat: '代码', name: '行内代码', syntax: '这是 `code` 行内代码', preview: '这是 <code>code</code> 行内代码' },
+      { cat: '代码', name: '代码块', syntax: '```js\nconst x = 1;\nconsole.log(x);\n```', preview: '<pre><code>const x = 1;\nconsole.log(x);</code></pre>' },
+      { cat: '表格', name: '表格', syntax: '| 列1 | 列2 |\n| --- | --- |\n| A | B |', preview: '<table><thead><tr><th>列1</th><th>列2</th></tr></thead><tbody><tr><td>A</td><td>B</td></tr></tbody></table>' },
+      { cat: '引用与分割线', name: '引用', syntax: '> 引用的文字', preview: '<blockquote>引用的文字</blockquote>' },
+      { cat: '引用与分割线', name: '水平线', syntax: '---', preview: '<hr style="margin:4px 0;">' },
+      { cat: '特殊', name: '转义字符', syntax: '\\*星号不被解析\\*', preview: '*星号不被解析*' },
+      { cat: '特殊', name: 'HTML', syntax: '<span style="color:red">红色文字</span>', preview: '<span style="color:var(--color-error);">红色文字</span>' },
+      { cat: '特殊', name: '行尾换行', syntax: '第一行结尾加两个空格  \n换到第二行', preview: '第一行结尾加两个空格<br>换到第二行' },
+      { cat: '特殊', name: '引用代码块', syntax: '```\n纯文本代码块\n```', preview: '<pre><code>纯文本代码块</code></pre>' }
+    ];
+
+    var cats = ['全部', '标题', '文本样式', '列表', '链接与图片', '代码', '表格', '引用与分割线', '特殊'];
+
+    function buildCats() {
+      var html = '';
+      for (var i = 0; i < cats.length; i++) {
+        html += '<button class="md-cat-btn' + (cats[i] === currentCat ? ' on' : '') + '" data-cat="' + cats[i] + '">' + htmlEscape(cats[i]) + '</button>';
+      }
+      catBar.innerHTML = html;
+      var btns = catBar.querySelectorAll('.md-cat-btn');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].onclick = (function (cat) {
+          return function () { currentCat = cat; buildCats(); render(); };
+        })(cats[j]);
+      }
+    }
+
+    function render() {
+      var q = searchInput.value.toLowerCase();
+      var filtered = [];
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (currentCat !== '全部' && it.cat !== currentCat) { continue; }
+        if (q && (it.name.toLowerCase().indexOf(q) === -1) && (it.syntax.toLowerCase().indexOf(q) === -1)) { continue; }
+        filtered.push(it);
+      }
+      if (!filtered.length) {
+        mdGrid.innerHTML = '<div class="md-empty">没有匹配的条目</div>';
+        outputText.innerHTML = '';
+        return;
+      }
+      var html = '';
+      for (var k = 0; k < filtered.length; k++) {
+        html += '<div class="md-item" data-idx="' + k + '">';
+        html += '<div class="md-item-head"><span class="md-item-name">' + htmlEscape(filtered[k].name) + '</span><span class="md-item-cat">' + htmlEscape(filtered[k].cat) + '</span></div>';
+        html += '<div class="md-syntax">' + htmlEscape(filtered[k].syntax) + '</div>';
+        html += '<div class="md-preview">' + filtered[k].preview + '</div>';
+        html += '</div>';
+      }
+      mdGrid.innerHTML = html;
+      var cards = mdGrid.querySelectorAll('.md-item');
+      for (var m = 0; m < cards.length; m++) {
+        cards[m].onclick = (function (idx) {
+          return function () {
+            var it = filtered[idx];
+            lastCopy = it.syntax;
+            outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · <span class="md-item-cat">' + htmlEscape(it.cat) + '</span></div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.syntax) + '</div>';
+            copyBtn.onclick = function () { copyToClipboard(lastCopy, copyBtn); };
+            setStatus('已选中「' + it.name + '」，点击复制按钮可复制语法');
+          };
+        })(m);
+      }
+    }
+
+    searchInput.addEventListener('input', render);
+    buildCats();
+    render();
+  })();
+  </script>
+</body>
+</html>

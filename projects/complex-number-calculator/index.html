@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复数计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cpx-grid { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .cpx-field { display: flex; flex-direction: column; gap: var(--space-1); }
+    .cpx-field label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .op-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .op-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+    .res-item { background: var(--color-bg-soft); border-radius: var(--radius-md); padding: var(--space-2); }
+    .res-item .res-label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .res-item .res-value { font-size: var(--font-size-base); font-family: var(--font-mono); color: var(--color-text-primary); display: block; margin-top: var(--space-1); word-break: break-all; }
+    .main-result { font-size: var(--font-size-lg); font-family: var(--font-mono); color: var(--color-text-primary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>复数计算器</h1>
+    <p class="tool-desc">输入两个复数（如 3+4i），执行加减乘除、模、共轭与辐角运算，并给出极坐标形式。</p>
+    <div class="card">
+      <div class="cpx-grid">
+        <div class="cpx-field">
+          <label for="z1Input">复数 z1（格式 a+bi）</label>
+          <input type="text" id="z1Input" class="input js-focus-input" placeholder="如 3+4i">
+        </div>
+        <div class="cpx-field" id="z2Field">
+          <label for="z2Input">复数 z2（格式 a+bi）</label>
+          <input type="text" id="z2Input" class="input" placeholder="如 1-2i">
+        </div>
+      </div>
+      <div class="op-row">
+        <label for="opSelect">运算</label>
+        <select id="opSelect" class="input">
+          <option value="add">z1 + z2</option>
+          <option value="subtract">z1 - z2</option>
+          <option value="multiply">z1 × z2</option>
+          <option value="divide">z1 ÷ z2</option>
+          <option value="modulus">模 |z1|</option>
+          <option value="conjugate">共轭 z1</option>
+          <option value="argument">辐角 arg(z1)</option>
+        </select>
+        <button class="btn btn-primary" id="calcBtn">计算</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var z1El = document.getElementById('z1Input');
+      var z2El = document.getElementById('z2Input');
+      var z2Field = document.getElementById('z2Field');
+      var opEl = document.getElementById('opSelect');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function round6(v) {
+        var r = Math.round(v * 1e6) / 1e6;
+        if (Math.abs(r) < 5e-7) {
+          r = 0;
+        }
+        return r;
+      }
+
+      function fmtNum(v) {
+        var r = round6(v);
+        if (Math.abs(r) < 1e-9 && r !== 0) {
+          return r.toExponential(6);
+        }
+        return String(r);
+      }
+
+      function numPart(s) {
+        if (s === '' || s === '+' || s === '-') {
+          return null;
+        }
+        var t = s.replace(/^[+-]/, '');
+        if (!/^(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/.test(t)) {
+          return null;
+        }
+        return parseFloat(s);
+      }
+
+      function parseComplex(s) {
+        var raw = String(s).replace(/\s+/g, '');
+        if (raw === '') {
+          return null;
+        }
+        if (raw.charAt(raw.length - 1) !== 'i') {
+          var na = numPart(raw);
+          return na === null ? null : { a: na, b: 0 };
+        }
+        var body = raw.slice(0, -1);
+        var lastSign = -1;
+        for (var i = 1; i < body.length; i++) {
+          var ch = body.charAt(i);
+          if (ch === '+' || ch === '-') {
+            lastSign = i;
+          }
+        }
+        var reStr = '';
+        var imStr = '';
+        if (lastSign === -1) {
+          imStr = body;
+        } else {
+          imStr = body.slice(lastSign);
+          reStr = body.slice(0, lastSign);
+        }
+        var a = 0;
+        if (reStr !== '') {
+          var vRe = numPart(reStr);
+          if (vRe === null) {
+            return null;
+          }
+          a = vRe;
+        }
+        var b;
+        if (imStr === '' || imStr === '+' || imStr === '-') {
+          b = imStr === '-' ? -1 : 1;
+        } else {
+          var vIm = numPart(imStr);
+          if (vIm === null) {
+            return null;
+          }
+          b = vIm;
+        }
+        return { a: a, b: b };
+      }
+
+      function fmtComplex(z) {
+        var a = round6(z.a);
+        var b = round6(z.b);
+        if (b === 0) {
+          return fmtNum(a);
+        }
+        if (a === 0) {
+          if (b === 1) {
+            return 'i';
+          }
+          if (b === -1) {
+            return '-i';
+          }
+          return fmtNum(b) + 'i';
+        }
+        var bStr;
+        if (b === 1) {
+          bStr = '+i';
+        } else if (b === -1) {
+          bStr = '-i';
+        } else if (b > 0) {
+          bStr = '+' + fmtNum(b) + 'i';
+        } else {
+          bStr = fmtNum(b) + 'i';
+        }
+        return fmtNum(a) + bStr;
+      }
+
+      function modulus(z) {
+        return Math.sqrt(z.a * z.a + z.b * z.b);
+      }
+
+      function argument(z) {
+        return Math.atan2(z.b, z.a);
+      }
+
+      function item(label, value) {
+        return '<div class="res-item"><span class="res-label">' + htmlEscape(label) + '</span><span class="res-value">' + htmlEscape(value) + '</span></div>';
+      }
+
+      function run() {
+        var op = opEl.value;
+        var needTwo = op === 'add' || op === 'subtract' || op === 'multiply' || op === 'divide';
+        z2Field.style.display = needTwo ? '' : 'none';
+        if (z1El.value.trim() === '') {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        var z1 = parseComplex(z1El.value);
+        if (z1 === null) {
+          setStatus('复数 z1 格式无效，请输入如 3+4i、2i 或 -5 的格式', 'error');
+          return;
+        }
+        var z2 = null;
+        if (needTwo) {
+          if (z2El.value.trim() === '') {
+            setStatus('请填写复数 z2', 'error');
+            return;
+          }
+          z2 = parseComplex(z2El.value);
+          if (z2 === null) {
+            setStatus('复数 z2 格式无效，请输入如 3+4i、2i 或 -5 的格式', 'error');
+            return;
+          }
+        }
+        var res;
+        var html = '';
+        if (op === 'add') {
+          res = { a: z1.a + z2.a, b: z1.b + z2.b };
+        } else if (op === 'subtract') {
+          res = { a: z1.a - z2.a, b: z1.b - z2.b };
+        } else if (op === 'multiply') {
+          res = { a: z1.a * z2.a - z1.b * z2.b, b: z1.a * z2.b + z1.b * z2.a };
+        } else if (op === 'divide') {
+          var den = z2.a * z2.a + z2.b * z2.b;
+          if (den === 0) {
+            setStatus('除数 z2 为 0，无法执行除法', 'error');
+            return;
+          }
+          res = { a: (z1.a * z2.a + z1.b * z2.b) / den, b: (z1.b * z2.a - z1.a * z2.b) / den };
+        } else if (op === 'modulus') {
+          html += '<div class="main-result">|z1| = ' + htmlEscape(fmtNum(modulus(z1))) + '</div>';
+          html += '<div class="res-grid">';
+          html += item('z1 代数式', fmtComplex(z1));
+          html += item('辐角（弧度）', fmtNum(argument(z1)));
+          html += item('辐角（角度）', fmtNum(argument(z1) * 180 / Math.PI) + '°');
+          html += '</div>';
+          outputText.innerHTML = html;
+          setStatus('计算完成');
+          return;
+        } else if (op === 'conjugate') {
+          res = { a: z1.a, b: -z1.b };
+        } else {
+          var arg = argument(z1);
+          html += '<div class="main-result">arg(z1) = ' + htmlEscape(fmtNum(arg)) + ' 弧度（' + htmlEscape(fmtNum(arg * 180 / Math.PI)) + '°）</div>';
+          html += '<div class="res-grid">';
+          html += item('z1 代数式', fmtComplex(z1));
+          html += item('模 |z1|', fmtNum(modulus(z1)));
+          html += item('极坐标形式', fmtNum(modulus(z1)) + '·(cos ' + fmtNum(arg) + ' + i·sin ' + fmtNum(arg) + ')');
+          html += '</div>';
+          outputText.innerHTML = html;
+          setStatus('计算完成');
+          return;
+        }
+        var r = modulus(res);
+        var argR = argument(res);
+        html += '<div class="main-result">结果：' + htmlEscape(fmtComplex(res)) + '</div>';
+        html += '<div class="res-grid">';
+        html += item('代数式', fmtComplex(res));
+        html += item('模 |z|', fmtNum(r));
+        html += item('辐角（弧度）', fmtNum(argR));
+        html += item('辐角（角度）', fmtNum(argR * 180 / Math.PI) + '°');
+        html += item('极坐标形式', fmtNum(r) + '·(cos ' + fmtNum(argR) + ' + i·sin ' + fmtNum(argR) + ')');
+        html += item('指数形式', fmtNum(r) + '·e^(i·' + fmtNum(argR) + ')');
+        html += '</div>';
+        outputText.innerHTML = html;
+        setStatus('计算完成');
+      }
+
+      opEl.addEventListener('change', run);
+      calcBtn.addEventListener('click', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

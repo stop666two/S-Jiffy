@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>性能预算计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 110px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .field-row select { width: 200px; }
+    .field-row input[type="number"] { width: 110px; }
+    .btn-row { display: flex; gap: var(--space-2); }
+    .budget-line { font-size: var(--font-size-sm); margin: 4px 0; }
+    .budget-tip { font-size: var(--font-size-sm); margin: 2px 0; color: var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>性能预算计算器</h1>
+    <p class="tool-desc">按页面大小、请求数与目标 LCP 估算加载耗时，判断是否达标并给出优化建议。</p>
+    <div class="card">
+      <div class="field-row">
+        <label>页面总大小</label>
+        <input id="sizeInput" class="input js-focus-input" type="number" value="1500" min="0" step="1">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">KB</span>
+      </div>
+      <div class="field-row">
+        <label>请求数</label>
+        <input id="requestsInput" class="input" type="number" value="40" min="1" step="1">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">个</span>
+      </div>
+      <div class="field-row">
+        <label>目标 LCP</label>
+        <input id="targetInput" class="input" type="number" value="2.5" min="0.1" step="0.1">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">秒</span>
+      </div>
+      <div class="field-row">
+        <label>网络速度</label>
+        <select id="netSelect" class="input">
+          <option value="4g">4G（10 Mbps）</option>
+          <option value="3g">3G（1.5 Mbps）</option>
+          <option value="2g">2G（0.15 Mbps）</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="calcBtn">计算预算</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var SPEEDS = { '4g': 10, '3g': 1.5, '2g': 0.15 };
+      var PER_REQUEST_MS = 80;
+      var sizeInput = document.getElementById('sizeInput');
+      var requestsInput = document.getElementById('requestsInput');
+      var targetInput = document.getElementById('targetInput');
+      var netSelect = document.getElementById('netSelect');
+      var outputText = document.getElementById('outputText');
+
+      function calc() {
+        if (!sizeInput.value.trim()) {
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        var kb = parseFloat(sizeInput.value);
+        var reqs = parseInt(requestsInput.value, 10);
+        var target = parseFloat(targetInput.value);
+        if (!isFinite(kb) || kb <= 0) {
+          outputText.textContent = '';
+          setStatus('请输入有效的页面总大小（KB）', 'error');
+          return;
+        }
+        if (!requestsInput.value.trim() || !isFinite(reqs) || reqs < 1) {
+          outputText.textContent = '';
+          setStatus('请输入有效的请求数（至少 1 个）', 'error');
+          return;
+        }
+        if (!targetInput.value.trim() || !isFinite(target) || target <= 0) {
+          outputText.textContent = '';
+          setStatus('请输入有效的目标 LCP 秒数', 'error');
+          return;
+        }
+        var mbps = SPEEDS[netSelect.value];
+        var bps = mbps * 1000000;
+        var bits = kb * 1024 * 8;
+        var transferSec = bits / bps;
+        var overheadSec = reqs * PER_REQUEST_MS / 1000;
+        var total = transferSec + overheadSec;
+        var diff = total - target;
+        var pass = diff <= 0;
+        var html = '';
+        html += '<div class="budget-line">传输时间：' + transferSec.toFixed(2) + ' 秒（' + kb + ' KB ÷ ' + mbps + ' Mbps）</div>';
+        html += '<div class="budget-line">请求开销：' + reqs + ' × ' + PER_REQUEST_MS + 'ms = ' + overheadSec.toFixed(2) + ' 秒</div>';
+        html += '<div class="budget-line" style="font-size:var(--font-size-base);margin:8px 0;">预估总耗时：<b>' + total.toFixed(2) + '</b> 秒</div>';
+        if (pass) {
+          html += '<div class="budget-line" style="color:var(--color-success);font-size:var(--font-size-base);">结论：达标（目标 ' + target +
+            ' 秒，富余 ' + (-diff).toFixed(2) + ' 秒）</div>';
+        } else {
+          html += '<div class="budget-line" style="color:var(--color-error);font-size:var(--font-size-base);">结论：超预算 ' + diff.toFixed(2) + ' 秒</div>';
+        }
+        html += '<div class="budget-line" style="color:var(--color-text-secondary);margin-top:var(--space-2);">建议：</div>';
+        var tips = [];
+        if (kb >= 2000) tips.push('压缩资源体积：图片转 WebP/AVIF、CSS/JS 压缩、开启 Gzip 或 Brotli');
+        if (reqs >= 30) tips.push('合并请求：合并 JS/CSS 文件、使用 HTTP/2 多路复用、CSS 雪碧图');
+        if (overheadSec / total > 0.3) tips.push('减少请求数：图片懒加载、内联关键 CSS、按需引入组件');
+        if (transferSec / total > 0.6) tips.push('提升传输效率：启用 CDN 加速、预加载关键资源、使用 HTTP/3');
+        if (!tips.length) tips.push('当前配置较合理，持续监控 LCP 与资源体积变化');
+        for (var i = 0; i < tips.length; i++) {
+          html += '<div class="budget-tip">· ' + htmlEscape(tips[i]) + '</div>';
+        }
+        outputText.innerHTML = html;
+        setStatus(pass ? '预算评估完成：达标' : '预算评估完成：超预算', pass ? undefined : 'error');
+      }
+
+      document.getElementById('calcBtn').addEventListener('click', calc);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!outputText.textContent) return;
+        copyToClipboard(outputText.textContent, this);
+        setStatus('已复制');
+      });
+      netSelect.addEventListener('change', function () {
+        if (sizeInput.value.trim()) calc();
+      });
+      targetInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') calc();
+      });
+      calc();
+    })();
+  </script>
+</body>
+</html>

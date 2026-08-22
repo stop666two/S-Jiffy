@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视口尺寸工具 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .vp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-2);
+    }
+    .vp-item {
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
+    }
+    .vp-item .vp-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      margin-bottom: 4px;
+    }
+    .vp-item .vp-value {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+    .vp-item .vp-sub {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+    .device-badge {
+      display: inline-block;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent);
+      color: var(--color-bg);
+      margin-bottom: var(--space-2);
+    }
+    .note-list {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.8;
+      margin: 0;
+      padding-left: var(--space-3);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>视口尺寸工具</h1>
+    <p class="tool-desc">实时查看窗口、视口、屏幕与像素密度信息，窗口尺寸变化时自动更新。</p>
+    <div class="card">
+      <div id="deviceBox" style="margin-bottom:var(--space-2);"></div>
+      <div class="vp-grid" id="vpGrid"></div>
+    </div>
+    <div class="card" style="margin-top:var(--space-2);">
+      <div style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-1);">说明</div>
+      <ul class="note-list">
+        <li>窗口尺寸（outer）＝浏览器窗口整体大小；视口尺寸（inner）＝页面可用显示区域。</li>
+        <li>CSS 像素 = 视口尺寸；物理像素 = CSS 像素 × 设备像素比（DPR），即真实屏幕像素。</li>
+        <li>滚动条宽度通过对比元素 clientWidth 与 offsetWidth 实测得出。</li>
+        <li>设备分类按视口宽度推断：&lt;600px 视为手机，600–1024px 视为平板，&gt;1024px 视为桌面。</li>
+        <li>颜色深度（bit）表示每个颜色通道的位数，通常为 24（真彩色）。</li>
+      </ul>
+    </div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;white-space:pre-line;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var gridEl = document.getElementById('vpGrid');
+      var deviceEl = document.getElementById('deviceBox');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function measureScrollbar() {
+        var d = document.createElement('div');
+        d.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll;visibility:hidden;';
+        document.body.appendChild(d);
+        var w = d.offsetWidth - d.clientWidth;
+        document.body.removeChild(d);
+        return w;
+      }
+
+      function classify(width) {
+        if (width < 600) return '手机';
+        if (width <= 1024) return '平板';
+        return '桌面';
+      }
+
+      function fmt(n) {
+        if (typeof n !== 'number' || isNaN(n)) return '—';
+        return String(Math.round(n * 100) / 100);
+      }
+
+      function render() {
+        var innerW = window.innerWidth;
+        var innerH = window.innerHeight;
+        var outerW = window.outerWidth;
+        var outerH = window.outerHeight;
+        var dpr = window.devicePixelRatio || 1;
+        var scrollW = measureScrollbar();
+        var colorDepth = window.screen.colorDepth;
+        var screenW = window.screen.width;
+        var screenH = window.screen.height;
+        var device = classify(innerW);
+
+        var items = [
+          { label: '窗口尺寸 outer', value: outerW + ' × ' + outerH + ' px', sub: '浏览器窗口整体' },
+          { label: '视口尺寸 inner', value: innerW + ' × ' + innerH + ' px', sub: '页面可用区域' },
+          { label: '设备像素比 DPR', value: fmt(dpr) + 'x', sub: 'CSS px → 物理 px 倍率' },
+          { label: 'CSS 像素', value: innerW + ' × ' + innerH + ' px', sub: '视口逻辑尺寸' },
+          { label: '物理像素', value: fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr) + ' px', sub: '实际渲染像素' },
+          { label: '滚动条宽度', value: scrollW + ' px', sub: '实测，无滚动条为 0' },
+          { label: '屏幕尺寸', value: screenW + ' × ' + screenH + ' px', sub: 'screen.width / height' },
+          { label: '颜色深度', value: colorDepth + ' bit', sub: '颜色通道位数' }
+        ];
+        var html = '';
+        var i;
+        for (i = 0; i < items.length; i++) {
+          html += '<div class="vp-item"><div class="vp-label">' + htmlEscape(items[i].label) + '</div>'
+            + '<div class="vp-value">' + htmlEscape(items[i].value) + '</div>'
+            + '<div class="vp-sub">' + htmlEscape(items[i].sub) + '</div></div>';
+        }
+        gridEl.innerHTML = html;
+        deviceEl.innerHTML = '<span class="device-badge">当前设备推断：' + htmlEscape(device) + '</span>';
+        outputEl.textContent = '窗口：' + outerW + ' × ' + outerH
+          + '\n视口：' + innerW + ' × ' + innerH
+          + '\nDPR：' + fmt(dpr)
+          + '\n物理像素：' + fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr)
+          + '\n屏幕：' + screenW + ' × ' + screenH
+          + '\n颜色深度：' + colorDepth + ' bit'
+          + '\n滚动条宽度：' + scrollW + ' px'
+          + '\n设备推断：' + device;
+      }
+
+      window.addEventListener('resize', render);
+      window.addEventListener('orientationchange', render);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      render();
+      setStatus('实时监测中，拖动窗口即可看到数值变化');
+    })();
+  </script>
+</body>
+</html>

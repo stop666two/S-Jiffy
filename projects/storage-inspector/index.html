@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>本地存储查看器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .storage-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .storage-stat {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+    }
+    .storage-section-title {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      margin: var(--space-3) 0 var(--space-2);
+    }
+    .storage-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+      table-layout: fixed;
+    }
+    .storage-table th, .storage-table td {
+      border: 1px solid var(--color-border);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-all;
+    }
+    .storage-table th {
+      background: var(--color-bg-soft);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+    .storage-table td.key-col {
+      width: 30%;
+    }
+    .storage-table td.size-col {
+      width: 80px;
+      text-align: right;
+    }
+    .storage-table td.act-col {
+      width: 80px;
+    }
+    .del-link {
+      color: var(--color-error);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .empty-hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-disabled);
+      padding: var(--space-2) 0;
+    }
+    .ops-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .ops-row .input {
+      width: 240px;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>本地存储查看器</h1>
+    <p class="tool-desc">查看当前域名下 localStorage 与 sessionStorage 的全部键值对，支持搜索、删除与新增。</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:var(--space-2);">
+      <div class="ops-row">
+        <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索键名…">
+        <button id="addBtn" class="btn btn-primary">新增键值对</button>
+        <button id="clearLocalBtn" class="btn btn-secondary">清空 localStorage</button>
+        <button id="clearSessionBtn" class="btn btn-secondary">清空 sessionStorage</button>
+      </div>
+    </div>
+    <div id="storageList" style="margin-top:var(--space-2);"></div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var searchEl = document.getElementById('searchInput');
+      var addBtn = document.getElementById('addBtn');
+      var clearLocalBtn = document.getElementById('clearLocalBtn');
+      var clearSessionBtn = document.getElementById('clearSessionBtn');
+      var listEl = document.getElementById('storageList');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function byteSize(str) {
+        var s = String(str);
+        var n = 0;
+        var i;
+        for (i = 0; i < s.length; i++) {
+          var c = s.charCodeAt(i);
+          if (c < 0x80) {
+            n += 1;
+          } else if (c < 0x800) {
+            n += 2;
+          } else if (c < 0xD800 || c >= 0xE000) {
+            n += 3;
+          } else {
+            i++;
+            n += 4;
+          }
+        }
+        return n;
+      }
+
+      function fmtBytes(n) {
+        if (n < 1024) return n + ' B';
+        if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+        return (n / 1048576).toFixed(2) + ' MB';
+      }
+
+      function truncate(str, max) {
+        if (String(str).length <= max) return String(str);
+        return String(str).substring(0, max) + '…';
+      }
+
+      function collect(store) {
+        var keys = [];
+        var i;
+        for (i = 0; i < store.length; i++) {
+          var k = store.key(i);
+          var v = store.getItem(k);
+          keys.push({ key: k, value: v, size: byteSize(k) + byteSize(v) });
+        }
+        return keys;
+      }
+
+      function renderTable(title, store, filter, isSession) {
+        var html = '<div class="storage-section-title">' + htmlEscape(title) + '</div>';
+        var rows = collect(store);
+        var total = 0;
+        var filtered = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+          total += rows[i].size;
+          if (!filter || rows[i].key.toLowerCase().indexOf(filter) !== -1) {
+            filtered.push(rows[i]);
+          }
+        }
+        if (rows.length === 0) {
+          html += '<div class="empty-hint">暂无数据</div>';
+        } else if (filtered.length === 0) {
+          html += '<div class="empty-hint">没有匹配「' + htmlEscape(filter) + '」的键名</div>';
+        } else {
+          html += '<table class="storage-table"><thead><tr><th style="width:30%;">键名</th><th>值</th><th style="width:80px;text-align:right;">大小</th><th style="width:80px;">操作</th></tr></thead><tbody>';
+          for (i = 0; i < filtered.length; i++) {
+            var row = filtered[i];
+            html += '<tr>'
+              + '<td class="key-col" title="' + htmlEscape(row.key) + '">' + htmlEscape(row.key) + '</td>'
+              + '<td class="val-col" title="' + htmlEscape(row.value) + '">' + htmlEscape(truncate(row.value, 120)) + '</td>'
+              + '<td class="size-col">' + row.size + '</td>'
+              + '<td class="act-col"><span class="del-link" data-session="' + (isSession ? '1' : '0') + '" data-key="' + htmlEscape(row.key) + '">删除</span></td>'
+              + '</tr>';
+          }
+          html += '</tbody></table>';
+        }
+        html += '<div class="storage-stats" style="margin-top:var(--space-2);"><span class="storage-stat">共 ' + rows.length + ' 项</span><span class="storage-stat">总大小 ' + fmtBytes(total) + '</span>' + (filter ? '<span class="storage-stat">筛选后 ' + filtered.length + ' 项</span>' : '') + '</div>';
+        return { html: html, count: rows.length, total: total };
+      }
+
+      function render() {
+        var filter = searchEl.value.trim().toLowerCase();
+        var local = renderTable('localStorage', window.localStorage, filter, false);
+        var session = renderTable('sessionStorage', window.sessionStorage, filter, true);
+        listEl.innerHTML = local.html + session.html;
+        outputEl.textContent = 'localStorage：' + local.count + ' 项 / ' + fmtBytes(local.total)
+          + '　|　sessionStorage：' + session.count + ' 项 / ' + fmtBytes(session.total);
+      }
+
+      function refresh() {
+        render();
+        setStatus('已刷新');
+      }
+
+      listEl.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t.className === 'del-link') {
+          var isSession = t.getAttribute('data-session') === '1';
+          var key = t.getAttribute('data-key');
+          var store = isSession ? window.sessionStorage : window.localStorage;
+          showConfirm('确定删除键「' + key + '」吗？', function (ok) {
+            if (ok) {
+              store.removeItem(key);
+              render();
+              setStatus('已删除「' + key + '」');
+            }
+          });
+        }
+      });
+
+      addBtn.addEventListener('click', function () {
+        showPrompt('新增键值对 - 键名', '键名', '', function (key) {
+          if (key === null) return;
+          if (!String(key).trim()) {
+            setStatus('键名不能为空', 'error');
+            return;
+          }
+          showPrompt('新增键值对 - 值', '值（可选）', '', function (value) {
+            if (value === null) return;
+            try {
+              window.localStorage.setItem(String(key).trim(), String(value));
+              render();
+              setStatus('已添加「' + String(key).trim() + '」');
+            } catch (err) {
+              setStatus('写入失败：存储已满或不可用', 'error');
+            }
+          });
+        });
+      });
+
+      clearLocalBtn.addEventListener('click', function () {
+        showConfirm('确定清空 localStorage 吗？此操作不可恢复。', function (ok) {
+          if (ok) {
+            window.localStorage.clear();
+            render();
+            setStatus('localStorage 已清空');
+          }
+        });
+      });
+
+      clearSessionBtn.addEventListener('click', function () {
+        showConfirm('确定清空 sessionStorage 吗？此操作不可恢复。', function (ok) {
+          if (ok) {
+            window.sessionStorage.clear();
+            render();
+            setStatus('sessionStorage 已清空');
+          }
+        });
+      });
+
+      searchEl.addEventListener('input', render);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      render();
+      document.addEventListener('DOMContentLoaded', render);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敏感信息扫描器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .scan-tip {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      margin-top: var(--space-2);
+    }
+    .scan-summary {
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+    .scan-type-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0 4px;
+      font-size: var(--font-size-sm);
+    }
+    .scan-type-name {
+      font-weight: 600;
+    }
+    .scan-count {
+      display: inline-block;
+      min-width: 28px;
+      text-align: center;
+      padding: 1px 8px;
+      border-radius: 9999px;
+      background: rgba(52, 101, 56, 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(52, 101, 56, 0.3);
+      font-weight: 600;
+      font-size: var(--font-size-xs);
+    }
+    .scan-line {
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      font-size: var(--font-size-sm);
+      line-height: 1.8;
+    }
+    .scan-line-no {
+      flex-shrink: 0;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-xs);
+      font-family: var(--font-mono);
+    }
+    .scan-mask {
+      font-family: var(--font-mono);
+      word-break: break-all;
+      color: var(--color-text-primary);
+    }
+    .scan-more {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-disabled);
+      margin: 4px 0 8px;
+    }
+    .scan-empty {
+      color: var(--color-success);
+      font-size: var(--font-size-sm);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>敏感信息扫描器</h1>
+    <p class="tool-desc">粘贴文本，自动扫描 AWS 密钥、GitHub Token、OpenAI、Stripe、Slack、私钥块、Bearer Token 与密码赋值等敏感模式，分组统计并打码定位</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴配置、日志、代码或环境变量内容，实时扫描敏感信息..."></textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;">
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div class="scan-tip">支持识别：AWS Access Key · GitHub Token · OpenAI Key · Stripe Key · Slack Token · 私钥块 · Bearer Token · 密码赋值</div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputText = document.getElementById('inputText');
+      var clearBtn = document.getElementById('clearBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var reportText = '';
+
+      var PATTERNS = [
+        { name: 'AWS Access Key', regex: /AKIA[0-9A-Z]{16}/g },
+        { name: 'GitHub Token', regex: /(?:ghp_|gho_)[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{20,}/g },
+        { name: 'OpenAI Key', regex: /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/g },
+        { name: 'Stripe Key', regex: /sk_live_[A-Za-z0-9]{16,}|pk_live_[A-Za-z0-9]{16,}/g },
+        { name: 'Slack Token', regex: /xox[baprs]-[A-Za-z0-9-]{10,}/g },
+        { name: '私钥块', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g, rawDisplay: true },
+        { name: 'Bearer Token', regex: /Bearer\s+[A-Za-z0-9._-]{20,}/g },
+        { name: '密码赋值', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"]?([^\s'"]{6,})/gi, valueGroup: true }
+      ];
+
+      var MAX_DETAIL = 50;
+
+      function mask(s) {
+        if (!s) return '';
+        if (s.length <= 8) return s.slice(0, 4) + '****';
+        return s.slice(0, 4) + '****' + s.slice(-2);
+      }
+
+      function lineStarts(text) {
+        var starts = [0];
+        for (var i = 0; i < text.length; i++) {
+          if (text.charAt(i) === '\n') starts.push(i + 1);
+        }
+        return starts;
+      }
+
+      function lineOf(starts, idx) {
+        var lo = 0;
+        var hi = starts.length - 1;
+        while (lo < hi) {
+          var mid = (lo + hi + 1) >> 1;
+          if (starts[mid] <= idx) {
+            lo = mid;
+          } else {
+            hi = mid - 1;
+          }
+        }
+        return lo + 1;
+      }
+
+      function scan() {
+        var text = inputText.value;
+        if (!text.trim()) {
+          outputText.textContent = '';
+          reportText = '';
+          setStatus('');
+          return;
+        }
+        var starts = lineStarts(text);
+        var groups = [];
+        var total = 0;
+        var hitTypes = 0;
+        for (var p = 0; p < PATTERNS.length; p++) {
+          var pat = PATTERNS[p];
+          pat.regex.lastIndex = 0;
+          var items = [];
+          var m;
+          while ((m = pat.regex.exec(text)) !== null) {
+            var display = m[0];
+            if (pat.rawDisplay) {
+              display = m[0];
+            } else if (pat.valueGroup && m[1]) {
+              display = m[0].slice(0, m[0].length - m[1].length) + mask(m[1]);
+            } else {
+              display = mask(m[0]);
+            }
+            items.push({ line: lineOf(starts, m.index), display: display });
+            if (m[0] === '') {
+              pat.regex.lastIndex++;
+            }
+          }
+          if (items.length > 0) {
+            hitTypes++;
+          }
+          total += items.length;
+          groups.push({ name: pat.name, items: items });
+        }
+
+        var html = '';
+        var report = '';
+        if (total === 0) {
+          html = '<div class="scan-empty">未发现敏感信息</div>';
+          report = '未发现敏感信息';
+          setStatus('未发现敏感信息');
+        } else {
+          html = '<div class="scan-summary">共发现 ' + total + ' 处敏感信息，涉及 ' + hitTypes + ' 类</div>';
+          report = '共发现 ' + total + ' 处敏感信息，涉及 ' + hitTypes + ' 类';
+          for (var g = 0; g < groups.length; g++) {
+            var grp = groups[g];
+            if (grp.items.length === 0) {
+              continue;
+            }
+            html += '<div class="scan-type-row"><span class="scan-type-name">' + htmlEscape(grp.name) + '</span><span class="scan-count">' + grp.items.length + '</span></div>';
+            report += '\n' + grp.name + '：' + grp.items.length + ' 处';
+            var limit = grp.items.length > MAX_DETAIL ? MAX_DETAIL : grp.items.length;
+            for (var k = 0; k < limit; k++) {
+              html += '<div class="scan-line"><span class="scan-line-no">第 ' + grp.items[k].line + ' 行</span><span class="scan-mask">' + htmlEscape(grp.items[k].display) + '</span></div>';
+              report += '\n第 ' + grp.items[k].line + ' 行 ' + grp.items[k].display;
+            }
+            if (grp.items.length > MAX_DETAIL) {
+              html += '<div class="scan-more">… 其余 ' + (grp.items.length - MAX_DETAIL) + ' 处未显示，复制按钮包含完整清单</div>';
+              report += '\n… 其余 ' + (grp.items.length - MAX_DETAIL) + ' 处未显示';
+            }
+          }
+          setStatus('发现 ' + total + ' 处敏感信息');
+        }
+        outputText.innerHTML = html;
+        reportText = report;
+      }
+
+      inputText.addEventListener('input', function () {
+        scan();
+      });
+      clearBtn.addEventListener('click', function () {
+        inputText.value = '';
+        scan();
+        inputText.focus();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (reportText) {
+          copyToClipboard(reportText, copyBtn);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

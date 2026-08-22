@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>十六进制查看器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .hex-panel{font-family:var(--font-mono);font-size:var(--font-size-xs);line-height:1.6;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);overflow-x:auto;max-height:420px;overflow-y:auto;white-space:pre}
+    .hex-off{color:var(--color-text-disabled)}
+    .hex-ascii{color:var(--color-text-secondary)}
+    .sum-line{margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>十六进制查看器</h1>
+    <p class="tool-desc">将文本按 UTF-8 编码转换为十六进制视图，每行 16 字节，附 ASCII 对照列。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要查看的文本..." style="min-height:120px;"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var plainDump = '';
+
+      function utf8Bytes(str) {
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          if (code >= 0xD800 && code <= 0xDBFF && i + 1 < str.length) {
+            var low = str.charCodeAt(i + 1);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+              code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+              i++;
+            }
+          }
+          if (code <= 0x7F) {
+            bytes.push(code);
+          } else if (code <= 0x7FF) {
+            bytes.push(0xC0 | (code >> 6), 0x80 | (code & 0x3F));
+          } else if (code <= 0xFFFF) {
+            bytes.push(0xE0 | (code >> 12), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F));
+          } else {
+            bytes.push(0xF0 | (code >> 18), 0x80 | ((code >> 12) & 0x3F), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F));
+          }
+        }
+        return bytes;
+      }
+
+      function padHex(num, width) {
+        var s = num.toString(16).toUpperCase();
+        while (s.length < width) s = '0' + s;
+        return s;
+      }
+
+      function render() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          plainDump = '';
+          setStatus('');
+          return;
+        }
+        var bytes = utf8Bytes(text);
+        var lines = [];
+        var i = 0;
+        while (i < bytes.length) {
+          var offset = padHex(i, 8);
+          var hexParts = [];
+          var ascii = [];
+          var end = Math.min(i + 16, bytes.length);
+          for (var j = i; j < end; j++) {
+            var b = bytes[j];
+            hexParts.push(padHex(b, 2));
+            ascii.push(b >= 0x20 && b <= 0x7E ? String.fromCharCode(b) : '.');
+          }
+          while (hexParts.length < 16) hexParts.push('  ');
+          lines.push(offset + '  ' + hexParts.join(' ') + '  ' + ascii.join(''));
+          i += 16;
+        }
+        plainDump = lines.join('\n') + '\n共 ' + bytes.length + ' 字节';
+        var html = [];
+        for (var k = 0; k < lines.length; k++) {
+          html.push(htmlEscape(lines[k]));
+        }
+        outputEl.innerHTML = '<div class="hex-panel">' + html.join('\n') + '</div>' +
+          '<div class="sum-line">共 ' + bytes.length + ' 字节（' + text.length + ' 个 UTF-16 字符）</div>';
+        setStatus('已解析 ' + bytes.length + ' 字节');
+      }
+
+      inputEl.addEventListener('input', render);
+      copyBtn.addEventListener('click', function () {
+        if (plainDump) copyToClipboard(plainDump, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

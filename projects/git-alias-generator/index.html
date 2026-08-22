@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git 别名生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .alias-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+    .alias-item { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+    .alias-item code { color: var(--color-accent); font-weight: 600; }
+    .alias-cmd { color: var(--color-text-primary); }
+    .alias-desc { color: var(--color-text-secondary); }
+    .alias-desc::before { content: "—"; margin: 0 6px; color: var(--color-text-disabled); }
+    .alias-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+    .alias-actions .btn { height: 36px; font-size: var(--font-size-sm); min-width: 0; padding: 0 14px; }
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Git 别名生成器</h1>
+    <p class="tool-desc">勾选常用别名并添加自定义别名，一键生成 .gitconfig 的 [alias] 段配置代码。</p>
+    <div class="card">
+      <div class="alias-actions">
+        <button class="btn btn-secondary" id="selectAllBtn">全选</button>
+        <button class="btn btn-secondary" id="clearAllBtn">清空</button>
+      </div>
+      <div class="alias-list" id="aliasList"></div>
+      <div style="margin-top:16px;">
+        <label for="customAlias" class="field-label">自定义别名（每行一个，格式：名称=命令，如 mylog=log --oneline --all）</label>
+        <textarea id="customAlias" class="input textarea" style="min-height:100px;" placeholder="mylog=log --oneline --all&#10;lazy=!git add -A && git commit -m &quot;WIP&quot;"></textarea>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var ALIASES = [
+        ['co', 'checkout', '切换分支'],
+        ['br', 'branch', '列出本地分支'],
+        ['ci', 'commit', '提交变更'],
+        ['st', 'status', '查看工作区状态'],
+        ['di', 'diff', '查看未暂存差异'],
+        ['lg', 'log --oneline --graph', '图形化简洁日志'],
+        ['amend', 'commit --amend', '修改上一次提交'],
+        ['unstage', 'reset HEAD --', '将文件移出暂存区'],
+        ['last', 'log -1 HEAD', '查看最近一次提交'],
+        ['pf', 'push --force-with-lease', '安全强制推送'],
+        ['unpushed', 'log @{u}..', '查看尚未推送的提交'],
+        ['aa', 'add --all', '暂存全部变更'],
+        ['cm', 'commit -m', '直接提交并附消息'],
+        ['cb', 'checkout -b', '新建分支并切换'],
+        ['b', 'branch -vv', '查看分支与跟踪关系'],
+        ['d', 'diff --staged', '查看已暂存差异'],
+        ['l', 'log --oneline', '简洁提交日志'],
+        ['ll', 'log --oneline --all --graph --decorate', '全分支图形日志'],
+        ['sts', 'status --short', '极简状态输出'],
+        ['ps', 'push', '推送到远程'],
+        ['pl', 'pull', '拉取远程更新'],
+        ['pr', 'pull --rebase', '以变基方式拉取'],
+        ['f', 'fetch', '获取远程更新'],
+        ['m', 'merge --no-ff', '禁用快进的合并'],
+        ['rb', 'rebase', '变基到目标分支'],
+        ['rs', 'reset --soft HEAD~1', '软回退最近一次提交'],
+        ['rsh', 'reset --hard HEAD~1', '硬回退最近一次提交'],
+        ['cp', 'cherry-pick', '将指定提交应用到当前分支'],
+        ['sh', 'stash', '暂存工作区改动'],
+        ['shp', 'stash pop', '恢复最近一次暂存'],
+        ['t', 'tag', '查看标签'],
+        ['sup', 'push --set-upstream origin HEAD', '首次推送并建立跟踪'],
+        ['wip', '!git add -A && git commit -m WIP', '快速保存当前进度']
+      ];
+      var DEFAULT_SELECTED = ['co', 'br', 'ci', 'st', 'di', 'lg', 'amend', 'unstage', 'last', 'pf', 'unpushed'];
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var customEl = document.getElementById('customAlias');
+      var listEl = document.getElementById('aliasList');
+
+      function renderList() {
+        var html = '';
+        for (var i = 0; i < ALIASES.length; i++) {
+          var a = ALIASES[i];
+          var checked = DEFAULT_SELECTED.indexOf(a[0]) !== -1 ? ' checked' : '';
+          html += '<label class="alias-item"><input type="checkbox" data-alias="' + htmlEscape(a[0]) + '"' + checked + '><code>' + htmlEscape(a[0]) + '</code><span class="alias-cmd">' + htmlEscape(a[1]) + '</span><span class="alias-desc">' + htmlEscape(a[2]) + '</span></label>';
+        }
+        listEl.innerHTML = html;
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        for (var j = 0; j < boxes.length; j++) {
+          boxes[j].addEventListener('change', generate);
+        }
+      }
+
+      function parseCustom() {
+        var lines = customEl.value.split(/\r?\n/);
+        var result = [];
+        var errors = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line) continue;
+          var idx = line.indexOf('=');
+          if (idx === -1) {
+            errors.push('第 ' + (i + 1) + ' 行缺少 =（应为 名称=命令）');
+            continue;
+          }
+          var name = line.substring(0, idx).trim();
+          var cmd = line.substring(idx + 1).trim();
+          if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name)) {
+            errors.push('第 ' + (i + 1) + ' 行别名名称无效（仅允许字母/数字/-/_，且以字母开头）');
+            continue;
+          }
+          if (!cmd) {
+            errors.push('第 ' + (i + 1) + ' 行命令为空');
+            continue;
+          }
+          result.push([name, cmd]);
+        }
+        return { aliases: result, errors: errors };
+      }
+
+      function quoteValue(cmd) {
+        if (cmd.charAt(0) === '!' || cmd.indexOf(' ') !== -1) {
+          return '"' + cmd + '"';
+        }
+        return cmd;
+      }
+
+      function generate() {
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        var picked = [];
+        for (var i = 0; i < boxes.length; i++) {
+          if (boxes[i].checked) {
+            for (var j = 0; j < ALIASES.length; j++) {
+              if (ALIASES[j][0] === boxes[i].getAttribute('data-alias')) {
+                picked.push([ALIASES[j][0], ALIASES[j][1]]);
+                break;
+              }
+            }
+          }
+        }
+        var custom = parseCustom();
+        var merged = [];
+        var seen = {};
+        for (var k = 0; k < picked.length; k++) {
+          if (!seen[picked[k][0]]) {
+            seen[picked[k][0]] = true;
+            merged.push(picked[k]);
+          }
+        }
+        for (var m = 0; m < custom.aliases.length; m++) {
+          if (!seen[custom.aliases[m][0]]) {
+            seen[custom.aliases[m][0]] = true;
+            merged.push(custom.aliases[m]);
+          } else {
+            for (var n = 0; n < merged.length; n++) {
+              if (merged[n][0] === custom.aliases[m][0]) {
+                merged[n] = custom.aliases[m];
+                break;
+              }
+            }
+          }
+        }
+        if (custom.errors.length) {
+          setStatus(custom.errors[0], 'error');
+        }
+        if (!merged.length) {
+          outputEl.textContent = '';
+          if (!custom.errors.length) setStatus('');
+          return;
+        }
+        var lines = ['[alias]'];
+        for (var p = 0; p < merged.length; p++) {
+          lines.push('  ' + merged[p][0] + ' = ' + quoteValue(merged[p][1]));
+        }
+        outputEl.textContent = lines.join('\n');
+        if (!custom.errors.length) setStatus('已生成 ' + merged.length + ' 个别名');
+      }
+
+      document.getElementById('selectAllBtn').addEventListener('click', function () {
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        for (var i = 0; i < boxes.length; i++) boxes[i].checked = true;
+        generate();
+      });
+
+      document.getElementById('clearAllBtn').addEventListener('click', function () {
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        for (var i = 0; i < boxes.length; i++) boxes[i].checked = false;
+        generate();
+      });
+
+      customEl.addEventListener('input', generate);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      renderList();
+      generate();
+    })();
+  </script>
+</body>
+</html>

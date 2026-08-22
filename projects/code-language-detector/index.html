@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码语言检测器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .det-result{margin-bottom:var(--space-2)}
+    .det-result .lang{font-size:var(--font-size-lg);font-weight:600}
+    .det-result .conf{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-left:var(--space-2)}
+    .det-feat{font-size:var(--font-size-sm);line-height:1.8}
+    .det-feat .tag{display:inline-block;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:999px;padding:1px 10px;margin:2px 4px 2px 0;color:var(--color-text-secondary)}
+    .det-other{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-2)}
+    .det-none{color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>代码语言检测器</h1>
+    <p class="tool-desc">通过关键词与语法特征启发式识别代码语言，输出判定、置信度与命中特征。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴代码片段..." style="min-height:180px;"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+
+      var langs = [
+        { name: 'JavaScript', keys: ['function', '=>', 'const', 'let', 'var ', 'console', 'typeof', 'undefined', 'document', 'window', 'require(', 'module.exports', 'document.getElementById', 'addEventListener', 'prototype'], weight: 1 },
+        { name: 'Python', keys: ['def ', 'print(', 'import ', 'from ', 'elif', 'None', 'True', 'False', 'self', 'lambda', 'yield', 'range(', 'len(', 'if __name__', 'asyncio', 'with open(', 'list(', 'dict('], weight: 1 },
+        { name: 'Java', keys: ['public static void', 'System.out', 'class ', 'extends ', 'implements ', 'import java', 'package ', '@Override', 'String[]', 'main(String', 'private final', 'void main'], weight: 1 },
+        { name: 'PHP', keys: ['<?php', '<?', 'echo ', 'foreach (', '$_GET', '$_POST', '$this', 'function ', '->'], weight: 1 },
+        { name: 'Go', keys: ['package main', 'func ', ':=', 'fmt.', 'package ', 'var ', 'const ', 'struct {', 'interface{}', 'defer ', 'go func', 'nil', 'range '], weight: 1 },
+        { name: 'C#', keys: ['using System', 'namespace ', 'Console.WriteLine', 'static void Main', 'public class', 'class ', 'string[] args', 'var ', 'int ', 'private static'], weight: 1 },
+        { name: 'C/C++', keys: ['#include', '#define', 'printf(', 'scanf(', 'std::', 'int main', 'void ', 'return 0', 'char*', 'const char', 'struct ', '#ifdef', 'malloc('], weight: 1 },
+        { name: 'Rust', keys: ['fn main', 'let mut', 'fn ', 'use ', 'impl ', 'pub ', 'println!', 'vec!', 'String::', 'Result', 'Option', 'match ', 'cargo'], weight: 1 },
+        { name: 'Ruby', keys: ['def ', 'end', 'puts ', 'require ', 'attr_accessor', 'do |', 'nil', 'each do', 'module ', 'class ', '#!'], weight: 1 },
+        { name: 'SQL', keys: ['SELECT ', 'FROM ', 'WHERE ', 'INSERT INTO', 'UPDATE ', 'DELETE FROM', 'CREATE TABLE', 'JOIN ', 'GROUP BY', 'ORDER BY', 'LIMIT ', 'VALUES (', 'SELECT *'], weight: 1 },
+        { name: 'Shell', keys: ['#!/bin/bash', '#!/bin/sh', '#!/usr/bin/env', 'echo ', 'chmod', 'grep ', 'sed ', 'awk ', 'export PATH', 'cd ', 'curl ', 'git ', 'sudo '], weight: 1 }
+      ];
+
+      function countHits(code, keys) {
+        var hits = [];
+        for (var i = 0; i < keys.length; i++) {
+          if (code.indexOf(keys[i]) !== -1) hits.push(keys[i]);
+        }
+        return hits;
+      }
+
+      function analyze() {
+        var code = inputEl.value;
+        if (!code) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          setStatus('');
+          return;
+        }
+        var scores = [];
+        var featMap = {};
+        for (var i = 0; i < langs.length; i++) {
+          var hits = countHits(code, langs[i].keys);
+          var score = hits.length;
+          if (code.indexOf('<?php') !== -1 && langs[i].name === 'PHP') score += 2;
+          scores.push(score);
+          featMap[langs[i].name] = hits;
+        }
+        var best = 0;
+        for (var j = 1; j < scores.length; j++) {
+          if (scores[j] > scores[best]) best = j;
+        }
+        var second = -1;
+        for (var k = 0; k < scores.length; k++) {
+          if (k !== best && scores[k] > second) second = scores[k];
+        }
+        var total = 0;
+        for (var m = 0; m < scores.length; m++) total += scores[m];
+        var html = [];
+        var plainLines = [];
+        if (scores[best] === 0) {
+          html.push('<div class="det-none">未识别出任何语言特征，请粘贴更完整的代码片段。</div>');
+          outputEl.innerHTML = html.join('');
+          lastPlain = '未识别';
+          setStatus('未识别出语言特征', 'error');
+          return;
+        }
+        var conf = Math.round(scores[best] / (scores[best] + second + 0.5) * 100);
+        if (conf < 50) conf = 50;
+        html.push('<div class="det-result"><span class="lang">' + htmlEscape(langs[best].name) + '</span><span class="conf">置信度 ' + conf + '%</span></div>');
+        html.push('<div class="det-feat"><span style="color:var(--color-text-secondary)">命中特征：</span>');
+        var hits = featMap[langs[best].name];
+        for (var n = 0; n < hits.length; n++) {
+          html.push('<span class="tag">' + htmlEscape(hits[n]) + '</span>');
+        }
+        html.push('</div>');
+        html.push('<div class="det-other">特征总数 ' + total + ' 个候选语言，共命中 ' + scores[best] + ' 个特征。</div>');
+        var others = [];
+        for (var o = 0; o < scores.length; o++) {
+          if (o !== best && scores[o] > 0) {
+            others.push(langs[o].name + '（' + scores[o] + '）');
+          }
+        }
+        if (others.length) {
+          html.push('<div class="det-other">备选：' + htmlEscape(others.join('，')) + '</div>');
+        }
+        outputEl.innerHTML = html.join('');
+        plainLines.push(langs[best].name + '，置信度 ' + conf + '%');
+        plainLines.push('命中特征：' + hits.join('、'));
+        lastPlain = plainLines.join('\n');
+        setStatus('已识别为 ' + langs[best].name);
+      }
+
+      inputEl.addEventListener('input', analyze);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

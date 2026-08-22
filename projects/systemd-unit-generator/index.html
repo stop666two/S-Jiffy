@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>systemd 单元生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .field .textarea { min-height: 90px; font-family: var(--font-mono); font-size: var(--font-size-sm); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-3); }
+    .form-grid .full { grid-column: 1 / -1; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>systemd 单元生成器</h1>
+    <p class="tool-desc">填写服务信息，一键生成完整的 systemd 单元文件。</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label>服务名</label>
+          <input id="serviceName" class="input js-focus-input" placeholder="如 my-service">
+        </div>
+        <div class="field">
+          <label>描述</label>
+          <input id="description" class="input" placeholder="如 My background service">
+        </div>
+        <div class="field full">
+          <label>启动命令 ExecStart</label>
+          <input id="execStart" class="input" placeholder="如 /usr/bin/myapp --config /etc/myapp.conf">
+        </div>
+        <div class="field">
+          <label>工作目录</label>
+          <input id="workingDir" class="input" placeholder="如 /opt/myapp">
+        </div>
+        <div class="field">
+          <label>运行用户</label>
+          <input id="user" class="input" placeholder="如 www-data">
+        </div>
+        <div class="field">
+          <label>重启策略</label>
+          <select id="restartPolicy" class="input">
+            <option value="no">no（不自动重启）</option>
+            <option value="on-failure" selected>on-failure（失败时重启）</option>
+            <option value="always">always（始终重启）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>重启间隔 RestartSec</label>
+          <input id="restartSec" class="input" value="5" placeholder="秒，默认 5">
+        </div>
+        <div class="field full">
+          <label>环境变量（每行一条 KEY=value）</label>
+          <textarea id="envVars" class="input textarea" placeholder="NODE_ENV=production&#10;PORT=8080"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成单元文件</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var nameInput = document.getElementById('serviceName');
+      var descInput = document.getElementById('description');
+      var execInput = document.getElementById('execStart');
+      var workInput = document.getElementById('workingDir');
+      var userInput = document.getElementById('user');
+      var restartSelect = document.getElementById('restartPolicy');
+      var secInput = document.getElementById('restartSec');
+      var envInput = document.getElementById('envVars');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function buildUnit() {
+        var name = nameInput.value.trim();
+        var desc = descInput.value.trim();
+        var exec = execInput.value.trim();
+        var work = workInput.value.trim();
+        var user = userInput.value.trim();
+        var restart = restartSelect.value;
+        var sec = secInput.value.trim();
+        var envText = envInput.value;
+
+        if (!name) { setStatus('请输入服务名', 'error'); return null; }
+        if (!/^[a-zA-Z0-9._-]+$/.test(name)) { setStatus('服务名只能包含字母、数字、点、下划线和连字符', 'error'); return null; }
+        if (!exec) { setStatus('请输入 ExecStart 启动命令', 'error'); return null; }
+        if (!sec) { setStatus('请输入重启间隔 RestartSec', 'error'); return null; }
+        if (!/^\d+(\.\d+)?(s|m|h|d)?$/.test(sec)) { setStatus('RestartSec 必须是数字或数字加单位（s/m/h/d）', 'error'); return null; }
+
+        var envLines = [];
+        var lines = envText.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line) continue;
+          var eq = line.indexOf('=');
+          if (eq <= 0) { setStatus('环境变量第 ' + (i + 1) + ' 行格式应为 KEY=value', 'error'); return null; }
+          if (/^\s/.test(line) || /\s$/.test(line)) { setStatus('环境变量第 ' + (i + 1) + ' 行含首尾空格', 'error'); return null; }
+          envLines.push(line);
+        }
+
+        var unit = '[Unit]\n';
+        unit += 'Description=' + (desc || name) + '\n';
+        unit += 'After=network.target\n\n';
+        unit += '[Service]\n';
+        unit += 'Type=simple\n';
+        if (user) unit += 'User=' + user + '\n';
+        if (work) unit += 'WorkingDirectory=' + work + '\n';
+        for (var j = 0; j < envLines.length; j++) unit += 'Environment=' + envLines[j] + '\n';
+        unit += 'ExecStart=' + exec + '\n';
+        unit += 'Restart=' + restart + '\n';
+        unit += 'RestartSec=' + sec + '\n\n';
+        unit += '[Install]\n';
+        unit += 'WantedBy=multi-user.target\n';
+        return unit;
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var unit = buildUnit();
+        if (unit === null) { output.textContent = ''; return; }
+        output.textContent = unit;
+        setStatus('单元文件已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

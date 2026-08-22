@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXIF 查看器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .upload-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .exif-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+    .exif-table th, .exif-table td {
+      border: 1px solid var(--color-border);
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .exif-table th {
+      width: 160px;
+      background: var(--color-bg-soft);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+    .exif-mono {
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>EXIF 查看器</h1>
+    <p class="tool-desc">上传 JPEG 图片，在本地解析 EXIF 信息：相机参数、拍摄时间、GPS 等，图片不会上传到任何服务器。</p>
+    <div class="card">
+      <div class="upload-row">
+        <input id="fileInput" class="js-focus-input" type="file" accept="image/*">
+        <button id="resetBtn" class="btn btn-secondary">重置</button>
+      </div>
+      <div id="fileInfo" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-1);">支持 JPEG（含 EXIF 段）。PNG、WebP 等格式通常不含 EXIF 信息。</div>
+    </div>
+    <div style="margin-top:var(--space-2);overflow-x:auto;">
+      <table class="exif-table" style="display:none;">
+        <tbody id="exifBody"></tbody>
+      </table>
+    </div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var fileInput = document.getElementById('fileInput');
+      var resetBtn = document.getElementById('resetBtn');
+      var exifTable = document.querySelector('.exif-table');
+      var exifBody = document.getElementById('exifBody');
+      var fileInfo = document.getElementById('fileInfo');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var typeSizeMap = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
+
+      function dmsToDeg(parts) {
+        var d0 = parts[0].num / (parts[0].den || 1);
+        var d1 = parts[1].num / (parts[1].den || 1);
+        var d2 = parts[2].num / (parts[2].den || 1);
+        return d0 + d1 / 60 + d2 / 3600;
+      }
+
+      function parseTiff(dv, base) {
+        var fields = {};
+        if (dv.getUint8(base) !== 0x49 && dv.getUint8(base) !== 0x4D) {
+          return { ok: false, error: 'TIFF 字节序标记无效' };
+        }
+        var le = dv.getUint8(base) === 0x49;
+        if (dv.getUint16(base + 2, le) !== 42) {
+          return { ok: false, error: 'TIFF 魔数无效' };
+        }
+        var ifd0 = dv.getUint32(base + 4, le);
+
+        function rawOffset(entryOff, type, count) {
+          var size = (typeSizeMap[type] || 1) * count;
+          if (size <= 4) return entryOff + 8;
+          return base + dv.getUint32(entryOff + 8, le);
+        }
+
+        function readValue(entryOff, type, count) {
+          var p = rawOffset(entryOff, type, count);
+          var k, arr;
+          if (type === 2) {
+            var s = '';
+            for (k = 0; k < count; k++) {
+              var c = dv.getUint8(p + k);
+              if (c === 0) break;
+              s += String.fromCharCode(c);
+            }
+            return s;
+          }
+          if (type === 3) {
+            if (count === 1) return dv.getUint16(p, le);
+            arr = [];
+            for (k = 0; k < count; k++) arr.push(dv.getUint16(p + k * 2, le));
+            return arr;
+          }
+          if (type === 4) {
+            if (count === 1) return dv.getUint32(p, le);
+            arr = [];
+            for (k = 0; k < count; k++) arr.push(dv.getUint32(p + k * 4, le));
+            return arr;
+          }
+          if (type === 1) {
+            if (count === 1) return dv.getUint8(p);
+            arr = [];
+            for (k = 0; k < count; k++) arr.push(dv.getUint8(p + k));
+            return arr;
+          }
+          if (type === 5) {
+            if (count === 1) return { num: dv.getUint32(p, le), den: dv.getUint32(p + 4, le) };
+            arr = [];
+            for (k = 0; k < count; k++) arr.push({ num: dv.getUint32(p + k * 8, le), den: dv.getUint32(p + k * 8 + 4, le) });
+            return arr;
+          }
+          if (type === 10) {
+            if (count === 1) return { num: dv.getInt32(p, le), den: dv.getInt32(p + 4, le) };
+            arr = [];
+            for (k = 0; k < count; k++) arr.push({ num: dv.getInt32(p + k * 8, le), den: dv.getInt32(p + k * 8 + 4, le) });
+            return arr;
+          }
+          return null;
+        }
+
+        function iterate(ifdOff, cb) {
+          var n = dv.getUint16(ifdOff, le);
+          var i;
+          for (i = 0; i < n; i++) {
+            var eo = ifdOff + 2 + i * 12;
+            var tag = dv.getUint16(eo, le);
+            var type = dv.getUint16(eo + 2, le);
+            var count = dv.getUint32(eo + 4, le);
+            var v = readValue(eo, type, count);
+            cb(tag, v);
+          }
+        }
+
+        var exifIfd = null;
+        var gpsIfd = null;
+        iterate(base + ifd0, function (tag, v) {
+          if (tag === 0x010F) {
+            fields.make = v;
+          } else if (tag === 0x0110) {
+            fields.model = v;
+          } else if (tag === 0x0112) {
+            fields.orientation = v;
+          } else if (tag === 0x0132) {
+            fields.dateTime = v;
+          } else if (tag === 0x8769) {
+            exifIfd = v;
+          } else if (tag === 0x8825) {
+            gpsIfd = v;
+          }
+        });
+
+        if (typeof exifIfd === 'number') {
+          iterate(base + exifIfd, function (tag, v) {
+            if (tag === 0x829A) {
+              fields.exposureTime = v;
+            } else if (tag === 0x829D) {
+              fields.fnumber = v;
+            } else if (tag === 0x8827) {
+              fields.iso = v;
+            } else if (tag === 0x9003) {
+              fields.dateTimeOriginal = v;
+            } else if (tag === 0x9204) {
+              fields.exposureBias = v;
+            } else if (tag === 0x9209) {
+              fields.flash = v;
+            } else if (tag === 0x920A) {
+              fields.focalLength = v;
+            } else if (tag === 0xA403) {
+              fields.whiteBalance = v;
+            }
+          });
+        }
+
+        if (typeof gpsIfd === 'number') {
+          var latRef = null;
+          var lat = null;
+          var lonRef = null;
+          var lon = null;
+          iterate(base + gpsIfd, function (tag, v) {
+            if (tag === 0x0001) {
+              latRef = v;
+            } else if (tag === 0x0002) {
+              lat = v;
+            } else if (tag === 0x0003) {
+              lonRef = v;
+            } else if (tag === 0x0004) {
+              lon = v;
+            }
+          });
+          if (lat && lon && typeof lat === 'object' && typeof lon === 'object' && lat.length === 3 && lon.length === 3) {
+            fields.gpsLat = dmsToDeg(lat) * (latRef === 'S' ? -1 : 1);
+            fields.gpsLon = dmsToDeg(lon) * (lonRef === 'W' ? -1 : 1);
+          }
+        }
+
+        return { ok: true, fields: fields };
+      }
+
+      function parseSOF(bytes) {
+        var i = 2;
+        var len = bytes.length;
+        while (i + 4 < len) {
+          if (bytes[i] !== 0xFF) {
+            i++;
+            continue;
+          }
+          var marker = bytes[i + 1];
+          if (marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+            i += 2;
+            continue;
+          }
+          if (marker === 0xD9) break;
+          var segLen = (bytes[i + 2] << 8) | bytes[i + 3];
+          if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+            return {
+              width: (bytes[i + 7] << 8) | bytes[i + 8],
+              height: (bytes[i + 5] << 8) | bytes[i + 6]
+            };
+          }
+          i += 2 + segLen;
+        }
+        return null;
+      }
+
+      function findExifOffset(bytes) {
+        var i = 2;
+        var len = bytes.length;
+        while (i + 10 < len) {
+          if (bytes[i] !== 0xFF) {
+            i++;
+            continue;
+          }
+          var marker = bytes[i + 1];
+          if (marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+            i += 2;
+            continue;
+          }
+          if (marker === 0xD9) break;
+          var segLen = (bytes[i + 2] << 8) | bytes[i + 3];
+          if (marker === 0xE1 && segLen > 8
+            && bytes[i + 4] === 0x45 && bytes[i + 5] === 0x78
+            && bytes[i + 6] === 0x69 && bytes[i + 7] === 0x66
+            && bytes[i + 8] === 0x00 && bytes[i + 9] === 0x00) {
+            return i + 10;
+          }
+          i += 2 + segLen;
+        }
+        return -1;
+      }
+
+      function fmtShutter(rt) {
+        if (!rt || !rt.den) return '—';
+        if (rt.den !== 0 && rt.num !== 0 && rt.den / rt.num >= 1) {
+          var s = rt.den / rt.num;
+          if (Math.abs(s - Math.round(s)) < 0.01) return '1/' + Math.round(s) + ' 秒';
+          return '1/' + s.toFixed(1) + ' 秒';
+        }
+        if (rt.den === 0) return '—';
+        return (rt.num / rt.den).toFixed(2) + ' 秒';
+      }
+
+      function fmtFNumber(rt) {
+        if (!rt || !rt.den || rt.den === 0) return '—';
+        return 'F' + (rt.num / rt.den).toFixed(1);
+      }
+
+      function fmtFocal(rt) {
+        if (!rt || !rt.den || rt.den === 0) return '—';
+        return (rt.num / rt.den).toFixed(1) + ' mm';
+      }
+
+      function fmtBias(rt) {
+        if (!rt || !rt.den || rt.den === 0) return '—';
+        var v = rt.num / rt.den;
+        return (v > 0 ? '+' : '') + v.toFixed(2) + ' EV';
+      }
+
+      function fmtFlash(v) {
+        if (v === null || v === undefined) return '—';
+        return (v & 1) ? '触发' : '未触发';
+      }
+
+      function fmtWhiteBalance(v) {
+        if (v === null || v === undefined) return '—';
+        if (v === 0) return '自动';
+        if (v === 1) return '手动';
+        return String(v);
+      }
+
+      function fmtOrientation(v) {
+        var map = {
+          1: '横向（正常）',
+          2: '水平翻转',
+          3: '旋转 180°',
+          4: '垂直翻转',
+          5: '旋转 90° 后水平翻转',
+          6: '顺时针旋转 90°',
+          7: '旋转 90° 后垂直翻转',
+          8: '逆时针旋转 90°'
+        };
+        if (v === null || v === undefined) return '—';
+        return map[v] || String(v);
+      }
+
+      function fmtGps(deg) {
+        if (deg === null || deg === undefined || isNaN(deg)) return '—';
+        var abs = Math.abs(deg).toFixed(6);
+        return abs + '° ' + (deg >= 0 ? 'N' : 'S');
+      }
+
+      function fmtGpsLon(deg) {
+        if (deg === null || deg === undefined || isNaN(deg)) return '—';
+        var abs = Math.abs(deg).toFixed(6);
+        return abs + '° ' + (deg >= 0 ? 'E' : 'W');
+      }
+
+      function detectFormat(bytes) {
+        if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'PNG';
+        if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
+          && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'WebP';
+        if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return 'GIF';
+        if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4D) return 'BMP';
+        if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8) return 'JPEG';
+        return '未知';
+      }
+
+      function renderRows(rows) {
+        var html = '';
+        var i;
+        for (i = 0; i < rows.length; i++) {
+          html += '<tr><th>' + htmlEscape(rows[i][0]) + '</th><td class="exif-mono">' + htmlEscape(rows[i][1]) + '</td></tr>';
+        }
+        return html;
+      }
+
+      function handleFile(file) {
+        var reader = new FileReader();
+        reader.onload = function () {
+          var buf = reader.result;
+          var bytes = new Uint8Array(buf);
+          var format = detectFormat(bytes);
+          if (format !== 'JPEG') {
+            exifTable.style.display = 'none';
+            exifBody.innerHTML = '';
+            outputEl.textContent = format + ' 图片通常不含 EXIF 信息（JPEG 才有），无法解析。';
+            fileInfo.textContent = '已选择：' + file.name + '（' + format + '）';
+            setStatus('该格式不含 EXIF 信息', 'error');
+            return;
+          }
+          var dv = new DataView(buf);
+          var tiffOff = findExifOffset(bytes);
+          var dims = parseSOF(bytes);
+          var fields = {};
+          var err = null;
+          if (tiffOff === -1) {
+            err = '此 JPEG 不包含 EXIF 段';
+          } else {
+            var result = parseTiff(dv, tiffOff);
+            if (result.ok) {
+              fields = result.fields;
+            } else {
+              err = result.error;
+            }
+          }
+          if (err) {
+            exifTable.style.display = 'none';
+            exifBody.innerHTML = '';
+            outputEl.textContent = err + '。';
+            fileInfo.textContent = '已选择：' + file.name + '（JPEG）';
+            setStatus(err, 'error');
+            return;
+          }
+          var rows = [
+            ['相机厂商', fields.make || '—'],
+            ['相机型号', fields.model || '—'],
+            ['拍摄时间', fields.dateTimeOriginal || fields.dateTime || '—'],
+            ['曝光时间', fmtShutter(fields.exposureTime)],
+            ['光圈 FNumber', fmtFNumber(fields.fnumber)],
+            ['ISO', (fields.iso !== null && fields.iso !== undefined) ? String(fields.iso) : '—'],
+            ['焦距', fmtFocal(fields.focalLength)],
+            ['曝光补偿', fmtBias(fields.exposureBias)],
+            ['白平衡', fmtWhiteBalance(fields.whiteBalance)],
+            ['闪光灯', fmtFlash(fields.flash)],
+            ['方向', fmtOrientation(fields.orientation)],
+            ['尺寸', dims ? dims.width + ' × ' + dims.height + ' px' : '—'],
+            ['GPS 纬度', fmtGps(fields.gpsLat)],
+            ['GPS 经度', fmtGpsLon(fields.gpsLon)]
+          ];
+          exifTable.style.display = 'table';
+          exifBody.innerHTML = renderRows(rows);
+          outputEl.textContent = '已解析 ' + file.name + '：' + (dims ? dims.width + '×' + dims.height : '尺寸未知') + '，共 14 个字段。';
+          fileInfo.textContent = '已选择：' + file.name + '（JPEG，' + Math.round(file.size / 1024) + ' KB）';
+          setStatus('EXIF 解析完成');
+        };
+        reader.onerror = function () {
+          setStatus('文件读取失败', 'error');
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (file) handleFile(file);
+      });
+
+      resetBtn.addEventListener('click', function () {
+        fileInput.value = '';
+        exifTable.style.display = 'none';
+        exifBody.innerHTML = '';
+        outputEl.textContent = '';
+        fileInfo.textContent = '支持 JPEG（含 EXIF 段）。PNG、WebP 等格式通常不含 EXIF 信息。';
+        setStatus('已重置');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

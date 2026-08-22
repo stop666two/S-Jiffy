@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 目录生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>Markdown 目录生成器</h1>
+    <p class="tool-desc">粘贴 Markdown 内容，自动解析标题层级并生成带锚点的 TOC 目录，代码块内的标题会被跳过。</p>
+    <div class="card">
+      <label for="mdInput" class="field-label">Markdown 内容</label>
+      <textarea id="mdInput" class="input textarea js-focus-input" placeholder="# 一级标题&#10;## 二级标题&#10;### 三级标题&#10;..."></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('mdInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function toAnchor(text) {
+        var anchor = '';
+        var lower = text.toLowerCase();
+        for (var i = 0; i < lower.length; i++) {
+          var ch = lower.charAt(i);
+          if (ch === ' ') {
+            anchor += '-';
+          } else if (/[a-z0-9\u4e00-\u9fff_-]/.test(ch)) {
+            anchor += ch;
+          }
+        }
+        return anchor;
+      }
+
+      function buildToc(markdown) {
+        var lines = markdown.split(/\r?\n/);
+        var headings = [];
+        var inCode = false;
+        var counts = {};
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (/^\s*```/.test(line)) { inCode = !inCode; continue; }
+          if (inCode) continue;
+          var m = /^(#{1,6})\s+(.+)$/.exec(line);
+          if (m) {
+            var level = m[1].length;
+            var title = m[2].trim();
+            if (!title) continue;
+            headings.push({ level: level, title: title, anchor: toAnchor(title) });
+            var key = 'h' + level;
+            counts[key] = (counts[key] || 0) + 1;
+          }
+        }
+        return { headings: headings, counts: counts };
+      }
+
+      function generate() {
+        var markdown = inputEl.value;
+        if (!markdown.trim()) {
+          outputEl.textContent = '';
+          setStatus('');
+          return;
+        }
+        var built = buildToc(markdown);
+        if (!built.headings.length) {
+          outputEl.textContent = '';
+          setStatus('未检测到任何标题（# 开头），请检查输入内容', 'error');
+          return;
+        }
+        var seen = {};
+        var lines = [];
+        var statParts = [];
+        var total = 0;
+        for (var i = 1; i <= 6; i++) {
+          var key = 'h' + i;
+          if (built.counts[key]) {
+            statParts.push('H' + i + '×' + built.counts[key]);
+            total += built.counts[key];
+          }
+        }
+        lines.push('<!-- 共 ' + total + ' 个标题（' + statParts.join('、') + '） -->');
+        lines.push('');
+        lines.push('## 目录');
+        for (var j = 0; j < built.headings.length; j++) {
+          var h = built.headings[j];
+          var base = h.anchor;
+          if (seen[h.anchor] === undefined) {
+            seen[h.anchor] = 0;
+          } else {
+            seen[h.anchor] += 1;
+            h.anchor = base + '-' + seen[h.anchor];
+          }
+          var indent = '';
+          for (var k = 1; k < h.level; k++) indent += '  ';
+          lines.push(indent + '- [' + h.title + '](#' + h.anchor + ')');
+        }
+        outputEl.textContent = lines.join('\n');
+        setStatus('已生成 ' + total + ' 条目录');
+      }
+
+      inputEl.addEventListener('input', generate);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      generate();
+    })();
+  </script>
+</body>
+</html>

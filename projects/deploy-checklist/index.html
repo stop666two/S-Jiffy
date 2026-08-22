@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>部署检查清单 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .progress-wrap { margin: var(--space-3) 0 var(--space-2); }
+    .progress-bar { height: 8px; background: var(--color-bg-soft); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--color-border); }
+    .progress-fill { height: 100%; width: 0; background: var(--color-success); transition: width 0.2s; }
+    .progress-text { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: 4px; }
+    .cat-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-primary); margin: var(--space-3) 0 var(--space-1); }
+    .check-item { display: flex; align-items: flex-start; gap: var(--space-1); padding: 6px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 6px; background: var(--color-bg); }
+    .check-item input { margin-top: 3px; accent-color: var(--color-accent); }
+    .check-item.done { background: var(--color-bg-soft); }
+    .check-item .t { font-size: var(--font-size-sm); line-height: 1.5; }
+    .check-item .h { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 2px; }
+    .check-item.done .t { color: var(--color-text-disabled); text-decoration: line-through; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>部署检查清单</h1>
+    <p class="tool-desc">36 项部署安全检查，逐项确认并生成部署报告。</p>
+    <div class="card">
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">尚未勾选任何项目</div>
+      </div>
+      <div id="checklist"></div>
+      <div class="actions">
+        <button id="resetBtn" class="btn btn-secondary">重置清单</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var CATS = [
+        { key: 'backup', title: '备份与回滚', items: [
+          { t: '数据库已备份（含测试恢复演练）' },
+          { t: '静态资源与上传目录已备份' },
+          { t: '回滚方案已确认（版本、命令、负责人）' }
+        ] },
+        { key: 'db', title: '数据库迁移', items: [
+          { t: '迁移脚本已在预发布环境执行' },
+          { t: '迁移前快照或转储已完成' },
+          { t: '迁移后 schema 版本一致且可回滚' }
+        ] },
+        { key: 'env', title: '环境变量与密钥', items: [
+          { t: '所有环境变量已配置且值正确' },
+          { t: '密钥与 Token 未写入代码和日志' },
+          { t: '生产环境变量与本地配置隔离' }
+        ] },
+        { key: 'deps', title: '依赖安装', items: [
+          { t: '依赖安装完成且 lockfile 校验通过' },
+          { t: '构建依赖与运行依赖已分离' },
+          { t: '包源与镜像可用性已确认' }
+        ] },
+        { key: 'build', title: '构建产物', items: [
+          { t: '构建通过且产物可复现' },
+          { t: '产物版本号与哈希已记录' },
+          { t: '旧产物已归档或清理' }
+        ] },
+        { key: 'logging', title: '日志与监控', items: [
+          { t: '应用日志级别正确且可检索' },
+          { t: '关键指标已接入监控与告警' },
+          { t: '日志脱敏规则已生效' }
+        ] },
+        { key: 'health', title: '健康检查', items: [
+          { t: '健康检查端点返回正常' },
+          { t: '端口、进程与服务状态验证通过' },
+          { t: '依赖服务（数据库、缓存、队列）连通' }
+        ] },
+        { key: 'security', title: '安全头', items: [
+          { t: '安全响应头已配置（CSP、HSTS 等）' },
+          { t: '敏感接口鉴权与限流生效' },
+          { t: '已知漏洞依赖已修复或评估豁免' }
+        ] },
+        { key: 'perm', title: '权限', items: [
+          { t: '服务账号权限保持最小化' },
+          { t: '文件与目录属主、权限正确' },
+          { t: '防火墙规则检查，无多余开放端口' }
+        ] },
+        { key: 'cache', title: '缓存清理', items: [
+          { t: '应用与框架缓存已刷新' },
+          { t: 'CDN 与边缘缓存已失效' },
+          { t: '浏览器缓存版本号已更新' }
+        ] },
+        { key: 'dns', title: 'DNS/SSL', items: [
+          { t: 'DNS 解析指向新环境' },
+          { t: 'SSL 证书有效且可自动续期' },
+          { t: '域名与子域配置符合预期' }
+        ] },
+        { key: 'gray', title: '灰度验证', items: [
+          { t: '小流量验证通过后再放量' },
+          { t: '关键用户路径冒烟测试通过' },
+          { t: '回滚条件与触发人已明确' }
+        ] }
+      ];
+
+      var checklistEl = document.getElementById('checklist');
+      var progressFill = document.getElementById('progressFill');
+      var progressText = document.getElementById('progressText');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var state = loadPreference('deploy-checklist', {});
+      var total = 0;
+
+      function render() {
+        var html = '';
+        total = 0;
+        for (var c = 0; c < CATS.length; c++) {
+          var cat = CATS[c];
+          html += '<div class="cat-title">' + htmlEscape(cat.title) + '</div>';
+          for (var i = 0; i < cat.items.length; i++) {
+            var id = cat.key + '-' + i;
+            total++;
+            var checked = !!state[id];
+            html += '<div class="check-item' + (checked ? ' done' : '') + '" id="item-' + id + '">'
+              + '<input type="checkbox" id="chk-' + id + '"' + (checked ? ' checked' : '') + (total === 1 ? ' class="js-focus-input"' : '') + '>'
+              + '<div><div class="t">' + htmlEscape(cat.items[i].t) + '</div></div>'
+              + '</div>';
+          }
+        }
+        checklistEl.innerHTML = html;
+        var boxes = checklistEl.querySelectorAll('input[type="checkbox"]');
+        for (var j = 0; j < boxes.length; j++) {
+          boxes[j].addEventListener('change', function () {
+            var chk = this;
+            var id = chk.id.slice(4);
+            state[id] = chk.checked;
+            document.getElementById('item-' + id).className = 'check-item' + (chk.checked ? ' done' : '');
+            savePreference('deploy-checklist', state);
+            updateProgress();
+          });
+        }
+        updateProgress();
+      }
+
+      function countDone() {
+        var done = 0;
+        for (var key in state) {
+          if (state[key]) done++;
+        }
+        return done;
+      }
+
+      function updateProgress() {
+        var done = countDone();
+        var pct = Math.round(done / total * 100);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = '已通过 ' + done + ' / ' + total + '（' + pct + '%）';
+        var report = buildReport(done, pct);
+        output.textContent = report;
+        if (done === total) {
+          setStatus('全部通过，可以安全部署！');
+        }
+      }
+
+      function buildReport(done, pct) {
+        var lines = [];
+        lines.push('部署检查清单报告');
+        lines.push('检查时间：' + new Date().toLocaleString('zh-CN'));
+        lines.push('通过：' + done + ' / ' + total + '（' + pct + '%）');
+        lines.push('');
+        lines.push('已通过项：');
+        var doneCount = 0;
+        for (var c = 0; c < CATS.length; c++) {
+          var cat = CATS[c];
+          for (var i = 0; i < cat.items.length; i++) {
+            var id = cat.key + '-' + i;
+            if (state[id]) {
+              lines.push('[✓] ' + cat.title + ' - ' + cat.items[i].t);
+              doneCount++;
+            }
+          }
+        }
+        if (doneCount === 0) lines.push('（无）');
+        lines.push('');
+        lines.push('待办项：');
+        for (var c2 = 0; c2 < CATS.length; c2++) {
+          var cat2 = CATS[c2];
+          for (var i2 = 0; i2 < cat2.items.length; i2++) {
+            var id2 = cat2.key + '-' + i2;
+            if (!state[id2]) {
+              lines.push('[ ] ' + cat2.title + ' - ' + cat2.items[i2].t);
+            }
+          }
+        }
+        lines.push('');
+        lines.push(done === total ? '结论：全部通过，可以部署。' : '结论：还有 ' + (total - done) + ' 项待确认，请处理后重新检查。');
+        return lines.join('\n');
+      }
+
+      document.getElementById('resetBtn').addEventListener('click', function () {
+        var self = this;
+        showConfirm('确定要重置全部检查项吗？', function (ok) {
+          if (!ok) return;
+          state = {};
+          savePreference('deploy-checklist', state);
+          checklistEl.innerHTML = '';
+          render();
+          setStatus('清单已重置');
+        });
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

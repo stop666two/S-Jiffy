@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 变量提取器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 90px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .var-row { font-size: var(--font-size-sm); margin: 4px 0; word-break: break-all; }
+    .unused-item { font-size: var(--font-size-sm); color: var(--color-error); word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>CSS 变量提取器</h1>
+    <p class="tool-desc">粘贴 CSS 文本，自动列出全部 --变量 定义（名称、值、行号）、引用次数与未使用变量。</p>
+    <div class="card">
+      <div class="field-row" style="align-items:flex-start;">
+        <label>CSS 文本</label>
+        <textarea id="cssInput" class="input textarea js-focus-input" placeholder="粘贴包含 CSS 自定义属性的样式代码…" style="min-height:220px;"></textarea>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var cssInput = document.getElementById('cssInput');
+      var outputText = document.getElementById('outputText');
+
+      function stripComments(text) {
+        return text.replace(/\/\*[\s\S]*?\*\//g, function (m) {
+          var newlines = m.split('\n').length - 1;
+          return newlines > 0 ? new Array(newlines + 1).join('\n') : '';
+        });
+      }
+
+      function parseVars(text) {
+        var clean = stripComments(text);
+        var vars = [];
+        var re = /--([a-zA-Z0-9_-]+)\s*:\s*([^;{}]*(?:\([^;{}]*\)[^;{}]*)*)/g;
+        var m;
+        while ((m = re.exec(clean)) !== null) {
+          var line = clean.slice(0, m.index).split('\n').length;
+          vars.push({ name: '--' + m[1], value: m[2].trim(), line: line });
+        }
+        return vars;
+      }
+
+      function countOccurrences(haystack, needle) {
+        var count = 0;
+        var idx = 0;
+        while (idx !== -1) {
+          idx = haystack.indexOf(needle, idx);
+          if (idx !== -1) {
+            count++;
+            idx += needle.length;
+          }
+        }
+        return count;
+      }
+
+      function render() {
+        var text = cssInput.value;
+        if (!text) {
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        var vars = parseVars(text);
+        if (!vars.length) {
+          outputText.textContent = '未检测到 CSS 变量定义';
+          setStatus('未找到任何 --变量 定义');
+          return;
+        }
+        var used = 0;
+        var unusedList = [];
+        var html = '<div style="margin-bottom:var(--space-1);font-size:var(--font-size-base);">共定义 <b>' + vars.length + '</b> 个变量</div>';
+        for (var i = 0; i < vars.length; i++) {
+          var v = vars[i];
+          var count = countOccurrences(text, 'var(' + v.name + ')');
+          if (count > 0) {
+            used++;
+          } else {
+            unusedList.push(v.name);
+          }
+          html += '<div class="var-row">' +
+            '<span style="color:var(--color-success);">' + htmlEscape(v.name) + '</span>' +
+            ' <span style="color:var(--color-text-secondary);">= ' + htmlEscape(v.value) + '</span>' +
+            ' <span style="color:var(--color-text-disabled);">行 ' + v.line + ' · 引用 ' + count + ' 次</span>' +
+            '</div>';
+        }
+        if (unusedList.length) {
+          html += '<div style="margin-top:var(--space-2);font-size:var(--font-size-sm);">未使用变量（' + unusedList.length + ' 个）：</div>';
+          for (var k = 0; k < unusedList.length; k++) {
+            html += '<div class="unused-item">' + htmlEscape(unusedList[k]) + '</div>';
+          }
+        }
+        outputText.innerHTML = html;
+        setStatus('已提取 ' + vars.length + ' 个变量，使用中 ' + used + ' 个');
+      }
+
+      cssInput.addEventListener('input', render);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!outputText.textContent) return;
+        copyToClipboard(outputText.textContent, this);
+        setStatus('已复制');
+      });
+    })();
+  </script>
+</body>
+</html>

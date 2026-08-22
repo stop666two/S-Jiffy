@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REST CRUD 脚手架 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .field-row .input { flex: 1; min-width: 180px; }
+    .field-hint { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-1); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>REST CRUD 脚手架</h1>
+    <p class="tool-desc">输入资源名与字段定义，自动生成列表/创建/查询/更新/删除 5 个 REST 端点的 curl 命令及请求响应示例。</p>
+    <div class="card">
+      <div class="field-row">
+        <input id="resourceName" class="input js-focus-input" placeholder="资源名，如 user">
+        <button class="btn btn-primary" id="generateBtn">生成脚手架</button>
+      </div>
+      <div class="field-hint">字段定义：每行「name:type」，多行或逗号分隔均可。类型支持 int / string / bool / float / email / date</div>
+      <textarea id="fieldInput" class="input textarea" rows="6" placeholder="id:int&#10;name:string&#10;email:email&#10;age:int"></textarea>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var output = document.getElementById('outputText');
+      var current = '';
+
+      function pluralize(name) {
+        var last = name.charAt(name.length - 1);
+        var tail2 = name.slice(-2);
+        if (tail2 === 'ch' || tail2 === 'sh') return name + 'es';
+        if (last === 's') return name;
+        if (last === 'x' || last === 'z') return name + 'es';
+        if (last === 'y') {
+          var prev = name.charAt(name.length - 2);
+          if ('aeiou'.indexOf(prev) === -1) return name.slice(0, -1) + 'ies';
+          return name + 's';
+        }
+        return name + 's';
+      }
+
+      function parseFields(text) {
+        var fields = [];
+        var parts = String(text || '').split(/[\r\n,]+/);
+        for (var i = 0; i < parts.length; i++) {
+          var part = parts[i].trim();
+          if (!part) continue;
+          var seg = part.split(':');
+          var name = (seg[0] || '').trim();
+          var type = ((seg[1] || 'string') + (seg.length > 2 ? ':' + seg.slice(2).join(':') : '')).trim().toLowerCase();
+          if (!name || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) continue;
+          fields.push({ name: name, type: type });
+        }
+        return fields;
+      }
+
+      function sampleValue(type) {
+        if (type === 'int' || type === 'integer' || type === 'number') return '1';
+        if (type === 'bool' || type === 'boolean') return 'true';
+        if (type === 'float') return '1.5';
+        if (type === 'email') return 'user@example.com';
+        if (type === 'date') return '2026-08-21';
+        return 'sample';
+      }
+
+      function makeObj(fields, includeId) {
+        var obj = {};
+        if (includeId) obj.id = 1;
+        for (var i = 0; i < fields.length; i++) {
+          var f = fields[i];
+          var t = f.type;
+          if (t === 'int' || t === 'integer' || t === 'number') obj[f.name] = 1;
+          else if (t === 'float') obj[f.name] = 1.5;
+          else if (t === 'bool' || t === 'boolean') obj[f.name] = true;
+          else obj[f.name] = sampleValue(t);
+        }
+        return obj;
+      }
+
+      function generate() {
+        var resource = document.getElementById('resourceName').value.trim();
+        if (!resource) {
+          output.innerHTML = '';
+          current = '';
+          setStatus('请输入资源名，如 user', 'error');
+          return;
+        }
+        if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(resource)) {
+          output.innerHTML = '';
+          current = '';
+          setStatus('资源名不合法：必须以字母开头，仅含字母/数字/下划线', 'error');
+          return;
+        }
+        var fields = parseFields(document.getElementById('fieldInput').value);
+        if (!fields.length) fields = [{ name: 'name', type: 'string' }];
+        var plural = pluralize(resource);
+        var base = 'http://localhost:3000/api/' + plural;
+        var body = makeObj(fields, false);
+        var created = makeObj(fields, true);
+        var bodyJson = JSON.stringify(body);
+        var lines = [];
+        lines.push('资源：' + resource + '  复数形式：' + plural);
+        lines.push('');
+        lines.push('【1. 列表 LIST】GET ' + base);
+        lines.push('curl -X GET ' + "'" + base + "'");
+        lines.push('响应 200 OK:');
+        lines.push(JSON.stringify({ data: [created], total: 1 }, null, 2));
+        lines.push('');
+        lines.push('【2. 创建 CREATE】POST ' + base);
+        lines.push("curl -X POST '" + base + "' -H 'Content-Type: application/json' -d '" + bodyJson + "'");
+        lines.push('请求体:');
+        lines.push(JSON.stringify(body, null, 2));
+        lines.push('响应 201 Created:');
+        lines.push(JSON.stringify({ data: created }, null, 2));
+        lines.push('');
+        lines.push('【3. 查询 GET】GET ' + base + '/{id}');
+        lines.push("curl -X GET '" + base + "/1'");
+        lines.push('响应 200 OK:');
+        lines.push(JSON.stringify({ data: created }, null, 2));
+        lines.push('');
+        lines.push('【4. 更新 UPDATE】PUT ' + base + '/{id}');
+        lines.push("curl -X PUT '" + base + "/1' -H 'Content-Type: application/json' -d '" + bodyJson + "'");
+        lines.push('请求体:');
+        lines.push(JSON.stringify(body, null, 2));
+        lines.push('响应 200 OK:');
+        lines.push(JSON.stringify({ data: created }, null, 2));
+        lines.push('');
+        lines.push('【5. 删除 DELETE】DELETE ' + base + '/{id}');
+        lines.push("curl -X DELETE '" + base + "/1'");
+        lines.push('响应 204 No Content（成功删除，无响应体）');
+        current = lines.join('\n');
+        output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
+        setStatus('已生成 ' + resource + ' 的 CRUD 脚手架');
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', generate);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!current) return;
+        copyToClipboard(current, this);
+        setStatus('已复制脚手架内容');
+      });
+    })();
+  </script>
+</body>
+</html>

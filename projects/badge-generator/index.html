@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>徽章生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .color-row { display: flex; gap: var(--space-3); align-items: end; }
+    .color-row .field { flex: 1; }
+    .color-row input[type="color"] { width: 56px; height: 36px; padding: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); cursor: pointer; }
+    .preview-box { display: flex; align-items: center; justify-content: center; min-height: 64px; margin: var(--space-3) 0; padding: var(--space-2); background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>徽章生成器</h1>
+    <p class="tool-desc">自绘 shields.io 风格 SVG 徽章，输出 SVG 代码与 Markdown 嵌入语法。</p>
+    <div class="card">
+      <div class="color-row">
+        <div class="field">
+          <label>左侧标签文字</label>
+          <input id="badgeLabel" class="input js-focus-input" value="build">
+        </div>
+        <div class="field">
+          <label>右侧值文字</label>
+          <input id="badgeValue" class="input" value="passing">
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="field">
+          <label>左侧颜色</label>
+          <input id="labelColor" type="color" value="#555555">
+        </div>
+        <div class="field">
+          <label>右侧颜色</label>
+          <input id="valueColor" type="color" value="#4c1">
+        </div>
+        <div class="field">
+          <label>样式</label>
+          <select id="badgeStyle" class="input">
+            <option value="flat" selected>flat（扁平）</option>
+            <option value="plastic">plastic（立体）</option>
+          </select>
+        </div>
+      </div>
+      <div class="preview-box" id="previewBox"></div>
+      <div class="actions">
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var labelInput = document.getElementById('badgeLabel');
+      var valueInput = document.getElementById('badgeValue');
+      var labelColor = document.getElementById('labelColor');
+      var valueColor = document.getElementById('valueColor');
+      var styleSelect = document.getElementById('badgeStyle');
+      var preview = document.getElementById('previewBox');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function estimateWidth(text) {
+        var w = 0;
+        for (var i = 0; i < text.length; i++) {
+          w += text.charCodeAt(i) > 127 ? 13 : 6.5;
+        }
+        return Math.max(22, Math.round(w + 12));
+      }
+
+      function buildSvg() {
+        var label = labelInput.value.trim();
+        var value = valueInput.value.trim();
+        if (!label) { setStatus('请输入左侧标签文字', 'error'); return null; }
+        if (!value) { setStatus('请输入右侧值文字', 'error'); return null; }
+        var lc = labelColor.value;
+        var vc = valueColor.value;
+        var style = styleSelect.value;
+        var lw = estimateWidth(label);
+        var vw = estimateWidth(value);
+        var w = lw + vw;
+        var h = 20;
+        var lx = Math.round(lw / 2);
+        var vx = lw + Math.round(vw / 2);
+        var escL = htmlEscape(label);
+        var escV = htmlEscape(value);
+        var s = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" role="img" aria-label="' + escL + ': ' + escV + '">\n';
+        s += '<title>' + escL + ': ' + escV + '</title>\n';
+        if (style === 'plastic') {
+          s += '<linearGradient id="s" x2="0" y2="100%">\n';
+          s += '<stop offset="0" stop-color="#ffffff" stop-opacity="0.4"/>\n';
+          s += '<stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>\n';
+          s += '</linearGradient>\n';
+        }
+        s += '<clipPath id="r"><rect width="' + w + '" height="' + h + '" rx="3" fill="#ffffff"/></clipPath>\n';
+        s += '<g clip-path="url(#r)">\n';
+        s += '<rect width="' + lw + '" height="' + h + '" fill="' + lc + '"/>\n';
+        s += '<rect x="' + lw + '" width="' + vw + '" height="' + h + '" fill="' + vc + '"/>\n';
+        if (style === 'plastic') s += '<rect width="' + w + '" height="' + h + '" fill="url(#s)"/>\n';
+        s += '</g>\n';
+        s += '<g fill="#ffffff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">\n';
+        s += '<text x="' + lx + '" y="15" fill="#010101" fill-opacity="0.35">' + escL + '</text>\n';
+        s += '<text x="' + lx + '" y="14">' + escL + '</text>\n';
+        s += '<text x="' + vx + '" y="15" fill="#010101" fill-opacity="0.35">' + escV + '</text>\n';
+        s += '<text x="' + vx + '" y="14">' + escV + '</text>\n';
+        s += '</g>\n';
+        s += '</svg>';
+        return s;
+      }
+
+      function refresh() {
+        var svg = buildSvg();
+        if (svg === null) {
+          preview.innerHTML = '';
+          output.textContent = '';
+          return;
+        }
+        preview.innerHTML = svg;
+        var md = '![badge](data:image/svg+xml;utf8,' + encodeURIComponent(svg) + ')';
+        output.textContent = 'SVG 代码：\n\n' + svg + '\n\nMarkdown 嵌入语法：\n\n' + md;
+        setStatus('徽章已生成，实时预览见上方');
+      }
+
+      var inputs = [labelInput, valueInput, labelColor, valueColor, styleSelect];
+      for (var i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('input', refresh);
+        inputs[i].addEventListener('change', refresh);
+      }
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        preview.innerHTML = '';
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+
+      refresh();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>矩阵计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mtx-row { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .mtx-col { display: flex; flex-direction: column; gap: var(--space-1); flex: 1; min-width: 220px; }
+    .mtx-col label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .mtx-col .textarea { font-family: var(--font-mono); min-height: 120px; resize: vertical; }
+    .op-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .op-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .res-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: block; margin-bottom: var(--space-1); }
+    .matrix-out { font-family: var(--font-mono); font-size: var(--font-size-base); color: var(--color-text-primary); white-space: pre; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>矩阵计算器</h1>
+    <p class="tool-desc">输入矩阵执行转置、行列式、逆矩阵、乘法、加法与减法运算，结果精确到 6 位小数。</p>
+    <div class="card">
+      <div class="mtx-row">
+        <div class="mtx-col">
+          <label for="matA">矩阵 A（每行换行，列用空格或逗号分隔）</label>
+          <textarea id="matA" class="input textarea js-focus-input" placeholder="1 2 3&#10;4 5 6&#10;7 8 9"></textarea>
+        </div>
+        <div class="mtx-col" id="matBCol" style="display:none;">
+          <label for="matB">矩阵 B（每行换行，列用空格或逗号分隔）</label>
+          <textarea id="matB" class="input textarea" placeholder="9 8 7&#10;6 5 4&#10;3 2 1"></textarea>
+        </div>
+      </div>
+      <div class="op-row">
+        <label for="opSelect">操作</label>
+        <select id="opSelect" class="input">
+          <option value="transpose">转置</option>
+          <option value="determinant">行列式</option>
+          <option value="inverse">逆矩阵</option>
+          <option value="multiply">矩阵 × 矩阵</option>
+          <option value="add">加法 A + B</option>
+          <option value="subtract">减法 A - B</option>
+        </select>
+        <button class="btn btn-primary" id="calcBtn">计算</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var matAEl = document.getElementById('matA');
+      var matBEl = document.getElementById('matB');
+      var matBCol = document.getElementById('matBCol');
+      var opEl = document.getElementById('opSelect');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function round6(v) {
+        var r = Math.round(v * 1e6) / 1e6;
+        if (Math.abs(r) < 5e-7) {
+          r = 0;
+        }
+        return r;
+      }
+
+      function parseMatrix(text) {
+        var lines = String(text).split(/\r?\n/);
+        var rows = [];
+        for (var i = 0; i < lines.length; i++) {
+          var parts = lines[i].trim().split(/[,\s]+/);
+          if (parts.length === 1 && parts[0] === '') {
+            continue;
+          }
+          var row = [];
+          for (var j = 0; j < parts.length; j++) {
+            if (parts[j] === '') {
+              continue;
+            }
+            if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(parts[j])) {
+              return { error: '第 ' + (i + 1) + ' 行包含非数字："' + parts[j] + '"' };
+            }
+            row.push(parseFloat(parts[j]));
+          }
+          rows.push(row);
+        }
+        if (rows.length === 0) {
+          return { error: '矩阵不能为空' };
+        }
+        var cols = rows[0].length;
+        for (var k = 0; k < rows.length; k++) {
+          if (rows[k].length === 0) {
+            return { error: '第 ' + (k + 1) + ' 行为空' };
+          }
+          if (rows[k].length !== cols) {
+            return { error: '各行列数不一致：第 1 行 ' + cols + ' 列，第 ' + (k + 1) + ' 行 ' + rows[k].length + ' 列' };
+          }
+        }
+        return { data: rows };
+      }
+
+      function minorMat(m, skipRow, skipCol) {
+        var out = [];
+        for (var i = 0; i < m.length; i++) {
+          if (i === skipRow) {
+            continue;
+          }
+          var row = [];
+          for (var j = 0; j < m[i].length; j++) {
+            if (j !== skipCol) {
+              row.push(m[i][j]);
+            }
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function determinant(m) {
+        var n = m.length;
+        if (n === 1) {
+          return m[0][0];
+        }
+        if (n === 2) {
+          return m[0][0] * m[1][1] - m[0][1] * m[1][0];
+        }
+        var det = 0;
+        for (var j = 0; j < n; j++) {
+          var sign = j % 2 === 0 ? 1 : -1;
+          det += sign * m[0][j] * determinant(minorMat(m, 0, j));
+        }
+        return det;
+      }
+
+      function cofactorMat(m) {
+        var n = m.length;
+        var out = [];
+        for (var i = 0; i < n; i++) {
+          var row = [];
+          for (var j = 0; j < n; j++) {
+            var sign = (i + j) % 2 === 0 ? 1 : -1;
+            row.push(sign * determinant(minorMat(m, i, j)));
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function transpose(m) {
+        var out = [];
+        for (var j = 0; j < m[0].length; j++) {
+          var row = [];
+          for (var i = 0; i < m.length; i++) {
+            row.push(m[i][j]);
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function inverse(m) {
+        var det = determinant(m);
+        if (Math.abs(det) < 1e-12) {
+          return { error: '矩阵不可逆（行列式为 0）' };
+        }
+        var cof = cofactorMat(m);
+        var adj = transpose(cof);
+        var out = [];
+        for (var i = 0; i < adj.length; i++) {
+          var row = [];
+          for (var j = 0; j < adj[i].length; j++) {
+            row.push(round6(adj[i][j] / det));
+          }
+          out.push(row);
+        }
+        return { data: out };
+      }
+
+      function addMat(a, b) {
+        var out = [];
+        for (var i = 0; i < a.length; i++) {
+          var row = [];
+          for (var j = 0; j < a[i].length; j++) {
+            row.push(round6(a[i][j] + b[i][j]));
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function subMat(a, b) {
+        var out = [];
+        for (var i = 0; i < a.length; i++) {
+          var row = [];
+          for (var j = 0; j < a[i].length; j++) {
+            row.push(round6(a[i][j] - b[i][j]));
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function mulMat(a, b) {
+        var out = [];
+        for (var i = 0; i < a.length; i++) {
+          var row = [];
+          for (var j = 0; j < b[0].length; j++) {
+            var sum = 0;
+            for (var k = 0; k < a[i].length; k++) {
+              sum += a[i][k] * b[k][j];
+            }
+            row.push(round6(sum));
+          }
+          out.push(row);
+        }
+        return out;
+      }
+
+      function fmtMat(m) {
+        var widths = [];
+        var str = [];
+        for (var j = 0; j < m[0].length; j++) {
+          widths.push(0);
+        }
+        for (var i = 0; i < m.length; i++) {
+          var line = [];
+          for (var k = 0; k < m[i].length; k++) {
+            var s = fmtNum(m[i][k]);
+            line.push(s);
+            if (s.length > widths[k]) {
+              widths[k] = s.length;
+            }
+          }
+          str.push(line);
+        }
+        var lines = [];
+        for (var r = 0; r < str.length; r++) {
+          var parts = [];
+          for (var c = 0; c < str[r].length; c++) {
+            parts.push(pad(str[r][c], widths[c]));
+          }
+          lines.push(parts.join('  '));
+        }
+        return lines.join('\n');
+      }
+
+      function fmtNum(v) {
+        var r = round6(v);
+        if (Math.abs(r) < 1e-9 && r !== 0) {
+          return r.toExponential(6);
+        }
+        return String(r);
+      }
+
+      function pad(s, w) {
+        while (s.length < w) {
+          s = ' ' + s;
+        }
+        return s;
+      }
+
+      function renderResult(text) {
+        outputText.innerHTML = '<span class="res-label">结果</span><span class="matrix-out">' + htmlEscape(text) + '</span>';
+      }
+
+      function run() {
+        var op = opEl.value;
+        var needB = op === 'multiply' || op === 'add' || op === 'subtract';
+        matBCol.style.display = needB ? '' : 'none';
+        if (matAEl.value.trim() === '') {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        var pa = parseMatrix(matAEl.value);
+        if (pa.error) {
+          setStatus(pa.error, 'error');
+          return;
+        }
+        var a = pa.data;
+        if (needB) {
+          if (matBEl.value.trim() === '') {
+            setStatus('请填写矩阵 B', 'error');
+            return;
+          }
+          var pb = parseMatrix(matBEl.value);
+          if (pb.error) {
+            setStatus(pb.error, 'error');
+            return;
+          }
+          var b = pb.data;
+          if (op === 'add' || op === 'subtract') {
+            if (a.length !== b.length || a[0].length !== b[0].length) {
+              setStatus('加减运算要求两矩阵尺寸相同：A 为 ' + a.length + '×' + a[0].length + '，B 为 ' + b.length + '×' + b[0].length, 'error');
+              return;
+            }
+            var res2 = op === 'add' ? addMat(a, b) : subMat(a, b);
+            renderResult(fmtMat(res2));
+            setStatus('计算完成');
+            return;
+          }
+          if (a[0].length !== b.length) {
+            setStatus('乘法要求 A 的列数等于 B 的行数：A 为 ' + a.length + '×' + a[0].length + '，B 为 ' + b.length + '×' + b[0].length, 'error');
+            return;
+          }
+          var res3 = mulMat(a, b);
+          renderResult(fmtMat(res3));
+          setStatus('计算完成');
+          return;
+        }
+        if (op === 'transpose') {
+          renderResult(fmtMat(transpose(a)));
+          setStatus('计算完成');
+          return;
+        }
+        if (a.length !== a[0].length) {
+          setStatus('该操作要求方阵：当前为 ' + a.length + '×' + a[0].length, 'error');
+          return;
+        }
+        if (op === 'determinant') {
+          var det = determinant(a);
+          outputText.innerHTML = '<span class="res-label">行列式 det(A)</span><span class="matrix-out">' + htmlEscape(fmtNum(det)) + '</span>';
+          setStatus('计算完成');
+          return;
+        }
+        if (op === 'inverse') {
+          var inv = inverse(a);
+          if (inv.error) {
+            setStatus(inv.error, 'error');
+            return;
+          }
+          renderResult(fmtMat(inv.data));
+          setStatus('计算完成');
+        }
+      }
+
+      opEl.addEventListener('change', run);
+      calcBtn.addEventListener('click', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.trim(), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

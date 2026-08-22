@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG 分享图生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 90px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .field-row .input { max-width: 440px; }
+    .field-row input[type="color"] { width: 44px; height: 44px; padding: 0; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; background: var(--color-bg); }
+    .preview-wrap { margin-bottom: var(--space-2); }
+    .og-canvas { width: 100%; max-width: 600px; height: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: block; }
+    .btn-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>OG 分享图生成器</h1>
+    <p class="tool-desc">输入标题、描述与站点名，实时绘制 1200×630 社交分享图，一键导出 PNG。</p>
+    <div class="card">
+      <div class="preview-wrap">
+        <canvas id="ogCanvas" class="og-canvas" width="1200" height="630"></canvas>
+      </div>
+      <div class="field-row">
+        <label>标题</label>
+        <input id="titleInput" class="input js-focus-input" type="text" placeholder="分享标题（必填）">
+      </div>
+      <div class="field-row">
+        <label>描述</label>
+        <input id="descInput" class="input" type="text" placeholder="一句话描述（选填）">
+      </div>
+      <div class="field-row">
+        <label>站点名</label>
+        <input id="siteInput" class="input" type="text" placeholder="站点名称（选填）">
+      </div>
+      <div class="field-row">
+        <label>背景色</label>
+        <input id="bgInput" type="color" value="#111111">
+        <label>文字色</label>
+        <input id="fgInput" type="color" value="#ffffff">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="exportBtn">导出 PNG</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var W = 1200;
+      var H = 630;
+      var canvas = document.getElementById('ogCanvas');
+      var ctx = canvas.getContext('2d');
+      var titleInput = document.getElementById('titleInput');
+      var descInput = document.getElementById('descInput');
+      var siteInput = document.getElementById('siteInput');
+      var bgInput = document.getElementById('bgInput');
+      var fgInput = document.getElementById('fgInput');
+      var outputText = document.getElementById('outputText');
+
+      function wrapText(c, text, maxWidth) {
+        var lines = [];
+        var line = '';
+        for (var i = 0; i < text.length; i++) {
+          var ch = text.charAt(i);
+          var test = line + ch;
+          if (line !== '' && c.measureText(test).width > maxWidth) {
+            lines.push(line);
+            line = ch;
+          } else {
+            line = test;
+          }
+        }
+        if (line !== '') lines.push(line);
+        return lines;
+      }
+
+      function clipLines(c, lines, maxLines, maxWidth) {
+        if (lines.length <= maxLines) return lines;
+        var out = lines.slice(0, maxLines);
+        var last = out[maxLines - 1];
+        while (last.length > 0 && c.measureText(last + '…').width > maxWidth) {
+          last = last.slice(0, -1);
+        }
+        out[maxLines - 1] = last + '…';
+        return out;
+      }
+
+      function render() {
+        var title = titleInput.value.trim();
+        if (!title) {
+          ctx.clearRect(0, 0, W, H);
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        var bg = bgInput.value;
+        var fg = fgInput.value;
+        var desc = descInput.value.trim();
+        var site = siteInput.value.trim();
+        var margin = 60;
+        var maxW = W - margin * 2;
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = fg;
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = 'bold 76px Arial, sans-serif';
+        var titleLines = clipLines(ctx, wrapText(ctx, title, maxW), 3, maxW);
+        var y = 170;
+        var i;
+        for (i = 0; i < titleLines.length; i++) {
+          ctx.fillText(titleLines[i], margin, y);
+          y += 96;
+        }
+        var descLines = [];
+        if (desc) {
+          ctx.font = '40px Arial, sans-serif';
+          descLines = clipLines(ctx, wrapText(ctx, desc, maxW), 3, maxW);
+          var dy = Math.min(y + 40, 400);
+          for (var j = 0; j < descLines.length; j++) {
+            ctx.fillText(descLines[j], margin, dy);
+            dy += 56;
+          }
+        }
+        if (site) {
+          ctx.font = 'bold 28px Arial, sans-serif';
+          ctx.fillText(site, margin, H - 56);
+        }
+        var summary = '尺寸 1200×630 · 标题 ' + titleLines.length + ' 行';
+        if (desc) summary += ' · 描述 ' + descLines.length + ' 行';
+        summary += ' · 点击「导出 PNG」保存为 og-image.png';
+        outputText.textContent = summary;
+        setStatus('预览已更新');
+      }
+
+      function exportPng() {
+        if (!titleInput.value.trim()) {
+          setStatus('请先填写标题', 'error');
+          return;
+        }
+        var url = canvas.toDataURL('image/png');
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'og-image.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setStatus('已导出 og-image.png');
+      }
+
+      titleInput.addEventListener('input', render);
+      descInput.addEventListener('input', render);
+      siteInput.addEventListener('input', render);
+      bgInput.addEventListener('input', render);
+      fgInput.addEventListener('input', render);
+      document.getElementById('exportBtn').addEventListener('click', exportPng);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!outputText.textContent) return;
+        copyToClipboard(outputText.textContent, this);
+        setStatus('已复制');
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

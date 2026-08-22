@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>.htaccess 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) var(--space-3); margin: var(--space-2) 0; }
+    .opt-grid label { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); cursor: pointer; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+    .opt-grid label:hover { background: var(--color-bg-soft); }
+    .opt-grid input { accent-color: var(--color-accent); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    @media (max-width: 600px) { .opt-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>.htaccess 生成器</h1>
+    <p class="tool-desc">按需勾选功能，生成可直接部署的 Apache .htaccess 配置。</p>
+    <div class="card">
+      <div class="field">
+        <label>域名（www 跳转与 HTTPS 跳转使用）</label>
+        <input id="domain" class="input js-focus-input" placeholder="如 example.com">
+      </div>
+      <div class="field">
+        <label>自定义 404 页面路径</label>
+        <input id="errorPage" class="input" value="/404.html" placeholder="如 /404.html">
+      </div>
+      <div class="field">
+        <label>密码保护 .htpasswd 路径</label>
+        <input id="htpasswdPath" class="input" value="/path/to/.htpasswd" placeholder="如 /etc/apache2/.htpasswd">
+      </div>
+      <div class="opt-grid">
+        <label><input type="checkbox" id="optHttps" checked> 强制 HTTPS 跳转</label>
+        <label><input type="checkbox" id="optWww"> www 跳转到非 www</label>
+        <label><input type="checkbox" id="opt404"> 自定义 404 页</label>
+        <label><input type="checkbox" id="optGzip" checked> gzip 压缩</label>
+        <label><input type="checkbox" id="optCache" checked> 浏览器缓存过期</label>
+        <label><input type="checkbox" id="optIndex" checked> 禁止目录浏览</label>
+        <label><input type="checkbox" id="optRewrite"> URL 重写规则（301 示例）</label>
+        <label><input type="checkbox" id="optHeaders" checked> 安全响应头</label>
+        <label><input type="checkbox" id="optSensitive" checked> 禁止访问敏感文件</label>
+        <label><input type="checkbox" id="optCors"> CORS 跨域头</label>
+        <label><input type="checkbox" id="optAuth"> 密码保护目录</label>
+      </div>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成 .htaccess</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function isChecked(id) {
+        return document.getElementById(id).checked;
+      }
+
+      function buildHtaccess() {
+        var domain = document.getElementById('domain').value.trim();
+        var errorPage = document.getElementById('errorPage').value.trim() || '/404.html';
+        var htpasswd = document.getElementById('htpasswdPath').value.trim() || '/path/to/.htpasswd';
+        var parts = [];
+        var needRewriteEngine = isChecked('optHttps') || isChecked('optWww') || isChecked('optRewrite');
+
+        if (isChecked('optHttps')) {
+          parts.push('# 强制 HTTPS 跳转');
+          parts.push('RewriteCond %{HTTPS} off');
+          parts.push('RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]');
+          parts.push('');
+        }
+
+        if (isChecked('optWww')) {
+          if (!domain) { setStatus('勾选 www 跳转时必须填写域名', 'error'); return null; }
+          parts.push('# www 跳转到非 www');
+          parts.push('RewriteCond %{HTTP_HOST} ^www\\.(.*)$ [NC]');
+          parts.push('RewriteRule ^(.*)$ https://' + domain + '/$1 [R=301,L]');
+          parts.push('');
+        }
+
+        if (isChecked('optRewrite')) {
+          parts.push('# URL 重写示例（旧路径 301 到新路径）');
+          parts.push('RewriteRule ^old-page$ /new-page [R=301,L]');
+          parts.push('');
+        }
+
+        if (isChecked('opt404')) {
+          parts.push('# 自定义 404 页面');
+          parts.push('ErrorDocument 404 ' + errorPage);
+          parts.push('');
+        }
+
+        if (isChecked('optIndex')) {
+          parts.push('# 禁止目录浏览');
+          parts.push('Options -Indexes');
+          parts.push('');
+        }
+
+        if (isChecked('optGzip')) {
+          parts.push('# 开启 gzip 压缩');
+          parts.push('<IfModule mod_deflate.c>');
+          parts.push('  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml application/xml');
+          parts.push('</IfModule>');
+          parts.push('');
+        }
+
+        if (isChecked('optCache')) {
+          parts.push('# 浏览器缓存过期');
+          parts.push('<IfModule mod_expires.c>');
+          parts.push('  ExpiresActive On');
+          parts.push('  ExpiresByType image/png "access plus 30 days"');
+          parts.push('  ExpiresByType image/jpeg "access plus 30 days"');
+          parts.push('  ExpiresByType image/webp "access plus 30 days"');
+          parts.push('  ExpiresByType text/css "access plus 7 days"');
+          parts.push('  ExpiresByType application/javascript "access plus 7 days"');
+          parts.push('  ExpiresByType image/svg+xml "access plus 30 days"');
+          parts.push('</IfModule>');
+          parts.push('');
+        }
+
+        if (isChecked('optHeaders')) {
+          parts.push('# 安全响应头');
+          parts.push('<IfModule mod_headers.c>');
+          parts.push('  Header set X-Frame-Options "SAMEORIGIN"');
+          parts.push('  Header set X-Content-Type-Options "nosniff"');
+          parts.push('  Header set Referrer-Policy "strict-origin-when-cross-origin"');
+          parts.push('  Header set X-XSS-Protection "1; mode=block"');
+          parts.push('  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"');
+          parts.push('</IfModule>');
+          parts.push('');
+        }
+
+        if (isChecked('optSensitive')) {
+          parts.push('# 禁止访问敏感文件');
+          parts.push('<FilesMatch "\\.(env|git|htpasswd|htaccess|log|bak|sql|ini|sh)$">');
+          parts.push('  Require all denied');
+          parts.push('</FilesMatch>');
+          parts.push('');
+        }
+
+        if (isChecked('optCors')) {
+          parts.push('# CORS 跨域请求头');
+          parts.push('<IfModule mod_headers.c>');
+          parts.push('  Header set Access-Control-Allow-Origin "*"');
+          parts.push('  Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"');
+          parts.push('  Header set Access-Control-Allow-Headers "Content-Type, Authorization"');
+          parts.push('</IfModule>');
+          parts.push('');
+        }
+
+        if (isChecked('optAuth')) {
+          parts.push('# 密码保护（需先创建 .htpasswd 文件：htpasswd -c ' + htpasswd + ' 用户名）');
+          parts.push('AuthType Basic');
+          parts.push('AuthName "Restricted Area"');
+          parts.push('AuthUserFile ' + htpasswd);
+          parts.push('Require valid-user');
+          parts.push('');
+        }
+
+        while (parts.length && parts[parts.length - 1] === '') parts.pop();
+        var lines = [];
+        if (needRewriteEngine) lines.push('RewriteEngine On');
+        for (var i = 0; i < parts.length; i++) lines.push(parts[i]);
+        return lines.join('\n') + '\n';
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var ht = buildHtaccess();
+        if (ht === null) { output.textContent = ''; return; }
+        output.textContent = ht;
+        setStatus('.htaccess 已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

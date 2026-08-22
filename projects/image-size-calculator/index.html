@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片尺寸计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mode-row {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+      font-size: var(--font-size-sm);
+    }
+    .mode-row label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-2);
+    }
+    .form-item label {
+      display: block;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      margin-bottom: 4px;
+    }
+    .form-item .input {
+      width: 100%;
+    }
+    .file-hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+    }
+    .result-line {
+      display: block;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>图片尺寸计算器</h1>
+    <p class="tool-desc">等比缩放计算：输入或上传图片，得到缩放尺寸、DPR 像素需求与文件大小估算。</p>
+    <div class="card">
+      <div class="mode-row">
+        <label><input type="radio" name="mode" value="manual" checked> 手动输入</label>
+        <label><input type="radio" name="mode" value="upload"> 上传图片</label>
+      </div>
+      <div id="manualPanel">
+        <div class="form-grid">
+          <div class="form-item">
+            <label for="widthInput">原始宽度（px）</label>
+            <input id="widthInput" class="input js-focus-input" type="number" min="1" value="1920">
+          </div>
+          <div class="form-item">
+            <label for="heightInput">原始高度（px）</label>
+            <input id="heightInput" class="input" type="number" min="1" value="1080">
+          </div>
+          <div class="form-item">
+            <label for="targetWidthInput">目标宽度（px）</label>
+            <input id="targetWidthInput" class="input" type="number" min="1" value="800">
+          </div>
+          <div class="form-item">
+            <label for="bppSelect">每像素字节数</label>
+            <select id="bppSelect" class="input">
+              <option value="3">3 字节（RGB 无透明）</option>
+              <option value="4" selected>4 字节（RGBA 含透明）</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label for="compSelect">压缩率估算</label>
+            <select id="compSelect" class="input">
+              <option value="1">无压缩（原始位图）</option>
+              <option value="0.25">高质量 JPEG（约 1/4）</option>
+              <option value="0.12">中等质量 JPEG（约 1/8）</option>
+              <option value="0.06">低质量 JPEG（约 1/16）</option>
+              <option value="0.6">PNG 压缩（约 0.6）</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="uploadPanel" style="display:none;">
+        <input id="fileInput" type="file" accept="image/*" style="margin-bottom:var(--space-1);">
+        <div class="file-hint" id="fileInfo">选择本地图片后自动读取真实尺寸与文件大小，并填入上方参数。</div>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;white-space:pre-line;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var widthEl = document.getElementById('widthInput');
+      var heightEl = document.getElementById('heightInput');
+      var targetWidthEl = document.getElementById('targetWidthInput');
+      var bppSelect = document.getElementById('bppSelect');
+      var compSelect = document.getElementById('compSelect');
+      var fileInput = document.getElementById('fileInput');
+      var fileInfo = document.getElementById('fileInfo');
+      var manualPanel = document.getElementById('manualPanel');
+      var uploadPanel = document.getElementById('uploadPanel');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var modes = document.querySelectorAll('input[name="mode"]');
+      var originalInfo = '';
+
+      function fmtBytes(n) {
+        if (n < 1024) return Math.round(n) + ' B';
+        if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+        return (n / 1048576).toFixed(2) + ' MB';
+      }
+
+      function parseNum(str) {
+        var n = parseFloat(str);
+        if (isNaN(n) || n <= 0) return null;
+        return n;
+      }
+
+      function calc() {
+        var w = parseNum(widthEl.value);
+        var h = parseNum(heightEl.value);
+        var tw = parseNum(targetWidthEl.value);
+        if (!w || !h || !tw) {
+          outputEl.textContent = '';
+          setStatus('请填写大于 0 的数字', 'error');
+          return;
+        }
+        var bpp = parseFloat(bppSelect.value);
+        var comp = parseFloat(compSelect.value);
+        var scale = tw / w;
+        var th = Math.round(h * scale);
+        var lines = [];
+        lines.push('原始尺寸：' + Math.round(w) + ' × ' + Math.round(h) + ' px');
+        if (originalInfo) lines.push(originalInfo);
+        lines.push('缩放比例：' + (scale * 100).toFixed(1) + '%（' + (scale > 1 ? '放大' : scale < 1 ? '缩小' : '不变') + '）');
+        lines.push('目标尺寸：' + Math.round(tw) + ' × ' + th + ' px');
+        lines.push('');
+        var dprs = [1, 2, 3];
+        for (var i = 0; i < dprs.length; i++) {
+          var d = dprs[i];
+          var pw = Math.round(tw * d);
+          var ph = Math.round(th * d);
+          var px = pw * ph;
+          var bytes = px * bpp * comp;
+          lines.push(d + 'x 实际像素需求：' + pw + ' × ' + ph + ' px（' + px.toLocaleString() + ' 像素）');
+          lines.push(d + 'x 文件大小估算：约 ' + fmtBytes(bytes) + '');
+        }
+        lines.push('');
+        lines.push('估算依据：每像素 ' + bpp + ' 字节 × 压缩率 ' + comp + '，实际文件大小以图片内容为准。');
+        outputEl.textContent = lines.join('\n');
+        setStatus('计算完成');
+      }
+
+      function setMode(mode) {
+        manualPanel.style.display = mode === 'manual' ? 'block' : 'none';
+        uploadPanel.style.display = mode === 'upload' ? 'block' : 'none';
+        if (mode === 'upload') {
+          setStatus('请选择一张本地图片');
+        } else {
+          originalInfo = '';
+          calc();
+        }
+      }
+
+      var i;
+      for (i = 0; i < modes.length; i++) {
+        modes[i].addEventListener('change', function () {
+          var radio = this;
+          if (radio.checked) setMode(radio.value);
+        });
+      }
+
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        originalInfo = '文件大小：' + fmtBytes(file.size) + '（' + file.name + '）';
+        var url = (window.URL || window.webkitURL).createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+          widthEl.value = String(img.naturalWidth);
+          heightEl.value = String(img.naturalHeight);
+          targetWidthEl.value = String(img.naturalWidth);
+          (window.URL || window.webkitURL).revokeObjectURL(url);
+          fileInfo.innerHTML = '已读取：' + htmlEscape(file.name) + '，真实尺寸 ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px，文件大小 ' + fmtBytes(file.size) + '。<br>上方参数已自动填入，可修改目标宽度后查看估算。';
+          calc();
+        };
+        img.onerror = function () {
+          (window.URL || window.webkitURL).revokeObjectURL(url);
+          setStatus('图片读取失败，请更换文件', 'error');
+        };
+        img.src = url;
+      });
+
+      widthEl.addEventListener('input', calc);
+      heightEl.addEventListener('input', calc);
+      targetWidthEl.addEventListener('input', calc);
+      bppSelect.addEventListener('change', calc);
+      compSelect.addEventListener('change', calc);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      calc();
+    })();
+  </script>
+</body>
+</html>

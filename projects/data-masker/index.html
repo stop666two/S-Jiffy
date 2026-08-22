@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据脱敏器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mask-opts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      margin-top: var(--space-2);
+    }
+    .mask-opt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      user-select: none;
+    }
+    .mask-stats {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.8;
+      margin-top: var(--space-2);
+      min-height: 20px;
+    }
+    .mask-stats b {
+      color: var(--color-text-primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>数据脱敏器</h1>
+    <p class="tool-desc">对手机号、邮箱、身份证、银行卡与密钥长串进行正则打码脱敏，并统计每类替换数量</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴包含敏感数据的文本，如日志、导出数据..."></textarea>
+      <div class="mask-opts">
+        <label class="mask-opt"><input type="checkbox" id="optPhone" checked> 手机号（11 位 → 138****1234）</label>
+        <label class="mask-opt"><input type="checkbox" id="optEmail" checked> 邮箱（a***@domain.com）</label>
+        <label class="mask-opt"><input type="checkbox" id="optIdcard" checked> 身份证（18 位 → 前4后4）</label>
+        <label class="mask-opt"><input type="checkbox" id="optBank" checked> 银行卡（16-19 位 → 前4后4）</label>
+        <label class="mask-opt"><input type="checkbox" id="optSecret" checked> 密钥类长串（≥24 位 → 前6后4）</label>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:12px;">
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div id="maskStats" class="mask-stats"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputText = document.getElementById('inputText');
+      var optPhone = document.getElementById('optPhone');
+      var optEmail = document.getElementById('optEmail');
+      var optIdcard = document.getElementById('optIdcard');
+      var optBank = document.getElementById('optBank');
+      var optSecret = document.getElementById('optSecret');
+      var clearBtn = document.getElementById('clearBtn');
+      var maskStats = document.getElementById('maskStats');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var RE_PHONE = /\b1[3-9]\d{9}\b/g;
+      var RE_EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
+      var RE_IDCARD = /\b\d{17}[\dXx]\b/g;
+      var RE_BANK = /\b\d{16,19}\b/g;
+      var RE_SECRET = /\b[A-Za-z0-9_-]{24,}\b/g;
+
+      function maskPhone(m) {
+        return m.slice(0, 3) + '****' + m.slice(7);
+      }
+      function maskEmail(m) {
+        var at = m.indexOf('@');
+        return m.charAt(0) + '***' + m.slice(at);
+      }
+      function maskIdcard(m) {
+        return m.slice(0, 4) + '**********' + m.slice(14);
+      }
+      function maskBank(m) {
+        return m.slice(0, 4) + '****' + m.slice(-4);
+      }
+      function maskSecret(m) {
+        return m.slice(0, 6) + '****' + m.slice(-4);
+      }
+
+      function maskText(text) {
+        var counts = { phone: 0, email: 0, idcard: 0, bank: 0, secret: 0 };
+        var out = text;
+        if (optPhone.checked) {
+          out = out.replace(RE_PHONE, function (m) {
+            counts.phone++;
+            return maskPhone(m);
+          });
+        }
+        if (optEmail.checked) {
+          out = out.replace(RE_EMAIL, function (m) {
+            counts.email++;
+            return maskEmail(m);
+          });
+        }
+        if (optIdcard.checked) {
+          out = out.replace(RE_IDCARD, function (m) {
+            counts.idcard++;
+            return maskIdcard(m);
+          });
+        }
+        if (optBank.checked) {
+          out = out.replace(RE_BANK, function (m) {
+            counts.bank++;
+            return maskBank(m);
+          });
+        }
+        if (optSecret.checked) {
+          out = out.replace(RE_SECRET, function (m) {
+            counts.secret++;
+            return maskSecret(m);
+          });
+        }
+        return { text: out, counts: counts };
+      }
+
+      function render() {
+        var text = inputText.value;
+        if (!text.trim()) {
+          outputText.textContent = '';
+          maskStats.textContent = '';
+          setStatus('');
+          return;
+        }
+        var result = maskText(text);
+        outputText.textContent = result.text;
+        var items = [
+          { label: '手机号', n: result.counts.phone },
+          { label: '邮箱', n: result.counts.email },
+          { label: '身份证', n: result.counts.idcard },
+          { label: '银行卡', n: result.counts.bank },
+          { label: '密钥长串', n: result.counts.secret }
+        ];
+        var html = '';
+        var total = 0;
+        for (var i = 0; i < items.length; i++) {
+          total += items[i].n;
+          if (items[i].n > 0) {
+            html += items[i].label + ' <b>' + items[i].n + '</b> 处 · ';
+          }
+        }
+        if (total === 0) {
+          maskStats.textContent = '未发现可脱敏内容（或对应类型未勾选）';
+        } else {
+          html = '共替换 <b>' + total + '</b> 处｜' + html;
+          maskStats.innerHTML = html.slice(0, -3);
+        }
+        setStatus('脱敏完成');
+      }
+
+      inputText.addEventListener('input', function () {
+        render();
+      });
+      optPhone.addEventListener('change', function () {
+        render();
+      });
+      optEmail.addEventListener('change', function () {
+        render();
+      });
+      optIdcard.addEventListener('change', function () {
+        render();
+      });
+      optBank.addEventListener('change', function () {
+        render();
+      });
+      optSecret.addEventListener('change', function () {
+        render();
+      });
+      clearBtn.addEventListener('click', function () {
+        inputText.value = '';
+        render();
+        inputText.focus();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent) {
+          copyToClipboard(outputText.textContent, copyBtn);
+          setStatus('已复制');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 选择器权重计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 90px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .btn-row { display: flex; gap: var(--space-2); }
+    .spec-row { margin: 4px 0; word-break: break-all; }
+    .spec-note { margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-disabled); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>CSS 选择器权重计算器</h1>
+    <p class="tool-desc">解析 CSS 选择器，计算 ID、类（含属性与伪类）、元素三层权重（a,b,c）并给出等级说明。</p>
+    <div class="card">
+      <div class="field-row">
+        <label>选择器</label>
+        <input id="selectorInput" class="input js-focus-input" type="text" placeholder="例如：#nav ul li.active:hover 或 div > p:not(.x)">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="calcBtn">计算权重</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var selectorInput = document.getElementById('selectorInput');
+      var outputText = document.getElementById('outputText');
+
+      function readIdent(str, from) {
+        var i = from;
+        var n = str.length;
+        while (i < n) {
+          if (/[a-zA-Z0-9_-]/.test(str.charAt(i))) {
+            i++;
+          } else {
+            break;
+          }
+        }
+        return { name: str.slice(from, i), end: i };
+      }
+
+      function scanAttr(str, from) {
+        var i = from + 1;
+        var n = str.length;
+        while (i < n && /\s/.test(str.charAt(i))) i++;
+        if (i >= n) return { error: '属性选择器缺少 ]' };
+        var name = readIdent(str, i);
+        if (!name.name) return { error: '属性选择器缺少属性名' };
+        i = name.end;
+        while (i < n && /\s/.test(str.charAt(i))) i++;
+        if (i >= n) return { error: '属性选择器缺少 ]' };
+        if (str.charAt(i) === ']') return { end: i + 1 };
+        if (/[=~|^$*]/.test(str.charAt(i))) {
+          i++;
+          if (str.charAt(i - 1) !== '=' && str.charAt(i) !== '=') {
+            return { error: '属性选择器操作符无效' };
+          }
+          if (str.charAt(i) === '=') i++;
+          while (i < n && /\s/.test(str.charAt(i))) i++;
+          if (i >= n) return { error: '属性选择器缺少 ]' };
+          var ch = str.charAt(i);
+          if (ch === '"' || ch === "'") {
+            var q = ch;
+            i++;
+            var closed = false;
+            while (i < n) {
+              if (str.charAt(i) === q) {
+                closed = true;
+                i++;
+                break;
+              }
+              i++;
+            }
+            if (!closed) return { error: '属性值引号未闭合' };
+          } else {
+            var v = readIdent(str, i);
+            if (!v.name) return { error: '属性值无效' };
+            i = v.end;
+          }
+          while (i < n && /\s/.test(str.charAt(i))) i++;
+          if (i >= n || str.charAt(i) !== ']') return { error: '属性选择器缺少 ]' };
+          return { end: i + 1 };
+        }
+        return { error: '属性选择器操作符无效' };
+      }
+
+      function splitTopLevel(str) {
+        var parts = [];
+        var cur = '';
+        var depth = 0;
+        var quote = null;
+        for (var i = 0; i < str.length; i++) {
+          var ch = str.charAt(i);
+          if (quote) {
+            cur += ch;
+            if (ch === quote) quote = null;
+            continue;
+          }
+          if (ch === '"' || ch === "'") {
+            quote = ch;
+            cur += ch;
+            continue;
+          }
+          if (ch === '(') {
+            depth++;
+            cur += ch;
+            continue;
+          }
+          if (ch === ')') {
+            depth--;
+            cur += ch;
+            continue;
+          }
+          if (ch === ',' && depth === 0) {
+            parts.push(cur);
+            cur = '';
+            continue;
+          }
+          cur += ch;
+        }
+        if (cur) parts.push(cur);
+        return parts;
+      }
+
+      function cmpSpec(a, b) {
+        if (a.a !== b.a) return a.a - b.a;
+        if (a.b !== b.b) return a.b - b.b;
+        return a.c - b.c;
+      }
+
+      function scanFunctional(str, from, name, s) {
+        var depth = 0;
+        var quote = null;
+        var j = from;
+        for (; j < str.length; j++) {
+          var ch = str.charAt(j);
+          if (quote) {
+            if (ch === quote) quote = null;
+            continue;
+          }
+          if (ch === '"' || ch === "'") {
+            quote = ch;
+            continue;
+          }
+          if (ch === '(') {
+            depth++;
+          } else if (ch === ')') {
+            depth--;
+            if (depth === 0) break;
+          }
+        }
+        if (j >= str.length) return { error: '伪类 ' + name + ' 缺少 )' };
+        if (name === 'where') return { end: j + 1 };
+        if (name === 'not' || name === 'is' || name === 'has' || name === 'matches' || name === '-moz-any' || name === '-webkit-any') {
+          var inner = str.slice(from + 1, j);
+          var parts = splitTopLevel(inner);
+          var best = null;
+          for (var k = 0; k < parts.length; k++) {
+            var p = scanSelector(parts[k].trim());
+            if (!p.valid) return { error: '伪类 ' + name + ' 参数无效：' + p.error };
+            if (!best || cmpSpec(p, best) > 0) best = p;
+          }
+          if (!best) return { error: '伪类 ' + name + ' 参数为空' };
+          s.a += best.a;
+          s.b += best.b;
+          s.c += best.c;
+          return { end: j + 1 };
+        }
+        s.b++;
+        return { end: j + 1 };
+      }
+
+      function scanPseudo(str, from, s) {
+        var i = from + 1;
+        if (i < str.length && str.charAt(i) === ':') {
+          i++;
+          var r = readIdent(str, i);
+          if (!r.name) return { error: '无效的伪元素' };
+          s.c++;
+          return { end: r.end };
+        }
+        r = readIdent(str, i);
+        if (!r.name) return { error: '无效的伪类' };
+        var name = r.name;
+        i = r.end;
+        while (i < str.length && /\s/.test(str.charAt(i))) i++;
+        if (i < str.length && str.charAt(i) === '(') {
+          return scanFunctional(str, i, name, s);
+        }
+        s.b++;
+        return { end: i };
+      }
+
+      function scanSelector(str) {
+        var s = { a: 0, b: 0, c: 0, valid: true, error: '' };
+        var i = 0;
+        var n = str.length;
+        while (i < n) {
+          var ch = str.charAt(i);
+          if (/\s/.test(ch) || ch === '>' || ch === '+' || ch === '~' || ch === ',') {
+            i++;
+            continue;
+          }
+          var r;
+          if (ch === '#') {
+            r = readIdent(str, i + 1);
+            if (!r.name) {
+              s.valid = false;
+              s.error = '无效的 ID 选择器';
+              break;
+            }
+            i = r.end;
+            s.a++;
+          } else if (ch === '.') {
+            r = readIdent(str, i + 1);
+            if (!r.name) {
+              s.valid = false;
+              s.error = '无效的类选择器';
+              break;
+            }
+            i = r.end;
+            s.b++;
+          } else if (ch === '[') {
+            var at = scanAttr(str, i);
+            if (at.error) {
+              s.valid = false;
+              s.error = at.error;
+              break;
+            }
+            i = at.end;
+            s.b++;
+          } else if (ch === ':') {
+            var ps = scanPseudo(str, i, s);
+            if (ps.error) {
+              s.valid = false;
+              s.error = ps.error;
+              break;
+            }
+            i = ps.end;
+          } else if (ch === '*') {
+            i++;
+          } else if (/[a-zA-Z_]/.test(ch)) {
+            r = readIdent(str, i);
+            i = r.end;
+            s.c++;
+          } else {
+            s.valid = false;
+            s.error = '无法识别的字符「' + ch + '」';
+            break;
+          }
+        }
+        return s;
+      }
+
+      function levelLabel(spec) {
+        if (spec.a > 0) return '二级选择器（含 ID）';
+        if (spec.b > 0) return '三级选择器（含类/属性/伪类）';
+        if (spec.c > 0) return '四级选择器（元素/伪元素）';
+        return '无权重（通配符）';
+      }
+
+      function weightNum(spec) {
+        return spec.a * 100 + spec.b * 10 + spec.c;
+      }
+
+      function calc() {
+        var raw = selectorInput.value.trim();
+        if (!raw) {
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        var parts = splitTopLevel(raw);
+        var rows = [];
+        var best = null;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i].trim();
+          if (!p) continue;
+          var spec = scanSelector(p);
+          if (!spec.valid) {
+            outputText.innerHTML = '';
+            setStatus('选择器「' + p + '」无效：' + spec.error, 'error');
+            return;
+          }
+          rows.push({ text: p, spec: spec });
+          if (!best || cmpSpec(spec, best) > 0) best = spec;
+        }
+        if (!rows.length) {
+          outputText.textContent = '';
+          setStatus('请输入选择器', 'error');
+          return;
+        }
+        var html = '<div class="spec-row" style="font-size:var(--font-size-base);">综合权重（取最高）：(' +
+          best.a + ',' + best.b + ',' + best.c + ') · 权值 ' + weightNum(best) + ' · ' + htmlEscape(levelLabel(best)) + '</div>';
+        for (var k = 0; k < rows.length; k++) {
+          html += '<div class="spec-row" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">' +
+            htmlEscape(rows[k].text) + ' → (' + rows[k].spec.a + ',' + rows[k].spec.b + ',' + rows[k].spec.c +
+            ') 权值 ' + weightNum(rows[k].spec) + ' · ' + htmlEscape(levelLabel(rows[k].spec)) + '</div>';
+        }
+        html += '<div class="spec-note">权重规则：内联样式(1,0,0,0) &gt; ID(1,0,0) &gt; 类/属性/伪类(0,1,0) &gt; 元素/伪元素(0,0,1)</div>';
+        outputText.innerHTML = html;
+        setStatus('解析完成：' + rows.length + ' 个选择器');
+      }
+
+      document.getElementById('calcBtn').addEventListener('click', calc);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!outputText.textContent) return;
+        copyToClipboard(outputText.textContent, this);
+        setStatus('已复制');
+      });
+      selectorInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') calc();
+      });
+    })();
+  </script>
+</body>
+</html>

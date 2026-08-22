@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 选择器生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .field-row label { width: 90px; font-size: var(--font-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
+    .btn-row { display: flex; gap: var(--space-2); }
+    .finder-row { font-size: var(--font-size-sm); margin: 6px 0; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>CSS 选择器生成器</h1>
+    <p class="tool-desc">粘贴 HTML 片段并指定目标特征，为每个匹配元素生成最短唯一 CSS 选择器。</p>
+    <div class="card">
+      <div class="field-row" style="align-items:flex-start;">
+        <label>HTML 片段</label>
+        <textarea id="htmlInput" class="input textarea js-focus-input" placeholder="粘贴 HTML 代码片段…" style="min-height:220px;"></textarea>
+      </div>
+      <div class="field-row">
+        <label>目标特征</label>
+        <input id="targetInput" class="input" type="text" placeholder="标签名或 class，如 button / .btn / div.item">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="findBtn">生成选择器</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var htmlInput = document.getElementById('htmlInput');
+      var targetInput = document.getElementById('targetInput');
+      var outputText = document.getElementById('outputText');
+      var doc = null;
+
+      function countMatches(sel) {
+        try {
+          return doc.querySelectorAll(sel).length;
+        } catch (e) {
+          return -1;
+        }
+      }
+
+      function nthOfType(el) {
+        var n = 1;
+        var sib = el;
+        while (sib.previousElementSibling) {
+          sib = sib.previousElementSibling;
+          if (sib.tagName === el.tagName) n++;
+        }
+        return n;
+      }
+
+      function classListOf(el) {
+        if (typeof el.className === 'string') {
+          var t = el.className.trim();
+          return t ? t.split(/\s+/) : [];
+        }
+        return [];
+      }
+
+      function uniqueSelector(el) {
+        var tag = el.tagName.toLowerCase();
+        var sel;
+        if (el.id && /^[a-zA-Z_][\w-]*$/.test(el.id)) {
+          sel = '#' + el.id;
+          if (countMatches(sel) === 1) return { sel: sel, count: 1 };
+        }
+        var classes = classListOf(el);
+        for (var i = 0; i < classes.length; i++) {
+          if (!/^[a-zA-Z_][\w-]*$/.test(classes[i])) continue;
+          sel = '.' + classes[i];
+          if (countMatches(sel) === 1) return { sel: sel, count: 1 };
+          sel = tag + '.' + classes[i];
+          if (countMatches(sel) === 1) return { sel: sel, count: 1 };
+        }
+        var parts = [];
+        var cur = el;
+        while (cur && cur !== doc) {
+          var t = cur.tagName.toLowerCase();
+          if (cur === doc.body || cur === doc.documentElement) {
+            parts.unshift(t);
+          } else {
+            parts.unshift(t + ':nth-of-type(' + nthOfType(cur) + ')');
+          }
+          var joined = parts.join(' > ');
+          var c = countMatches(joined);
+          if (c === 1) return { sel: joined, count: 1 };
+          cur = cur.parentNode;
+        }
+        var final = parts.join(' > ') || tag;
+        return { sel: final, count: Math.max(countMatches(final), 1) };
+      }
+
+      function find() {
+        var html = htmlInput.value;
+        var target = targetInput.value.trim().toLowerCase();
+        if (!html) {
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        if (!target) {
+          outputText.textContent = '';
+          setStatus('请输入目标元素特征', 'error');
+          return;
+        }
+        doc = new DOMParser().parseFromString(html, 'text/html');
+        var segs = target.split('.');
+        var tagToken = segs[0] ? segs[0].trim() : '';
+        var classTokens = [];
+        for (var s = 1; s < segs.length; s++) {
+          var cname = segs[s].trim();
+          if (cname) classTokens.push(cname);
+        }
+        if (!tagToken && !classTokens.length) {
+          outputText.textContent = '';
+          setStatus('目标特征无效', 'error');
+          return;
+        }
+        var all = doc.querySelectorAll('*');
+        var matches = [];
+        var k;
+        for (k = 0; k < all.length; k++) {
+          var el = all[k];
+          if (el === doc.body || el === doc.documentElement) continue;
+          var elTag = el.tagName.toLowerCase();
+          if (tagToken && elTag !== tagToken) continue;
+          var clsList = classListOf(el);
+          var ok = true;
+          for (var c = 0; c < classTokens.length; c++) {
+            if (clsList.indexOf(classTokens[c]) === -1) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) matches.push(el);
+        }
+        if (!matches.length) {
+          outputText.textContent = '未找到匹配「' + target + '」的元素';
+          setStatus('未找到匹配元素', 'error');
+          return;
+        }
+        var MAX = 50;
+        var shown = matches.length > MAX ? matches.slice(0, MAX) : matches;
+        var htmlOut = '<div style="font-size:var(--font-size-base);margin-bottom:var(--space-1);">共命中 <b>' + matches.length +
+          '</b> 个元素' + (matches.length > MAX ? '，仅显示前 ' + MAX + ' 个' : '') + '</div>';
+        for (var m = 0; m < shown.length; m++) {
+          var res = uniqueSelector(shown[m]);
+          htmlOut += '<div class="finder-row">' +
+            '<span style="color:var(--color-text-disabled);">' + (m + 1) + '. ' + htmlEscape(shown[m].tagName.toLowerCase()) + '：</span>' +
+            '<span style="color:var(--color-success);">' + htmlEscape(res.sel) + '</span>' +
+            ' <span style="color:var(--color-text-secondary);">命中 ' + res.count + '</span>' +
+            '</div>';
+        }
+        outputText.innerHTML = htmlOut;
+        setStatus('已为 ' + shown.length + ' 个元素生成唯一选择器');
+      }
+
+      document.getElementById('findBtn').addEventListener('click', find);
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!outputText.textContent) return;
+        copyToClipboard(outputText.textContent, this);
+        setStatus('已复制');
+      });
+      targetInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') find();
+      });
+    })();
+  </script>
+</body>
+</html>

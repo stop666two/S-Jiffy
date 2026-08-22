@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>行编辑器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .line-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-top:var(--space-2)}
+    .line-controls .input{flex:1 1 180px}
+    .stat-line{margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary)}
+    .stat-line b{color:var(--color-text-primary);font-weight:600}
+    .stat-line .delta-up{color:var(--color-success)}
+    .stat-line .delta-down{color:var(--color-error)}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>行编辑器</h1>
+    <p class="tool-desc">按行批量处理文本：加前缀后缀、截断、过滤、去空行、加行号。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入多行文本，每行一条..." style="min-height:140px;"></textarea>
+      <div class="line-controls">
+        <select id="opSelect" class="input">
+          <option value="prefix">添加前缀</option>
+          <option value="suffix">添加后缀</option>
+          <option value="rmPrefix">删除前缀 N 字符</option>
+          <option value="rmSuffix">删除后缀 N 字符</option>
+          <option value="filterKeep">过滤包含</option>
+          <option value="filterDrop">过滤不包含</option>
+          <option value="blank">去空行</option>
+          <option value="number">加行号</option>
+        </select>
+        <input id="paramInput" type="text" class="input" placeholder="参数">
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var opEl = document.getElementById('opSelect');
+      var paramEl = document.getElementById('paramInput');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+      var lastIn = 0;
+      var lastOut = 0;
+
+      function setPlaceholder() {
+        var op = opEl.value;
+        if (op === 'rmPrefix' || op === 'rmSuffix') {
+          paramEl.placeholder = '输入要删除的字符数（正整数）';
+          paramEl.type = 'text';
+        } else if (op === 'filterKeep' || op === 'filterDrop') {
+          paramEl.placeholder = '输入过滤关键字';
+          paramEl.type = 'text';
+        } else if (op === 'number') {
+          paramEl.placeholder = '起始行号（默认为 1）';
+          paramEl.type = 'text';
+        } else if (op === 'prefix') {
+          paramEl.placeholder = '输入要添加的前缀';
+          paramEl.type = 'text';
+        } else if (op === 'suffix') {
+          paramEl.placeholder = '输入要添加的后缀';
+          paramEl.type = 'text';
+        } else {
+          paramEl.placeholder = '无需参数';
+          paramEl.type = 'text';
+        }
+      }
+
+      function parseCount(value, label) {
+        var n = parseInt(value, 10);
+        if (isNaN(n) || n < 0) {
+          setStatus(label + '必须是大于等于 0 的整数', 'error');
+          return null;
+        }
+        return n;
+      }
+
+      function applyOp(line, op, param, index) {
+        if (op === 'prefix') return param + line;
+        if (op === 'suffix') return line + param;
+        if (op === 'rmPrefix') return line.slice(param);
+        if (op === 'rmSuffix') return param === 0 ? line : line.slice(0, Math.max(0, line.length - param));
+        if (op === 'filterKeep') return line.indexOf(param) !== -1 ? line : null;
+        if (op === 'filterDrop') return line.indexOf(param) !== -1 ? null : line;
+        if (op === 'blank') return line.replace(/\s+/g, '') === '' ? null : line;
+        if (op === 'number') return String(index) + ': ' + line;
+        return line;
+      }
+
+      function render() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          lastIn = 0;
+          lastOut = 0;
+          setStatus('');
+          return;
+        }
+        var op = opEl.value;
+        var param = paramEl.value;
+        var startNum = 1;
+        if (op === 'number') {
+          if (param !== '') {
+            var sn = parseInt(param, 10);
+            if (isNaN(sn) || sn < 0) {
+              outputEl.innerHTML = '';
+              lastPlain = '';
+              lastIn = 0;
+              lastOut = 0;
+              setStatus('起始行号必须是大于等于 0 的整数', 'error');
+              return;
+            }
+            startNum = sn;
+          }
+        }
+        var lines = text.split(/\r?\n/);
+        var out = [];
+        var idx = 0;
+        for (var i = 0; i < lines.length; i++) {
+          var base = i + startNum;
+          var res = applyOp(lines[i], op, param, base);
+          if (res !== null) {
+            out.push(res);
+            idx++;
+          }
+        }
+        lastIn = lines.length;
+        lastOut = out.length;
+        lastPlain = out.join('\n');
+        var delta = lastOut - lastIn;
+        var deltaHtml = delta > 0 ? '<span class="delta-up">+' + delta + '</span>' :
+          delta < 0 ? '<span class="delta-down">' + delta + '</span>' : '<span>0</span>';
+        var html = '<div class="hex-panel" style="font-family:var(--font-mono);font-size:var(--font-size-xs);line-height:1.6;white-space:pre;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);max-height:420px;overflow:auto;">';
+        html += htmlEscape(lastPlain);
+        html += '</div><div class="stat-line">输入 <b>' + lastIn + '</b> 行 → 输出 <b>' + lastOut + '</b> 行（变化 ' + deltaHtml + '）</div>';
+        outputEl.innerHTML = html;
+        setStatus('已处理 ' + lastOut + ' 行');
+      }
+
+      opEl.addEventListener('change', function () {
+        setPlaceholder();
+        render();
+      });
+      inputEl.addEventListener('input', render);
+      paramEl.addEventListener('input', render);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+      setPlaceholder();
+    })();
+  </script>
+</body>
+</html>

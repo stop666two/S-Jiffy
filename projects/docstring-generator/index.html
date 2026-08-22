@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码注释生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field-label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .form-row { margin-bottom: 14px; }
+    .lang-row { display: flex; gap: 16px; font-size: var(--font-size-sm); }
+    .lang-row label { display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>代码注释生成器</h1>
+    <p class="tool-desc">选择语言并填写函数信息，自动生成 JSDoc / Python docstring / Javadoc 格式的注释模板。</p>
+    <div class="card">
+      <div class="form-row">
+        <div class="field-label" style="margin-bottom:6px;">注释语言</div>
+        <div class="lang-row">
+          <label><input type="radio" name="lang" value="jsdoc" checked> JavaScript (JSDoc)</label>
+          <label><input type="radio" name="lang" value="python"> Python (docstring)</label>
+          <label><input type="radio" name="lang" value="javadoc"> Java (Javadoc)</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="fnName" class="field-label">函数名</label>
+        <input id="fnName" class="input js-focus-input" placeholder="myFunction">
+      </div>
+      <div class="form-row">
+        <label for="paramList" class="field-label">参数列表（每行一个，格式：名称:类型:描述，类型和描述可省略）</label>
+        <textarea id="paramList" class="input textarea" style="min-height:110px;" placeholder="name:string:用户名&#10;age:number&#10;options"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="retValue" class="field-label">返回值（填写类型或说明，如 string / true 表示成功）</label>
+        <input id="retValue" class="input" placeholder="string">
+      </div>
+      <div class="form-row">
+        <label for="fnDesc" class="field-label">函数描述</label>
+        <textarea id="fnDesc" class="input textarea" style="min-height:70px;" placeholder="计算两个数字之和"></textarea>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var langEls = document.getElementsByName('lang');
+      var fnNameEl = document.getElementById('fnName');
+      var paramEl = document.getElementById('paramList');
+      var retEl = document.getElementById('retValue');
+      var descEl = document.getElementById('fnDesc');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function getLang() {
+        for (var i = 0; i < langEls.length; i++) {
+          if (langEls[i].checked) return langEls[i].value;
+        }
+        return 'jsdoc';
+      }
+
+      function parseParams() {
+        var lines = paramEl.value.split(/\r?\n/);
+        var params = [];
+        var errors = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line) continue;
+          var parts = line.split(':');
+          var name = parts[0] ? parts[0].trim() : '';
+          var type = parts.length > 1 && parts[1] ? parts[1].trim() : '';
+          var descParts = parts.slice(2);
+          var desc = descParts.length ? descParts.join(':').trim() : '';
+          if (!name) {
+            errors.push('第 ' + (i + 1) + ' 行参数名缺失');
+            continue;
+          }
+          if (/\s/.test(name)) {
+            errors.push('第 ' + (i + 1) + ' 行参数名含空格');
+            continue;
+          }
+          params.push({ name: name, type: type, desc: desc });
+        }
+        return { params: params, errors: errors };
+      }
+
+      function splitRet() {
+        var value = retEl.value.trim();
+        if (!value) return { type: '', desc: '' };
+        var parts = value.split(/\s+/);
+        if (parts.length === 1) return { type: parts[0], desc: '' };
+        return { type: parts[0], desc: parts.slice(1).join(' ') };
+      }
+
+      function buildJsdoc(fn, params, ret, desc) {
+        var lines = ['/**'];
+        if (desc) lines.push(' * ' + desc);
+        if (!desc && params.length) lines.push(' *');
+        for (var i = 0; i < params.length; i++) {
+          var p = params[i];
+          lines.push(' * @param ' + (p.type ? '{' + p.type + '} ' : '') + p.name + (p.desc ? ' - ' + p.desc : ''));
+        }
+        if (ret.type || ret.desc) {
+          lines.push(' * @returns ' + (ret.type ? '{' + ret.type + '} ' : '') + ret.desc);
+        }
+        lines.push(' */');
+        return lines.join('\n');
+      }
+
+      function buildPython(fn, params, ret, desc) {
+        var lines = ['"""'];
+        if (desc) lines.push(desc);
+        if (params.length) {
+          lines.push('');
+          lines.push('Args:');
+          for (var i = 0; i < params.length; i++) {
+            var p = params[i];
+            lines.push('    ' + p.name + (p.type ? ' (' + p.type + ')' : '') + ': ' + p.desc);
+          }
+        }
+        if (ret.type || ret.desc) {
+          lines.push('');
+          lines.push('Returns:');
+          lines.push('    ' + (ret.type ? ret.type + ': ' : '') + ret.desc);
+        }
+        lines.push('"""');
+        return lines.join('\n');
+      }
+
+      function buildJavadoc(fn, params, ret, desc) {
+        var lines = ['/**'];
+        if (desc) lines.push(' * ' + desc);
+        if (!desc && params.length) lines.push(' *');
+        for (var i = 0; i < params.length; i++) {
+          var p = params[i];
+          lines.push(' * @param ' + p.name + (p.desc ? ' ' + p.desc : ''));
+        }
+        if (ret.type || ret.desc) {
+          lines.push(' * @return ' + (ret.type ? ret.type + ' ' : '') + ret.desc);
+        }
+        lines.push(' */');
+        return lines.join('\n');
+      }
+
+      function generate() {
+        var lang = getLang();
+        var desc = descEl.value.trim();
+        var parsed = parseParams();
+        var ret = splitRet();
+        if (parsed.errors.length) {
+          setStatus(parsed.errors[0], 'error');
+        }
+        var text;
+        if (lang === 'python') {
+          text = buildPython(fnNameEl.value, parsed.params, ret, desc);
+        } else if (lang === 'javadoc') {
+          text = buildJavadoc(fnNameEl.value, parsed.params, ret, desc);
+        } else {
+          text = buildJsdoc(fnNameEl.value, parsed.params, ret, desc);
+        }
+        outputEl.textContent = text;
+        if (!parsed.errors.length) {
+          setStatus('已生成 ' + (lang === 'python' ? 'Python docstring' : lang === 'javadoc' ? 'Javadoc 注释' : 'JSDoc 注释'));
+        }
+      }
+
+      for (var i = 0; i < langEls.length; i++) {
+        langEls[i].addEventListener('change', generate);
+      }
+      fnNameEl.addEventListener('input', generate);
+      paramEl.addEventListener('input', generate);
+      retEl.addEventListener('input', generate);
+      descEl.addEventListener('input', generate);
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      generate();
+    })();
+  </script>
+</body>
+</html>

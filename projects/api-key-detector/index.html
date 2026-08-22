@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Key 识别器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .risk-box {
+      font-size: var(--font-size-sm);
+      line-height: 1.7;
+      color: var(--color-error);
+      border: 1px solid rgba(159, 47, 45, 0.3);
+      background: rgba(159, 47, 45, 0.05);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-2);
+      display: none;
+    }
+    .risk-box-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .det-table-wrap {
+      overflow-x: auto;
+    }
+    .det-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+    .det-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--color-border);
+      white-space: nowrap;
+    }
+    .det-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .det-table .mono {
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+    .det-count {
+      display: inline-block;
+      min-width: 28px;
+      text-align: center;
+      padding: 1px 8px;
+      border-radius: 9999px;
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+    }
+    .det-count-hit {
+      background: rgba(52, 101, 56, 0.1);
+      color: var(--color-success);
+      border-color: rgba(52, 101, 56, 0.3);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>API Key 识别器</h1>
+    <p class="tool-desc">粘贴文本，自动识别 AWS、Google、GitHub、Stripe 等平台的密钥格式并展示打码示例</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴配置、日志或代码片段，自动检测其中的 API Key..."></textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;">
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="riskBox" class="risk-box">
+      <div class="risk-box-title">高风险提示</div>
+      <span id="riskText"></span>
+    </div>
+    <div id="tableCard" class="card" style="display:none;">
+      <div class="det-table-wrap">
+        <table class="det-table">
+          <thead>
+            <tr>
+              <th>平台</th>
+              <th>匹配数</th>
+              <th>打码示例</th>
+            </tr>
+          </thead>
+          <tbody id="detBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputText = document.getElementById('inputText');
+      var clearBtn = document.getElementById('clearBtn');
+      var riskBox = document.getElementById('riskBox');
+      var riskText = document.getElementById('riskText');
+      var tableCard = document.getElementById('tableCard');
+      var detBody = document.getElementById('detBody');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var PATTERNS = [
+        { name: 'AWS Access Key', regex: /AKIA[0-9A-Z]{16}/g, example: 'AKIA****' },
+        { name: 'Google API Key', regex: /AIza[0-9A-Za-z_-]{35}/g, example: 'AIza****' },
+        { name: 'GitHub Token', regex: /(?:ghp_|gho_|ghu_|ghs_|ghr_|github_pat_)[0-9A-Za-z_]{15,}/g, example: 'ghp_****' },
+        { name: 'Stripe Secret Key', regex: /(?:sk_live_|rk_live_)[0-9A-Za-z]{24}/g, example: 'sk_live_****' },
+        { name: 'OpenAI API Key', regex: /\bsk-[A-Za-z0-9_-]{20,}\b/g, example: 'sk-****' },
+        { name: 'Slack Token', regex: /xox[baprs]-[0-9A-Za-z-]{10,}/g, example: 'xoxb-****' },
+        { name: 'Twilio API Key', regex: /\bSK[0-9a-fA-F]{32}\b/g, example: 'SK****' },
+        { name: 'SendGrid API Key', regex: /SG\.[0-9A-Za-z_-]{22}\.[0-9A-Za-z_-]{43}/g, example: 'SG.****' },
+        { name: 'Telegram Bot Token', regex: /\b\d{8,10}:[A-Za-z0-9_-]{35}\b/g, example: '123456789:****' },
+        { name: 'JWT Token', regex: /\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g, example: 'eyJ****' }
+      ];
+
+      function maskSample(s) {
+        if (!s) return '';
+        if (s.length <= 8) return s.charAt(0) + '****';
+        return s.slice(0, 4) + '****';
+      }
+
+      function detect() {
+        var text = inputText.value;
+        if (!text.trim()) {
+          tableCard.style.display = 'none';
+          detBody.innerHTML = '';
+          riskBox.style.display = 'none';
+          outputText.textContent = '';
+          setStatus('');
+          return;
+        }
+        var rows = '';
+        var total = 0;
+        var hitPlatforms = 0;
+        for (var i = 0; i < PATTERNS.length; i++) {
+          var p = PATTERNS[i];
+          p.regex.lastIndex = 0;
+          var matches = text.match(p.regex);
+          var count = matches ? matches.length : 0;
+          total += count;
+          if (count > 0) hitPlatforms++;
+          var sample = matches ? maskSample(matches[0]) : '';
+          var cls = count > 0 ? 'det-count det-count-hit' : 'det-count';
+          rows += '<tr>' +
+            '<td>' + htmlEscape(p.name) + '</td>' +
+            '<td><span class="' + cls + '">' + count + '</span></td>' +
+            '<td class="mono">' + (sample ? htmlEscape(sample) : '<span style="color:var(--color-text-disabled)">未发现</span>') + '</td>' +
+            '</tr>';
+        }
+        detBody.innerHTML = rows;
+        tableCard.style.display = 'block';
+        if (total > 0) {
+          outputText.textContent = '检测到 ' + total + ' 个疑似密钥，涉及 ' + hitPlatforms + ' 个平台';
+          riskText.textContent = '文本中存在疑似密钥，可能已被泄露。请立即在对应平台的控制台吊销并轮换密钥；切勿将密钥提交到公共仓库、日志或聊天记录；建议接入密钥扫描与密钥管理服务（如 Vault、云平台 Secret Manager）。';
+          riskBox.style.display = 'block';
+          setStatus('检测到疑似密钥');
+        } else {
+          outputText.textContent = '未检测到疑似密钥（已扫描 ' + PATTERNS.length + ' 种格式）';
+          riskBox.style.display = 'none';
+          setStatus('未发现密钥');
+        }
+      }
+
+      inputText.addEventListener('input', function () {
+        detect();
+      });
+      clearBtn.addEventListener('click', function () {
+        inputText.value = '';
+        detect();
+        inputText.focus();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (outputText.textContent) {
+          copyToClipboard(outputText.textContent, copyBtn);
+          setStatus('已复制');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

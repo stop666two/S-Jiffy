@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL 转 Prisma - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .opt-row { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; gap: 4px; font-size: var(--font-size-sm); color: var(--color-text-primary); margin-bottom: var(--space-2); cursor: pointer; }
+    .stat-list { margin: var(--space-2) 0 0; padding: 0; list-style: none; }
+    .stat-list li { font-size: var(--font-size-sm); color: var(--color-text-secondary); padding: 4px 0; line-height: 1.5; }
+    .stat-list li b { color: var(--color-text-primary); font-family: var(--font-mono); }
+    .warn-list { margin: var(--space-1) 0 0; padding: 0 0 0 18px; }
+    .warn-list li { font-size: var(--font-size-sm); color: var(--color-error); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>SQL 转 Prisma</h1>
+    <p class="tool-desc">将 CREATE TABLE 语句转换为 Prisma schema model，支持主键、外键、默认值与自增。</p>
+    <div class="card">
+      <textarea id="sqlInput" class="input textarea js-focus-input" rows="10" placeholder="CREATE TABLE users (&#10;  id INT NOT NULL AUTO_INCREMENT,&#10;  name VARCHAR(100) NOT NULL,&#10;  email VARCHAR(255) NOT NULL UNIQUE,&#10;  age INT DEFAULT 18,&#10;  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,&#10;  PRIMARY KEY (id)&#10;);"></textarea>
+      <div class="opt-row">
+        <input type="checkbox" id="mapOpt" checked> 表名与模型名不同时添加 @@map
+      </div>
+      <div class="btn-row" style="display:-webkit-box;display:-ms-flexbox;display:flex;gap:var(--space-2)">
+        <button class="btn btn-primary" id="genBtn">生成 Prisma Schema</button>
+      </div>
+      <ul class="stat-list" id="statList" style="display:none"></ul>
+      <ul class="warn-list" id="warnList" style="display:none"></ul>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var sqlInput = document.getElementById('sqlInput');
+    var mapOpt = document.getElementById('mapOpt');
+    var statList = document.getElementById('statList');
+    var warnList = document.getElementById('warnList');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var lastCode = '';
+
+    function splitTopLevel(text, separator) {
+      var parts = [];
+      var depth = 0;
+      var quote = '';
+      var start = 0;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text.charAt(i);
+        if (quote) {
+          if (ch === quote && text.charAt(i - 1) !== '\\') quote = '';
+        } else if (ch === '\'' || ch === '"' || ch === '`') {
+          quote = ch;
+        } else if (ch === '(') {
+          depth++;
+        } else if (ch === ')') {
+          depth--;
+        } else if (ch === separator && depth === 0) {
+          parts.push(text.substring(start, i));
+          start = i + 1;
+        }
+      }
+      parts.push(text.substring(start));
+      return parts;
+    }
+
+    function stripQuotes(s) {
+      if (!s) return s;
+      if ((s.charAt(0) === '`' && s.charAt(s.length - 1) === '`') ||
+          (s.charAt(0) === '\'' && s.charAt(s.length - 1) === '\'') ||
+          (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"')) {
+        return s.substring(1, s.length - 1);
+      }
+      return s;
+    }
+
+    function typeNameToPrisma(type, args) {
+      var t = type.toUpperCase();
+      if (t.indexOf('BIGINT') !== -1 || t === 'INT8') return 'BigInt';
+      if (t === 'TINYINT' && args === '1') return 'Boolean';
+      if (t === 'TINYINT' || t === 'SMALLINT' || t === 'MEDIUMINT' || t === 'INT' || t === 'INTEGER' || t === 'INT4') return 'Int';
+      if (t.indexOf('VARCHAR') !== -1 || t.indexOf('CHAR') !== -1 || t.indexOf('TEXT') !== -1 || t.indexOf('ENUM') !== -1 || t === 'STRING' || t === 'UUID' || t === 'CLOB') return 'String';
+      if (t === 'BOOLEAN' || t === 'BOOL') return 'Boolean';
+      if (t === 'DATETIME' || t === 'TIMESTAMP' || t === 'DATE' || t === 'TIME' || t === 'TIMESTAMPTZ' || t === 'DATETIME2') return 'DateTime';
+      if (t === 'FLOAT' || t === 'DOUBLE' || t === 'REAL' || t === 'FLOAT4' || t === 'FLOAT8') return 'Float';
+      if (t === 'DECIMAL' || t === 'NUMERIC' || t === 'MONEY') return 'Decimal';
+      if (t === 'JSON' || t === 'JSONB') return 'Json';
+      if (t.indexOf('BLOB') !== -1 || t.indexOf('BINARY') !== -1 || t === 'BYTEA' || t === 'VARBINARY') return 'Bytes';
+      if (t === 'SERIAL' || t === 'BIGSERIAL' || t === 'SERIAL4' || t === 'SERIAL8') return 'Int';
+      if (t === 'BIT') return 'Boolean';
+      return '';
+    }
+
+    function extractDefault(raw) {
+      var m = raw.match(/\bDEFAULT\s+([\s\S]*)$/i);
+      if (!m) return null;
+      var v = m[1].trim();
+      if (/^CURRENT_TIMESTAMP/i.test(v) || /^NOW\s*\(/i.test(v)) return { kind: 'now', raw: v };
+      if (/^NULL$/i.test(v)) return { kind: 'null', raw: v };
+      if (/^TRUE$/i.test(v)) return { kind: 'bool', val: 'true' };
+      if (/^FALSE$/i.test(v)) return { kind: 'bool', val: 'false' };
+      if ((v.charAt(0) === '\'' && v.charAt(v.length - 1) === '\'') || (v.charAt(0) === '"' && v.charAt(v.length - 1) === '"')) {
+        return { kind: 'str', val: stripQuotes(v) };
+      }
+      if (/^-?\d+(\.\d+)?$/.test(v)) return { kind: 'num', val: v };
+      return { kind: 'expr', raw: v };
+    }
+
+    function parseColumn(def) {
+      def = def.trim();
+      if (/^(PRIMARY\s+KEY|FOREIGN\s+KEY|UNIQUE\s*\(|KEY\s|INDEX\s|CONSTRAINT)/i.test(def)) {
+        return null;
+      }
+      var m = def.match(/^\s*(`[^`]+`|[A-Za-z_][\w]*)\s+(.+)$/);
+      if (!m) return null;
+      var name = stripQuotes(m[1].trim());
+      var rest = m[2].trim();
+      var tm = rest.match(/^([A-Za-z]+)\s*(?:\(([^)]*)\))?/i);
+      var type = tm ? tm[1] : '';
+      var args = tm && tm[2] !== undefined ? tm[2].trim() : '';
+      var prismaType = typeNameToPrisma(type, args);
+      var col = {
+        name: name,
+        rawType: (type + (args ? '(' + args + ')' : '')),
+        type: prismaType,
+        notNull: /\bNOT\s+NULL\b/i.test(rest),
+        unique: /\bUNIQUE\b/i.test(rest),
+        autoInc: /\bAUTO_INCREMENT\b/i.test(rest) || /^SERIAL$/i.test(type.toUpperCase()) || /^(BIG|SMALL)?SERIAL(\d)?$/.test(type.toUpperCase()),
+        primary: /\bPRIMARY\s+KEY\b/i.test(rest),
+        default: extractDefault(rest),
+        unknownType: prismaType === ''
+      };
+      return col;
+    }
+
+    function splitStatements(sql) {
+      var parts = [];
+      var re = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?/gi;
+      var m;
+      var last = 0;
+      while ((m = re.exec(sql)) !== null) {
+        parts.push({ start: m.index, head: m[0] });
+      }
+      if (parts.length === 0) return [];
+      var stmts = [];
+      for (var i = 0; i < parts.length; i++) {
+        var end = i + 1 < parts.length ? parts[i + 1].start : sql.length;
+        stmts.push(sql.substring(parts[i].start, end));
+      }
+      return stmts;
+    }
+
+    function parseCreateTable(stmt) {
+      var nameM = stmt.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(`[^`]+`|[A-Za-z_][\w]*)/i);
+      if (!nameM) return null;
+      var tableName = stripQuotes(nameM[1]);
+      var open = stmt.indexOf('(', nameM.index + nameM[0].length);
+      if (open === -1) return null;
+      var depth = 0;
+      var quote = '';
+      var close = -1;
+      for (var i = open; i < stmt.length; i++) {
+        var ch = stmt.charAt(i);
+        if (quote) {
+          if (ch === quote && stmt.charAt(i - 1) !== '\\') quote = '';
+        } else if (ch === '\'' || ch === '"' || ch === '`') {
+          quote = ch;
+        } else if (ch === '(') {
+          depth++;
+        } else if (ch === ')') {
+          depth--;
+          if (depth === 0) {
+            close = i;
+            break;
+          }
+        }
+      }
+      if (close === -1) return null;
+      var body = stmt.substring(open + 1, close);
+      var items = splitTopLevel(body, ',');
+      var columns = [];
+      var pkCols = [];
+      var fks = [];
+      var uniques = [];
+      var warnings = [];
+      for (var j = 0; j < items.length; j++) {
+        var it = items[j].trim();
+        if (!it) continue;
+        if (/^PRIMARY\s+KEY/i.test(it)) {
+          var pk = it.match(/PRIMARY\s+KEY\s*\(([^)]*)\)/i);
+          if (pk) {
+            var pks = splitTopLevel(pk[1], ',');
+            for (var p = 0; p < pks.length; p++) {
+              pkCols.push(stripQuotes(pks[p].trim()).trim());
+            }
+          }
+          continue;
+        }
+        if (/^UNIQUE\s*\(/i.test(it)) {
+          var uq = it.match(/UNIQUE\s*\(([^)]*)\)/i);
+          if (uq) {
+            var uqs = splitTopLevel(uq[1], ',');
+            var uqCols = [];
+            for (var u = 0; u < uqs.length; u++) {
+              uqCols.push(stripQuotes(uqs[u].trim()).trim());
+            }
+            uniques.push(uqCols);
+          }
+          continue;
+        }
+        if (/^FOREIGN\s+KEY/i.test(it)) {
+          var fk = it.match(/FOREIGN\s+KEY\s*\(([^)]*)\)\s*REFERENCES\s+(`[^`]+`|[A-Za-z_][\w]*)\s*\(([^)]*)\)/i);
+          if (fk) {
+            var fkCols = splitTopLevel(fk[1], ',');
+            var refCols = splitTopLevel(fk[3], ',');
+            var onDelete = '';
+            var od = it.match(/ON\s+DELETE\s+(CASCADE|SET\s+NULL|RESTRICT|NO\s+ACTION)/i);
+            if (od) onDelete = od[1].toUpperCase();
+            for (var f = 0; f < fkCols.length; f++) {
+              fks.push({
+                col: stripQuotes(fkCols[f].trim()).trim(),
+                refTable: stripQuotes(fk[2]).trim(),
+                refCol: stripQuotes(refCols[f] ? refCols[f].trim() : '').trim(),
+                onDelete: onDelete
+              });
+            }
+          }
+          continue;
+        }
+        if (/^(KEY|INDEX|CONSTRAINT)/i.test(it)) continue;
+        var col = parseColumn(it);
+        if (!col) {
+          warnings.push('无法解析的定义：' + it.substring(0, 60));
+          continue;
+        }
+        if (col.primary) pkCols.push(col.name);
+        if (col.unknownType) warnings.push('未知类型 ' + col.rawType + ' 已映射为 String，请手动核对。');
+        columns.push(col);
+      }
+      return {
+        tableName: tableName,
+        columns: columns,
+        pkCols: pkCols,
+        fks: fks,
+        uniques: uniques,
+        warnings: warnings
+      };
+    }
+
+    function pascalCase(name) {
+      var parts = name.split(/[^A-Za-z0-9]+/);
+      var out = '';
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        if (!p) continue;
+        out += p.charAt(0).toUpperCase() + p.slice(1);
+      }
+      if (!out) out = 'Model';
+      return out;
+    }
+
+    function camelCase(name) {
+      var p = pascalCase(name);
+      return p.charAt(0).toLowerCase() + p.slice(1);
+    }
+
+    function defaultAttr(col) {
+      if (col.autoInc) return '@default(autoincrement())';
+      if (!col.default) return '';
+      var d = col.default;
+      if (d.kind === 'now') return '@default(now())';
+      if (d.kind === 'null') return '';
+      if (d.kind === 'bool') return '@default(' + d.val + ')';
+      if (d.kind === 'num') return '@default(' + d.val + ')';
+      if (d.kind === 'str') return '@default("' + d.val.replace(/"/g, '\\"') + '")';
+      return '@default(dbgenerated("' + d.raw.replace(/"/g, '\\"') + '"))';
+    }
+
+    function buildModel(parsed, addMap) {
+      var modelName = pascalCase(parsed.tableName);
+      var lines = [];
+      lines.push('model ' + modelName + ' {');
+      for (var i = 0; i < parsed.columns.length; i++) {
+        var col = parsed.columns[i];
+        var line = '  ' + col.name + '  ' + col.type + (col.notNull ? '' : '?');
+        var attrs = [];
+        if (parsed.pkCols.length === 1 && parsed.pkCols[0] === col.name) {
+          attrs.push('@id');
+          if (col.autoInc) attrs.push('@default(autoincrement())');
+          else if (col.default && col.default.kind !== 'null') attrs.push(defaultAttr(col));
+        } else if (col.autoInc) {
+          attrs.push('@default(autoincrement())');
+        } else if (col.default && col.default.kind !== 'null') {
+          var da = defaultAttr(col);
+          if (da) attrs.push(da);
+        }
+        if (col.unique && !(parsed.pkCols.length === 1 && parsed.pkCols[0] === col.name)) attrs.push('@unique');
+        var fk = null;
+        for (var f = 0; f < parsed.fks.length; f++) {
+          if (parsed.fks[f].col === col.name) fk = parsed.fks[f];
+        }
+        if (fk) {
+          var rel = '@relation(fields: [' + fk.col + '], references: [' + fk.refCol + ']';
+          if (fk.onDelete) rel += ', onDelete: ' + (fk.onDelete === 'SET NULL' ? 'SetNull' : fk.onDelete === 'CASCADE' ? 'Cascade' : 'Restrict');
+          rel += ')';
+          attrs.push(rel);
+        }
+        if (attrs.length) line += ' ' + attrs.join(' ');
+        lines.push(line);
+      }
+      if (parsed.pkCols.length > 1) {
+        lines.push('  @@id([' + parsed.pkCols.join(', ') + '])');
+      }
+      for (var u = 0; u < parsed.uniques.length; u++) {
+        lines.push('  @@unique([' + parsed.uniques[u].join(', ') + '])');
+      }
+      for (var r = 0; r < parsed.fks.length; r++) {
+        lines.push('  ' + camelCase(parsed.fks[r].refTable) + '  ' + pascalCase(parsed.fks[r].refTable) + ' @relation("FK_' + parsed.fks[r].col + '")');
+      }
+      if (addMap && modelName !== parsed.tableName) {
+        lines.push('  @@map("' + parsed.tableName + '")');
+      }
+      lines.push('}');
+      return lines.join('\n');
+    }
+
+    function generate() {
+      var sql = sqlInput.value;
+      if (!sql.trim()) {
+        outputText.textContent = '';
+        statList.style.display = 'none';
+        warnList.style.display = 'none';
+        setStatus('');
+        return;
+      }
+      var stmts = splitStatements(sql);
+      if (stmts.length === 0) {
+        outputText.textContent = '未找到 CREATE TABLE 语句，请检查 SQL 语法（每条语句以 CREATE TABLE 开头）。';
+        statList.style.display = 'none';
+        warnList.style.display = 'none';
+        setStatus('未找到 CREATE TABLE', 'error');
+        return;
+      }
+      var models = [];
+      var allWarnings = [];
+      var stats = [];
+      for (var i = 0; i < stmts.length; i++) {
+        var parsed = parseCreateTable(stmts[i]);
+        if (!parsed) {
+          allWarnings.push('第 ' + (i + 1) + ' 条 CREATE TABLE 解析失败，已跳过。');
+          continue;
+        }
+        if (parsed.columns.length === 0) {
+          allWarnings.push('表 ' + parsed.tableName + ' 未解析到任何列，请检查括号与逗号。');
+          continue;
+        }
+        models.push(buildModel(parsed, mapOpt.checked));
+        var fkInfo = [];
+        for (var f = 0; f < parsed.fks.length; f++) {
+          fkInfo.push(parsed.fks[f].col + ' → ' + parsed.fks[f].refTable + '.' + parsed.fks[f].refCol);
+        }
+        stats.push({
+          name: parsed.tableName,
+          colCount: parsed.columns.length,
+          pk: parsed.pkCols.join(', ') || '无',
+          fks: fkInfo,
+          uniq: parsed.columns.filter(function (c) { return c.unique; }).length + parsed.uniques.length
+        });
+        for (var w = 0; w < parsed.warnings.length; w++) {
+          allWarnings.push('表 ' + parsed.tableName + '：' + parsed.warnings[w]);
+        }
+      }
+      if (models.length === 0) {
+        outputText.textContent = '全部 CREATE TABLE 语句解析失败，请检查 SQL 语法。';
+        statList.style.display = 'none';
+        warnList.style.display = 'none';
+        setStatus('解析失败', 'error');
+        return;
+      }
+      lastCode = 'generator client {\n  provider = "prisma-client-js"\n}\n\ndatasource db {\n  provider = "mysql"\n  url      = env("DATABASE_URL")\n}\n\n' + models.join('\n\n');
+      var statHtml = '';
+      for (var s = 0; s < stats.length; s++) {
+        var st = stats[s];
+        statHtml += '<li><b>' + htmlEscape(st.name) + '</b>：' + st.colCount + ' 个字段，主键 ' + htmlEscape(st.pk) + '，' + st.uniq + ' 处唯一约束' + (st.fks.length ? '，外键 ' + htmlEscape(st.fks.join('；')) : '') + '</li>';
+      }
+      statList.innerHTML = statHtml;
+      statList.style.display = 'block';
+      if (allWarnings.length) {
+        var warnHtml = '';
+        for (var w2 = 0; w2 < allWarnings.length; w2++) {
+          warnHtml += '<li>' + htmlEscape(allWarnings[w2]) + '</li>';
+        }
+        warnList.innerHTML = warnHtml;
+        warnList.style.display = 'block';
+      } else {
+        warnList.style.display = 'none';
+      }
+      outputText.textContent = lastCode;
+      setStatus('成功生成 ' + models.length + ' 个 model');
+    }
+
+    document.getElementById('genBtn').onclick = generate;
+    mapOpt.onchange = generate;
+    copyBtn.onclick = function () {
+      if (!lastCode) {
+        setStatus('请先生成 Prisma Schema', 'error');
+        return;
+      }
+      copyToClipboard(lastCode, copyBtn);
+    };
+  })();
+  </script>
+</body>
+</html>

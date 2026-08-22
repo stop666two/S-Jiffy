@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科学计数法转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .sn-row { display: flex; gap: var(--space-2); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .sn-field { display: flex; flex-direction: column; gap: var(--space-1); }
+    .sn-field label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .sn-field .input { min-width: 280px; font-family: var(--font-mono); }
+    .res-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: block; margin-bottom: var(--space-1); }
+    .res-line { font-size: var(--font-size-base); font-family: var(--font-mono); color: var(--color-text-primary); line-height: 1.9; word-break: break-all; }
+    .prefix-table { width: 100%; border-collapse: collapse; margin-top: var(--space-2); font-size: var(--font-size-sm); }
+    .prefix-table th, .prefix-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--color-border); }
+    .prefix-table th { color: var(--color-text-secondary); font-weight: normal; }
+    .prefix-table .prefix-match td { background: var(--color-bg-soft); font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>科学计数法转换器</h1>
+    <p class="tool-desc">在科学计数法、普通十进制与工程计数法之间双向转换，并给出有效数字与单位前缀对照。</p>
+    <div class="card">
+      <div class="sn-row">
+        <div class="sn-field">
+          <label for="numInput">输入数字（普通十进制或科学计数法）</label>
+          <input type="text" id="numInput" class="input js-focus-input" placeholder="如 1.5e-7 或 0.00000015">
+        </div>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var numEl = document.getElementById('numInput');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var PREFIXES = [
+        { exp: -12, name: '皮 (p)', example: '皮秒 / 皮法' },
+        { exp: -9, name: '纳 (n)', example: '纳米 / 纳秒' },
+        { exp: -6, name: '微 (μ)', example: '微米 / 微秒' },
+        { exp: -3, name: '毫 (m)', example: '毫米 / 毫秒' },
+        { exp: 0, name: '—', example: '米 / 秒' },
+        { exp: 3, name: '千 (k)', example: '千米 / 千克' },
+        { exp: 6, name: '兆 (M)', example: '兆赫 / 兆字节' },
+        { exp: 9, name: '吉 (G)', example: '吉赫 / 吉字节' },
+        { exp: 12, name: '太 (T)', example: '太字节' }
+      ];
+
+      function parseNumber(s) {
+        var t = String(s).trim();
+        if (t === '') {
+          return null;
+        }
+        var m = t.match(/^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+        if (!m) {
+          return null;
+        }
+        var sign = m[1] === '-' ? '-' : '';
+        var intPart = m[2];
+        var fracPart = m[3] || '';
+        var exp = m[4] ? parseInt(m[4], 10) : 0;
+        var digits = intPart + fracPart;
+        var pointPos = intPart.length + exp;
+        var shift = 0;
+        while (shift < digits.length && digits.charAt(shift) === '0') {
+          shift++;
+        }
+        var sig = digits.slice(shift);
+        if (sig === '') {
+          sig = '0';
+        }
+        return { sign: sign, sig: sig, pos: pointPos - shift, zero: sig === '0' };
+      }
+
+      function expandDecimal(p) {
+        if (p.zero) {
+          return '0';
+        }
+        var s = p.sig;
+        var pos = p.pos;
+        var out;
+        if (pos <= 0) {
+          var z = '';
+          for (var i = 0; i < -pos; i++) {
+            z += '0';
+          }
+          out = '0.' + z + s;
+        } else if (pos >= s.length) {
+          var z2 = '';
+          for (var j = 0; j < pos - s.length; j++) {
+            z2 += '0';
+          }
+          out = s + z2;
+        } else {
+          out = s.slice(0, pos) + '.' + s.slice(pos);
+        }
+        if (out.indexOf('.') !== -1) {
+          out = out.replace(/0+$/, '').replace(/\.$/, '');
+        }
+        return p.sign + out;
+      }
+
+      function sciNotation(p) {
+        if (p.zero) {
+          return '0';
+        }
+        var s = p.sig;
+        var n = p.pos - 1;
+        var coef = s.charAt(0) + (s.length > 1 ? '.' + s.slice(1) : '');
+        return p.sign + coef + ' × 10^' + n;
+      }
+
+      function engNotation(p) {
+        if (p.zero) {
+          return '0';
+        }
+        var n = p.pos - 1;
+        var r = ((n % 3) + 3) % 3;
+        var e = n - r;
+        var coefPos = p.pos - e;
+        var s = p.sig;
+        var out;
+        if (coefPos <= 0) {
+          var z = '';
+          for (var i = 0; i < -coefPos; i++) {
+            z += '0';
+          }
+          out = '0.' + z + s;
+        } else if (coefPos >= s.length) {
+          var z2 = '';
+          for (var j = 0; j < coefPos - s.length; j++) {
+            z2 += '0';
+          }
+          out = s + z2;
+        } else {
+          out = s.slice(0, coefPos) + '.' + s.slice(coefPos);
+        }
+        if (out.indexOf('.') !== -1) {
+          out = out.replace(/0+$/, '').replace(/\.$/, '');
+        }
+        return p.sign + out + ' × 10^' + e;
+      }
+
+      function prefixTable(p) {
+        var matchIdx = -1;
+        if (!p.zero) {
+          var abs = Math.abs(parseFloat(p.sign + (p.sig.charAt(0) + '.' + p.sig.slice(1))) * Math.pow(10, p.pos - 1));
+          if (abs > 0 && isFinite(abs)) {
+            var e10 = Math.floor(Math.log(abs) / Math.LN10);
+            var e = 3 * Math.floor(e10 / 3);
+            for (var i = 0; i < PREFIXES.length; i++) {
+              if (PREFIXES[i].exp === e) {
+                matchIdx = i;
+                break;
+              }
+            }
+          }
+        }
+        var html = '<table class="prefix-table"><thead><tr><th>前缀</th><th>数量级</th><th>常见单位场景</th></tr></thead><tbody>';
+        for (var k = 0; k < PREFIXES.length; k++) {
+          var cls = k === matchIdx ? ' class="prefix-match"' : '';
+          html += '<tr' + cls + '><td>' + htmlEscape(PREFIXES[k].name) + '</td><td>10^' + PREFIXES[k].exp + '</td><td>' + htmlEscape(PREFIXES[k].example) + '</td></tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+      }
+
+      function run() {
+        var raw = numEl.value.trim();
+        if (raw === '') {
+          outputText.innerHTML = '';
+          setStatus('');
+          return;
+        }
+        var p = parseNumber(raw);
+        if (p === null) {
+          setStatus('请输入有效数字，如 1234.5 或 1.5e-7', 'error');
+          return;
+        }
+        var sigDigits = p.zero ? 0 : p.sig.length;
+        var html = '';
+        html += '<span class="res-label">科学计数法</span>';
+        html += '<span class="res-line">' + htmlEscape(sciNotation(p)) + '</span>';
+        html += '<span class="res-label">普通十进制</span>';
+        html += '<span class="res-line">' + htmlEscape(expandDecimal(p)) + '</span>';
+        html += '<span class="res-label">工程计数法（指数为 3 的倍数）</span>';
+        html += '<span class="res-line">' + htmlEscape(engNotation(p)) + '</span>';
+        html += '<span class="res-label">有效数字位数</span>';
+        html += '<span class="res-line">' + htmlEscape(String(sigDigits)) + ' 位</span>';
+        html += '<span class="res-label">单位前缀对照（当前量级已高亮）</span>';
+        html += prefixTable(p);
+        outputText.innerHTML = html;
+        setStatus('转换完成');
+      }
+
+      numEl.addEventListener('input', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

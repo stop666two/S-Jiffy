@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日志分析器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .textarea { width: 100%; min-height: 180px; font-family: var(--font-mono); font-size: var(--font-size-xs); resize: vertical; }
+    .actions { display: flex; gap: var(--space-2); margin: var(--space-2) 0; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-bottom: var(--space-3); }
+    .stat-card { padding: var(--space-2); background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+    .stat-card .v { font-size: var(--font-size-xl); font-weight: 600; }
+    .stat-card .l { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 4px; }
+    .tbl-title { font-size: var(--font-size-sm); font-weight: 600; margin: var(--space-3) 0 var(--space-1); }
+    .tbl { width: 100%; border-collapse: collapse; font-size: var(--font-size-xs); }
+    .tbl th, .tbl td { border: 1px solid var(--color-border); padding: 4px 8px; text-align: left; }
+    .tbl th { background: var(--color-bg-soft); font-weight: 600; white-space: nowrap; }
+    .tbl td { font-family: var(--font-mono); }
+    .tbl .err-4xx { color: var(--color-error); }
+    @media (max-width: 700px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>日志分析器</h1>
+    <p class="tool-desc">粘贴 nginx access log（combined 格式），统计请求、IP、状态码与错误列表。</p>
+    <div class="card">
+      <div class="field">
+        <label>nginx access log（每行一条）</label>
+        <textarea id="logText" class="input textarea js-focus-input" placeholder="127.0.0.1 - - [21/Aug/2026:10:00:00 +0800] &quot;GET /index.html HTTP/1.1&quot; 200 612"></textarea>
+      </div>
+      <div class="actions">
+        <button id="analyzeBtn" class="btn btn-primary">开始分析</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div id="resultTables"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var LINE_RE = /^(\S+) - (\S+) \[(.*?)\] "(\S+) (\S+) (\S+)" (\d{3}) (\d+)/;
+      var logInput = document.getElementById('logText');
+      var tablesEl = document.getElementById('resultTables');
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function topN(map, n) {
+        var arr = [];
+        for (var key in map) {
+          if (map.hasOwnProperty(key)) arr.push({ k: key, v: map[key] });
+        }
+        arr.sort(function (a, b) { return b.v - a.v; });
+        return arr.slice(0, n);
+      }
+
+      function tableHtml(headers, rows, cls) {
+        var html = '<table class="tbl">';
+        html += '<tr>';
+        for (var i = 0; i < headers.length; i++) html += '<th>' + htmlEscape(headers[i]) + '</th>';
+        html += '</tr>';
+        for (var j = 0; j < rows.length; j++) {
+          html += '<tr>';
+          for (var k = 0; k < rows[j].length; k++) {
+            var td = rows[j][k];
+            if (cls && cls[k]) html += '<td class="' + cls[k] + '">' + htmlEscape(td) + '</td>';
+            else html += '<td>' + htmlEscape(td) + '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</table>';
+        return html;
+      }
+
+      function analyze() {
+        var text = logInput.value;
+        if (!text.trim()) { setStatus('请先粘贴 nginx access log 内容', 'error'); tablesEl.innerHTML = ''; output.textContent = ''; return; }
+        var lines = text.split('\n');
+        var total = 0;
+        var unparsed = 0;
+        var ipSet = {};
+        var statusMap = {};
+        var ipMap = {};
+        var pathMap = {};
+        var errors = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (!line.trim()) continue;
+          var m = LINE_RE.exec(line);
+          if (!m) { unparsed++; continue; }
+          total++;
+          var ip = m[1];
+          var time = m[3];
+          var method = m[4];
+          var path = m[5];
+          var status = m[7];
+          ipSet[ip] = 1;
+          ipMap[ip] = (ipMap[ip] || 0) + 1;
+          pathMap[path] = (pathMap[path] || 0) + 1;
+          statusMap[status] = (statusMap[status] || 0) + 1;
+          if (parseInt(status, 10) >= 400) {
+            errors.push({ time: time, ip: ip, status: status, method: method, path: path });
+          }
+        }
+        if (total === 0 && unparsed > 0) { setStatus('没有解析到任何有效日志行，请检查格式', 'error'); tablesEl.innerHTML = ''; output.textContent = ''; return; }
+
+        var ipCount = 0;
+        for (var ipKey in ipSet) {
+          if (ipSet.hasOwnProperty(ipKey)) ipCount++;
+        }
+
+        var statusRows = [];
+        var statusKeys = Object.keys(statusMap).sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+        for (var s = 0; s < statusKeys.length; s++) {
+          var st = statusKeys[s];
+          statusRows.push([st, statusMap[st], Math.round(statusMap[st] / total * 1000) / 10 + '%']);
+        }
+
+        var ipTop = topN(ipMap, 10);
+        var ipRows = [];
+        for (var t1 = 0; t1 < ipTop.length; t1++) {
+          ipRows.push([t1 + 1, ipTop[t1].k, ipTop[t1].v, Math.round(ipTop[t1].v / total * 1000) / 10 + '%']);
+        }
+
+        var pathTop = topN(pathMap, 10);
+        var pathRows = [];
+        for (var t2 = 0; t2 < pathTop.length; t2++) {
+          pathRows.push([t2 + 1, pathTop[t2].k, pathTop[t2].v]);
+        }
+
+        var errorRows = [];
+        for (var e = 0; e < errors.length; e++) {
+          var err = errors[e];
+          errorRows.push([err.time, err.ip, err.status, err.method + ' ' + err.path]);
+        }
+        if (errorRows.length > 200) errorRows = errorRows.slice(0, 200);
+
+        var statusClass = [];
+        var errClass = ['', '', 'err-4xx', ''];
+        tablesEl.innerHTML = '<div class="stat-grid">'
+          + '<div class="stat-card"><div class="v">' + total + '</div><div class="l">总请求数</div></div>'
+          + '<div class="stat-card"><div class="v">' + ipCount + '</div><div class="l">独立 IP</div></div>'
+          + '<div class="stat-card"><div class="v">' + statusKeys.length + '</div><div class="l">状态码种类</div></div>'
+          + '<div class="stat-card"><div class="v">' + errors.length + '</div><div class="l">4xx / 5xx 错误</div></div>'
+          + '</div>'
+          + '<div class="tbl-title">状态码分布</div>' + tableHtml(['状态码', '次数', '占比'], statusRows, statusClass)
+          + '<div class="tbl-title">TOP 10 IP</div>' + tableHtml(['排名', 'IP', '次数', '占比'], ipRows, statusClass)
+          + '<div class="tbl-title">TOP 10 路径</div>' + tableHtml(['排名', '路径', '次数'], pathRows, statusClass)
+          + '<div class="tbl-title">错误列表（4xx / 5xx，最多 200 条）</div>' + tableHtml(['时间', 'IP', '状态', '请求'], errorRows, errClass);
+
+        var report = '日志分析报告\n';
+        report += '总请求数：' + total + '\n';
+        report += '独立 IP：' + ipCount + '\n';
+        report += '4xx / 5xx 错误：' + errors.length + '\n';
+        if (unparsed > 0) report += '无法解析的行：' + unparsed + '\n';
+        report += '\n状态码分布：\n';
+        for (var s2 = 0; s2 < statusKeys.length; s2++) {
+          report += statusKeys[s2] + ': ' + statusMap[statusKeys[s2]] + '\n';
+        }
+        report += '\nTOP 10 IP：\n';
+        for (var t3 = 0; t3 < ipTop.length; t3++) {
+          report += (t3 + 1) + '. ' + ipTop[t3].k + '（' + ipTop[t3].v + ' 次）\n';
+        }
+        report += '\nTOP 10 路径：\n';
+        for (var t4 = 0; t4 < pathTop.length; t4++) {
+          report += (t4 + 1) + '. ' + pathTop[t4].k + '（' + pathTop[t4].v + ' 次）\n';
+        }
+        if (errors.length) {
+          report += '\n错误列表：\n';
+          for (var e2 = 0; e2 < errors.length; e2++) {
+            var er2 = errors[e2];
+            report += '[' + er2.time + '] ' + er2.ip + ' ' + er2.status + ' ' + er2.method + ' ' + er2.path + '\n';
+          }
+        }
+
+        output.textContent = report;
+        if (unparsed > 0) {
+          setStatus('分析完成，有 ' + unparsed + ' 行无法解析（格式不符）', 'error');
+        } else {
+          setStatus('分析完成，共 ' + total + ' 条请求');
+        }
+      }
+
+      document.getElementById('analyzeBtn').addEventListener('click', analyze);
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        tablesEl.innerHTML = '';
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跨时区会议安排器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .mtg-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-2); }
+    .mtg-controls label { display: flex; align-items: center; gap: 4px; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .mtg-zones { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+    .mtg-zones label { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--font-size-sm); cursor: pointer; }
+    .mtg-zones label:hover { background: var(--color-bg-soft); }
+    .mtg-item { padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .mtg-item:last-child { border-bottom: none; }
+    .mtg-time { font-family: var(--font-mono); font-weight: 600; }
+    .mtg-zone-name { color: var(--color-text-secondary); }
+    .mtg-ok { color: var(--color-success); }
+    .mtg-bad { color: var(--color-error); }
+    .mtg-note { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>跨时区会议安排器</h1>
+    <p class="tool-desc">输入本地会议时间，换算 10 个常用城市时区时间，并标注各时区是否处于 9:00-17:00 工作时段。</p>
+    <div class="card">
+      <div class="mtg-controls">
+        <input id="timeInput" type="datetime-local" class="input js-focus-input">
+        <label><input type="checkbox" id="sydneyDst"> 悉尼夏令时（+11）</label>
+      </div>
+      <div class="mtg-zones" id="zoneList"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var timeInput = document.getElementById('timeInput');
+    var zoneList = document.getElementById('zoneList');
+    var sydneyDst = document.getElementById('sydneyDst');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var zones = [
+      { id: 'beijing', name: '北京', offset: 8 },
+      { id: 'tokyo', name: '东京', offset: 9 },
+      { id: 'sydney', name: '悉尼', offset: 10 },
+      { id: 'singapore', name: '新加坡', offset: 8 },
+      { id: 'dubai', name: '迪拜', offset: 4 },
+      { id: 'berlin', name: '柏林', offset: 1 },
+      { id: 'london', name: '伦敦', offset: 0 },
+      { id: 'newyork', name: '纽约', offset: -5 },
+      { id: 'losangeles', name: '洛杉矶', offset: -8 },
+      { id: 'sanfrancisco', name: '旧金山', offset: -8 }
+    ];
+
+    var weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function buildZones() {
+      var html = '';
+      for (var i = 0; i < zones.length; i++) {
+        var z = zones[i];
+        html += '<label><input type="checkbox" id="zone_' + z.id + '" value="' + z.id + '"' + (i < 3 ? ' checked' : '') + '> ' + htmlEscape(z.name) + ' (UTC' + (z.offset >= 0 ? '+' + z.offset : z.offset) + ')</label>';
+      }
+      zoneList.innerHTML = html;
+    }
+
+    function parseLocal(s) {
+      var m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+      if (!m) { return null; }
+      var y = parseInt(m[1], 10);
+      var mo = parseInt(m[2], 10);
+      var d = parseInt(m[3], 10);
+      var h = parseInt(m[4], 10);
+      var mi = parseInt(m[5], 10);
+      if (mo < 1 || mo > 12 || h > 23 || mi > 59) { return null; }
+      var dt = new Date(y, mo - 1, d, h, mi, 0, 0);
+      if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) { return null; }
+      return dt;
+    }
+
+    function fmtZone(utcMs, offset) {
+      var dt = new Date(utcMs + offset * 3600000);
+      return dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth() + 1) + '-' + pad(dt.getUTCDate()) + ' ' + pad(dt.getUTCHours()) + ':' + pad(dt.getUTCMinutes()) + ' ' + weekdays[dt.getUTCDay()];
+    }
+
+    function render() {
+      var raw = timeInput.value;
+      if (!raw) {
+        outputText.innerHTML = '';
+        setStatus('');
+        return;
+      }
+      var local = parseLocal(raw);
+      if (!local) {
+        outputText.innerHTML = '';
+        setStatus('请输入有效的日期与时间', 'error');
+        return;
+      }
+      var utcMs = local.getTime();
+      var selected = [];
+      for (var i = 0; i < zones.length; i++) {
+        var cb = document.getElementById('zone_' + zones[i].id);
+        if (cb && cb.checked) { selected.push(zones[i]); }
+      }
+      if (!selected.length) {
+        outputText.innerHTML = '';
+        setStatus('请至少选择一个时区', 'error');
+        return;
+      }
+      var html = '';
+      var lines = ['会议时间（本地）：' + fmtZone(utcMs, -new Date().getTimezoneOffset() / 60) + '', '各时区时间：'];
+      for (var j = 0; j < selected.length; j++) {
+        var z = selected[j];
+        var offset = z.offset;
+        if (z.id === 'sydney' && sydneyDst.checked) { offset = 11; }
+        var timeStr = fmtZone(utcMs, offset);
+        var hour = parseInt(timeStr.slice(11, 13), 10);
+        var inWork = hour >= 9 && hour < 17;
+        var mark = inWork ? '可参会（9:00-17:00 内）' : '非工作时段';
+        var cls = inWork ? 'mtg-ok' : 'mtg-bad';
+        html += '<div class="mtg-item"><span><span class="mtg-zone-name">' + htmlEscape(z.name) + '</span> (UTC' + (offset >= 0 ? '+' + offset : offset) + ')</span><span class="mtg-time">' + htmlEscape(timeStr) + '</span><span class="' + cls + '">' + htmlEscape(mark) + '</span></div>';
+        lines.push(z.name + ' (UTC' + (offset >= 0 ? '+' + offset : offset) + ')：' + timeStr + ' — ' + mark);
+      }
+      html += '<div class="mtg-note">工作时段按各时区当地时间 9:00-17:00 判定；夏令时已简化处理，可在输入框下方勾选悉尼夏令时。</div>';
+      outputText.innerHTML = html;
+      copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
+      setStatus('已换算 ' + selected.length + ' 个时区');
+    }
+
+    buildZones();
+    timeInput.addEventListener('input', render);
+    sydneyDst.addEventListener('change', render);
+    zoneList.addEventListener('change', render);
+  })();
+  </script>
+</body>
+</html>

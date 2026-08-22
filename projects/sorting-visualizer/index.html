@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>排序算法可视化 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .ctrl-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .ctrl-group .input {
+      width: auto;
+    }
+    .ctrl-group input[type="range"] {
+      width: 140px;
+    }
+    .bar-stage {
+      position: relative;
+      height: 260px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-soft);
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      padding: var(--space-1);
+      margin-top: var(--space-2);
+      overflow: hidden;
+    }
+    .bar {
+      flex: 1;
+      min-width: 2px;
+      background: var(--color-accent);
+      border-radius: 2px 2px 0 0;
+      transition: height 0.05s linear;
+    }
+    .bar.bar-compare {
+      background: var(--color-error);
+    }
+    .bar.bar-swap {
+      background: var(--color-success);
+    }
+    .stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+      font-size: var(--font-size-sm);
+    }
+    .stat-chip {
+      background: var(--color-bg-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      color: var(--color-text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>排序算法可视化</h1>
+    <p class="tool-desc">选择排序算法、数据量与速度，直观观看比较与交换过程。</p>
+    <div class="card">
+      <div class="ctrl-row">
+        <div class="ctrl-group">
+          <label for="algoSelect">算法</label>
+          <select id="algoSelect" class="input">
+            <option value="bubble">冒泡排序</option>
+            <option value="selection">选择排序</option>
+            <option value="insertion">插入排序</option>
+            <option value="quick">快速排序</option>
+            <option value="merge">归并排序</option>
+            <option value="heap">堆排序</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <label for="sizeRange">数据量 <span id="sizeLabel">40</span></label>
+          <input id="sizeRange" type="range" min="10" max="100" value="40">
+        </div>
+        <div class="ctrl-group">
+          <label for="speedRange">速度 <span id="speedLabel">6</span></label>
+          <input id="speedRange" type="range" min="1" max="10" value="6">
+        </div>
+        <div class="ctrl-group">
+          <button id="startBtn" class="btn btn-primary">开始排序</button>
+          <button id="stopBtn" class="btn btn-secondary">停止</button>
+          <button id="shuffleBtn" class="btn btn-secondary">重新洗牌</button>
+        </div>
+      </div>
+      <div class="bar-stage" id="barStage"></div>
+      <div class="stat-row" id="statRow">
+        <span class="stat-chip">数据量：<span id="statN">0</span></span>
+        <span class="stat-chip">比较次数：<span id="statCmp">0</span></span>
+        <span class="stat-chip">交换次数：<span id="statSwp">0</span></span>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var algoSelect = document.getElementById('algoSelect');
+      var sizeRange = document.getElementById('sizeRange');
+      var sizeLabel = document.getElementById('sizeLabel');
+      var speedRange = document.getElementById('speedRange');
+      var speedLabel = document.getElementById('speedLabel');
+      var startBtn = document.getElementById('startBtn');
+      var stopBtn = document.getElementById('stopBtn');
+      var shuffleBtn = document.getElementById('shuffleBtn');
+      var barStage = document.getElementById('barStage');
+      var statN = document.getElementById('statN');
+      var statCmp = document.getElementById('statCmp');
+      var statSwp = document.getElementById('statSwp');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var values = [];
+      var bars = [];
+      var timer = null;
+      var running = false;
+      var cmpTotal = 0;
+      var swpTotal = 0;
+
+      function randomArray(n) {
+        var a = [];
+        var i;
+        for (i = 0; i < n; i++) {
+          a.push(Math.floor(Math.random() * 91) + 10);
+        }
+        return a;
+      }
+
+      function renderBars() {
+        barStage.innerHTML = '';
+        bars = [];
+        var maxV = 1;
+        var i;
+        for (i = 0; i < values.length; i++) {
+          if (values[i] > maxV) maxV = values[i];
+        }
+        for (i = 0; i < values.length; i++) {
+          var div = document.createElement('div');
+          div.className = 'bar';
+          div.style.height = Math.round(values[i] / maxV * 100) + '%';
+          barStage.appendChild(div);
+          bars.push(div);
+        }
+        statN.textContent = String(values.length);
+        statCmp.textContent = '0';
+        statSwp.textContent = '0';
+        cmpTotal = 0;
+        swpTotal = 0;
+      }
+
+      function shuffle() {
+        stopRun();
+        values = randomArray(parseInt(sizeRange.value, 10));
+        renderBars();
+        outputEl.textContent = '已生成 ' + values.length + ' 个随机数据，点击「开始排序」。';
+        setStatus('已重新洗牌');
+      }
+
+      function swapArr(a, x, y) {
+        var t = a[x];
+        a[x] = a[y];
+        a[y] = t;
+      }
+
+      function buildSteps(algo, arr) {
+        var steps = [];
+        var stats = { cmp: 0, swp: 0 };
+        var a = arr.slice();
+        var n = a.length;
+        var i, j;
+
+        if (algo === 'bubble') {
+          for (i = 0; i < n - 1; i++) {
+            for (j = 0; j < n - 1 - i; j++) {
+              stats.cmp++;
+              steps.push({ t: 'c', i: j, j: j + 1 });
+              if (a[j] > a[j + 1]) {
+                swapArr(a, j, j + 1);
+                stats.swp++;
+                steps.push({ t: 's', i: j, j: j + 1 });
+              }
+            }
+          }
+        } else if (algo === 'selection') {
+          for (i = 0; i < n - 1; i++) {
+            var minIdx = i;
+            for (j = i + 1; j < n; j++) {
+              stats.cmp++;
+              steps.push({ t: 'c', i: j, j: minIdx });
+              if (a[j] < a[minIdx]) minIdx = j;
+            }
+            if (minIdx !== i) {
+              swapArr(a, i, minIdx);
+              stats.swp++;
+              steps.push({ t: 's', i: i, j: minIdx });
+            }
+          }
+        } else if (algo === 'insertion') {
+          for (i = 1; i < n; i++) {
+            var k = i;
+            while (k > 0) {
+              stats.cmp++;
+              steps.push({ t: 'c', i: k - 1, j: k });
+              if (a[k] < a[k - 1]) {
+                swapArr(a, k, k - 1);
+                stats.swp++;
+                steps.push({ t: 's', i: k - 1, j: k });
+                k--;
+              } else {
+                break;
+              }
+            }
+          }
+        } else if (algo === 'quick') {
+          (function qs(lo, hi) {
+            if (lo >= hi) return;
+            var pivot = a[hi];
+            var store = lo;
+            var q;
+            for (q = lo; q < hi; q++) {
+              stats.cmp++;
+              steps.push({ t: 'c', i: q, j: hi });
+              if (a[q] < pivot) {
+                if (store !== q) {
+                  swapArr(a, store, q);
+                  stats.swp++;
+                  steps.push({ t: 's', i: store, j: q });
+                }
+                store++;
+              }
+            }
+            if (store !== hi) {
+              swapArr(a, store, hi);
+              stats.swp++;
+              steps.push({ t: 's', i: store, j: hi });
+            }
+            qs(lo, store - 1);
+            qs(store + 1, hi);
+          })(0, n - 1);
+        } else if (algo === 'merge') {
+          (function ms(lo, hi) {
+            if (lo >= hi) return;
+            var mid = Math.floor((lo + hi) / 2);
+            ms(lo, mid);
+            ms(mid + 1, hi);
+            var tmp = [];
+            var p = lo;
+            var q = mid + 1;
+            while (p <= mid && q <= hi) {
+              stats.cmp++;
+              steps.push({ t: 'c', i: p, j: q });
+              if (a[p] <= a[q]) {
+                tmp.push(a[p]);
+                p++;
+              } else {
+                tmp.push(a[q]);
+                q++;
+              }
+            }
+            while (p <= mid) {
+              tmp.push(a[p]);
+              p++;
+            }
+            while (q <= hi) {
+              tmp.push(a[q]);
+              q++;
+            }
+            for (var k = 0; k < tmp.length; k++) {
+              a[lo + k] = tmp[k];
+              stats.swp++;
+              steps.push({ t: 'w', i: lo + k, v: tmp[k] });
+            }
+          })(0, n - 1);
+        } else if (algo === 'heap') {
+          function sift(root, end) {
+            while (true) {
+              var l = root * 2 + 1;
+              var r = root * 2 + 2;
+              var largest = root;
+              if (l <= end) {
+                stats.cmp++;
+                steps.push({ t: 'c', i: l, j: largest });
+                if (a[l] > a[largest]) largest = l;
+              }
+              if (r <= end) {
+                stats.cmp++;
+                steps.push({ t: 'c', i: r, j: largest });
+                if (a[r] > a[largest]) largest = r;
+              }
+              if (largest === root) break;
+              swapArr(a, root, largest);
+              stats.swp++;
+              steps.push({ t: 's', i: root, j: largest });
+              root = largest;
+            }
+          }
+          for (i = Math.floor(n / 2) - 1; i >= 0; i--) sift(i, n - 1);
+          for (j = n - 1; j > 0; j--) {
+            swapArr(a, 0, j);
+            stats.swp++;
+            steps.push({ t: 's', i: 0, j: j });
+            sift(0, j - 1);
+          }
+        }
+        return { steps: steps, cmp: stats.cmp, swp: stats.swp };
+      }
+
+      function clearHighlight() {
+        var i;
+        for (i = 0; i < bars.length; i++) {
+          bars[i].className = 'bar';
+        }
+      }
+
+      function delayFor(speed) {
+        return Math.max(8, 560 - speed * 54);
+      }
+
+      function start() {
+        if (running) return;
+        if (values.length === 0) {
+          setStatus('请先生成数据', 'error');
+          return;
+        }
+        var built = buildSteps(algoSelect.value, values);
+        var steps = built.steps;
+        cmpTotal = built.cmp;
+        swpTotal = built.swp;
+        var idx = 0;
+        var doneCmp = 0;
+        var doneSwp = 0;
+        var maxV = 1;
+        var i;
+        for (i = 0; i < values.length; i++) {
+          if (values[i] > maxV) maxV = values[i];
+        }
+        running = true;
+        startBtn.disabled = true;
+        shuffleBtn.disabled = true;
+        algoSelect.disabled = true;
+        sizeRange.disabled = true;
+        setStatus('排序中…（' + steps.length + ' 步）');
+        timer = setInterval(function () {
+          if (idx >= steps.length) {
+            stopRun();
+            var k;
+            for (k = 0; k < bars.length; k++) {
+              bars[k].className = 'bar bar-swap';
+            }
+            statCmp.textContent = String(cmpTotal);
+            statSwp.textContent = String(swpTotal);
+            outputEl.textContent = '排序完成！' + values.length + ' 个数据，比较 ' + cmpTotal + ' 次，交换/写入 ' + swpTotal + ' 次。';
+            setStatus('排序完成');
+            return;
+          }
+          clearHighlight();
+          var step = steps[idx];
+          if (step.t === 'c') {
+            bars[step.i].className = 'bar bar-compare';
+            bars[step.j].className = 'bar bar-compare';
+            doneCmp++;
+          } else if (step.t === 's') {
+            var tv = values[step.i];
+            values[step.i] = values[step.j];
+            values[step.j] = tv;
+            bars[step.i].style.height = Math.round(values[step.i] / maxV * 100) + '%';
+            bars[step.j].style.height = Math.round(values[step.j] / maxV * 100) + '%';
+            bars[step.i].className = 'bar bar-swap';
+            bars[step.j].className = 'bar bar-swap';
+            doneSwp++;
+          } else if (step.t === 'w') {
+            values[step.i] = step.v;
+            bars[step.i].style.height = Math.round(step.v / maxV * 100) + '%';
+            bars[step.i].className = 'bar bar-swap';
+            doneSwp++;
+          }
+          statCmp.textContent = String(doneCmp);
+          statSwp.textContent = String(doneSwp);
+          idx++;
+        }, delayFor(parseInt(speedRange.value, 10)));
+      }
+
+      function stopRun() {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+        running = false;
+        startBtn.disabled = false;
+        shuffleBtn.disabled = false;
+        algoSelect.disabled = false;
+        sizeRange.disabled = false;
+        clearHighlight();
+      }
+
+      startBtn.addEventListener('click', start);
+      stopBtn.addEventListener('click', function () {
+        if (running) {
+          stopRun();
+          setStatus('已停止，可重新开始或洗牌');
+        }
+      });
+      shuffleBtn.addEventListener('click', shuffle);
+      sizeRange.addEventListener('input', function () {
+        sizeLabel.textContent = sizeRange.value;
+        if (!running) shuffle();
+      });
+      speedRange.addEventListener('input', function () {
+        speedLabel.textContent = speedRange.value;
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      shuffle();
+    })();
+  </script>
+</body>
+</html>

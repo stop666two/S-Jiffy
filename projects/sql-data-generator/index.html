@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL 数据生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .form-row { display: -webkit-box; display: -ms-flexbox; display: flex; gap: var(--space-2); margin-bottom: var(--space-2); -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; }
+    .form-row label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .form-row .input { width: 200px; }
+    .col-table { width: 100%; border-collapse: collapse; margin-bottom: var(--space-2); }
+    .col-table th { text-align: left; padding: 8px 12px; background: var(--color-bg-soft); border-bottom: 2px solid var(--color-border); font-size: var(--font-size-sm); }
+    .col-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border); }
+    .col-table .input { width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; }
+    .col-table td.col-del { width: 64px; text-align: center; }
+    .col-table select { width: 130px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>SQL 数据生成器</h1>
+    <p class="tool-desc">定义表结构与列类型，一键生成 N 条类型感知的随机 INSERT 语句。</p>
+    <div class="card">
+      <div class="form-row">
+        <label for="tableName">表名</label>
+        <input id="tableName" class="input js-focus-input" type="text" placeholder="users">
+        <label for="rowCount">生成条数</label>
+        <input id="rowCount" class="input" type="text" value="5" placeholder="1-1000">
+      </div>
+      <table class="col-table">
+        <thead>
+          <tr><th>列名</th><th>类型</th><th></th></tr>
+        </thead>
+        <tbody id="colBody"></tbody>
+      </table>
+      <div class="form-row">
+        <button class="btn btn-secondary" id="addColBtn">+ 添加列</button>
+        <button class="btn btn-primary" id="genBtn">生成 INSERT 语句</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var TYPES = ['int', 'varchar', 'text', 'date', 'email', 'boolean', 'decimal', 'ip', 'timestamp'];
+    var WORDS = ['alpha', 'beta', 'gamma', 'delta', 'echo', 'foxtrot', 'hotel', 'india', 'juliet', 'kilo', 'lima', 'mike', 'november', 'oscar', 'papa', 'quebec', 'romeo', 'sierra', 'tango', 'uniform', 'victor', 'whiskey', 'xray', 'yankee', 'zulu', 'cloud', 'river', 'stone', 'flame', 'shadow', 'silver', 'golden', 'bright', 'swift', 'quiet', 'green', 'redwood', 'harbor', 'summit', 'canyon'];
+
+    var colBody = document.getElementById('colBody');
+    var tableNameInput = document.getElementById('tableName');
+    var rowCountInput = document.getElementById('rowCount');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var lastCode = '';
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomWords(n) {
+      var parts = [];
+      for (var i = 0; i < n; i++) {
+        parts.push(WORDS[randomInt(0, WORDS.length - 1)]);
+      }
+      return parts.join(' ');
+    }
+
+    function randomSentence() {
+      var words = [];
+      var n = randomInt(8, 18);
+      for (var i = 0; i < n; i++) {
+        words.push(WORDS[randomInt(0, WORDS.length - 1)]);
+      }
+      var s = words.join(' ');
+      return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+    }
+
+    function pad(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    function randomDate() {
+      var y = randomInt(2020, 2026);
+      var m = randomInt(1, 12);
+      var d = randomInt(1, 28);
+      return y + '-' + pad(m) + '-' + pad(d);
+    }
+
+    function randomTimestamp() {
+      return randomDate() + ' ' + pad(randomInt(0, 23)) + ':' + pad(randomInt(0, 59)) + ':' + pad(randomInt(0, 59));
+    }
+
+    function randomEmail() {
+      var user = randomWords(2).replace(/ /g, '.');
+      var domains = ['example.com', 'test.org', 'mail.net', 'demo.io', 'sample.co'];
+      return user + randomInt(1, 99) + '@' + domains[randomInt(0, domains.length - 1)];
+    }
+
+    function randomIp() {
+      return randomInt(1, 254) + '.' + randomInt(0, 255) + '.' + randomInt(0, 255) + '.' + randomInt(1, 254);
+    }
+
+    function genValue(type) {
+      switch (type) {
+        case 'int': return String(randomInt(1, 100000));
+        case 'varchar': return '\'' + randomWords(randomInt(2, 4)).replace(/'/g, '\'\'') + '\'';
+        case 'text': return '\'' + randomSentence().replace(/'/g, '\'\'') + '\'';
+        case 'date': return '\'' + randomDate() + '\'';
+        case 'email': return '\'' + randomEmail() + '\'';
+        case 'boolean': return randomInt(0, 1) === 1 ? '1' : '0';
+        case 'decimal': return (randomInt(100, 99999) + Math.random()).toFixed(2);
+        case 'ip': return '\'' + randomIp() + '\'';
+        case 'timestamp': return '\'' + randomTimestamp() + '\'';
+        default: return 'NULL';
+      }
+    }
+
+    function renderCols() {
+      var rows = colBody.getElementsByTagName('tr');
+      for (var i = 0; i < rows.length; i++) {
+        var delBtn = rows[i].querySelector('button');
+        delBtn.disabled = rows.length === 1;
+        rows[i].onmouseover = null;
+      }
+    }
+
+    function addCol(name, type) {
+      var tr = document.createElement('tr');
+      var tdName = document.createElement('td');
+      var input = document.createElement('input');
+      input.className = 'input';
+      input.type = 'text';
+      input.placeholder = '列名，如 name';
+      input.value = name || '';
+      tdName.appendChild(input);
+      var tdType = document.createElement('td');
+      var select = document.createElement('select');
+      select.className = 'input';
+      for (var i = 0; i < TYPES.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = TYPES[i];
+        opt.textContent = TYPES[i];
+        if (TYPES[i] === type) opt.selected = true;
+        select.appendChild(opt);
+      }
+      tdType.appendChild(select);
+      var tdDel = document.createElement('td');
+      tdDel.className = 'col-del';
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-secondary';
+      btn.textContent = '删除';
+      btn.onclick = function () {
+        var all = colBody.getElementsByTagName('tr');
+        if (all.length <= 1) {
+          setStatus('至少保留一列', 'error');
+          return;
+        }
+        colBody.removeChild(tr);
+        renderCols();
+      };
+      tdDel.appendChild(btn);
+      tr.appendChild(tdName);
+      tr.appendChild(tdType);
+      tr.appendChild(tdDel);
+      colBody.appendChild(tr);
+      renderCols();
+    }
+
+    function collectColumns() {
+      var rows = colBody.getElementsByTagName('tr');
+      var cols = [];
+      for (var i = 0; i < rows.length; i++) {
+        var inputs = rows[i].querySelectorAll('input');
+        var select = rows[i].querySelector('select');
+        var name = inputs[0].value.trim();
+        var type = select.value;
+        if (!name) {
+          return { error: '第 ' + (i + 1) + ' 行的列名为空，请填写或删除该行。' };
+        }
+        if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+          return { error: '列名 "' + name + '" 不合法，只能包含字母、数字、下划线且不能以数字开头。' };
+        }
+        cols.push({ name: name, type: type });
+      }
+      if (cols.length === 0) {
+        return { error: '请至少添加一列。' };
+      }
+      return { cols: cols };
+    }
+
+    function generate() {
+      var table = tableNameInput.value.trim();
+      if (!table) {
+        outputText.textContent = '请填写表名。';
+        setStatus('表名为空', 'error');
+        return;
+      }
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) {
+        outputText.textContent = '表名不合法，只能包含字母、数字、下划线且不能以数字开头。';
+        setStatus('表名不合法', 'error');
+        return;
+      }
+      var countStr = rowCountInput.value.trim();
+      var count = parseInt(countStr, 10);
+      if (!countStr || isNaN(count) || count < 1) {
+        outputText.textContent = '生成条数必须是大于 0 的整数。';
+        setStatus('条数无效', 'error');
+        return;
+      }
+      if (count > 1000) {
+        outputText.textContent = '单次最多生成 1000 条，请减小条数。';
+        setStatus('条数超出上限', 'error');
+        return;
+      }
+      var collected = collectColumns();
+      if (collected.error) {
+        outputText.textContent = collected.error;
+        setStatus('列定义无效', 'error');
+        return;
+      }
+      var cols = collected.cols;
+      var colNames = [];
+      for (var i = 0; i < cols.length; i++) {
+        colNames.push(cols[i].name);
+      }
+      var header = 'INSERT INTO ' + table + ' (' + colNames.join(', ') + ') VALUES';
+      var rows = [];
+      for (var r = 0; r < count; r++) {
+        var vals = [];
+        for (var c = 0; c < cols.length; c++) {
+          vals.push(genValue(cols[c].type));
+        }
+        rows.push('(' + vals.join(', ') + ')');
+      }
+      var sql = header + '\n' + rows.join(',\n') + ';';
+      lastCode = sql;
+      outputText.textContent = sql;
+      setStatus('已生成 ' + count + ' 条 INSERT 语句（' + cols.length + ' 列）');
+    }
+
+    document.getElementById('addColBtn').onclick = function () {
+      addCol('', 'varchar');
+    };
+    document.getElementById('genBtn').onclick = generate;
+    copyBtn.onclick = function () {
+      if (!lastCode) {
+        setStatus('请先生成 INSERT 语句', 'error');
+        return;
+      }
+      copyToClipboard(lastCode, copyBtn);
+    };
+    addCol('id', 'int');
+    addCol('name', 'varchar');
+    addCol('email', 'email');
+  })();
+  </script>
+</body>
+</html>

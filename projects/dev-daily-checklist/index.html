@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开发者每日清单 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .check-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+    .ring-wrap {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+    .ring-num {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+    .ring-sub {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      font-weight: 400;
+    }
+    .check-date {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+    }
+    .check-date small {
+      display: block;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .group-block {
+      margin-top: var(--space-2);
+    }
+    .group-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 4px;
+      margin-bottom: var(--space-1);
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 4px;
+      font-size: var(--font-size-sm);
+      border-radius: var(--radius-sm);
+    }
+    .item-row:hover {
+      background: var(--color-bg-soft);
+    }
+    .item-row input[type="checkbox"] {
+      accent-color: var(--color-accent);
+      cursor: pointer;
+    }
+    .item-row.done .item-label {
+      color: var(--color-text-disabled);
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>开发者每日清单</h1>
+    <p class="tool-desc">按分组打卡每日开发习惯，进度自动保存到本地，日期自动记录。</p>
+    <div class="card">
+      <div class="check-head">
+        <div class="ring-wrap">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-border)" stroke-width="10"></circle>
+            <circle id="ringBar" cx="60" cy="60" r="52" fill="none" stroke="var(--color-success)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" transform="rotate(-90 60 60)"></circle>
+          </svg>
+          <div class="ring-num"><span id="ringPct">0%</span><span class="ring-sub" id="ringCount">0/0</span></div>
+        </div>
+        <div class="check-date">
+          <span id="todayLabel">今日</span>
+          <small>进度已自动保存到本地浏览器</small>
+        </div>
+        <button id="resetBtn" class="btn btn-secondary" style="margin-left:auto;">重置今日进度</button>
+      </div>
+      <div id="checkList"></div>
+    </div>
+    <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var checkList = document.getElementById('checkList');
+      var resetBtn = document.getElementById('resetBtn');
+      var todayLabel = document.getElementById('todayLabel');
+      var ringBar = document.getElementById('ringBar');
+      var ringPct = document.getElementById('ringPct');
+      var ringCount = document.getElementById('ringCount');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var groups = [
+        { name: '代码质量', items: ['代码可读性复查', '删除调试代码（console.log 等）', '处理遗留 TODO 注释', '检查命名与代码风格', '审查变更是否最小化'] },
+        { name: '测试', items: ['运行全部测试', '检查 lint 与类型检查', '补充缺失的测试用例', '手动验证关键路径', '检查边界情况与异常输入'] },
+        { name: '提交', items: ['提交前 review diff', '编写清晰的 commit message', '同步更新相关文档', '更新 CHANGELOG', '确认无密钥与 .env 泄露'] },
+        { name: '沟通', items: ['回复待处理的消息', '同步团队进度', '更新需求与会议记录', '记录今日遇到的问题'] },
+        { name: '学习', items: ['复盘今日产出', '记录明日计划', '阅读一篇技术文章', '整理新学到的知识点'] }
+      ];
+
+      var total = 0;
+      var i;
+      for (i = 0; i < groups.length; i++) total += groups[i].items.length;
+
+      var todayStr = '';
+      var state = { done: {} };
+
+      function today() {
+        var d = new Date();
+        var m = String(d.getMonth() + 1);
+        var day = String(d.getDate());
+        if (m.length < 2) m = '0' + m;
+        if (day.length < 2) day = '0' + day;
+        return d.getFullYear() + '-' + m + '-' + day;
+      }
+
+      function itemId(g, k) {
+        return 'g' + g + 'i' + k;
+      }
+
+      function loadState() {
+        todayStr = today();
+        var saved = loadPreference('dev-checklist-' + todayStr, null);
+        if (saved && saved.date === todayStr && saved.done) {
+          state = saved;
+        } else {
+          state = { date: todayStr, done: {} };
+        }
+      }
+
+      function saveState() {
+        savePreference('dev-checklist-' + todayStr, state);
+      }
+
+      function renderList() {
+        var html = '';
+        var g, k;
+        for (g = 0; g < groups.length; g++) {
+          html += '<div class="group-block"><div class="group-title">' + htmlEscape(groups[g].name) + '</div>';
+          for (k = 0; k < groups[g].items.length; k++) {
+            var id = itemId(g, k);
+            var checked = !!state.done[id];
+            html += '<label class="item-row' + (checked ? ' done' : '') + '">'
+              + '<input type="checkbox" data-id="' + id + '"' + (checked ? ' checked' : '') + '>'
+              + '<span class="item-label">' + htmlEscape(groups[g].items[k]) + '</span>'
+              + '</label>';
+          }
+          html += '</div>';
+        }
+        checkList.innerHTML = html;
+      }
+
+      function renderProgress() {
+        var done = 0;
+        for (var key in state.done) {
+          if (state.done[key]) done++;
+        }
+        var pct = total ? Math.round(done / total * 100) : 0;
+        ringPct.textContent = pct + '%';
+        ringCount.textContent = done + '/' + total;
+        ringBar.setAttribute('stroke-dashoffset', String(Math.round(326.73 * (1 - pct / 100) * 100) / 100));
+        outputEl.textContent = '日期：' + todayStr + ' | 完成 ' + done + '/' + total + '（' + pct + '%）';
+        return { done: done, pct: pct };
+      }
+
+      checkList.addEventListener('change', function (e) {
+        if (e.target.type === 'checkbox') {
+          var id = e.target.getAttribute('data-id');
+          if (e.target.checked) {
+            state.done[id] = true;
+          } else {
+            delete state.done[id];
+          }
+          var row = e.target.parentNode;
+          if (row.className.indexOf('done') !== -1) {
+            row.className = 'item-row';
+          } else {
+            row.className = 'item-row done';
+          }
+          saveState();
+          renderProgress();
+          setStatus('进度已保存');
+        }
+      });
+
+      resetBtn.addEventListener('click', function () {
+        showConfirm('确定重置今日清单吗？今日所有勾选将被清空。', function (ok) {
+          if (ok) {
+            state = { date: todayStr, done: {} };
+            saveState();
+            renderList();
+            renderProgress();
+            setStatus('今日进度已重置');
+          }
+        });
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus('已复制到剪贴板');
+        }
+      });
+
+      loadState();
+      todayLabel.textContent = '今日：' + todayStr;
+      renderList();
+      renderProgress();
+    })();
+  </script>
+</body>
+</html>

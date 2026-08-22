@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配置格式互转 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .kv-table { width: 100%; border-collapse: collapse; margin-bottom: var(--space-2); }
+    .kv-table th { text-align: left; padding: 8px 12px; background: var(--color-bg-soft); border-bottom: 2px solid var(--color-border); font-size: var(--font-size-sm); }
+    .kv-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border); }
+    .kv-table .input { width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; }
+    .kv-table td.col-del { width: 64px; text-align: center; }
+    .tab-bar { display: -webkit-box; display: -ms-flexbox; display: flex; gap: var(--space-1); margin: var(--space-2) 0; -ms-flex-wrap: wrap; flex-wrap: wrap; }
+    .tab-btn { padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); font-size: var(--font-size-sm); cursor: pointer; color: var(--color-text-secondary); }
+    .tab-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>配置格式互转</h1>
+    <p class="tool-desc">编辑键值对，一键同时生成 JSON5 / YAML / TOML / INI / HCL 五种配置格式代码。</p>
+    <div class="card">
+      <table class="kv-table">
+        <thead>
+          <tr><th>键</th><th>值</th><th>注释（可选）</th><th></th></tr>
+        </thead>
+        <tbody id="kvBody"></tbody>
+      </table>
+      <div class="form-row" style="display:-webkit-box;display:-ms-flexbox;display:flex;gap:var(--space-2);-ms-flex-wrap:wrap;flex-wrap:wrap">
+        <button class="btn btn-secondary" id="addRowBtn">+ 添加行</button>
+        <button class="btn btn-primary" id="genBtn">生成五种格式</button>
+      </div>
+      <div class="tab-bar" id="tabBar"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+  (function () {
+    var FORMATS = [
+      { id: 'json5', label: 'JSON5' },
+      { id: 'yaml', label: 'YAML' },
+      { id: 'toml', label: 'TOML' },
+      { id: 'ini', label: 'INI' },
+      { id: 'hcl', label: 'HCL' }
+    ];
+
+    var kvBody = document.getElementById('kvBody');
+    var tabBar = document.getElementById('tabBar');
+    var outputText = document.getElementById('outputText');
+    var copyBtn = document.getElementById('copyBtn');
+    var currentId = 'json5';
+    var outputs = {};
+    var lastValid = false;
+
+    function isNumber(v) {
+      return /^-?\d+(\.\d+)?$/.test(v);
+    }
+
+    function isBool(v) {
+      return /^(true|false)$/i.test(v);
+    }
+
+    function isBare(v) {
+      return isNumber(v) || isBool(v);
+    }
+
+    function doubleQuote(v) {
+      return '"' + v.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    }
+
+    function addRow(k, v, c) {
+      var tr = document.createElement('tr');
+      var tdK = document.createElement('td');
+      var inputK = document.createElement('input');
+      inputK.className = 'input';
+      inputK.type = 'text';
+      inputK.placeholder = '键名，如 port';
+      inputK.value = k || '';
+      tdK.appendChild(inputK);
+      var tdV = document.createElement('td');
+      var inputV = document.createElement('input');
+      inputV.className = 'input';
+      inputV.type = 'text';
+      inputV.placeholder = '值，数字 / 布尔不加引号';
+      inputV.value = v || '';
+      tdV.appendChild(inputV);
+      var tdC = document.createElement('td');
+      var inputC = document.createElement('input');
+      inputC.className = 'input';
+      inputC.type = 'text';
+      inputC.placeholder = '注释，如 服务端口';
+      inputC.value = c || '';
+      tdC.appendChild(inputC);
+      var tdDel = document.createElement('td');
+      tdDel.className = 'col-del';
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-secondary';
+      btn.textContent = '删除';
+      btn.onclick = function () {
+        var all = kvBody.getElementsByTagName('tr');
+        if (all.length <= 1) {
+          setStatus('至少保留一行', 'error');
+          return;
+        }
+        kvBody.removeChild(tr);
+      };
+      tdDel.appendChild(btn);
+      tr.appendChild(tdK);
+      tr.appendChild(tdV);
+      tr.appendChild(tdC);
+      tr.appendChild(tdDel);
+      kvBody.appendChild(tr);
+    }
+
+    function collectRows() {
+      var rows = kvBody.getElementsByTagName('tr');
+      var out = [];
+      for (var i = 0; i < rows.length; i++) {
+        var inputs = rows[i].querySelectorAll('input');
+        var key = inputs[0].value.trim();
+        var val = inputs[1].value;
+        var comment = inputs[2].value.trim();
+        if (!key) {
+          return { error: '第 ' + (i + 1) + ' 行的键为空，请填写或删除该行。' };
+        }
+        if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key)) {
+          return { error: '键 "' + key + '" 不合法：只能包含字母、数字、下划线、点与连字符，且不能以数字开头。' };
+        }
+        out.push({ key: key, value: val, comment: comment });
+      }
+      return { rows: out };
+    }
+
+    function buildJson5(rows) {
+      var lines = ['{'];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.comment) lines.push('  // ' + r.comment);
+        var val = isBare(r.value) ? r.value : doubleQuote(r.value);
+        lines.push('  ' + r.key + ': ' + val + (i === rows.length - 1 ? '' : ','));
+      }
+      lines.push('}');
+      return lines.join('\n');
+    }
+
+    function buildYaml(rows) {
+      var lines = [];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.comment) lines.push('# ' + r.comment);
+        var val = isBare(r.value) ? r.value : doubleQuote(r.value);
+        lines.push(r.key + ': ' + val);
+      }
+      return lines.join('\n');
+    }
+
+    function buildToml(rows) {
+      var lines = [];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.comment) lines.push('# ' + r.comment);
+        var val = isBare(r.value) ? r.value : doubleQuote(r.value);
+        lines.push(r.key + ' = ' + val);
+      }
+      return lines.join('\n');
+    }
+
+    function buildIni(rows) {
+      var lines = [];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.comment) lines.push('; ' + r.comment);
+        var val = r.value;
+        var out;
+        if (isBare(val)) {
+          out = val;
+        } else if (/[;#=\s]/.test(val) || val.indexOf('"') !== -1) {
+          out = '"' + val.replace(/"/g, '""') + '"';
+        } else {
+          out = val;
+        }
+        lines.push(r.key + ' = ' + out);
+      }
+      return lines.join('\n');
+    }
+
+    function buildHcl(rows) {
+      var lines = [];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.comment) lines.push('# ' + r.comment);
+        var val = isBare(r.value) ? r.value : doubleQuote(r.value);
+        lines.push(r.key + ' = ' + val);
+      }
+      return lines.join('\n');
+    }
+
+    function buildAll(rows) {
+      return {
+        json5: buildJson5(rows),
+        yaml: buildYaml(rows),
+        toml: buildToml(rows),
+        ini: buildIni(rows),
+        hcl: buildHcl(rows)
+      };
+    }
+
+    function renderTabs() {
+      var html = '';
+      for (var i = 0; i < FORMATS.length; i++) {
+        html += '<button class="tab-btn' + (FORMATS[i].id === currentId ? ' active' : '') + '" data-fmt="' + FORMATS[i].id + '">' + htmlEscape(FORMATS[i].label) + '</button>';
+      }
+      tabBar.innerHTML = html;
+      var btns = tabBar.getElementsByClassName('tab-btn');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].onclick = (function (el) {
+          return function () {
+            currentId = el.getAttribute('data-fmt');
+            renderTabs();
+            if (outputs[currentId] !== undefined) {
+              outputText.textContent = outputs[currentId];
+            }
+          };
+        })(btns[j]);
+      }
+    }
+
+    function generate() {
+      var collected = collectRows();
+      if (collected.error) {
+        outputText.textContent = collected.error;
+        lastValid = false;
+        setStatus('配置无效', 'error');
+        return;
+      }
+      outputs = buildAll(collected.rows);
+      lastValid = true;
+      outputText.textContent = outputs[currentId];
+      setStatus('已生成五种格式，切换上方 tab 查看');
+    }
+
+    document.getElementById('addRowBtn').onclick = function () {
+      addRow('', '', '');
+    };
+    document.getElementById('genBtn').onclick = generate;
+    copyBtn.onclick = function () {
+      if (!lastValid || !outputs[currentId]) {
+        setStatus('请先生成配置', 'error');
+        return;
+      }
+      copyToClipboard(outputs[currentId], copyBtn);
+    };
+    addRow('app_name', 'S-Jiffy', '应用名称');
+    addRow('port', '8080', '服务端口');
+    addRow('debug', 'true', '调试开关');
+    renderTabs();
+    generate();
+  })();
+  </script>
+</body>
+</html>

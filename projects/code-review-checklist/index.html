@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码审查清单 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .check-group { margin-bottom: 18px; }
+    .check-group h3 { font-size: var(--font-size-base); font-weight: 600; margin-bottom: 8px; }
+    .check-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 6px; font-size: var(--font-size-sm); }
+    .check-item input { margin-top: 4px; }
+    .check-item.passed { border-color: rgba(52,101,56,0.4); background: rgba(52,101,56,0.05); }
+    .check-desc { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+    .progress-line { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>代码审查清单</h1>
+    <p class="tool-desc">按八个维度逐项核验代码质量，实时显示通过进度并生成可复制的审查报告。</p>
+    <div class="card">
+      <div class="progress-line" id="progressLine"></div>
+      <div id="checkList"></div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var SECTIONS = [
+        { name: '功能正确性', items: [
+          { text: '核心功能按需求实现', desc: '对照需求逐条验证行为' },
+          { text: '结果与预期一致', desc: '常规输入下输出正确' },
+          { text: '错误路径有明确提示', desc: '失败时用户可感知' },
+          { text: '异步/时序无竞态', desc: '并发回调顺序可控' },
+          { text: '状态切换完整闭环', desc: '无遗漏的分支状态' }
+        ]},
+        { name: '边界与异常', items: [
+          { text: '空值/极值有兜底', desc: 'null、undefined、空串、零值' },
+          { text: '数值越界与除零已处理', desc: '无 NaN/Infinity 泄漏' },
+          { text: '非法输入被拒绝并提示', desc: '不静默接受脏数据' },
+          { text: '异常被捕获并合理反馈', desc: '不吞异常也不裸抛' },
+          { text: '资源正确释放', desc: '连接、句柄、流、监听器' }
+        ]},
+        { name: '安全性', items: [
+          { text: '用户输入经校验/转义', desc: '防注入与 XSS' },
+          { text: '无硬编码密钥与敏感信息', desc: '凭据走环境变量' },
+          { text: '权限校验完备', desc: '越权操作被拦截' },
+          { text: '日志不泄漏敏感数据', desc: '手机号/Token 脱敏' },
+          { text: '依赖无已知高危漏洞', desc: 'CVE 检查通过' }
+        ]},
+        { name: '性能', items: [
+          { text: '无重复计算与多余请求', desc: '相同结果不反复计算' },
+          { text: '复杂度适合数据规模', desc: '避免隐性 O(n²)' },
+          { text: '缓存策略恰当', desc: '键名清晰、失效可控' },
+          { text: '无明显内存泄漏', desc: '长生命周期对象可控' },
+          { text: '响应/加载时间达标', desc: '满足性能预算' }
+        ]},
+        { name: '可读性与命名', items: [
+          { text: '命名自解释且一致', desc: '无过短或误导性命名' },
+          { text: '函数单一职责', desc: '结构清晰不臃肿' },
+          { text: '无魔法数字/字符串', desc: '常量具名化' },
+          { text: '无重复逻辑', desc: '复用已有实现' }
+        ]},
+        { name: '测试覆盖', items: [
+          { text: '核心逻辑有单元测试', desc: '关键函数可回归' },
+          { text: '异常路径有测试', desc: '不只有快乐路径' },
+          { text: '修复 bug 附带回归测试', desc: '防止复发' },
+          { text: '测试全部通过且无跳过', desc: '无 disabled 用例' }
+        ]},
+        { name: '依赖与兼容性', items: [
+          { text: '依赖版本已锁定', desc: '无漂移风险' },
+          { text: '未使用已废弃 API', desc: '无 deprecated 调用' },
+          { text: '向后兼容旧数据/接口', desc: '破坏性变更已评估' },
+          { text: '包体积无异常膨胀', desc: '无冗余依赖' }
+        ]},
+        { name: '日志与可观测性', items: [
+          { text: '关键路径有结构化日志', desc: '模块名可辨识' },
+          { text: '错误日志可定位问题', desc: '含上下文信息' },
+          { text: '关键指标可监控', desc: '有可观测性锚点' },
+          { text: '敏感信息不入日志', desc: '日志内容安全' }
+        ]}
+      ];
+      var total = 0;
+      var listEl = document.getElementById('checkList');
+      var progressEl = document.getElementById('progressLine');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function renderList() {
+        var html = '';
+        for (var s = 0; s < SECTIONS.length; s++) {
+          var sec = SECTIONS[s];
+          html += '<div class="check-group"><h3>' + htmlEscape(sec.name) + '</h3>';
+          for (var i = 0; i < sec.items.length; i++) {
+            var item = sec.items[i];
+            html += '<label class="check-item" data-section="' + s + '" data-index="' + i + '"><input type="checkbox"><span><strong>' + htmlEscape(item.text) + '</strong><br><span class="check-desc">' + htmlEscape(item.desc) + '</span></span></label>';
+          }
+          html += '</div>';
+        }
+        listEl.innerHTML = html;
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        total = boxes.length;
+        for (var j = 0; j < boxes.length; j++) {
+          boxes[j].addEventListener('change', function () {
+            var label = this.parentNode;
+            if (this.checked) {
+              label.classList.add('passed');
+            } else {
+              label.classList.remove('passed');
+            }
+            refresh();
+          });
+        }
+      }
+
+      function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      }
+
+      function pad2(n) {
+        return n < 10 ? '0' + n : String(n);
+      }
+
+      function refresh() {
+        var boxes = listEl.querySelectorAll('input[type="checkbox"]');
+        var passed = 0;
+        for (var i = 0; i < boxes.length; i++) {
+          if (boxes[i].checked) passed++;
+        }
+        var percent = total ? Math.round(passed * 100 / total) : 0;
+        progressEl.textContent = '已通过 ' + passed + ' / ' + total + '（' + percent + '%）';
+        if (!passed) {
+          outputEl.textContent = '';
+          setStatus('');
+          return;
+        }
+        var lines = ['# 代码审查报告', '', '日期：' + todayStr(), '通过：' + passed + ' / ' + total + '（' + percent + '%）', ''];
+        var pending = 0;
+        var boxIndex = 0;
+        for (var s = 0; s < SECTIONS.length; s++) {
+          var sec = SECTIONS[s];
+          lines.push('## ' + sec.name);
+          for (var j = 0; j < sec.items.length; j++) {
+            var box = boxes[boxIndex];
+            boxIndex++;
+            if (box.checked) {
+              lines.push('- [x] ' + sec.items[j].text);
+            } else {
+              pending++;
+              lines.push('- [ ] ' + sec.items[j].text + '（待确认：' + sec.items[j].desc + '）');
+            }
+          }
+          lines.push('');
+        }
+        if (pending === 0) {
+          lines.push('## 结论');
+          lines.push('全部 ' + total + ' 项检查通过，可以合入。');
+        } else {
+          lines.push('## 结论');
+          lines.push('存在 ' + pending + ' 项待确认问题，建议逐项核实后合入。');
+        }
+        outputEl.textContent = lines.join('\n');
+        setStatus('已生成审查报告');
+      }
+
+      copyBtn.addEventListener('click', function () {
+        var text = outputEl.textContent;
+        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        copyToClipboard(text, copyBtn);
+        setStatus('已复制到剪贴板');
+      });
+
+      renderList();
+      refresh();
+    })();
+  </script>
+</body>
+</html>

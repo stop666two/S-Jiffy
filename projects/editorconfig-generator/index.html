@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EditorConfig 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .field { margin-bottom: var(--space-2); }
+    .field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .field .input { width: 100%; }
+    .toggle-row { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); margin-bottom: var(--space-2); cursor: pointer; }
+    .toggle-row input { accent-color: var(--color-accent); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-3); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>EditorConfig 生成器</h1>
+    <p class="tool-desc">生成统一代码风格的 .editorconfig 配置文件。</p>
+    <div class="card">
+      <label class="toggle-row"><input type="checkbox" id="root" class="js-focus-input" checked> root = true（作为项目根配置）</label>
+      <div class="form-grid">
+        <div class="field">
+          <label>缩进风格</label>
+          <select id="indentStyle" class="input">
+            <option value="space" selected>空格 space</option>
+            <option value="tab">制表符 tab</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>缩进宽度</label>
+          <select id="indentWidth" class="input">
+            <option value="2" selected>2</option>
+            <option value="4">4</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>换行符</label>
+          <select id="endOfLine" class="input">
+            <option value="lf" selected>LF（Unix / macOS）</option>
+            <option value="crlf">CRLF（Windows）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>字符集</label>
+          <select id="charset" class="input">
+            <option value="utf-8" selected>utf-8</option>
+            <option value="utf-8-bom">utf-8-bom</option>
+          </select>
+        </div>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="finalNewline" checked> insert_final_newline（文件末尾保留换行）</label>
+      <label class="toggle-row"><input type="checkbox" id="trimWs" checked> trim_trailing_whitespace（去除行尾空白）</label>
+      <label class="toggle-row"><input type="checkbox" id="mdException"> 添加 [*.md] 例外（Markdown 保留行尾空格）</label>
+      <div class="actions">
+        <button id="generateBtn" class="btn btn-primary">生成 .editorconfig</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var output = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function buildConfig() {
+        var lines = [];
+        if (document.getElementById('root').checked) lines.push('root = true');
+        lines.push('');
+        lines.push('[*]');
+        lines.push('charset = ' + document.getElementById('charset').value);
+        lines.push('end_of_line = ' + document.getElementById('endOfLine').value);
+        var style = document.getElementById('indentStyle').value;
+        var width = document.getElementById('indentWidth').value;
+        lines.push('indent_style = ' + style);
+        if (style === 'tab') {
+          lines.push('indent_size = tab');
+          lines.push('tab_width = ' + width);
+        } else {
+          lines.push('indent_size = ' + width);
+        }
+        lines.push('insert_final_newline = ' + (document.getElementById('finalNewline').checked ? 'true' : 'false'));
+        lines.push('trim_trailing_whitespace = ' + (document.getElementById('trimWs').checked ? 'true' : 'false'));
+        if (document.getElementById('mdException').checked) {
+          lines.push('');
+          lines.push('[*.md]');
+          lines.push('trim_trailing_whitespace = false');
+        }
+        return lines.join('\n') + '\n';
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        output.textContent = buildConfig();
+        setStatus('.editorconfig 已生成');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        output.textContent = '';
+        setStatus('');
+      });
+
+      copyBtn.addEventListener('click', function () {
+        if (output.textContent) copyToClipboard(output.textContent, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

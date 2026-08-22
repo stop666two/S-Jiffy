@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>演讲时长估算 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .spd-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin-top:var(--space-2)}
+    .spd-controls .input{flex:1 1 220px}
+    .spd-time{font-size:var(--font-size-xl);font-weight:600;margin-top:var(--space-2)}
+    .spd-range{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-1)}
+    .spd-detail{margin-top:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);line-height:1.8}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>演讲时长估算</h1>
+    <p class="tool-desc">按语速估算演讲稿朗读时长：中文字数 + 英文单词分别计速。</p>
+    <div class="card">
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴演讲稿文本..." style="min-height:160px;"></textarea>
+      <div class="spd-controls">
+        <select id="speedSelect" class="input">
+          <option value="100">慢速（100 字/分）</option>
+          <option value="180" selected>正常（180 字/分）</option>
+          <option value="240">快速（240 字/分）</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var inputEl = document.getElementById('inputText');
+      var speedEl = document.getElementById('speedSelect');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var lastPlain = '';
+
+      function isCjk(code) {
+        return (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF) || (code >= 0xF900 && code <= 0xFAFF);
+      }
+
+      function formatTime(seconds) {
+        var total = Math.round(seconds);
+        var m = Math.floor(total / 60);
+        var s = total % 60;
+        if (s < 10) s = '0' + s;
+        return m + ':' + s;
+      }
+
+      function render() {
+        var text = inputEl.value;
+        if (!text) {
+          outputEl.innerHTML = '';
+          lastPlain = '';
+          setStatus('');
+          return;
+        }
+        var cjkCount = 0;
+        for (var i = 0; i < text.length; i++) {
+          if (isCjk(text.charCodeAt(i))) cjkCount++;
+        }
+        var tokens = text.split(/\s+/);
+        var wordCount = 0;
+        for (var j = 0; j < tokens.length; j++) {
+          if (/[A-Za-z0-9]/.test(tokens[j])) wordCount++;
+        }
+        var units = cjkCount + wordCount;
+        var speed = parseInt(speedEl.value, 10);
+        if (isNaN(speed) || speed <= 0) {
+          outputEl.innerHTML = '';
+          setStatus('语速设置无效', 'error');
+          return;
+        }
+        var seconds = units / speed * 60;
+        var low = seconds * 0.9;
+        var high = seconds * 1.1;
+        var html = [];
+        html.push('<div class="spd-time">' + formatTime(seconds) + '</div>');
+        html.push('<div class="spd-range">时长区间（±10%）：' + formatTime(low) + ' ~ ' + formatTime(high) + '</div>');
+        html.push('<div class="spd-detail">中文 ' + cjkCount + ' 字 + 英文 ' + wordCount + ' 词 = 共 ' + units + ' 个计速单位<br>语速：' + speed + ' 单位/分</div>');
+        outputEl.innerHTML = html.join('');
+        lastPlain = '预计时长：' + formatTime(seconds) + '（区间 ' + formatTime(low) + ' ~ ' + formatTime(high) + '）' + '\n中文 ' + cjkCount + ' 字，英文 ' + wordCount + ' 词，总计 ' + units + ' 单位，语速 ' + speed + '/分';
+        setStatus('估算完成：' + formatTime(seconds));
+      }
+
+      inputEl.addEventListener('input', render);
+      speedEl.addEventListener('change', render);
+      copyBtn.addEventListener('click', function () {
+        if (lastPlain) copyToClipboard(lastPlain, copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>线性回归计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .lr-grid { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .lr-field { display: flex; flex-direction: column; gap: var(--space-1); }
+    .lr-field label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .lr-field .textarea { font-family: var(--font-mono); min-height: 140px; resize: vertical; min-width: 280px; }
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+    .res-item { background: var(--color-bg-soft); border-radius: var(--radius-md); padding: var(--space-2); }
+    .res-item .res-label { font-size: var(--font-size-xs); color: var(--color-text-secondary); display: block; }
+    .res-item .res-value { font-size: var(--font-size-base); font-family: var(--font-mono); color: var(--color-text-primary); display: block; margin-top: var(--space-1); }
+    .eq-line { font-size: var(--font-size-base); font-family: var(--font-mono); color: var(--color-text-primary); margin-top: var(--space-2); }
+    .chart-wrap { margin-top: var(--space-3); text-align: center; }
+    .chart-wrap canvas { max-width: 100%; height: auto; background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1>线性回归计算器</h1>
+    <p class="tool-desc">对数据点做最小二乘拟合 y = a + bx，输出斜率、截距、相关系数，并支持预测与散点图。</p>
+    <div class="card">
+      <div class="lr-grid">
+        <div class="lr-field">
+          <label for="dataInput">数据点（每行一组 x,y，逗号分隔）</label>
+          <textarea id="dataInput" class="input textarea js-focus-input" placeholder="1,2&#10;2,3.5&#10;3,5&#10;4,7"></textarea>
+        </div>
+        <div class="lr-field">
+          <label for="predictInput">预测：输入新 x 值</label>
+          <input type="text" id="predictInput" class="input" placeholder="如 6">
+        </div>
+      </div>
+      <div style="margin-top:var(--space-2);">
+        <button class="btn btn-primary" id="calcBtn">拟合</button>
+      </div>
+    </div>
+    <div id="resultBox" class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+    <div class="chart-wrap" id="chartWrap" style="display:none;">
+      <canvas id="lrChart" width="640" height="320"></canvas>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div>S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script>
+    (function () {
+      var dataEl = document.getElementById('dataInput');
+      var predictEl = document.getElementById('predictInput');
+      var calcBtn = document.getElementById('calcBtn');
+      var outputText = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var chartWrap = document.getElementById('chartWrap');
+      var chart = document.getElementById('lrChart');
+
+      function fmt(v) {
+        var r = Math.round(v * 1e6) / 1e6;
+        if (Math.abs(r) < 5e-7) {
+          r = 0;
+        }
+        if (Math.abs(r) < 1e-9 && r !== 0) {
+          return r.toExponential(6);
+        }
+        return String(r);
+      }
+
+      function parseData(text) {
+        var lines = String(text).split(/\r?\n/);
+        var points = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (line === '') {
+            continue;
+          }
+          var parts = line.split(',');
+          if (parts.length !== 2) {
+            return { error: '第 ' + (i + 1) + ' 行必须为 x,y 两个值' };
+          }
+          var x = parts[0].trim();
+          var y = parts[1].trim();
+          if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(x) || !/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(y)) {
+            return { error: '第 ' + (i + 1) + ' 行包含非数字' };
+          }
+          points.push({ x: parseFloat(x), y: parseFloat(y) });
+        }
+        if (points.length < 2) {
+          return { error: '至少需要 2 个数据点' };
+        }
+        return { data: points };
+      }
+
+      function drawChart(points, b, a) {
+        var ctx = chart.getContext('2d');
+        var w = chart.width;
+        var h = chart.height;
+        var left = 48;
+        var right = w - 16;
+        var top = 16;
+        var bottom = h - 40;
+        var xMin = points[0].x;
+        var xMax = points[0].x;
+        var yMin = points[0].y;
+        var yMax = points[0].y;
+        for (var i = 1; i < points.length; i++) {
+          if (points[i].x < xMin) { xMin = points[i].x; }
+          if (points[i].x > xMax) { xMax = points[i].x; }
+          if (points[i].y < yMin) { yMin = points[i].y; }
+          if (points[i].y > yMax) { yMax = points[i].y; }
+        }
+        var px = function (x) {
+          return left + (x - xMin) / (xMax - xMin || 1) * (right - left);
+        };
+        var py = function (y) {
+          return bottom - (y - yMin) / (yMax - yMin || 1) * (bottom - top);
+        };
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#999';
+        ctx.fillStyle = '#999';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(left, bottom);
+        ctx.lineTo(right, bottom);
+        ctx.moveTo(left, top);
+        ctx.lineTo(left, bottom);
+        ctx.stroke();
+        ctx.font = '11px sans-serif';
+        ctx.fillText(fmt(xMin), left, bottom + 14);
+        ctx.fillText(fmt(xMax), right - 30, bottom + 14);
+        ctx.fillText(fmt(yMax), 4, top + 10);
+        ctx.fillText(fmt(yMin), 4, bottom - 4);
+        if (b !== null) {
+          ctx.strokeStyle = '#346538';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(px(xMin), py(b * xMin + a));
+          ctx.lineTo(px(xMax), py(b * xMax + a));
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#111';
+        for (var j = 0; j < points.length; j++) {
+          ctx.beginPath();
+          ctx.arc(px(points[j].x), py(points[j].y), 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function run() {
+        if (dataEl.value.trim() === '') {
+          outputText.innerHTML = '';
+          setStatus('');
+          chartWrap.style.display = 'none';
+          return;
+        }
+        var parsed = parseData(dataEl.value);
+        if (parsed.error) {
+          setStatus(parsed.error, 'error');
+          return;
+        }
+        var points = parsed.data;
+        var n = points.length;
+        var sumX = 0;
+        var sumY = 0;
+        for (var i = 0; i < n; i++) {
+          sumX += points[i].x;
+          sumY += points[i].y;
+        }
+        var meanX = sumX / n;
+        var meanY = sumY / n;
+        var sxx = 0;
+        var syy = 0;
+        var sxy = 0;
+        for (var j = 0; j < n; j++) {
+          var dx = points[j].x - meanX;
+          var dy = points[j].y - meanY;
+          sxx += dx * dx;
+          syy += dy * dy;
+          sxy += dx * dy;
+        }
+        var b;
+        var a;
+        if (sxx === 0) {
+          b = null;
+          a = null;
+        } else {
+          b = sxy / sxx;
+          a = meanY - b * meanX;
+        }
+        var r = 0;
+        if (sxx > 0 && syy > 0) {
+          r = sxy / Math.sqrt(sxx * syy);
+        }
+        var r2 = r * r;
+        var html = '';
+        html += '<div class="res-grid">';
+        html += '<div class="res-item"><span class="res-label">数据点数量 n</span><span class="res-value">' + htmlEscape(String(n)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">斜率 b</span><span class="res-value">' + htmlEscape(b === null ? '无法计算（x 恒定）' : fmt(b)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">截距 a</span><span class="res-value">' + htmlEscape(a === null ? '—' : fmt(a)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">相关系数 r</span><span class="res-value">' + htmlEscape(fmt(r)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">决定系数 R²</span><span class="res-value">' + htmlEscape(fmt(r2)) + '</span></div>';
+        html += '</div>';
+        if (b !== null) {
+          var sign = a >= 0 ? ' + ' : ' - ';
+          html += '<div class="eq-line">回归方程：y = ' + htmlEscape(fmt(b)) + 'x' + sign + htmlEscape(fmt(Math.abs(a))) + '</div>';
+          var pxv = predictEl.value.trim();
+          if (pxv !== '') {
+            if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(pxv)) {
+              setStatus('预测 x 值不是有效数字', 'error');
+              return;
+            }
+            var xv = parseFloat(pxv);
+            var yv = b * xv + a;
+            html += '<div class="eq-line">预测：x = ' + htmlEscape(fmt(xv)) + ' 时，y = ' + htmlEscape(fmt(yv)) + '</div>';
+          }
+        }
+        outputText.innerHTML = html;
+        chartWrap.style.display = 'block';
+        drawChart(points, b, a);
+        setStatus('拟合完成');
+      }
+
+      calcBtn.addEventListener('click', run);
+      predictEl.addEventListener('change', run);
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard(outputText.textContent.replace(/\s+/g, ' ').trim(), copyBtn);
+      });
+    })();
+  </script>
+</body>
+</html>

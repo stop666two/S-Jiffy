@@ -41,61 +41,65 @@
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
-      function sortProperties(block) {
-        var props = block.split(';');
-        var sorted = props.filter(function (p) { return p.trim(); }).sort();
-        return sorted.join(';\n  ') + ';';
+      function repeatSpaces(count) {
+        var s = '';
+        for (var r = 0; r < count; r++) s += '  ';
+        return s;
       }
 
       function formatCSS(css) {
-        var result = '';
         var i = 0;
-        var buf = '';
-        var inBlock = false;
-        var selector = '';
+        var n = css.length;
+        var out = [];
 
-        while (i < css.length) {
-          var ch = css[i];
-          if (ch === '{' && !inBlock) {
-            selector = buf.trim();
-            buf = '';
-            inBlock = true;
-            result += selector + ' {\n  ';
-          } else if (ch === '}' && inBlock) {
-            result += buf.trim() + '\n}\n\n';
-            buf = '';
-            inBlock = false;
-          } else if (ch === '@' && !inBlock) {
-            var atRule = '';
-            while (i < css.length && css[i] !== '{') {
-              atRule += css[i];
-              i++;
-            }
-            if (css[i] === '{') {
-              result += atRule + '{\n';
-              i++;
-              var inner = '';
-              var depth = 1;
-              while (i < css.length && depth > 0) {
-                if (css[i] === '{') depth++;
-                else if (css[i] === '}') depth--;
-                if (depth > 0) inner += css[i];
+        function parseBlock(depth) {
+          i++;
+          var padChild = repeatSpaces(depth + 1);
+          var parts = [];
+          var cur = '';
+          while (i < n) {
+            var ch = css[i];
+            if (ch === '{') {
+              var nestedSel = cur.trim();
+              cur = '';
+              if (nestedSel) {
+                var inner = parseBlock(depth + 1);
+                parts.push(padChild + nestedSel + ' {\n' + inner + '\n' + padChild + '}');
+              } else {
                 i++;
               }
-              var formatted = formatCSS(inner);
-              var lines = formatted.trim().split('\n');
-              for (var li = 0; li < lines.length; li++) {
-                result += '  ' + lines[li] + '\n';
+            } else if (ch === '}') {
+              i++;
+              if (cur.trim()) {
+                var decls = cur.split(';').map(function (s) { return s.trim(); }).filter(function (s) { return s; }).sort();
+                for (var d = 0; d < decls.length; d++) {
+                  parts.push(padChild + decls[d] + (/^\/\*[\s\S]*\*\/$/.test(decls[d]) ? '' : ';'));
+                }
               }
-              result += '}\n\n';
-              buf = '';
+              return parts.join('\n');
+            } else {
+              cur += ch;
+              i++;
             }
-          } else {
-            buf += ch;
-            i++;
+          }
+          return parts.join('\n');
+        }
+
+        while (i < n) {
+          while (i < n && /\s/.test(css[i])) i++;
+          if (i >= n) break;
+          if (css[i] === '}') { i++; continue; }
+          var sel = '';
+          while (i < n && css[i] !== '{' && css[i] !== '}') { sel += css[i]; i++; }
+          var selTrim = sel.trim();
+          if (i < n && css[i] === '{') {
+            var inner = parseBlock(0);
+            if (selTrim) out.push(selTrim + ' {\n' + inner + '\n}');
+          } else if (selTrim) {
+            out.push(selTrim + ';');
           }
         }
-        return result.trim();
+        return out.join('\n\n');
       }
 
       function minifyCSS(css) {

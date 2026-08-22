@@ -69,6 +69,10 @@
           if (indent === -1) indent = 0;
           var content = line.trim();
 
+          if (/^-\s/.test(content) || content === '-') {
+            continue;
+          }
+
           var colonIdx = content.indexOf(':');
           if (colonIdx === -1) {
             errors.push('第 ' + (i + 1) + ' 行: 格式错误，缺少冒号');

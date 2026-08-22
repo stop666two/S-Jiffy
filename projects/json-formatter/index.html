@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JSON Formatter - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JSON 格式化器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .json-tree{font-family:var(--font-mono);font-size:13px;line-height:1.6;}
@@ -17,17 +17,17 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>JSON Formatter</h1>
-<p class="tool-desc">Format, minify, tree view, JSONPath query, diff view, JSON to TypeScript types.</p>
+<h1>JSON 格式化器</h1>
+<p class="tool-desc">格式化、压缩、树视图、JSONPath 查询、差异视图、JSON 转 TypeScript 类型。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","list":[1,2,3]}' style="min-height:150px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
 <button id="formatBtn" class="btn btn-primary">格式化</button>
 <button id="minifyBtn" class="btn btn-secondary">压缩</button>
-<button id="treeBtn" class="btn btn-secondary">Tree View</button>
-<button id="toTsBtn" class="btn btn-secondary">→ TS Type</button>
+<button id="treeBtn" class="btn btn-secondary">树视图</button>
+<button id="toTsBtn" class="btn btn-secondary">→ TS 类型</button>
 </div>
-<div class="card" style="margin-bottom:12px;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSON Diff (paste second JSON)</label><textarea id="jsonBText" class="input textarea" placeholder='{"name":"test2","list":[1,2,3,4]}' style="min-height:60px;"></textarea>
-<button id="diffBtn" class="btn btn-secondary" style="margin-top:8px;">Compare Diff</button><div id="diff结果" class="diff-view" style="margin-top:8px;"></div></div>
+<div class="card" style="margin-bottom:12px;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSON 差异（粘贴第二段 JSON）</label><textarea id="jsonBText" class="input textarea" placeholder='{"name":"test2","list":[1,2,3,4]}' style="min-height:60px;"></textarea>
+<button id="diffBtn" class="btn btn-secondary" style="margin-top:8px;">对比差异</button><div id="diff结果" class="diff-view" style="margin-top:8px;"></div></div>
 <div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">JSONPath</label><input id="jsonPathInput" class="input" placeholder="$.store.book[0].title" style="flex:1;min-width:160px;"><button id="jsonPathBtn" class="btn btn-secondary">查询</button></div>
 <div id="jsonPath结果"></div>
 <div id="errorDetail" style="display:none;"></div>
@@ -76,22 +76,22 @@
     return div;}
 
   function format(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
-    if(!v){outputContent.innerHTML='';setStatus('Enter JSON','error');return;}var result=tryParse(v);if(!result.ok){outputContent.innerHTML='';setStatus('JSON error','error');return;}
+    if(!v){outputContent.innerHTML='';setStatus('请输入 JSON','error');return;}var result=tryParse(v);if(!result.ok){outputContent.innerHTML='';setStatus('JSON 错误','error');return;}
     currentParsed=result.data;outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(JSON.stringify(result.data,null,2))+'</pre>';setStatus('');}
 
   document.getElementById('formatBtn').addEventListener('click',format);
-  document.getElementById('minifyBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;if(!v){setStatus('Enter JSON','error');return;}
-    var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}currentParsed=result.data;outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(result.data))+'</pre>';setStatus('');});
+  document.getElementById('minifyBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;if(!v){setStatus('请输入 JSON','error');return;}
+    var result=tryParse(v);if(!result.ok){setStatus('JSON 错误','error');return;}currentParsed=result.data;outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(result.data))+'</pre>';setStatus('');});
   document.getElementById('treeBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;
-    if(!v){setStatus('Enter JSON','error');return;}var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}currentParsed=result.data;
+    if(!v){setStatus('请输入 JSON','error');return;}var result=tryParse(v);if(!result.ok){setStatus('JSON 错误','error');return;}currentParsed=result.data;
     outputContent.innerHTML='';var tw=document.createElement('div');tw.className='tree-wrap json-tree';tw.appendChild(buildTree(result.data));outputContent.appendChild(tw);setStatus('');});
-  document.getElementById('toTsBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';if(!v){setStatus('Enter JSON','error');return;}
-    var result=tryParse(v);if(!result.ok){setStatus('JSON error','error');return;}var ts=jsonToTs(result.data);outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS type generated');});
-  document.getElementById('diffBtn').addEventListener('click',function(){var a=inputEl.value.trim(),b=jsonB.value.trim();if(!a||!b){setStatus('Enter both JSONs','error');return;}
+  document.getElementById('toTsBtn').addEventListener('click',function(){var v=inputEl.value.trim();errorDetail.style.display='none';if(!v){setStatus('请输入 JSON','error');return;}
+    var result=tryParse(v);if(!result.ok){setStatus('JSON 错误','error');return;}var ts=jsonToTs(result.data);outputContent.innerHTML='<pre style="font-family:var(--font-mono);font-size:13px;">'+escapeHtml(ts)+'</pre>';setStatus('TS 类型已生成');});
+  document.getElementById('diffBtn').addEventListener('click',function(){var a=inputEl.value.trim(),b=jsonB.value.trim();if(!a||!b){setStatus('请输入两段 JSON','error');return;}
     var ra=tryParse(a),rb=tryParse(b);if(!ra.ok||!rb.ok){setStatus('无效 JSON','error');return;}
-    diff结果.innerHTML='<pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">A: '+escapeHtml(JSON.stringify(ra.data,null,2))+'</pre><pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">B: '+escapeHtml(JSON.stringify(rb.data,null,2))+'</pre>';setStatus('Diff shown');});
+    diff结果.innerHTML='<pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">A: '+escapeHtml(JSON.stringify(ra.data,null,2))+'</pre><pre style="background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">B: '+escapeHtml(JSON.stringify(rb.data,null,2))+'</pre>';setStatus('差异已显示');});
   document.getElementById('clearBtn')&&document.getElementById('clearBtn').addEventListener('click',function(){inputEl.value='';outputContent.innerHTML='';errorDetail.style.display='none';jp结果.innerHTML='';currentParsed=null;setStatus('');inputEl.focus();});
-  document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-result" style="color:var(--color-error);">Format JSON first</div>';return;}
+  document.getElementById('jsonPathBtn').addEventListener('click',function(){if(!currentParsed){jp结果.innerHTML='<div class="json-path-result" style="color:var(--color-error);">请先格式化 JSON</div>';return;}
     var path=jpInput.value.trim();if(!path){jp结果.innerHTML='';return;}
     try{var parts=path.replace(/^\$\.?/,'').split(/\.|\[|\]\.|'|"/).filter(function(p){return p!=='';});var results=[currentParsed];
       for(var i=0;i<parts.length;i++){var part=parts[i],next=[];for(var j=0;j<results.length;j++){var item=results[j];if(item&&typeof item==='object'){if(Array.isArray(item)){if(part==='*'){for(var k=0;k<item.length;k++)next.push(item[k]);}else if(!isNaN(part)){if(item[+part]!==undefined)next.push(item[+part]);}}else{if(part==='*'){for(var key in item)next.push(item[key]);}else if(item[part]!==undefined)next.push(item[part]);}}}

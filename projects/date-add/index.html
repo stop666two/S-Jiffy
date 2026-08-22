@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initialisable-scale=1.0"><title>Date Arithmetic - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initialisable-scale=1.0"><title>日期计算 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .date-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -16,15 +16,15 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>日期加减计算</h1><p class="tool-desc">Add or subtract days, weeks, months, years from a date.</p>
+<main class="tool-workspace"><h1>日期加减计算</h1><p class="tool-desc">在日期上增加或减少天、周、月、年。</p>
 <div class="card">
-<div class="date-row"><div class="field"><label>Start Date</label><input id="startDate" class="input" type="date"></div>
-<div class="field"><label>Operation</label><select id="opSelect" class="input" style="width:auto;"><option value="add">增加</option><option value="subtract">减少</option></select></div>
-<div class="field"><label>数量</label><input id="amountInput" class="input" type="number" value="7" min="1" style="width:80px;"></div>
+<div class="date-row"><div class="field"><label>开始日期</label><input id="startDate" class="input" type="date"></div>
+<div class="field"><label>操作</label><select id="opSelect" class="input" style="width:auto;"><option value="add">增加</option><option value="subtract">减少</option></select></div>
+<div class="field"><label>数量</label><input id="amountInput" class="input" type="number" value="7" min="1" style="width:110px;"></div>
 <div class="field"><label>单位</label><select id="unitSelect" class="input" style="width:auto;"><option value="days">天</option><option value="weeks">周</option><option value="months">月</option><option value="years">年</option></select></div>
 <button id="calcBtn" class="btn btn-primary">计算</button>
 </div>
-<div class="date-presets"><button class="preset-btn" data-days="7">+1 week</button><button class="preset-btn" data-days="14">+2 weeks</button><button class="preset-btn" data-days="30">+1 month</button><button class="preset-btn" data-days="90">+3 months</button><button class="preset-btn" data-days="180">+6 months</button><button class="preset-btn" data-days="365">+1 year</button><button class="preset-btn" data-days="-7">-1 week</button><button class="preset-btn" data-days="-30">-1 month</button></div>
+<div class="date-presets"><button class="preset-btn" data-days="7">+1 周</button><button class="preset-btn" data-days="14">+2 周</button><button class="preset-btn" data-days="30">+1 月</button><button class="preset-btn" data-days="90">+3 月</button><button class="preset-btn" data-days="180">+6 月</button><button class="preset-btn" data-days="365">+1 年</button><button class="preset-btn" data-days="-7">-1 周</button><button class="preset-btn" data-days="-30">-1 月</button></div>
 </div>
 <div class="card"><div class="result-grid" id="resultGrid"></div></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -34,7 +34,7 @@
 (function(){var sd=document.getElementById('startDate'),op=document.getElementById('opSelect'),am=document.getElementById('amountInput'),un=document.getElementById('unitSelect'),rg=document.getElementById('resultGrid'),o=document.getElementById('outputText');
 sd.value=new Date().toISOString().slice(0,10);
 
-function calc(){var d=new Date(sd.value);if(isNaN(d.getTime())){setStatus('Invalid date','error');return;}
+function calc(){var d=new Date(sd.value);if(isNaN(d.getTime())){setStatus('日期无效','error');return;}
 var n=parseInt(am.value)||0;if(op.value==='subtract')n=-n;var u=un.value;
 var result=new Date(d);if(u==='days')result.setDate(result.getDate()+n);
 else if(u==='weeks')result.setDate(result.getDate()+n*7);

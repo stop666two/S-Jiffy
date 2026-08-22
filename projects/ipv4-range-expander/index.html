@@ -59,7 +59,7 @@
         }
         var mask = ~((1 << (32 - prefix)) - 1) >>> 0;
         var network = (ipNum & mask) >>> 0;
-        var broadcast = network | (~mask >>> 0) >>> 0;
+        var broadcast = ((network >>> 0) | (~mask >>> 0)) >>> 0;
         var count = prefix === 32 ? 1 : (prefix === 31 ? 2 : (broadcast - network - 1));
         var firstHost = prefix >= 31 ? network : network + 1;
         var lastHost = prefix >= 31 ? broadcast : broadcast - 1;

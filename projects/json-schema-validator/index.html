@@ -45,7 +45,7 @@
     </div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/7.2.4/ajv7.min.js" onerror="(function(){var s=document.getElementById('statusBar');if(s){s.textContent='验证库加载失败，请检查网络';s.className='tool-status error';}var o=document.getElementById('outputText');if(o){o.textContent='验证库加载失败，请检查网络';}})()"></script>
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
@@ -70,8 +70,14 @@
         try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus('数据格式错误', 'error'); return; }
         try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus('Schema 格式错误', 'error'); return; }
 
+        if (typeof ajv7 === 'undefined') {
+          outputText.textContent = '验证库加载失败，请检查网络';
+          setStatus('验证库加载失败，请检查网络', 'error');
+          return;
+        }
+
         try {
-          var ajv = new Ajv();
+          var ajv = new ajv7.default();
           var valid = ajv.validate(schema, data);
           if (valid) {
             outputText.innerHTML = '<span class="valid-badge">✓ 有效</span> 数据符合 Schema 规范';

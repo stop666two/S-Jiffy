@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Number Formatter - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>数字格式化器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .nf-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -15,21 +15,21 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>数字格式化</h1>
-<p class="tool-desc">Format 数字: locale, words (EN/CN/JP/FR/DE), ordinal, Roman, scientific, currency.</p>
+<p class="tool-desc">数字格式化：区域格式、单词（英/中/日/法/德）、序数、罗马数字、科学计数法、货币。</p>
 <div class="card">
 <div class="nf-row">
-<div class="field"><label for="inputNum">Input Number</label><input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any"></div>
-<div class="field"><label for="langSelect">Language</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
+<div class="field"><label for="inputNum">输入数字</label><input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any"></div>
+<div class="field"><label for="langSelect">语言</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
 <button id="formatBtn" class="btn btn-primary">格式化</button>
 </div>
 <div class="nf-results">
-<div class="nf-item"><span class="key">Locale format</span><span class="val" id="resultComma">-</span></div>
-<div class="nf-item"><span class="key">Percentage</span><span class="val" id="resultPercent">-</span></div>
-<div class="nf-item"><span class="key">Ordinal</span><span class="val" id="resultOrdinal">-</span></div>
-<div class="nf-item"><span class="key">In Words</span><span class="val" id="resultWords">-</span></div>
-<div class="nf-item"><span class="key">Roman</span><span class="val" id="resultRoman">-</span></div>
-<div class="nf-item"><span class="key">Scientific</span><span class="val" id="resultSci">-</span></div>
-<div class="nf-item"><span class="key">Currency</span><span class="val" id="resultCurrency">-</span></div>
+<div class="nf-item"><span class="key">区域格式</span><span class="val" id="resultComma">-</span></div>
+<div class="nf-item"><span class="key">百分比</span><span class="val" id="resultPercent">-</span></div>
+<div class="nf-item"><span class="key">序数</span><span class="val" id="resultOrdinal">-</span></div>
+<div class="nf-item"><span class="key">单词形式</span><span class="val" id="resultWords">-</span></div>
+<div class="nf-item"><span class="key">罗马数字</span><span class="val" id="resultRoman">-</span></div>
+<div class="nf-item"><span class="key">科学计数法</span><span class="val" id="resultSci">-</span></div>
+<div class="nf-item"><span class="key">货币</span><span class="val" id="resultCurrency">-</span></div>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -91,7 +91,7 @@
     for(var i=0;i<vals.length;i++){while(n>=vals[i]){result+=chars[i];n-=vals[i];}}return result;}
 
   function format(){
-    var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus('Enter a valid number','error');return;}
+    var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus('请输入有效数字','error');return;}
     res.comma.textContent=val.toLocaleString('en-US');
     res.percent.textContent=(val/100).toFixed(4)+'%';
     var intPart=Math.floor(Math.abs(val));
@@ -108,7 +108,7 @@
     var sym={en:'$',cn:'¥',jp:'¥',fr:'€',de:'€'}[lang]||'$';
     res.currency.textContent=sym+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     outputEl.textContent=res.comma.textContent+' | '+res.words.textContent;
-    setStatus('Formatted');}
+    setStatus('格式化完成');}
 
   formatBtn.addEventListener('click',format);
   inputNum.addEventListener('keydown',function(e){if(e.key==='Enter')format();});

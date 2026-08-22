@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Ipsum Generator - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Lorem Ipsum 生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .lorem-controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -15,29 +15,29 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>Lorem Ipsum 生成器</h1>
-<p class="tool-desc">Generate placeholder text with bytes, markdown modes, and locale word lists.</p>
+<p class="tool-desc">生成占位文本，支持字节、Markdown 模式与多语言词库。</p>
 <div class="card">
 <div class="lorem-controls">
 <div class="field"><label for="loremUnit">单位</label>
 <select id="loremUnit" class="input" style="width:auto;">
-<option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option><option value="chars">Characters</option><option value="bytes">Bytes</option>
+<option value="paragraphs">段落</option><option value="sentences">句子</option><option value="words">单词</option><option value="chars">字符</option><option value="bytes">字节</option>
 </select></div>
 <div class="field"><label for="loremCount">计数</label><input id="loremCount" class="input" type="number" min="1" max="500" value="3"></div>
 <div class="field"><label for="loremFormat">格式化</label>
 <select id="loremFormat" class="input" style="width:auto;">
-<option value="text">Plain text</option><option value="html">HTML</option><option value="markdown">Markdown</option>
+<option value="text">纯文本</option><option value="html">HTML</option><option value="markdown">Markdown</option>
 </select></div>
-<div class="field"><label for="loremLocale">Locale</label>
+<div class="field"><label for="loremLocale">语言</label>
 <select id="loremLocale" class="input" style="width:auto;">
-<option value="latin">Latin</option><option value="english">English</option><option value="chinese">Chinese</option>
+<option value="latin">拉丁语</option><option value="english">英语</option><option value="chinese">中文</option>
 </select></div>
 <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
 </div>
 <div class="gen-stats" id="genStats">
-<span class="stat">Words: <strong id="statWords">0</strong></span>
-<span class="stat">Chars: <strong id="statChars">0</strong></span>
-<span class="stat">Paragraphs: <strong id="statParas">0</strong></span>
-<span class="stat">Sentences: <strong id="statSents">0</strong></span>
+<span class="stat">单词：<strong id="statWords">0</strong></span>
+<span class="stat">字符：<strong id="statChars">0</strong></span>
+<span class="stat">段落：<strong id="statParas">0</strong></span>
+<span class="stat">句子：<strong id="statSents">0</strong></span>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -78,7 +78,7 @@
     var ft=outputEl.textContent;statWords.textContent=ft.trim()?ft.trim().split(/\s+/).length:0;
     statChars.textContent=ft.length;statParas.textContent=ft.split(/\n\s*\n/).filter(function(p){return p.trim().length>0;}).length||(ft.trim()?1:0);
     statSents.textContent=ft.split(/[.!?。！？]+/).filter(function(s){return s.trim().length>0;}).length;
-    setStatus('Generated '+count+' '+unit);}
+    setStatus('已生成 '+count+' '+unit);}
 
   generateBtn.addEventListener('click',generate);
   document.getElementById('copyBtn').addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});

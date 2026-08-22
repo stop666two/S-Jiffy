@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HMAC Verify - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>HMAC 验证器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .hrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -11,18 +11,18 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>HMAC 验证器</h1><p class="tool-desc">Verify HMAC signatures of text using SHA-256/SHA-384/SHA-512 with a secret key.<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter the message text..." style="min-height:100px;"></textarea></div>
+<main class="tool-workspace"><h1>HMAC 验证器</h1><p class="tool-desc">使用密钥和 SHA-256/SHA-384/SHA-512 算法计算并验证文本的 HMAC 签名。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算 HMAC 的文本..." style="min-height:100px;"></textarea></div>
 <div class="card">
-<div class="hrow"><label>Secret Key</label><input id="keyInput" class="input" type="password" placeholder="HMAC secret key" style="flex:1;min-width:150px;"></div>
+<div class="hrow"><label>密钥</label><input id="keyInput" class="input" type="password" placeholder="HMAC 密钥" style="flex:1;min-width:150px;"></div>
 <div class="hrow">
 <label>算法</label><select id="algoSelect" class="input" style="width:auto;"><option value="SHA-256">SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA-1">SHA-1</option></select>
 <label>格式化</label><select id="fmtSelect" class="input" style="width:auto;"><option value="hex">Hex</option><option value="base64">Base64</option></select>
-<button id="calcBtn" class="btn btn-primary">Compute HMAC</button>
+<button id="calcBtn" class="btn btn-primary">计算 HMAC</button>
 </div>
 </div>
 <div class="card">
-<div class="hrow"><label>Expected HMAC</label><input id="expectedInput" class="input" placeholder="Paste the expected HMAC to verify" style="flex:1;min-width:200px;"></div>
+<div class="hrow"><label>期望 HMAC</label><input id="expectedInput" class="input" placeholder="粘贴期望的 HMAC 以验证" style="flex:1;min-width:200px;"></div>
 <div style="text-align:center;margin-top:var(--space-2);"><span id="verifyBadge" class="result-badge" style="display:none;"></span></div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -35,14 +35,14 @@ var ei=document.getElementById('expectedInput'),vb=document.getElementById('veri
 function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
 function b64(buf){var b=new Uint8Array(buf),s='';for(var x=0;x<b.length;x++)s+=String.fromCharCode(b[x]);return btoa(s);}
 
-function compute(){var text=i.value.trim(),key=ki.value;if(!text||!key){setStatus('Enter message and key','error');return;}
-var algo={algo:al.value};
+function compute(){var text=i.value.trim(),key=ki.value;if(!text||!key){setStatus('请输入文本和密钥','error');return;}
+var algo={name:al.value};
 crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:algo},false,['sign']).then(function(k){
 return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(text));}).then(function(sig){var computed=fm.value==='hex'?hex(sig):b64(sig);
 o.textContent=computed;
 var expected=ei.value.trim();if(expected){var match=computed.toLowerCase()===expected.toLowerCase();
-vb.style.display='inline-block';vb.textContent=match?'VERIFIED ✓':'FAILED ✗';vb.className='result-badge '+(match?'ok':'fail');
-setStatus(match?'Verified!':'Verification failed');}else{vb.style.display='none';setStatus('HMAC computed');}}).catch(function(e){setStatus('错误: '+e.message,'error');});}
+vb.style.display='inline-block';vb.textContent=match?'验证通过 ✓':'验证失败 ✗';vb.className='result-badge '+(match?'ok':'fail');
+setStatus(match?'验证通过':'验证失败');}else{vb.style.display='none';setStatus('HMAC 已计算');}}).catch(function(e){setStatus('错误: '+e.message,'error');});}
 
 document.getElementById('calcBtn').addEventListener('click',compute);
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});

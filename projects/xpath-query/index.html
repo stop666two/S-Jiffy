@@ -10,7 +10,7 @@
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="queryBtn" class="btn btn-primary">查询</button><button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="card" id="resultCard" style="display:none;"><h3 style="margin-bottom:var(--space-1);">查询结果</h3><p id="matchCount" style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"></p><div id="match结果s" style="font-family:var(--font-mono);font-size:var(--font-size-xs);max-height:300px;overflow-y:auto;"></div></div>
+<div class="card" id="resultCard" style="display:none;"><h3 style="margin-bottom:var(--space-1);">查询结果</h3><p id="matchCount" style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"></p><div id="matchResults" style="font-family:var(--font-mono);font-size:var(--font-size-xs);max-height:300px;overflow-y:auto;"></div></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
@@ -24,7 +24,7 @@ var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
 var resultCard=document.getElementById('resultCard');
 var matchCount=document.getElementById('matchCount');
-var match结果s=document.getElementById('match结果s');
+var matchResults=document.getElementById('matchResults');
 function evaluateXPath(xml,xpath){
 var parser=new DOMParser();
 var doc;
@@ -40,13 +40,13 @@ var ns=doc.documentElement.getAttribute('xmlns');
 if(ns)resolver=doc.createNSResolver(doc.documentElement);
 }catch(e){}
 try{
-var xpath结果=doc.evaluate(xpath,doc,resolver,XPath结果.ANY_TYPE,null);
-var node=xpath结果.iterateNext();
+var xpathResult=doc.evaluate(xpath,doc,resolver,XPathResult.ANY_TYPE,null);
+var node=xpathResult.iterateNext();
 while(node){
 var val=node.textContent||node.nodeValue||'';
 val=val.trim();
 if(val)results.push(val);
-node=xpath结果.iterateNext();
+node=xpathResult.iterateNext();
 }
 }catch(e){throw new Error('XPath 错误: '+e.message);}
 return results;
@@ -60,9 +60,9 @@ try{
 var results=evaluateXPath(xml,xpath);
 resultCard.style.display='block';
 matchCount.textContent='匹配 '+results.length+' 个节点';
-match结果s.innerHTML='';
+matchResults.innerHTML='';
 if(results.length===0){
-match结果s.innerHTML='<span style="color:var(--color-text-secondary)">无匹配结果</span>';
+matchResults.innerHTML='<span style="color:var(--color-text-secondary)">无匹配结果</span>';
 }else{
 var ol=document.createElement('ol');
 ol.style.paddingLeft='20px';
@@ -71,12 +71,12 @@ var li=document.createElement('li');
 li.textContent=results[i].substring(0,200);
 ol.appendChild(li);
 }
-match结果s.appendChild(ol);
+matchResults.appendChild(ol);
 if(results.length>100){
 var note=document.createElement('p');
 note.style.color='var(--color-text-secondary)';
 note.textContent='... 还有 '+(results.length-100)+' 个结果';
-match结果s.appendChild(note);
+matchResults.appendChild(note);
 }
 }
 outputEl.textContent='XPath '+xpath+' 匹配 '+results.length+' 个节点';
@@ -87,7 +87,7 @@ outputEl.textContent='';
 setStatus(e.message,'error');
 }
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';xpathInput.value='';outputEl.textContent='';resultCard.style.display='none';match结果s.innerHTML='';setStatus('');inputEl.focus();});
+clearBtn.addEventListener('click',function(){inputEl.value='';xpathInput.value='';outputEl.textContent='';resultCard.style.display='none';matchResults.innerHTML='';setStatus('');inputEl.focus();});
 copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
 })();
 </script></body></html>

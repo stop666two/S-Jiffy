@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interval Timer - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>间歇计时器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .time-display{font-size:64px;font-weight:600;font-family:var(--font-mono);text-align:center;padding:var(--space-2);}
@@ -17,17 +17,17 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>间歇计时器</h1><p class="tool-desc">Work/rest intervals with rounds and beep notification.</p>
+<main class="tool-workspace"><h1>间歇计时器</h1><p class="tool-desc">训练/休息间歇计时，支持轮次与提示音。</p>
 <div class="card">
 <div class="ctrl-row">
-<div class="field"><label>Work (sec)</label><input id="workInput" class="input" type="number" value="30" min="1" max="600"></div>
-<div class="field"><label>Rest (sec)</label><input id="restInput" class="input" type="number" value="10" min="1" max="600"></div>
+<div class="field"><label>训练（秒）</label><input id="workInput" class="input" type="number" value="30" min="1" max="600"></div>
+<div class="field"><label>休息（秒）</label><input id="restInput" class="input" type="number" value="10" min="1" max="600"></div>
 <div class="field"><label>轮数</label><input id="roundsInput" class="input" type="number" value="8" min="1" max="99"></div>
-<div class="field"><label>Prep (sec)</label><input id="prepInput" class="input" type="number" value="5" min="0" max="60"></div>
+<div class="field"><label>准备（秒）</label><input id="prepInput" class="input" type="number" value="5" min="0" max="60"></div>
 </div>
 <div class="phase-label" id="phaseLabel">准备</div>
 <div class="time-display" id="display">00:00</div>
-<div class="round-info" id="roundInfo">Round 0 / 0</div>
+<div class="round-info" id="roundInfo">第 0 / 0 轮</div>
 <div class="time-btns">
 <button id="startBtn" class="btn btn-primary">开始</button>
 <button id="pauseBtn" class="btn btn-secondary">暂停</button>
@@ -51,21 +51,21 @@ updateDisplay();}
 
 function nextPhase(){if(curPhase==='prep'){curPhase='work';curSec=parseInt(wi.value)||30;curRound=1;}
 else if(curPhase==='work'){curPhase='rest';curSec=parseInt(ri2.value)||10;}
-else if(curPhase==='rest'){if(curRound>=totalRounds){curPhase='done';curSec=0;running=false;pl.textContent='Complete!';pl.className='phase-label done';dp.textContent='00:00';ri.textContent='All rounds complete';setStatus('Workout complete!');clearInterval(timerId);return;}
+else if(curPhase==='rest'){if(curRound>=totalRounds){curPhase='done';curSec=0;running=false;pl.textContent='完成！';pl.className='phase-label done';dp.textContent='00:00';ri.textContent='全部轮次完成';setStatus('训练完成！');clearInterval(timerId);return;}
 curRound++;curPhase='work';curSec=parseInt(wi.value)||30;}
 updateDisplay();}
 
 function updateDisplay(){var m=Math.floor(curSec/60);var s=curSec%60;dp.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-pl.textContent=curPhase==='prep'?'Get Ready':curPhase==='work'?'Work!':'Rest';pl.className='phase-label '+(curPhase==='work'?'work':'rest');
+pl.textContent=curPhase==='prep'?'准备中':curPhase==='work'?'训练！':'休息';pl.className='phase-label '+(curPhase==='work'?'work':'rest');
 ri.textContent=curRound+' / '+totalRounds+' rounds';o.textContent=curPhase+' '+dp.textContent;}
 
 function startTimer(){if(running&&!paused)return;
 if(!running){var prep=parseInt(pr.value)||0;if(prep>0){curPhase='prep';curSec=prep;curRound=0;}else{curPhase='work';curSec=parseInt(wi.value)||30;curRound=1;}
 totalRounds=parseInt(ru.value)||1;running=true;paused=false;clearInterval(timerId);timerId=setInterval(tick,1000);updateDisplay();}
-else{paused=false;setStatus('Resumed');}}
+else{paused=false;setStatus('已恢复');}}
 
-function pauseTimer(){if(!running)return;paused=true;setStatus('Paused');}
-function resetTimer(){running=false;paused=false;clearInterval(timerId);curPhase='prep';curSec=0;curRound=0;dp.textContent='00:00';pl.textContent='Ready';pl.className='phase-label';ri.textContent='0 / 0';o.textContent='';setStatus('');}
+function pauseTimer(){if(!running)return;paused=true;setStatus('已暂停');}
+function resetTimer(){running=false;paused=false;clearInterval(timerId);curPhase='prep';curSec=0;curRound=0;dp.textContent='00:00';pl.textContent='就绪';pl.className='phase-label';ri.textContent='0 / 0';o.textContent='';setStatus('');}
 
 document.getElementById('startBtn').addEventListener('click',startTimer);
 document.getElementById('pauseBtn').addEventListener('click',pauseTimer);

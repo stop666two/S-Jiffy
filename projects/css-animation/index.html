@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS Animation Generator - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CSS 动画生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 @keyframes previewAnim{from{transform:translateX(0);opacity:1}to{transform:translateX(200px);opacity:.5}}
@@ -22,10 +22,10 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>CSS 动画生成器</h1>
-<p class="tool-desc">Build custom keyframe animations with presets (fadeIn, fadeOut, slideIn, slideOut, bounce, bounceIn, rotate, pulse, shake, flip, zoom, swing).</p>
+<p class="tool-desc">使用预设（fadeIn、fadeOut、slideIn、slideOut、bounce、bounceIn、rotate、pulse、shake、flip、zoom、swing）构建自定义关键帧动画。</p>
 <div class="card">
 <div class="anim-stage" id="animStage"><div class="anim-ball" id="animBall">Anim</div></div>
-<div style="margin-bottom:var(--space-2);"><span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-right:8px;">Presets:</span>
+<div style="margin-bottom:var(--space-2);"><span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-right:8px;">预设：</span>
 <div class="preset-grid" id="presetGrid">
 <button class="preset-btn" data-preset="fadeIn">Fade In</button>
 <button class="preset-btn" data-preset="fadeOut">Fade Out</button>
@@ -41,24 +41,24 @@
 <button class="preset-btn" data-preset="swing">Swing</button>
 </div></div>
 <div class="ctrl-grid">
-<div class="ctrl-group"><h3>Animation Properties</h3>
-<div class="ctrl-row"><label>Duration</label><input id="durInput" class="input" type="number" value="2" min="0.1" max="30" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
-<div class="ctrl-row"><label>Delay</label><input id="delayInput" class="input" type="number" value="0" min="0" max="10" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
-<div class="ctrl-row"><label>Easing</label><select id="easeSelect" class="input">
+<div class="ctrl-group"><h3>动画属性</h3>
+<div class="ctrl-row"><label>时长</label><input id="durInput" class="input" type="number" value="2" min="0.1" max="30" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
+<div class="ctrl-row"><label>延迟</label><input id="delayInput" class="input" type="number" value="0" min="0" max="10" step="0.1"><span style="font-size:var(--font-size-sm)">s</span></div>
+<div class="ctrl-row"><label>缓动函数</label><select id="easeSelect" class="input">
 <option value="ease">ease</option><option value="linear">linear</option><option value="ease-in">ease-in</option><option value="ease-out">ease-out</option><option value="ease-in-out">ease-in-out</option>
 <option value="cubic-bezier(0.68,-0.55,0.265,1.55)">bounce</option><option value="cubic-bezier(0.175,0.885,0.32,1.275)">spring</option>
 <option value="cubic-bezier(0.6,-0.28,0.735,0.045)">snap</option><option value="cubic-bezier(0.22,1,0.36,1)">ease-out quint</option>
 <option value="cubic-bezier(0.87,0,0.13,1)">ease-in-out quint</option><option value="cubic-bezier(0.34,1.56,0.64,1)">spring light</option></select></div>
-<div class="ctrl-row"><label>Direction</label><select id="dirSelect" class="input"><option value="normal">normal</option><option value="reverse">reverse</option><option value="alternate">alternate</option><option value="alternate-reverse">alternate-reverse</option></select></div>
-<div class="ctrl-row"><label>Iterations</label><select id="iterSelect" class="input"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="infinite">∞ infinite</option></select></div>
-<div class="ctrl-row"><label>Fill Mode</label><select id="fillSelect" class="input"><option value="none">none</option><option value="forwards">forwards</option><option value="backwards">backwards</option><option value="both">both</option></select></div>
+<div class="ctrl-row"><label>方向</label><select id="dirSelect" class="input"><option value="normal">normal</option><option value="reverse">reverse</option><option value="alternate">alternate</option><option value="alternate-reverse">alternate-reverse</option></select></div>
+<div class="ctrl-row"><label>迭代次数</label><select id="iterSelect" class="input"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="infinite">∞ infinite</option></select></div>
+<div class="ctrl-row"><label>填充模式</label><select id="fillSelect" class="input"><option value="none">none</option><option value="forwards">forwards</option><option value="backwards">backwards</option><option value="both">both</option></select></div>
 </div>
-<div class="ctrl-group"><h3>Transform</h3>
-<div class="ctrl-row"><label>X Move</label><input id="xInput" class="input" type="number" value="200" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
-<div class="ctrl-row"><label>Y Move</label><input id="yInput" class="input" type="number" value="0" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
-<div class="ctrl-row"><label>Rotation</label><input id="rotInput" class="input" type="number" value="360" min="-720" max="720"><span style="font-size:var(--font-size-sm)">deg</span></div>
-<div class="ctrl-row"><label>Scale</label><input id="scaleInput" class="input" type="number" value="1.5" min="0.1" max="5" step="0.1"></div>
-<div class="ctrl-row"><label>Opacity</label><input id="opacityInput" class="input" type="number" value="0.5" min="0" max="1" step="0.1"></div>
+<div class="ctrl-group"><h3>变换</h3>
+<div class="ctrl-row"><label>X 位移</label><input id="xInput" class="input" type="number" value="200" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
+<div class="ctrl-row"><label>Y 位移</label><input id="yInput" class="input" type="number" value="0" min="-500" max="500"><span style="font-size:var(--font-size-sm)">px</span></div>
+<div class="ctrl-row"><label>旋转</label><input id="rotInput" class="input" type="number" value="360" min="-720" max="720"><span style="font-size:var(--font-size-sm)">deg</span></div>
+<div class="ctrl-row"><label>缩放</label><input id="scaleInput" class="input" type="number" value="1.5" min="0.1" max="5" step="0.1"></div>
+<div class="ctrl-row"><label>透明度</label><input id="opacityInput" class="input" type="number" value="0.5" min="0" max="1" step="0.1"></div>
 </div></div>
 <div class="btn-play" style="display:flex;gap:8px;margin:var(--space-2) 0;flex-wrap:wrap;">
 <button id="playBtn" class="btn btn-primary">播放</button>
@@ -112,19 +112,19 @@
   function loadPreset(name){var p=presets[name];if(!p)return;
     animName='anim_'+name+'_'+Date.now();xInp.value=p.x;yInp.value=p.y;rotInp.value=p.rot;scaleInp.value=p.scale;opaInp.value=p.opa;
     if(name==='shake'){xInp.value=5;rotInp.value=0;}
-    easeSel.value=p.easing;generateKeyframes();if(isPlaying)applyAnimation();setStatus('Preset: '+name);}
+    easeSel.value=p.easing;generateKeyframes();if(isPlaying)applyAnimation();setStatus('预设：'+name);}
 
   var presetBtns=document.querySelectorAll('.preset-btn');
   for(var i=0;i<presetBtns.length;i++){presetBtns[i].addEventListener('click',function(){loadPreset(this.getAttribute('data-preset'));});}
   generateKeyframes();
-  playBtn.addEventListener('click',function(){ball.style.animationPlayState='running';if(!isPlaying)applyAnimation();isPlaying=true;setStatus('Playing');});
-  pauseBtn.addEventListener('click',function(){ball.style.animationPlayState='paused';setStatus('Paused');});
-  stopBtn.addEventListener('click',function(){ball.style.animation='none';void ball.offsetHeight;isPlaying=false;setStatus('Stopped');});
+  playBtn.addEventListener('click',function(){ball.style.animationPlayState='running';if(!isPlaying)applyAnimation();isPlaying=true;setStatus('播放中');});
+  pauseBtn.addEventListener('click',function(){ball.style.animationPlayState='paused';setStatus('已暂停');});
+  stopBtn.addEventListener('click',function(){ball.style.animation='none';void ball.offsetHeight;isPlaying=false;setStatus('已停止');});
   function onChange(){generateKeyframes();if(isPlaying)applyAnimation();}
   durInp.addEventListener('change',onChange);delayInp.addEventListener('change',onChange);easeSel.addEventListener('change',onChange);
   dirSel.addEventListener('change',onChange);iterSel.addEventListener('change',onChange);fillSel.addEventListener('change',onChange);
   xInp.addEventListener('change',onChange);yInp.addEventListener('change',onChange);rotInp.addEventListener('change',onChange);
   scaleInp.addEventListener('change',onChange);opaInp.addEventListener('change',onChange);
-  copyBtn.addEventListener('click',function(){var t=out.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('Copied CSS');}});
+  copyBtn.addEventListener('click',function(){var t=out.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('CSS 已复制');}});
 })();
 </script></body></html>

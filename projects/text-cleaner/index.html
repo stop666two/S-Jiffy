@@ -7,13 +7,14 @@
 <main class="tool-workspace"><h1>文本清理器</h1><p class="tool-desc">清理文本：移除多余空格、特殊字符、空行，统一标点符号和空白字符。</p>
 <div class="card">
 <div class="option-grid">
-<label><input type="checkbox" id="optTrim" checked> 去除首尾空格</label>
-<label><input type="checkbox" id="optExtraSpace" checked> 合并多余空格</label>
-<label><input type="checkbox" id="optEmptyLines" checked> 移除空行</label>
-<label><input type="checkbox" id="optSpecial" checked> 移除特殊字符</label>
-<label><input type="checkbox" id="optNormalize" checked> 统一标点</label>
-<label><input type="checkbox" id="optUnicode"> Unicode 标准化</label>
+<label title="移除首尾多余空格"><input type="checkbox" id="optTrim" checked> 去除首尾空格</label>
+<label title="将连续多个空格合并为一个"><input type="checkbox" id="optExtraSpace" checked> 合并多余空格</label>
+<label title="删除空行（连续换行压缩）"><input type="checkbox" id="optEmptyLines" checked> 移除空行</label>
+<label title="删除所有不在白名单内的字符"><input type="checkbox" id="optSpecial" checked> 移除特殊字符</label>
+<label title="将中文标点（。，；：！？）统一为英文标点"><input type="checkbox" id="optNormalize" checked> 统一标点</label>
+<label title="按 Unicode NFKC 标准归一化全角/半角字符"><input type="checkbox" id="optUnicode"> Unicode 标准化</label>
 </div>
+<div class="opt-hint" style="font-size:12px;color:var(--color-text-secondary);margin:-4px 0 12px 2px;">移除特殊字符时保留：中文、字母数字、空格，以及常用符号 . , ! ? ; : ' &quot; ( ) [ ] { } - @ # $ % &amp; * + / = &lt; &gt; ~ ^ _ ` | \</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
 <button id="cleanBtn" class="btn btn-primary">清理</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>

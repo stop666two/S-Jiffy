@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Text Summarizer - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>文本摘要生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -9,14 +9,14 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>文本摘要工具</h1><p class="tool-desc">Extract key sentences using frequency-based extraction, limit by sentence count.</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste a long article to summarize..." style="min-height:180px;"></textarea></div>
+<main class="tool-workspace"><h1>文本摘要工具</h1><p class="tool-desc">基于词频提取关键句子，可按句子数量限制摘要长度。</p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴长文章以生成摘要..." style="min-height:180px;"></textarea></div>
 <div class="opt-row">
-<label>Summary length</label><select id="lengthSelect" class="input" style="width:auto;"><option value="3">3 sentences</option><option value="5" selected>5 sentences</option><option value="7">7 sentences</option><option value="10">10 sentences</option><option value="20">20 sentences</option></select>
-<button id="summarizeBtn" class="btn btn-primary">Summarize</button>
+<label>摘要长度</label><select id="lengthSelect" class="input" style="width:auto;"><option value="3">3 句</option><option value="5" selected>5 句</option><option value="7">7 句</option><option value="10">10 句</option><option value="20">20 句</option></select>
+<button id="summarizeBtn" class="btn btn-primary">生成摘要</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="summary-stat"><span>Original: <strong id="origSents">0</strong> sentences</span><span>Summary: <strong id="sumSents">0</strong> sentences</span><span>Reduction: <strong id="reduction">0%</strong></span></div>
+<div class="summary-stat"><span>原文：<strong id="origSents">0</strong> 句</span><span>摘要：<strong id="sumSents">0</strong> 句</span><span>缩减：<strong id="reduction">0%</strong></span></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -42,7 +42,7 @@ var limit=parseInt(document.getElementById('lengthSelect').value);
 var summary=summarize(t,limit);o.textContent=summary;
 var sumS=(summary.match(/[^.!?\n]+[.!?]?/g)||[]).length;sS.textContent=sumS;
 var pct=origSents>0?Math.round((1-sumS/origSents)*100):0;rd.textContent=pct+'%';
-setStatus('Summarized to '+sumS+' sentences');}
+setStatus('已生成摘要，共 '+sumS+' 句');}
 
 document.getElementById('summarizeBtn').addEventListener('click',process);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('');i.focus();});

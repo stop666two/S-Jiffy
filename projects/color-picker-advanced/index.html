@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Advanced Color Picker - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>高级拾色器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .picker-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -16,17 +16,17 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>高级拾色器</h1><p class="tool-desc">Pick colors visually with history, saved palette export.</p>
+<main class="tool-workspace"><h1>高级拾色器</h1><p class="tool-desc">可视化取色，支持历史记录与调色板导出。</p>
 <div class="card"><div class="picker-row"><div class="picker-main"><input id="colorPicker" type="color" value="#3498db"></div>
 <div style="flex:1;min-width:200px;"><div class="color-detail" id="colorDetail"></div></div></div>
 <div class="export-row">
-<button id="saveBtn" class="btn btn-secondary">Save Color</button>
-<button id="exportBtn" class="btn btn-secondary">Export Palette</button>
+<button id="saveBtn" class="btn btn-secondary">保存颜色</button>
+<button id="exportBtn" class="btn btn-secondary">导出调色板</button>
 <button id="randomBtn" class="btn btn-secondary">随机</button>
-<button id="clearHistoryBtn" class="btn btn-secondary">Clear History</button>
+<button id="clearHistoryBtn" class="btn btn-secondary">清空历史</button>
 </div>
 </div>
-<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">Saved Colors</h3><div class="history-grid" id="historyGrid"><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">No saved colors</span></div></div>
+<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">已保存颜色</h3><div class="history-grid" id="historyGrid"><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">暂无已保存颜色</span></div></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -46,14 +46,14 @@ function renderDetail(){var hex=cp.value;var rgb=hexToRgb(hex);var hsl=rgbToHsl(
 cd.innerHTML='<div class="detail-row"><span class="key">HEX</span><span>'+hex+'</span></div><div class="detail-row"><span class="key">RGB</span><span>'+rgb.r+', '+rgb.g+', '+rgb.b+'</span></div><div class="detail-row"><span class="key">HSL</span><span>'+hsl[0]+'°, '+hsl[1]+'%, '+hsl[2]+'%</span></div><div class="detail-row"><span class="key">CMYK</span><span>'+cmyk[0]+'%, '+cmyk[1]+'%, '+cmyk[2]+'%, '+cmyk[3]+'%</span></div>';
 o.textContent=hex;}
 
-function renderHistory(){if(saved.length===0){hg.innerHTML='<span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">No saved colors</span>';return;}
+function renderHistory(){if(saved.length===0){hg.innerHTML='<span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">暂无已保存颜色</span>';return;}
 var html='';for(var i=0;i<saved.length;i++){          html+='<div class="hist-swatch" style="background:'+htmlEscape(saved[i])+'" data-color="'+htmlEscape(saved[i])+'"></div>';}
 hg.innerHTML=html;var sw=hg.querySelectorAll('.hist-swatch');for(var j=0;j<sw.length;j++){sw[j].addEventListener('click',function(){cp.value=this.dataset.color;renderDetail();});}}
 
-function save(){var hex=cp.value;if(saved.indexOf(hex)===-1){saved.unshift(hex);if(saved.length>20)saved.pop();localStorage.setItem('s-jiffy:colors',JSON.stringify(saved));renderHistory();setStatus('Saved '+hex);}}
+function save(){var hex=cp.value;if(saved.indexOf(hex)===-1){saved.unshift(hex);if(saved.length>20)saved.pop();localStorage.setItem('s-jiffy:colors',JSON.stringify(saved));renderHistory();setStatus('已保存 '+hex);}}
 
-function exportPalette(){if(saved.length===0){setStatus('No saved colors','error');return;}
-var text=saved.join('\n');o.textContent=text;copyToClipboard(text,document.getElementById('copyBtn'));setStatus('Exported '+saved.length+' colors');}
+function exportPalette(){if(saved.length===0){setStatus('暂无已保存颜色','error');return;}
+var text=saved.join('\n');o.textContent=text;copyToClipboard(text,document.getElementById('copyBtn'));setStatus('已导出 '+saved.length+' 个颜色');}
 
 function randomHex(){var h='#';for(var i=0;i<6;i++)h+=Math.floor(Math.random()*16).toString(16);cp.value=h;renderDetail();}
 
@@ -61,7 +61,7 @@ cp.addEventListener('input',renderDetail);
 document.getElementById('saveBtn').addEventListener('click',save);
 document.getElementById('exportBtn').addEventListener('click',exportPalette);
 document.getElementById('randomBtn').addEventListener('click',randomHex);
-document.getElementById('clearHistoryBtn').addEventListener('click',function(){saved=[];localStorage.setItem('s-jiffy:colors','[]');renderHistory();setStatus('Cleared');});
+document.getElementById('clearHistoryBtn').addEventListener('click',function(){saved=[];localStorage.setItem('s-jiffy:colors','[]');renderHistory();setStatus('已清空');});
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
 renderDetail();renderHistory();})();
 </script></body></html>

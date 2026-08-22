@@ -33,7 +33,7 @@
     if (typeof val === 'boolean') return 'Bool';
     if (typeof val === 'number') {
       if (Number.isInteger(val)) {
-        if (val >= Int32.min && val <= Int32.max) return 'Int';
+        if (val >= Number.MIN_SAFE_INTEGER && val <= Number.MAX_SAFE_INTEGER) return 'Int';
         return 'Int64';
       }
       return 'Double';

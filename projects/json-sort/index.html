@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON Key Sorter - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 键排序器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -9,17 +9,17 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>JSON 排序工具</h1><p class="tool-desc">Sort JSON keys alphabetically, with nested/deep sort and comparison views.</p>
+<main class="tool-workspace"><h1>JSON 排序工具</h1><p class="tool-desc">按字母顺序排序 JSON 键，支持嵌套/深层排序与对比视图。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='{"z":[3,2,1],"a":{"nested":{"c":1,"b":2,"a":3}}}' style="min-height:150px;"></textarea></div>
 <div class="opt-row">
-<label><input type="checkbox" id="chkDeep" checked> Deep sort (nested)</label>
-<label><input type="checkbox" id="chkDesc"> Descending</label>
-<label><input type="checkbox" id="chkArray"> Sort arrays</label>
-<label>Indent</label><select id="indentSelect" class="input" style="width:auto;"><option value="2">2 spaces</option><option value="4">4 spaces</option><option value="tab">Tab</option></select>
+<label><input type="checkbox" id="chkDeep" checked> 深层排序（嵌套）</label>
+<label><input type="checkbox" id="chkDesc"> 降序</label>
+<label><input type="checkbox" id="chkArray"> 排序数组</label>
+<label>缩进</label><select id="indentSelect" class="input" style="width:auto;"><option value="2">2 空格</option><option value="4">4 空格</option><option value="tab">Tab</option></select>
 </div>
 <div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
-<button id="sortBtn" class="btn btn-primary">Sort</button>
-<button id="reverseBtn" class="btn btn-secondary">Reverse keys</button>
+<button id="sortBtn" class="btn btn-primary">排序</button>
+<button id="reverseBtn" class="btn btn-secondary">反转键序</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
 <div class="output-box"><div id="diff输出" class="diff-output"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
@@ -41,10 +41,10 @@ return result;}
 
 function getIndent(){var v=document.getElementById('indentSelect').value;return v==='tab'?'\t':parseInt(v);}
 
-function process(fn){var t=i.value.trim();if(!t){setStatus('Enter JSON','error');return;}
+function process(fn){var t=i.value.trim();if(!t){setStatus('请输入 JSON','error');return;}
 try{var parsed=JSON.parse(t);var deep=document.getElementById('chkDeep').checked;var desc=document.getElementById('chkDesc').checked;
 var sortAr=document.getElementById('chkArray').checked;var result=fn(parsed,desc,deep,sortAr);
-var indent=getIndent();dO.textContent=JSON.stringify(result,null,indent);setStatus('完成');}catch(e){setStatus('Invalid JSON: '+e.message,'error');}}
+var indent=getIndent();dO.textContent=JSON.stringify(result,null,indent);setStatus('完成');}catch(e){setStatus('无效 JSON：'+e.message,'error');}}
 
 document.getElementById('sortBtn').addEventListener('click',function(){process(function(obj,desc,deep,sortAr){return sortKeys(obj,desc,deep,sortAr);});});
 document.getElementById('reverseBtn').addEventListener('click',function(){process(function(obj,desc,deep,sortAr){return reverseKeys(obj,deep);});});

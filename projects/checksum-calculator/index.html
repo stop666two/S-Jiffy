@@ -106,6 +106,58 @@
         return ((b << 16) | a).toString(16).padStart(8,'0');
       }
 
+      function md5(input) {
+        var bytes;
+        if (typeof input === 'string') {
+          bytes = [];
+          for (var si = 0; si < input.length; si++) bytes.push(input.charCodeAt(si) & 0xFF);
+        } else {
+          bytes = input;
+        }
+        var n = bytes.length;
+        var paddedLen = (((n + 8) >> 6) + 1) << 6;
+        var data = new Uint8Array(paddedLen);
+        for (var di = 0; di < n; di++) data[di] = bytes[di];
+        data[n] = 0x80;
+        var dv = new DataView(data.buffer);
+        var bitLen = n * 8;
+        dv.setUint32(paddedLen - 8, bitLen >>> 0, true);
+        dv.setUint32(paddedLen - 4, Math.floor(bitLen / 4294967296), true);
+        var s = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+        var K = [];
+        for (var ki = 0; ki < 64; ki++) K[ki] = Math.floor(Math.abs(Math.sin(ki + 1)) * 4294967296) >>> 0;
+        var a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+        function rol(x, c) { return (x << c) | (x >>> (32 - c)); }
+        function add32(x, y) { return (x + y) >>> 0; }
+        for (var i = 0; i < paddedLen; i += 64) {
+          var M = [];
+          for (var j = 0; j < 16; j++) M[j] = dv.getUint32(i + j * 4, true);
+          var A = a0, B = b0, C = c0, D = d0;
+          for (var k = 0; k < 64; k++) {
+            var F, g;
+            if (k < 16) { F = (B & C) | (~B & D); g = k; }
+            else if (k < 32) { F = (D & B) | (~D & C); g = (5 * k + 1) % 16; }
+            else if (k < 48) { F = B ^ C ^ D; g = (3 * k + 5) % 16; }
+            else { F = C ^ (B | ~D); g = (7 * k) % 16; }
+            var tmp = add32(add32(add32(A, F), K[k]), M[g]);
+            var oldD = D;
+            D = C; C = B;
+            B = add32(B, rol(tmp, s[k]));
+            A = oldD;
+          }
+          a0 = add32(a0, A); b0 = add32(b0, B); c0 = add32(c0, C); d0 = add32(d0, D);
+        }
+        function toHex(v) {
+          var h = '';
+          for (var bi = 0; bi < 4; bi++) {
+            var byte = (v >>> (bi * 8)) & 0xFF;
+            h += (byte < 16 ? '0' : '') + byte.toString(16);
+          }
+          return h;
+        }
+        return toHex(a0) + toHex(b0) + toHex(c0) + toHex(d0);
+      }
+
       function showChecksums(hexValues) {
         grid.innerHTML = '';
         var allVals = [];
@@ -137,15 +189,15 @@
 
         var encoder = new TextEncoder();
         var data = encoder.encode(t);
+        vals['MD5'] = md5(data);
         var digests = [
-          crypto.subtle.digest('MD5', data),
           crypto.subtle.digest('SHA-1', data),
           crypto.subtle.digest('SHA-256', data),
           crypto.subtle.digest('SHA-384', data),
           crypto.subtle.digest('SHA-512', data)
         ];
         Promise.all(digests).then(function(results) {
-          var names = ['MD5','SHA-1','SHA-256','SHA-384','SHA-512'];
+          var names = ['SHA-1','SHA-256','SHA-384','SHA-512'];
           for (var i = 0; i < results.length; i++) {
             vals[names[i]] = Array.from(new Uint8Array(results[i])).map(function(b){
               return b.toString(16).padStart(2,'0');
@@ -155,8 +207,8 @@
           showChecksums(vals);
           setTimeout(function(){ prog.style.display = 'none'; progFill.style.width = '0'; }, 500);
           setStatus('计算完成');
-        }).catch(function() {
-          setStatus('计算失败（需要 HTTPS 环境）', 'error');
+        }).catch(function(err) {
+          setStatus('计算失败：' + (err && err.message ? err.message : String(err)), 'error');
           prog.style.display = 'none';
         });
       }
@@ -185,17 +237,17 @@
           vals['CRC16'] = crc16(text);
           vals['CRC32'] = crc32(text);
           vals['ADLER32'] = adler32(text);
+          vals['MD5'] = md5(data);
           progFill.style.width = '50%';
 
           var digests = [
-            crypto.subtle.digest('MD5', data),
             crypto.subtle.digest('SHA-1', data),
             crypto.subtle.digest('SHA-256', data),
             crypto.subtle.digest('SHA-384', data),
             crypto.subtle.digest('SHA-512', data)
           ];
           Promise.all(digests).then(function(results) {
-            var names = ['MD5','SHA-1','SHA-256','SHA-384','SHA-512'];
+            var names = ['SHA-1','SHA-256','SHA-384','SHA-512'];
             for (var i = 0; i < results.length; i++) {
               vals[names[i]] = Array.from(new Uint8Array(results[i])).map(function(b){
                 return b.toString(16).padStart(2,'0');
@@ -205,8 +257,8 @@
             showChecksums(vals);
             setTimeout(function(){ prog.style.display = 'none'; progFill.style.width = '0'; }, 500);
             setStatus('文件校验完成');
-          }).catch(function() {
-            setStatus('校验失败（需要 HTTPS 环境）', 'error');
+          }).catch(function(err) {
+            setStatus('校验失败：' + (err && err.message ? err.message : String(err)), 'error');
             prog.style.display = 'none';
           });
         };

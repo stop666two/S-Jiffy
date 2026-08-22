@@ -25,19 +25,22 @@
 <script>(function(){
 var i=document.getElementById('inputText'),o=document.getElementById('outputText');
 var dInput=document.getElementById('delimiter'),am=document.getElementById('alignMode');
+function dispWidth(s){var w=0;for(var k=0;k<s.length;k++){w+=(s.charCodeAt(k)>255?2:1);}return w;}
+function padTo(s,target){var pad=target-dispWidth(s);for(var k=0;k<pad;k++)s+=' ';return s;}
 document.getElementById('alignBtn').addEventListener('click',function(){
   var text=i.value;if(!text.trim()){setStatus('请输入文本','error');return;}
   var lines=text.split('\n');var delim=dInput.value||':';var mode=am.value;
   if(mode==='delimiter'){
     var parts=lines.map(function(l){var idx=l.indexOf(delim);if(idx===-1)return[l,''];return[l.substring(0,idx),l.substring(idx+delim.length)];});
-    var maxLen=0;parts.forEach(function(p){if(p[0].length>maxLen)maxLen=p[0].length;});
-    o.textContent=parts.map(function(p){return p[0].trim().padEnd(maxLen)+(p[1]?delim+' '+p[1].trim():'');}).join('\n');
+    var maxLen=0;parts.forEach(function(p){var w=dispWidth(p[0].trim());if(w>maxLen)maxLen=w;});
+    o.textContent=parts.map(function(p){return padTo(p[0].trim(),maxLen)+(p[1]?delim+' '+p[1].trim():'');}).join('\n');
   }else{
-    var maxWidth=0;lines.forEach(function(l){if(l.length>maxWidth)maxWidth=l.length;});
+    var maxWidth=0;lines.forEach(function(l){var w=dispWidth(l);if(w>maxWidth)maxWidth=w;});
     o.textContent=lines.map(function(l){
-      if(mode==='right')return l.padStart(maxWidth);
-      if(mode==='center'){var pad=Math.max(0,maxWidth-l.length);var lPad=Math.floor(pad/2);return' '.repeat(lPad)+l;}
-      return l.padEnd(maxWidth);
+      var lw=dispWidth(l);
+      if(mode==='right')return padTo('',maxWidth-lw)+l;
+      if(mode==='center'){var pad=Math.max(0,maxWidth-lw);var lPad=Math.floor(pad/2);return ' '.repeat(lPad)+l;}
+      return padTo(l,maxWidth);
     }).join('\n');
   }
   setStatus('');

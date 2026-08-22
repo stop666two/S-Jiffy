@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Statistics - S-Jiffy</title>
+  <title>文本统计 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
@@ -21,25 +21,25 @@
   <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>文本统计</h1>
-    <p class="tool-desc">Real-time stats: syllables, Flesch-Kincaid grade level, reading ease, word frequency.</p>
-    <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Paste or type text..." style="min-height:200px;"></textarea></div>
+    <p class="tool-desc">实时统计：音节数、Flesch-Kincaid 年级水平、阅读难度、词频。</p>
+    <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴或输入文本..." style="min-height:200px;"></textarea></div>
     <div class="stat-grid" id="statGrid">
-      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label">Chars (with space)</div></div>
-      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label">Chars (no space)</div></div>
-      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label">Chinese chars</div></div>
-      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label">Words</div></div>
-      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label">Sentences</div></div>
-      <div class="stat-item"><div class="num" id="syllableCount">0</div><div class="label">Syllables</div></div>
-      <div class="stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch RE</div></div>
-      <div class="stat-item"><div class="num" id="gradeLevel">0</div><div class="label">Grade Level</div></div>
-      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label">Lines</div></div>
-      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label">Paragraphs</div></div>
-      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label">Avg Word Len</div></div>
-      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label">Read Time (min)</div></div>
+      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label">字符（含空格）</div></div>
+      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label">字符（不含空格）</div></div>
+      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label">中文字符</div></div>
+      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label">单词数</div></div>
+      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label">句子数</div></div>
+      <div class="stat-item"><div class="num" id="syllableCount">0</div><div class="label">音节数</div></div>
+      <div class="stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch 阅读指数</div></div>
+      <div class="stat-item"><div class="num" id="gradeLevel">0</div><div class="label">年级水平</div></div>
+      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label">行数</div></div>
+      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label">段落数</div></div>
+      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label">平均词长</div></div>
+      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label">阅读时间（分钟）</div></div>
     </div>
     <div class="card">
-      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">Word Frequency Top 10</h2>
-      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p></div>
+      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">词频 Top 10</h2>
+      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本以查看词频</p></div>
     </div>
     <div class="output-box"><span id="outputText" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
   </main>
@@ -107,7 +107,7 @@
 
         // Word frequency
         if (wordsArr.length === 0) {
-          freqContainer.innerHTML = '<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Type text to see word frequencies</p>';
+          freqContainer.innerHTML = '<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本以查看词频</p>';
         } else {
           var freq = {};
           for (var i = 0; i < wordsArr.length; i++) {
@@ -117,7 +117,7 @@
           var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; });
           var top = sorted.slice(0, 10);
           var maxFreq = top.length > 0 ? freq[top[0]] : 1;
-          var html = '<table><thead><tr><th style="width:40px">#</th><th>Word</th><th style="width:60px">计数</th><th>Dist</th></tr></thead><tbody>';
+          var html = '<table><thead><tr><th style="width:40px">#</th><th>单词</th><th style="width:60px">计数</th><th>分布</th></tr></thead><tbody>';
           for (var i = 0; i < top.length; i++) {
             var pct = (freq[top[i]] / maxFreq * 100).toFixed(0);
             html += '<tr><td>' + (i + 1) + '</td><td>' + htmlEscape(top[i]) + '</td><td>' + freq[top[i]] + '</td><td><div class="bar" style="width:' + pct + '%"></div></td></tr>';

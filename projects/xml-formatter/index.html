@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XML Formatter - S-Jiffy</title>
+  <title>XML 格式化器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
@@ -51,32 +51,48 @@
       }
 
       function formatXmlString(str) {
+        var tokens = [];
+        var re = /<[^>]+>/g;
+        var last = 0;
+        var m;
+        while ((m = re.exec(str)) !== null) {
+          if (m.index > last) {
+            var text = str.slice(last, m.index).trim();
+            if (text !== '') tokens.push({ type: 'text', value: text });
+          }
+          tokens.push({ type: 'tag', value: m[0] });
+          last = re.lastIndex;
+        }
+        var tail = str.slice(last).trim();
+        if (tail !== '') tokens.push({ type: 'text', value: tail });
         var indent = 0;
         var result = [];
         var pad = '  ';
-        // Normalize: remove whitespace between tags
-        str = str.replace(/>\s*</g, '>\n<');
-        var lines = str.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i].trim();
-          if (line === '') continue;
-          // closing tag
-          if (line.indexOf('</') === 0) {
-            indent--;
+        for (var i = 0; i < tokens.length; i++) {
+          var tok = tokens[i];
+          if (tok.type === 'text') {
+            result.push(pad.repeat(indent) + tok.value);
+            continue;
           }
-          result.push(pad.repeat(Math.max(0, indent)) + line);
-          // opening tag (not self-closing)
-          if (line.indexOf('<?') === 0) {
-            // no indent change
-          } else if (line.indexOf('</') === 0) {
-            // no indent change
-          } else if (line.indexOf('<![CDATA[') === 0) {
-            // no indent change
-          } else if (line.indexOf('<!--') === 0) {
-            // no indent change
-          } else if (line.indexOf('<') === 0 && line.lastIndexOf('/') !== line.length - 1 && line.lastIndexOf('>') !== line.indexOf('>') + 1 && line.indexOf('/>') === -1) {
-            indent++;
+          var tag = tok.value;
+          if (tag.indexOf('<?') === 0 || tag.indexOf('<!--') === 0 || tag.indexOf('<![CDATA[') === 0) {
+            result.push(pad.repeat(indent) + tag);
+            continue;
           }
+          var isClosing = tag.indexOf('</') === 0;
+          var isSelfClosing = tag.slice(-2) === '/>';
+          if (isClosing) indent--;
+          if (!isClosing && !isSelfClosing && tokens[i + 1] && tokens[i + 1].type === 'text' && tokens[i + 2] && tokens[i + 2].type === 'tag' && tokens[i + 2].value.indexOf('</') === 0) {
+            var openName = tag.slice(1, tag.length - 1).split(/\s+/)[0];
+            var closeName = tokens[i + 2].value.slice(2, -1).trim();
+            if (openName === closeName) {
+              result.push(pad.repeat(Math.max(0, indent)) + tag + tokens[i + 1].value + tokens[i + 2].value);
+              i += 2;
+              continue;
+            }
+          }
+          result.push(pad.repeat(Math.max(0, indent)) + tag);
+          if (!isClosing && !isSelfClosing) indent++;
         }
         return result.join('\n');
       }

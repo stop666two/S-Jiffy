@@ -6,49 +6,122 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1>点击劫持检测</h1><p class="tool-desc">检测网站是否配置了 X-Frame-Options 或 CSP frame-ancestors 防御点击劫持攻击</p>
 <div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="urlInput" class="input js-focus-input" placeholder="https://example.com" style="flex:1;"><button id="checkBtn" class="btn btn-primary">检测</button></div>
-<div class="card" id="resultCard" style="display:none;"><div id="statusDisplay" class="status-card"></div><div id="detailsList"></div><div id="recommendation" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="card" id="resultCard" style="display:none;"><div id="statusDisplay" class="status-card"></div><div id="detailsList"></div><div id="recommendation" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div><div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-xs);color:var(--color-text-secondary);"><strong>检测原理与局限：</strong><br>① 本工具为纯前端检测，结果受浏览器策略差异与目标站点可达性影响，仅作参考。<br>② 目标通过 X-Frame-Options 或 CSP 拒绝嵌入时，不同浏览器行为不同（部分触发加载成功但内容不可读，部分触发加载失败），可能导致判定偏差。<br>③ 检测结果代表「当前浏览器视角」，建议结合响应头信息或服务端工具进一步确认。</div></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>(function(){
 var urlInput=document.getElementById('urlInput'),checkBtn=document.getElementById('checkBtn'),resultCard=document.getElementById('resultCard'),statusDisplay=document.getElementById('statusDisplay'),detailsList=document.getElementById('detailsList'),recommendation=document.getElementById('recommendation'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
-checkBtn.addEventListener('click',function(){
-  var url=urlInput.value.trim();if(!url){setStatus('请输入 URL','error');return;}
-  if(!/^https?:\/\//i.test(url))url='https://'+url;
-  resultCard.style.display='block';detailsList.innerHTML='<div style="padding:8px;color:var(--color-text-secondary);">检测中...</div>';
-  statusDisplay.textContent='检测中...';statusDisplay.className='status-card status-unknown';
+var verdictRow=null,auxRows=[],runId=0,currentFrame=null;
+function renderDetails(){
+  var rows=verdictRow?[verdictRow]:['<div style="padding:8px;color:var(--color-text-secondary);">检测中...</div>'];
+  detailsList.innerHTML=rows.concat(auxRows).join('');
+}
+function removeFrame(frame){
+  if(!frame)return;
+  if(frame.onload)frame.onload=null;
+  if(frame.onerror)frame.onerror=null;
+  if(frame.parentNode)frame.parentNode.removeChild(frame);
+}
+function finish(result){
+  statusDisplay.textContent=result.statusText;
+  statusDisplay.className='status-card '+result.cls;
+  recommendation.innerHTML=result.rec;
+  outputText.textContent=result.out;
+  verdictRow=result.detail;
+  renderDetails();
+  setStatus('检测完成');
+}
+function vulnerableDetail(label,text){
+  return '<div class="detail-row"><span class="detail-label">'+label+'</span><span style="color:var(--color-error);font-weight:600;">'+text+'</span></div>';
+}
+function protectedDetail(label,text){
+  return '<div class="detail-row"><span class="detail-label">'+label+'</span><span style="color:var(--color-success);font-weight:600;">'+text+'</span></div>';
+}
+function headerSuggestion(){
+  return '<strong>建议：</strong>目标站点应添加响应头 <code style="background:var(--color-bg-soft);padding:2px 4px;border-radius:3px;">X-Frame-Options: DENY</code> 或 <code style="background:var(--color-bg-soft);padding:2px 4px;border-radius:3px;">Content-Security-Policy: frame-ancestors \'none\'</code> 禁止页面被第三方站点嵌入。';
+}
+function runIframeProbe(url,myRun){
+  var frame=document.createElement('iframe');
+  frame.style.position='fixed';
+  frame.style.left='-10000px';
+  frame.style.width='900px';
+  frame.style.height='600px';
+  frame.style.border='0';
+  currentFrame=frame;
+  var finished=false,timer=null;
+  function done(){
+    if(finished||myRun!==runId)return;
+    finished=true;
+    if(timer){clearTimeout(timer);timer=null;}
+    if(currentFrame===frame)currentFrame=null;
+    removeFrame(frame);
+  }
+  function probeOnLoad(){
+    if(finished||myRun!==runId)return;
+    var secured=false,doc=null;
+    try{doc=frame.contentDocument;}catch(e){secured=true;}
+    done();
+    if(secured){
+      finish({statusText:'❌ 可嵌入（存在被点击劫持风险）',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测','跨域加载成功，目标页面可被嵌入（建议结合响应头进一步确认）'),rec:headerSuggestion()});
+    }else if(doc&&doc.body&&doc.body.innerHTML&&doc.body.innerHTML.replace(/\s/g,'')!==''){
+      finish({statusText:'❌ 可嵌入',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测','目标页面已在 iframe 中成功渲染，可被嵌入'),rec:headerSuggestion()});
+    }else{
+      finish({statusText:'✅ 受保护',cls:'status-protected',out:'受保护',detail:protectedDetail('iframe 探测','目标拒绝在 iframe 中渲染内容，已被 X-Frame-Options 或 CSP frame-ancestors 阻止嵌入'),rec:'该网站已配置防点击劫持保护措施，通过响应头限制自身页面被第三方站点嵌入，点击劫持风险较低。'});
+    }
+  }
+  function probeOnError(){
+    if(finished||myRun!==runId)return;
+    done();
+    finish({statusText:'目标响应错误',cls:'status-unknown',out:'目标响应错误',detail:'<div class="detail-row"><span class="detail-label">iframe 探测</span><span>目标站点返回错误，可能拒绝了连接</span></div>',rec:'目标返回错误响应，可能拒绝了连接或暂时不可用。请确认 URL 正确、目标站点可达后重试；目标已禁止嵌入时部分浏览器也会表现为加载失败。'});
+  }
+  frame.onload=probeOnLoad;
+  frame.onerror=probeOnError;
+  timer=setTimeout(function(){
+    if(finished||myRun!==runId)return;
+    done();
+    finish({statusText:'无法判定',cls:'status-unknown',out:'无法判定',detail:'<div class="detail-row"><span class="detail-label">iframe 探测</span><span>3.5 秒内未收到目标响应</span></div>',rec:'目标未在 3.5 秒内响应，可能为网络不可达、响应缓慢或请求被拦截。本工具为纯前端检测，无法区分这些情况，请确认目标站点可达后重试。'});
+  },3500);
+  frame.src=url;
+  document.body.appendChild(frame);
+}
+function runFetchAux(url,myRun){
   fetch(url,{method:'GET',mode:'cors'}).then(function(resp){
+    if(myRun!==runId)return;
     var xfo=resp.headers.get('X-Frame-Options');
     var csp=resp.headers.get('Content-Security-Policy');
     var frameAncestors=null;
     if(csp){var m=csp.match(/frame-ancestors\s+([^;]+)/i);if(m)frameAncestors=m[1].trim();}
-    var details='';
-    details+='<div class="detail-row"><span class="detail-label">X-Frame-Options</span><span>'+(xfo?'<span style="color:var(--color-success);font-weight:600;">'+htmlEscape(xfo)+'</span>':'<span style="color:var(--color-text-disabled);">未设置</span>')+'</span></div>';
-    details+='<div class="detail-row"><span class="detail-label">CSP frame-ancestors</span><span>'+(frameAncestors?'<span style="color:var(--color-success);font-weight:600;">'+htmlEscape(frameAncestors)+'</span>':'<span style="color:var(--color-text-disabled);">未设置</span>')+'</span></div>';
-    details+='<div class="detail-row"><span class="detail-label">状态码</span><span>'+resp.status+' '+htmlEscape(resp.statusText)+'</span></div>';
-    details+='<div class="detail-row"><span class="detail-label">HTTP 版本</span><span>HTTP/1.1</span></div>';
-    var protected=false;
-    if(xfo){if(xfo.toUpperCase()==='DENY'||xfo.toUpperCase()==='SAMEORIGIN')protected=true;}
-    if(frameAncestors){if(frameAncestors.indexOf("'none'")>=0||frameAncestors.indexOf("'self'")>=0)protected=true;}
-    if(protected){
-      statusDisplay.textContent='✅ 受保护';
-      statusDisplay.className='status-card status-protected';
-      recommendation.textContent='该网站已配置防点击劫持保护措施。';
-    }else{
-      statusDisplay.textContent='❌ 易受攻击';
-      statusDisplay.className='status-card status-vulnerable';
-      recommendation.innerHTML='<strong>建议：</strong>添加响应头 <code style="background:var(--color-bg-soft);padding:2px 4px;border-radius:3px;">X-Frame-Options: DENY</code> 或 <code style="background:var(--color-bg-soft);padding:2px 4px;border-radius:3px;">Content-Security-Policy: frame-ancestors \'none\'</code>';
-    }
-    detailsList.innerHTML=details;
-    outputText.textContent=protected?'受保护':'易受攻击';
-    setStatus('检测完成');
-  }).catch(function(err){
-    detailsList.innerHTML='<div style="color:var(--color-error);">请求失败: '+htmlEscape(err.message)+'<br><span style="font-size:12px;">注意：CORS 限制可能导致检测失败。建议在目标站点同源环境下测试。</span></div>';
-    statusDisplay.textContent='检测失败';
-    statusDisplay.className='status-card status-unknown';
-    setStatus('检测失败','error');
+    var rows=[];
+    rows.push('<div class="detail-row"><span class="detail-label">X-Frame-Options</span><span>'+(xfo?'<span style="color:var(--color-success);font-weight:600;">'+htmlEscape(xfo)+'</span>':'<span style="color:var(--color-text-disabled);">未设置</span>')+'</span></div>');
+    rows.push('<div class="detail-row"><span class="detail-label">CSP frame-ancestors</span><span>'+(frameAncestors?'<span style="color:var(--color-success);font-weight:600;">'+htmlEscape(frameAncestors)+'</span>':'<span style="color:var(--color-text-disabled);">未设置</span>')+'</span></div>');
+    rows.push('<div class="detail-row"><span class="detail-label">状态码</span><span>'+resp.status+' '+htmlEscape(resp.statusText)+'</span></div>');
+    auxRows=auxRows.concat(rows);
+    renderDetails();
+  }).catch(function(){
+    if(myRun!==runId)return;
+    auxRows.push('<div class="detail-row"><span class="detail-label">响应头</span><span style="color:var(--color-text-secondary);">无法跨域读取响应头，已基于 iframe 探测结果判断</span></div>');
+    renderDetails();
   });
+}
+checkBtn.addEventListener('click',function(){
+  var url=urlInput.value.trim();
+  if(!url){setStatus('请输入 URL','error');return;}
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  var myRun=++runId;
+  removeFrame(currentFrame);
+  currentFrame=null;
+  verdictRow=null;
+  auxRows=[];
+  resultCard.style.display='block';
+  statusDisplay.textContent='检测中...';
+  statusDisplay.className='status-card status-unknown';
+  recommendation.textContent='';
+  outputText.textContent='';
+  renderDetails();
+  runIframeProbe(url,myRun);
+  runFetchAux(url,myRun);
 });
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
 urlInput.addEventListener('keydown',function(e){if(e.key==='Enter')checkBtn.click();});

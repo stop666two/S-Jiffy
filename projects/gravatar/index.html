@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Gravatar Generator - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Gravatar 生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .grav-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -12,22 +12,22 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>Gravatar 查询</h1><p class="tool-desc">Email → MD5 hash → Gravatar URL with preview.</p>
+<main class="tool-workspace"><h1>Gravatar 查询</h1><p class="tool-desc">邮箱 → MD5 哈希 → 带预览的 Gravatar URL。</p>
 <div class="card">
 <div class="grav-row"><div class="field"><label>邮箱</label><input id="emailInput" class="input js-focus-input" type="email" placeholder="you@example.com" value="user@example.com"></div>
 <button id="generateBtn" class="btn btn-primary">生成</button></div>
 </div>
 <div class="card">
-<div class="grav-row"><strong style="font-size:var(--font-size-sm);">MD5 Hash:</strong><span id="md5Hash" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
+<div class="grav-row"><strong style="font-size:var(--font-size-sm);">MD5 哈希：</strong><span id="md5Hash" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
 <div class="grav-row">
 <label>尺寸</label><select id="sizeSelect" class="input" style="width:auto;"><option value="40">40</option><option value="80" selected>80</option><option value="120">120</option><option value="200">200</option><option value="400">400</option></select>
 <label>Default</label><select id="defaultSelect" class="input" style="width:auto;"><option value="mp">Mystery Person</option><option value="identicon">Identicon</option><option value="monsterid">Monster</option><option value="wavatar">Wavatar</option><option value="retro">Retro</option><option value="robohash">Robohash</option><option value="blank">Blank</option></select>
 <label>Rating</label><select id="ratingSelect" class="input" style="width:auto;"><option value="g">G</option><option value="pg">PG</option><option value="r">R</option><option value="x">X</option></select>
 </div>
 <div class="grav-preview" id="previewArea"></div>
-<div class="grav-row"><strong style="font-size:var(--font-size-sm);">Gravatar URL:</strong><span id="gravUrl" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
+<div class="grav-row"><strong style="font-size:var(--font-size-sm);">Gravatar URL：</strong><span id="gravUrl" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">Copy URL</button></div></main>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制 URL</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script>
@@ -53,16 +53,16 @@ var temp=d+rotateLeft(a, sTab[i])+K[i]+words[g];d=c;c=b;b=a;a=temp;}
 h0=(h0+a)&0xFFFFFFFF;h1=(h1+b)&0xFFFFFFFF;h2=(h2+c)&0xFFFFFFFF;h3=(h3+d)&0xFFFFFFFF;}
 return toHex(h0)+toHex(h1)+toHex(h2)+toHex(h3);}
 
-function generate(){var email=el.value.trim().toLowerCase();if(!email){setStatus('Enter email','error');return;}
+function generate(){var email=el.value.trim().toLowerCase();if(!email){setStatus('请输入邮箱','error');return;}
 var hash=md5Real(email);mh.textContent=hash;
 var size=document.getElementById('sizeSelect').value;
 var def=document.getElementById('defaultSelect').value;
 var rating=document.getElementById('ratingSelect').value;
 var url='https://www.gravatar.com/avatar/'+hash+'?s='+size+'&d='+def+'&r='+rating;
 gu.textContent=url;pa.innerHTML='<img src="'+url+'" alt="Gravatar" width="'+size+'" height="'+size+'">';
-o.textContent=url;setStatus('Gravatar generated');}
+o.textContent=url;setStatus('头像已生成');}
 
 document.getElementById('generateBtn').addEventListener('click',generate);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('URL copied');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('URL 已复制');}});
 generate();})();
 </script></body></html>

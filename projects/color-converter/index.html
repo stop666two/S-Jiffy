@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Color Converter - S-Jiffy</title>
+  <title>颜色转换器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
@@ -43,7 +43,7 @@
         <div class="color-row"><label>LAB</label><span class="val" id="valLab">—</span></div>
         <div class="color-row"><label>LCH</label><span class="val" id="valLch">—</span></div>
       </div>
-      <div class="cb-section"><h3>Colorblind Simulation</h3><div class="cb-swatches" id="cbSim"></div></div>
+      <div class="cb-section"><h3>色盲模拟</h3><div class="cb-swatches" id="cbSim"></div></div>
     </div>
     <div class="output-box" id="输出Container" style="min-height:60px;">
       <span id="outputText" style="display:block; padding-right:60px; white-space:pre-line;"></span>
@@ -219,9 +219,9 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var v = inputEl.value.trim();
-        if (!v) { setStatus('Enter a color value', 'error'); return; }
+        if (!v) { setStatus('请输入颜色值', 'error'); return; }
         var rgb = detectAndConvert(v);
-        if (!rgb) { setStatus('Could not parse color', 'error'); preview.style.background = ''; o.textContent = ''; return; }
+        if (!rgb) { setStatus('无法解析颜色', 'error'); preview.style.background = ''; o.textContent = ''; return; }
         updateAll(rgb);
         setStatus('');
       });

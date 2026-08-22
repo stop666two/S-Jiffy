@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Color Palette Generator - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>调色板生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .palette-section{margin-bottom:var(--space-3);}
@@ -17,9 +17,9 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>调色板生成器</h1>
-<p class="tool-desc">Generate 6 scheme types from a base color. Export as CSS variables, SCSS, LESS, JSON.</p>
+<p class="tool-desc">从基色生成 6 种配色方案。可导出为 CSS 变量、SCSS、LESS、JSON。</p>
 <div class="card">
-<div class="base-row"><label style="font-size:var(--font-size-sm)">Base color</label><input id="baseColor" type="color" value="#e74c3c"><span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span></div>
+<div class="base-row"><label style="font-size:var(--font-size-sm)">基色</label><input id="baseColor" type="color" value="#e74c3c"><span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span></div>
 <div class="scheme-row" id="schemeRow">
 <label><input type="radio" name="scheme" value="monochromatic" checked> Monochromatic</label>
 <label><input type="radio" name="scheme" value="complementary"> Complementary</label>
@@ -68,9 +68,9 @@
     for(var c=0;c<palettes[p].colors.length;c++){var col=palettes[p].colors[c],rgb2=hexToRgb(col);
     html+='<div class="swatch" style="background:'+col+'" data-color="'+col+'"><span class="hex">'+col+'</span><span class="rgb">'+rgb2.r+','+rgb2.g+','+rgb2.b+'</span></div>';}
     html+='</div></div>';}
-    container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus('Generated '+scheme+' palette');}
+    container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus('已生成 '+scheme+' 配色方案');}
 
-  function exportFmt(type){if(currentColors.length===0){setStatus('Generate a palette first','error');return;}
+  function exportFmt(type){if(currentColors.length===0){setStatus('请先生成调色板','error');return;}
     var lines=[];
     if(type==='css'){currentColors.forEach(function(c,i){lines.push('  --color-'+(i+1)+': '+c+';');});
     out.textContent=':root {\n'+lines.join('\n')+'\n}';}
@@ -78,7 +78,7 @@
     out.textContent=lines.join('\n');}
     else if(type==='less'){currentColors.forEach(function(c,i){lines.push('@color-'+(i+1)+': '+c+';');});
     out.textContent=lines.join('\n');}
-    setStatus('Exported as '+type.toUpperCase());}
+    setStatus('已导出为 '+type.toUpperCase());}
 
   baseInp.addEventListener('input',generatePalette);
   var radios=document.querySelectorAll('input[name="scheme"]');for(var i=0;i<radios.length;i++)radios[i].addEventListener('change',generatePalette);

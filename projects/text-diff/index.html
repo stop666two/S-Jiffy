@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Text Diff - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>文本对比 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .diff-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
@@ -22,19 +22,19 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>文本对比</h1>
-<p class="tool-desc">Line-level, word-level, or character-level diff with highlighted additions and deletions.</p>
+<p class="tool-desc">行级、词级或字符级对比，高亮显示新增和删除内容。</p>
 <div class="diff-container">
-<div class="diff-pane"><label for="textA">Text A (Original)</label><textarea id="textA" class="input textarea" placeholder="Original text..." style="min-height:200px;"></textarea></div>
-<div class="diff-pane"><label for="textB">Text B (Changed)</label><textarea id="textB" class="input textarea" placeholder="Modified text..." style="min-height:200px;"></textarea></div>
+<div class="diff-pane"><label for="textA">文本 A（原文）</label><textarea id="textA" class="input textarea" placeholder="原文..." style="min-height:200px;"></textarea></div>
+<div class="diff-pane"><label for="textB">文本 B（修改后）</label><textarea id="textB" class="input textarea" placeholder="修改后的文本..." style="min-height:200px;"></textarea></div>
 </div>
 <div class="mode-select">
-<label><input type="radio" name="diffMode" value="line" checked> Line-level</label>
-<label><input type="radio" name="diffMode" value="word"> Word-level</label>
-<label><input type="radio" name="diffMode" value="char"> Character-level</label>
+<label><input type="radio" name="diffMode" value="line" checked> 按行</label>
+<label><input type="radio" name="diffMode" value="word"> 按词</label>
+<label><input type="radio" name="diffMode" value="char"> 按字符</label>
 </div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-<button id="diffBtn" class="btn btn-primary">Diff</button>
-<button id="swapBtn" class="btn btn-secondary">Swap</button>
+<button id="diffBtn" class="btn btn-primary">对比</button>
+<button id="swapBtn" class="btn btn-secondary">交换</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
 <div id="diffStats" class="diff-stats"></div>
@@ -81,8 +81,8 @@
       else{prefix='- ';cls='removed';removed++;}
       html+='<div class="'+cls+'">'+prefix+escapeHtml(d.text)+'</div>';}
     outputEl.innerHTML=html;
-    diffStats.innerHTML='<span class="diff-stat same">Same '+same+'</span><span class="diff-stat add">+Added '+added+'</span><span class="diff-stat del">-Removed '+removed+'</span>';
-    setStatus('Diff complete: '+same+' same, '+added+' added, '+removed+' removed');});
+    diffStats.innerHTML='<span class="diff-stat same">相同 '+same+'</span><span class="diff-stat add">+新增 '+added+'</span><span class="diff-stat del">-删除 '+removed+'</span>';
+    setStatus('对比完成：'+same+' 相同，'+added+' 新增，'+removed+' 删除');});
 
   document.getElementById('swapBtn').addEventListener('click',function(){var t=textA.value;textA.value=textB.value;textB.value=t;});
   document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';outputEl.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});

@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Markdown to Plain Text - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Markdown 转纯文本 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.stat-row{display:flex;gap:16px;margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>Markdown 转纯文本</h1><p class="tool-desc">Strip all Markdown formatting, keep plain text content only.</p>
+<main class="tool-workspace"><h1>Markdown 转纯文本</h1><p class="tool-desc">去除所有 Markdown 格式，仅保留纯文本内容。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="# Hello\nThis is **bold** and *italic* text." style="min-height:160px;"></textarea></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
 <button id="convertBtn" class="btn btn-primary">转换</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="stat-row"><span>Original chars: <strong id="origChars">0</strong></span><span>Stripped chars: <strong id="stripChars">0</strong></span><span>Reduction: <strong id="reduction">0%</strong></span></div>
+<div class="stat-row"><span>原始字符：<strong id="origChars">0</strong></span><span>去除后字符：<strong id="stripChars">0</strong></span><span>减少：<strong id="reduction">0%</strong></span></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -45,7 +45,7 @@ function convert(){var t=i.value;if(!t){o.textContent='';oc.textContent='0';sc.t
 var orig=t.length;var plain=stripMd(t);var stripped=plain.length;
 o.textContent=plain;oc.textContent=orig;sc.textContent=stripped;
 rd.textContent=orig>0?Math.round((1-stripped/orig)*100)+'%':'0%';
-setStatus('Stripped to '+plain.split(/\s+/).length+' words');}
+setStatus('已去除格式，共 '+plain.split(/\s+/).length+' 个单词');}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';oc.textContent='0';sc.textContent='0';rd.textContent='0%';setStatus('');i.focus();});

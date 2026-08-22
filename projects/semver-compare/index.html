@@ -42,7 +42,6 @@
     </div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/semver/7.5.4/semver.min.js"></script>
   <script src="../../assets/js/global.js"></script>
   <script>
     (function () {
@@ -53,28 +52,57 @@
       var swapBtn = document.getElementById('swapBtn');
       var copyBtn = document.getElementById('copyBtn');
 
-      function formatVersion(v) {
-        var parts = v.split('.');
-        if (parts.length < 3) return null;
-        var ma = parseInt(parts[0], 10);
-        var mi = parseInt(parts[1], 10);
-        var pa = parseInt(parts[2], 10);
-        if (isNaN(ma) || isNaN(mi) || isNaN(pa)) return null;
-        return { major: ma, minor: mi, patch: pa, raw: ma + '.' + mi + '.' + pa };
+      function parseVersion(v) {
+        var s = String(v).trim();
+        var m = s.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/);
+        if (!m) return null;
+        return {
+          major: parseInt(m[1], 10),
+          minor: parseInt(m[2], 10),
+          patch: parseInt(m[3], 10),
+          prerelease: m[4] ? m[4].split('.') : null,
+          raw: s
+        };
+      }
+
+      function compareVersions(a, b) {
+        if (a.major !== b.major) return a.major - b.major;
+        if (a.minor !== b.minor) return a.minor - b.minor;
+        if (a.patch !== b.patch) return a.patch - b.patch;
+        var pa = a.prerelease;
+        var pb = b.prerelease;
+        if (pa === null && pb === null) return 0;
+        if (pa === null) return 1;
+        if (pb === null) return -1;
+        var n = Math.max(pa.length, pb.length);
+        for (var i = 0; i < n; i++) {
+          var x = pa[i];
+          var y = pb[i];
+          if (x === undefined) return -1;
+          if (y === undefined) return 1;
+          if (x === y) continue;
+          var xn = /^\d+$/.test(x);
+          var yn = /^\d+$/.test(y);
+          if (xn && yn) {
+            var dx = x.replace(/^0+/, '') || '0';
+            var dy = y.replace(/^0+/, '') || '0';
+            if (dx.length !== dy.length) return dx.length - dy.length;
+            return dx < dy ? -1 : 1;
+          }
+          if (xn) return -1;
+          if (yn) return 1;
+          return x < y ? -1 : 1;
+        }
+        return 0;
       }
 
       function buildHtml(aRaw, bRaw) {
-        var a = formatVersion(aRaw);
-        var b = formatVersion(bRaw);
+        var a = parseVersion(aRaw);
+        var b = parseVersion(bRaw);
         if (!a || !b) {
           return '<div class="comparison-result cmp-invalid">版本号格式无效。请使用语义化版本号，如 "1.2.3"</div>';
         }
-        var validA = semver.valid(a.raw);
-        var validB = semver.valid(b.raw);
-        if (!validA || !validB) {
-          return '<div class="comparison-result cmp-invalid">版本号格式无效。语义化版本号格式为 major.minor.patch</div>';
-        }
-        var cmp = semver.compare(a.raw, b.raw);
+        var cmp = compareVersions(a, b);
         var symbol, cls;
         if (cmp > 0) { symbol = '>'; cls = 'cmp-gt'; }
         else if (cmp < 0) { symbol = '<'; cls = 'cmp-lt'; }

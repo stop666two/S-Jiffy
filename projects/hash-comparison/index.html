@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Hash Comparison - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>哈希对比 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 .comp-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
@@ -12,10 +12,10 @@
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>Hash 对比工具</h1><p class="tool-desc">Compare text or file content against a known hash value to verify integrity.<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="Enter text to verify..." style="min-height:100px;"></textarea></div>
+<main class="tool-workspace"><h1>Hash 对比工具</h1><p class="tool-desc">将文本或文件内容与已知哈希值比对，以验证完整性。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要验证的文本..." style="min-height:100px;"></textarea></div>
 <div class="card">
-<div class="comp-row"><label>Hash to compare</label><input id="hashInput" class="input" placeholder="Paste the known hash value" style="flex:1;min-width:200px;"></div>
+<div class="comp-row"><label>待对比的哈希</label><input id="hashInput" class="input" placeholder="粘贴已知的哈希值" style="flex:1;min-width:200px;"></div>
 <div class="comp-row">
 <label>算法</label><select id="algoSelect" class="input" style="width:auto;"><option value="SHA-1">SHA-1</option><option value="SHA-224">SHA-224</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="MD5">MD5 (simple)</option></select>
 <label>格式化</label><select id="fmtSelect" class="input" style="width:auto;"><option value="hex">Hex</option><option value="base64">Base64</option></select>
@@ -37,17 +37,17 @@ function b64(buf){var b=new Uint8Array(buf),s='';for(var x=0;x<b.length;x++)s+=S
 function simpleMD5(s){var hash=0;if(s.length===0)return hash.toString(16).padStart(32,'0');for(var i=0;i<s.length;i++){var ch=s.charCodeAt(i);hash=((hash<<5)-hash)+ch;hash=hash&hash;}
 return(Math.abs(hash)>>>0).toString(16).padStart(32,'0');}
 
-function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().toLowerCase();if(!target){setStatus('Enter a hash to compare','error');return;}
+function compare(data,isText){var algo=al.value,fmt=fm.value;var target=hi.value.trim().toLowerCase();if(!target){setStatus('请输入待对比的哈希','error');return;}
 var hash;
 if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.toLowerCase()===target;
 rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match?'match':'no-match');
       rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
-o.textContent=computed;setStatus(match?'Match!':'No match');}).catch(function(e){setStatus('错误: '+e.message,'error');});
+o.textContent=computed;setStatus(match?'匹配！':'不匹配');}).catch(function(e){setStatus('错误: '+e.message,'error');});
 return;}
 var computed2=hash;var match2=computed2.toLowerCase()===target;
 rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match2?'match':'no-match');
 rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed2)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
-o.textContent=computed2;setStatus(match2?'Match!':'No match');}
+o.textContent=computed2;setStatus(match2?'匹配！':'不匹配');}
 
 document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
 compare(new TextEncoder().encode(text),true);});

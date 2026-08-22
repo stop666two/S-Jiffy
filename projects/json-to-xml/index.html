@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON to XML - S-Jiffy</title>
+  <title>JSON 转 XML - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
 </head>
@@ -12,7 +12,7 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>JSON → XML</h1>
+    <h1>JSON 转 XML</h1>
     <p class="tool-desc">将 JSON 格式转换为 XML。</p>
     <div class="card">
       <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"root":{"item":[{"@id":"1","name":"Alice","age":30},{"@id":"2","name":"Bob","age":25}]}}' style="min-height:200px;"></textarea>
@@ -112,9 +112,16 @@
           var parsed = JSON.parse(text);
           var keys = Object.keys(parsed);
           if (keys.length === 0) { outputEl.textContent = ''; setStatus('空对象', 'error'); return; }
-          var rootName = keys[0];
           var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
-          result += jsonToXml(parsed[rootName], rootName, 0);
+          if (keys.length === 1) {
+            result += jsonToXml(parsed[keys[0]], keys[0], 0);
+          } else {
+            result += '<root>\n';
+            for (var i = 0; i < keys.length; i++) {
+              result += jsonToXml(parsed[keys[i]], keys[i], 1);
+            }
+            result += '</root>\n';
+          }
           outputEl.textContent = result;
           setStatus('');
         } catch (e) {

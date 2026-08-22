@@ -48,10 +48,29 @@
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
 
+      function utf8ToBytes(str) {
+        var bytes = [];
+        var binary = unescape(encodeURIComponent(str));
+        for (var i = 0; i < binary.length; i++) {
+          bytes.push(binary.charCodeAt(i));
+        }
+        return bytes;
+      }
+
+      function bytesToUtf8(bytes) {
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return decodeURIComponent(escape(binary));
+      }
+
       function xorBytes(text, key) {
+        var textBytes = utf8ToBytes(text);
+        var keyBytes = utf8ToBytes(key);
         var result = [];
-        for (var i = 0; i < text.length; i++) {
-          result.push(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        for (var i = 0; i < textBytes.length; i++) {
+          result.push(textBytes[i] ^ keyBytes[i % keyBytes.length]);
         }
         return result;
       }
@@ -109,9 +128,17 @@
           setStatus(fmt === 'hex' ? 'Hex 格式无效' : 'Base64 格式无效', 'error');
           return;
         }
-        var result = '';
+        var keyBytes = utf8ToBytes(key);
+        var resultBytes = [];
         for (var i = 0; i < bytes.length; i++) {
-          result += String.fromCharCode(bytes[i] ^ key.charCodeAt(i % key.length));
+          resultBytes.push(bytes[i] ^ keyBytes[i % keyBytes.length]);
+        }
+        var result;
+        try {
+          result = bytesToUtf8(resultBytes);
+        } catch (e) {
+          setStatus('解密失败：密钥不正确或数据已损坏', 'error');
+          return;
         }
         outputEl.textContent = result;
         setStatus('');

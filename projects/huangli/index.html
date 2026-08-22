@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>老黄历 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .hl-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+    .hl-toolbar .btn{height:40px;min-width:44px;padding:0 12px}
+    .hl-toolbar .input{width:auto;height:40px;min-width:72px}
+    .hl-head{padding:16px 0 12px;border-bottom:1px dashed var(--color-border);margin-bottom:12px}
+    .hl-date{font-size:20px;font-weight:600;margin-bottom:4px}
+    .hl-week{font-size:13px;color:var(--color-text-secondary);margin-bottom:8px}
+    .hl-lunar{font-size:15px;margin-bottom:8px}
+    .hl-badge{display:inline-block;margin:2px 6px 2px 0;padding:2px 10px;border-radius:10px;background:var(--color-accent);color:var(--color-bg);font-size:12px}
+    .hl-stem{font-size:13px;color:var(--color-text-secondary)}
+    .hl-section{margin:14px 0 8px;font-size:13px;font-weight:600;color:var(--color-text-secondary)}
+    .hl-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+    .hl-tag{display:inline-block;padding:3px 10px;border-radius:6px;border:1px solid var(--color-border);font-size:12px;line-height:1.5}
+    .hl-tag.good{color:var(--color-success)}
+    .hl-tag.bad{color:var(--color-error)}
+    .hl-row{display:flex;gap:12px;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--color-border);font-size:13px}
+    .hl-row:last-child{border-bottom:none}
+    .hl-row .k{color:var(--color-text-secondary);flex-shrink:0;width:84px}
+    .hl-row .v{word-break:break-all;line-height:1.6}
+    .hl-pos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+    .hl-pos-item{border:1px solid var(--color-border);border-radius:8px;padding:8px;text-align:center}
+    .hl-pos-item b{display:block;font-size:14px;font-weight:600;margin-top:2px}
+    .hl-pos-item span{font-size:11px;color:var(--color-text-secondary)}
+    @media(max-width:520px){.hl-pos{grid-template-columns:1fr}}
+    .hl-copy{width:100%;margin-top:12px}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a class="back-btn" href="../../index.html">← 返回</a>
+    <span class="logo-text">S-Jiffy</span>
+  </header>
+  <main class="tool-workspace">
+    <h1>老黄历</h1>
+    <p class="tool-desc">查询任意日期的传统黄历信息：宜忌、吉神凶煞、彭祖百忌、冲煞、值神、十二神与喜福财神方位。</p>
+    <div class="card">
+      <div class="hl-toolbar">
+        <select id="yearSel" class="input" aria-label="年份"></select>
+        <select id="monthSel" class="input" aria-label="月份"></select>
+        <select id="daySel" class="input" aria-label="日期"></select>
+        <button id="prevDayBtn" class="btn btn-secondary">前一天</button>
+        <button id="nextDayBtn" class="btn btn-secondary">后一天</button>
+        <button id="todayBtn" class="btn btn-primary">今天</button>
+      </div>
+      <div id="resultBox" class="output-box" style="display:none"><span id="outputText"></span></div>
+      <div id="detailPanel"></div>
+      <button id="copyBtn" class="btn btn-secondary hl-copy" style="display:none">复制结果</button>
+    </div>
+  </main>
+  <footer class="tool-status" id="statusBar"></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/lunar.js"></script>
+  <script>(function(){
+    var MIN_Y=1900,MAX_Y=2099;
+    var yearSel=document.getElementById('yearSel');
+    var monthSel=document.getElementById('monthSel');
+    var daySel=document.getElementById('daySel');
+    var detailPanel=document.getElementById('detailPanel');
+    var copyBtn=document.getElementById('copyBtn');
+    var now=new Date();
+    var curY=now.getFullYear(),curM=now.getMonth()+1,curD=now.getDate();
+    if(curY<MIN_Y)curY=MIN_Y;
+    if(curY>MAX_Y)curY=MAX_Y;
+    var weekNames=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+    var SL=window.Solar;
+    var xiuAnimal={角:'木蛟',亢:'金龙',氐:'土貉',房:'日兔',心:'月狐',尾:'火虎',箕:'水豹',斗:'木獬',牛:'金牛',女:'土蝠',虚:'日鼠',危:'月燕',室:'火猪',壁:'水貐',奎:'木狼',娄:'金狗',胃:'土雉',昴:'日鸡',毕:'月乌',觜:'火猴',参:'水猿',井:'木犴',鬼:'金羊',柳:'土獐',星:'日马',张:'月鹿',翼:'火蛇',轸:'水蚓'};
+    if(!window.Lunar){
+      setStatus('历法数据加载失败，请刷新重试','error');
+      return;
+    }
+    function daysInMonth(y,m){
+      return new Date(y,m,0).getDate();
+    }
+    function fillSelect(sel,min,max,cur,label){
+      for(var i=min;i<=max;i++){
+        var o=document.createElement('option');
+        o.value=i;
+        o.textContent=i+label;
+        if(i===cur)o.selected=true;
+        sel.appendChild(o);
+      }
+    }
+    fillSelect(yearSel,MIN_Y,MAX_Y,curY,'年');
+    fillSelect(monthSel,1,12,curM,'月');
+    fillSelect(daySel,1,31,curD,'日');
+    function clampDay(){
+      var max=daysInMonth(curY,curM);
+      if(curD>max)curD=max;
+      if(curD<1)curD=1;
+    }
+    function syncSelects(){
+      yearSel.value=curY;
+      monthSel.value=curM;
+      daySel.value=curD;
+    }
+    function getLunarData(y,m,d){
+      var solar=SL.fromYmd(y,m,d);
+      var lunar=solar.getLunar();
+      var xiu=lunar.getXiu();
+      var jq=lunar.getJieQi();
+      var prevJq=lunar.getPrevJieQi();
+      var nextJq=lunar.getNextJieQi();
+      var nineStar=lunar.getDayNineStar();
+      return {
+        solar:solar,
+        lunar:lunar,
+        jq:jq,
+        prevJq:prevJq,
+        nextJq:nextJq,
+        xiuFull:xiu+xiuAnimal[xiu]||'',
+        xiuLuck:lunar.getXiuLuck(),
+        nineStar:nineStar.getNumber()+'白'+nineStar.getWuXing()+' '+nineStar.getPositionDesc()
+      };
+    }
+    function tags(list,cls){
+      var html='';
+      for(var i=0;i<list.length;i++){
+        html+='<span class="hl-tag '+cls+'">'+htmlEscape(list[i])+'</span>';
+      }
+      return html;
+    }
+    function buildText(data){
+      var l=data.lunar,s=data.solar;
+      var lines=[];
+      lines.push('公历 '+curY+'年'+curM+'月'+curD+'日 '+weekNames[new Date(curY,curM-1,curD).getDay()]+' '+s.getXingZuo()+'座');
+      lines.push('农历 '+l.getYearInChinese()+'年 '+l.getMonthInChinese()+'月 '+l.getDayInChinese());
+      lines.push('干支 '+l.getYearInGanZhi()+'年（'+l.getShengxiao()+'） '+l.getMonthInGanZhi()+'月（'+l.getMonthShengXiao()+'） '+l.getDayInGanZhi()+'日（'+l.getDayShengXiao()+'）');
+      if(data.jq)lines.push('今日节气 '+data.jq);
+      lines.push('宜 '+l.getDayYi().join('、'));
+      lines.push('忌 '+l.getDayJi().join('、'));
+      lines.push('冲煞 '+l.getDayShengXiao()+'日冲'+l.getDayChongShengXiao()+' 煞'+l.getDaySha());
+      lines.push('值神 '+l.getZhiXing()+' | 十二神 '+l.getDayTianShen()+'（'+l.getDayTianShenType()+l.getDayTianShenLuck()+'）');
+      lines.push('吉神宜趋 '+l.getDayJiShen().join('、'));
+      lines.push('凶煞宜忌 '+l.getDayXiongSha().join('、'));
+      lines.push('彭祖百忌 '+l.getPengZuGan()+' | '+l.getPengZuZhi());
+      lines.push('喜神 '+l.getDayPositionXi()+'（'+l.getDayPositionXiDesc()+'） 福神 '+l.getDayPositionFu()+'（'+l.getDayPositionFuDesc()+'） 财神 '+l.getDayPositionCai()+'（'+l.getDayPositionCaiDesc()+'）');
+      lines.push('二十八宿 '+data.xiuFull+'（'+data.xiuLuck+'） 值日九星 '+data.nineStar);
+      lines.push('六曜 '+l.getLiuYao()+' 日禄 '+l.getDayLu());
+      lines.push('本月胎神 '+l.getMonthPositionTai()+' 今日胎神 '+l.getDayPositionTai());
+      lines.push('月令 '+l.getSeason()+' 月相 '+l.getYueXiang()+' 物候 '+l.getWuHou());
+      lines.push('空亡 年'+l.getYearXunKong()+' 月'+l.getMonthXunKong()+' 日'+l.getDayXunKong());
+      if(data.prevJq)lines.push('上一节气 '+data.prevJq.getName()+' '+data.prevJq.getSolar().toYmd());
+      if(data.nextJq)lines.push('下一节气 '+data.nextJq.getName()+' '+data.nextJq.getSolar().toYmd());
+      return lines.join('\n');
+    }
+    function render(){
+      clampDay();
+      syncSelects();
+      var data=getLunarData(curY,curM,curD);
+      var l=data.lunar,s=data.solar;
+      var html='';
+      html+='<div class="hl-head">';
+      html+='<div class="hl-date">'+curY+'年'+curM+'月'+curD+'日</div>';
+      html+='<div class="hl-week">'+weekNames[new Date(curY,curM-1,curD).getDay()]+' · '+s.getXingZuo()+'座</div>';
+      html+='<div class="hl-lunar">农历 '+htmlEscape(l.getYearInChinese()+'年 '+l.getMonthInChinese()+'月 '+l.getDayInChinese())+'</div>';
+      if(data.jq)html+='<span class="hl-badge">'+htmlEscape(data.jq)+'</span>';
+      html+='<div class="hl-stem">干支 '+htmlEscape(l.getYearInGanZhi()+'年（'+l.getShengxiao()+'） '+l.getMonthInGanZhi()+'月（'+l.getMonthShengXiao()+'） '+l.getDayInGanZhi()+'日（'+l.getDayShengXiao()+'）')+'</div>';
+      html+='</div>';
+      var yi=l.getDayYi(),ji=l.getDayJi();
+      html+='<div class="hl-section">宜</div>';
+      html+='<div class="hl-tags">'+tags(yi,'good')+'</div>';
+      html+='<div class="hl-section">忌</div>';
+      html+='<div class="hl-tags">'+tags(ji,'bad')+'</div>';
+      html+='<div class="hl-section">择吉参考</div>';
+      html+='<div class="hl-row"><span class="k">冲煞</span><span class="v">'+htmlEscape(l.getDayShengXiao()+'日冲'+l.getDayChongShengXiao()+' 煞'+l.getDaySha())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">值神</span><span class="v">'+htmlEscape(l.getZhiXing())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">十二神</span><span class="v">'+htmlEscape(l.getDayTianShen()+'（'+l.getDayTianShenType()+l.getDayTianShenLuck()+'）')+'</span></div>';
+      html+='<div class="hl-row"><span class="k">吉神宜趋</span><span class="v">'+tags(l.getDayJiShen(),'good')+'</span></div>';
+      html+='<div class="hl-row"><span class="k">凶煞宜忌</span><span class="v">'+tags(l.getDayXiongSha(),'bad')+'</span></div>';
+      html+='<div class="hl-row"><span class="k">彭祖百忌</span><span class="v">'+htmlEscape(l.getPengZuGan()+'　'+l.getPengZuZhi())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">财神方位</span><span class="v"><div class="hl-pos"><div class="hl-pos-item"><span>喜神</span><b>'+htmlEscape(l.getDayPositionXi())+'</b><span>'+htmlEscape(l.getDayPositionXiDesc())+'</span></div><div class="hl-pos-item"><span>福神</span><b>'+htmlEscape(l.getDayPositionFu())+'</b><span>'+htmlEscape(l.getDayPositionFuDesc())+'</span></div><div class="hl-pos-item"><span>财神</span><b>'+htmlEscape(l.getDayPositionCai())+'</b><span>'+htmlEscape(l.getDayPositionCaiDesc())+'</span></div></div></span></div>';
+      html+='<div class="hl-section">补充信息</div>';
+      html+='<div class="hl-row"><span class="k">二十八宿</span><span class="v">'+htmlEscape(data.xiuFull+'（'+data.xiuLuck+'）')+'</span></div>';
+      html+='<div class="hl-row"><span class="k">值日九星</span><span class="v">'+htmlEscape(data.nineStar)+'</span></div>';
+      html+='<div class="hl-row"><span class="k">六曜 / 日禄</span><span class="v">'+htmlEscape(l.getLiuYao()+'　'+l.getDayLu())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">胎神</span><span class="v">'+htmlEscape('本月'+l.getMonthPositionTai()+'　今日'+l.getDayPositionTai())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">月令 / 月相</span><span class="v">'+htmlEscape(l.getSeason()+'　'+l.getYueXiang())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">物候</span><span class="v">'+htmlEscape(l.getWuHou())+'</span></div>';
+      html+='<div class="hl-row"><span class="k">空亡</span><span class="v">'+htmlEscape('年'+l.getYearXunKong()+'　月'+l.getMonthXunKong()+'　日'+l.getDayXunKong())+'</span></div>';
+      if(data.prevJq)html+='<div class="hl-row"><span class="k">上一节气</span><span class="v">'+htmlEscape(data.prevJq.getName()+'　'+data.prevJq.getSolar().toYmd())+'</span></div>';
+      if(data.nextJq)html+='<div class="hl-row"><span class="k">下一节气</span><span class="v">'+htmlEscape(data.nextJq.getName()+'　'+data.nextJq.getSolar().toYmd())+'</span></div>';
+      detailPanel.innerHTML=html;
+      copyBtn.style.display='';
+      copyBtn.textContent='复制结果';
+      copyBtn.disabled=false;
+      document.getElementById('outputText').textContent='';
+      document.getElementById('resultBox').style.display='none';
+    }
+    function shiftDay(offset){
+      var d=new Date(curY,curM-1,curD+offset);
+      curY=d.getFullYear();
+      curM=d.getMonth()+1;
+      curD=d.getDate();
+      if(curY<MIN_Y){curY=MIN_Y;curM=1;curD=1;}
+      if(curY>MAX_Y){curY=MAX_Y;curM=12;curD=31;}
+      render();
+    }
+    document.getElementById('prevDayBtn').addEventListener('click',function(){shiftDay(-1);});
+    document.getElementById('nextDayBtn').addEventListener('click',function(){shiftDay(1);});
+    document.getElementById('todayBtn').addEventListener('click',function(){
+      var t=new Date();
+      curY=t.getFullYear();
+      curM=t.getMonth()+1;
+      curD=t.getDate();
+      if(curY<MIN_Y||curY>MAX_Y){setStatus('系统年份超出 1900-2099 查询范围','error');return;}
+      render();
+    });
+    yearSel.addEventListener('change',function(){curY=parseInt(yearSel.value,10);render();});
+    monthSel.addEventListener('change',function(){curM=parseInt(monthSel.value,10);render();});
+    daySel.addEventListener('change',function(){curD=parseInt(daySel.value,10);render();});
+    copyBtn.addEventListener('click',function(){
+      var data=getLunarData(curY,curM,curD);
+      copyToClipboard(buildText(data),this);
+      setStatus('已复制');
+    });
+    render();
+  })();</script>
+</body>
+</html>

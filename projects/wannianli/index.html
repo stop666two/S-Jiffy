@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>万年历 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .cal-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+    .cal-toolbar .btn{height:40px;min-width:44px;padding:0 12px}
+    .cal-toolbar .input{width:auto;height:40px}
+    .cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+    @media(max-width:760px){.cal-wrap{grid-template-columns:minmax(0,1fr)}}
+    .cal-table{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed}
+    .cal-table th{font-size:12px;color:var(--color-text-secondary);font-weight:400;padding:4px 0;text-align:center}
+    .cal-cell{border:1px solid var(--color-border);height:64px;text-align:center;vertical-align:top;padding:4px;cursor:pointer;border-radius:6px;transition:background 0.15s}
+    .cal-cell:hover{background:var(--color-bg-soft)}
+    .cal-cell.selected{background:var(--color-bg-soft);border-color:var(--color-text-primary)}
+    .cal-cell.today{box-shadow:inset 0 0 0 2px var(--color-text-primary)}
+    .cal-day{font-size:16px;font-weight:600;line-height:1.3}
+    .cal-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cal-sub.fest{color:var(--color-error)}
+    .detail-title{font-size:18px;font-weight:600;margin-bottom:4px}
+    .detail-week{font-size:13px;color:var(--color-text-secondary);margin-bottom:12px}
+    .dt-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--color-border);font-size:13px}
+    .dt-row:last-child{border-bottom:none}
+    .dt-row span{color:var(--color-text-secondary);flex-shrink:0;margin-right:12px}
+    .dt-row b{font-weight:500;text-align:right;word-break:break-all;line-height:1.6}
+    .dt-row.yi b{color:var(--color-success)}
+    .dt-row.ji b{color:var(--color-error)}
+    .detail-copy{width:100%;margin-top:12px}
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a class="back-btn" href="../../index.html">← 返回</a>
+    <span class="logo-text">S-Jiffy</span>
+  </header>
+  <main class="tool-workspace">
+    <h1>万年历</h1>
+    <p class="tool-desc">公历与农历对照日历，支持 1900-2100 年，含节气、节日与每日宜忌。</p>
+    <div class="card">
+      <div class="cal-toolbar">
+        <button id="prevYearBtn" class="btn btn-secondary">← 上一年</button>
+        <button id="prevMonthBtn" class="btn btn-secondary">← 上一月</button>
+        <select id="yearSel" class="input"></select>
+        <select id="monthSel" class="input"></select>
+        <button id="nextMonthBtn" class="btn btn-secondary">下一月 →</button>
+        <button id="nextYearBtn" class="btn btn-secondary">下一年 →</button>
+        <button id="todayBtn" class="btn btn-primary">今天</button>
+      </div>
+      <div class="cal-wrap">
+        <table class="cal-table" id="calTable"></table>
+        <div class="card" id="detailPanel"></div>
+      </div>
+    </div>
+  </main>
+  <footer class="tool-status" id="statusBar"></footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/lunar.js"></script>
+  <script>(function(){
+    var yearSel=document.getElementById('yearSel');
+    var monthSel=document.getElementById('monthSel');
+    var calTable=document.getElementById('calTable');
+    var detailPanel=document.getElementById('detailPanel');
+    var now=new Date();
+    var todayY=now.getFullYear(),todayM=now.getMonth()+1,todayD=now.getDate();
+    var curY=todayY,curM=todayM;
+    var selY=todayY,selM=todayM,selD=todayD;
+    var weekHead=['日','一','二','三','四','五','六'];
+    var monthNames=['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+    var weekNames=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+    if(!window.Lunar){
+      setStatus('历法数据加载失败，请刷新重试','error');
+      return;
+    }
+    for(var y=1900;y<=2100;y++){
+      var o=document.createElement('option');
+      o.value=y;o.textContent=y+'年';
+      if(y===curY)o.selected=true;
+      yearSel.appendChild(o);
+    }
+    for(var m=1;m<=12;m++){
+      var o2=document.createElement('option');
+      o2.value=m;o2.textContent=m+'月';
+      if(m===curM)o2.selected=true;
+      monthSel.appendChild(o2);
+    }
+    function syncSelects(){
+      yearSel.value=curY;
+      monthSel.value=curM;
+    }
+    var SL=window.Solar;
+    function getSubText(solar){
+      var lunar=solar.getLunar();
+      var jq=lunar.getJieQi();
+      if(jq)return {text:jq,fest:true};
+      var fs=solar.getFestivals().concat(solar.getOtherFestivals()).concat(lunar.getFestivals()).concat(lunar.getOtherFestivals());
+      if(fs.length)return {text:fs[0],fest:true};
+      if(lunar.getDayInChinese()==='初一')return {text:lunar.getMonthInChinese()+'月',fest:false};
+      return {text:lunar.getDayInChinese(),fest:false};
+    }
+    function renderCalendar(){
+      var first=new Date(curY,curM-1,1).getDay();
+      var days=new Date(curY,curM,0).getDate();
+      var html='<tr>';
+      for(var i=0;i<7;i++)html+='<th>'+weekHead[i]+'</th>';
+      html+='</tr><tr>';
+      for(var j=0;j<first;j++)html+='<td></td>';
+      for(var d=1;d<=days;d++){
+        var solar=SL.fromYmd(curY,curM,d);
+        var sub=getSubText(solar);
+        var cls='cal-cell';
+        if(d===todayD&&curM===todayM&&curY===todayY)cls+=' today';
+        if(d===selD&&curM===selM&&curY===selY)cls+=' selected';
+        html+='<td class="'+cls+'" data-y="'+curY+'" data-m="'+curM+'" data-d="'+d+'">';
+        html+='<div class="cal-day">'+d+'</div>';
+        html+='<div class="cal-sub'+(sub.fest?' fest':'')+'">'+htmlEscape(sub.text)+'</div>';
+        html+='</td>';
+        if((first+d)%7===0&&d<days)html+='</tr><tr>';
+      }
+      html+='</tr>';
+      calTable.innerHTML=html;
+      var cells=calTable.querySelectorAll('.cal-cell');
+      for(var k=0;k<cells.length;k++){
+        cells[k].addEventListener('click',function(){
+          selY=parseInt(this.getAttribute('data-y'));
+          selM=parseInt(this.getAttribute('data-m'));
+          selD=parseInt(this.getAttribute('data-d'));
+          renderCalendar();
+          renderDetail();
+        });
+      }
+    }
+    function buildDetail(){
+      var solar=SL.fromYmd(selY,selM,selD);
+      var lunar=solar.getLunar();
+      var yi=lunar.getDayYi();
+      var ji=lunar.getDayJi();
+      var jq=lunar.getJieQi();
+      var lines=[];
+      lines.push('农历：'+lunar.getYearInChinese()+'年 '+lunar.getMonthInChinese()+'月 '+lunar.getDayInChinese());
+      lines.push('干支：'+lunar.getYearInGanZhi()+'年（'+lunar.getShengxiao()+'年） '+lunar.getMonthInGanZhi()+'月 '+lunar.getDayInGanZhi()+'日');
+      lines.push('生肖：'+lunar.getShengxiao());
+      lines.push('星座：'+solar.getXingZuo()+'座');
+      if(jq)lines.push('节气：'+jq);
+      lines.push('宜：'+(yi.length?yi.join('、'):'无'));
+      lines.push('忌：'+(ji.length?ji.join('、'):'无'));
+      return lines.join('\n');
+    }
+    function renderDetail(){
+      var solar=SL.fromYmd(selY,selM,selD);
+      var lunar=solar.getLunar();
+      var yi=lunar.getDayYi();
+      var ji=lunar.getDayJi();
+      var jq=lunar.getJieQi();
+      var html='';
+      html+='<div class="detail-title">'+selY+'年'+selM+'月'+selD+'日</div>';
+      html+='<div class="detail-week">'+weekNames[new Date(selY,selM-1,selD).getDay()]+'</div>';
+      html+='<div class="dt-row"><span>农历</span><b>'+htmlEscape(lunar.getYearInChinese()+'年 '+lunar.getMonthInChinese()+'月 '+lunar.getDayInChinese())+'</b></div>';
+      html+='<div class="dt-row"><span>干支年</span><b>'+htmlEscape(lunar.getYearInGanZhi()+' '+lunar.getShengxiao()+'年')+'</b></div>';
+      html+='<div class="dt-row"><span>月干支</span><b>'+htmlEscape(lunar.getMonthInGanZhi())+'</b></div>';
+      html+='<div class="dt-row"><span>日干支</span><b>'+htmlEscape(lunar.getDayInGanZhi())+'</b></div>';
+      html+='<div class="dt-row"><span>生肖</span><b>'+htmlEscape(lunar.getShengxiao())+'</b></div>';
+      html+='<div class="dt-row"><span>星座</span><b>'+htmlEscape(solar.getXingZuo()+'座')+'</b></div>';
+      if(jq)html+='<div class="dt-row"><span>节气</span><b>'+htmlEscape(jq)+'</b></div>';
+      html+='<div class="dt-row yi"><span>宜</span><b>'+htmlEscape(yi.length?yi.join('、'):'无')+'</b></div>';
+      html+='<div class="dt-row ji"><span>忌</span><b>'+htmlEscape(ji.length?ji.join('、'):'无')+'</b></div>';
+      html+='<button class="btn btn-secondary detail-copy" id="detailCopyBtn">复制详情</button>';
+      detailPanel.innerHTML=html;
+      document.getElementById('detailCopyBtn').addEventListener('click',function(){
+        copyToClipboard(buildDetail(),this);
+        setStatus('已复制');
+      });
+    }
+    document.getElementById('prevYearBtn').addEventListener('click',function(){curY--;if(curY<1900)curY=1900;syncSelects();renderCalendar();});
+    document.getElementById('nextYearBtn').addEventListener('click',function(){curY++;if(curY>2100)curY=2100;syncSelects();renderCalendar();});
+    document.getElementById('prevMonthBtn').addEventListener('click',function(){curM--;if(curM<1){curM=12;curY--;if(curY<1900)curY=1900;}syncSelects();renderCalendar();});
+    document.getElementById('nextMonthBtn').addEventListener('click',function(){curM++;if(curM>12){curM=1;curY++;if(curY>2100)curY=2100;}syncSelects();renderCalendar();});
+    document.getElementById('todayBtn').addEventListener('click',function(){curY=todayY;curM=todayM;selY=todayY;selM=todayM;selD=todayD;syncSelects();renderCalendar();renderDetail();});
+    yearSel.addEventListener('change',function(){curY=parseInt(yearSel.value);renderCalendar();});
+    monthSel.addEventListener('change',function(){curM=parseInt(monthSel.value);renderCalendar();});
+    renderCalendar();
+    renderDetail();
+  })();</script>
+</body>
+</html>

@@ -287,6 +287,10 @@ S-Jiffy/
 - **数学符号** — 公式中的特殊符号（√∑π×÷≤≥）依赖全局字体栈，无需额外处理；长根号需使用覆盖线结构（参照 distance-calculator）
 - **注册** — 在 `index.html` 的 `tools` 数组（含 name/desc/link/cats）与 `categories` 数组（如需新分类）中添加条目，name 须与页面 `<title>` 一致
 
+## 📜 更新日志
+
+所有重要变更记录在 [CHANGELOG.md](CHANGELOG.md)。
+
 ## ⚠️ 免责声明
 
 所有工具的操作和计算均在浏览器本地完成，不会向任何服务器传输数据。由于浏览器环境差异和实现复杂度，极少情况下可能出现计算偏差或兼容性问题，请在使用后自行校验关键结果。如遇问题，欢迎提交 [GitHub Issues](https://github.com/stop666two/S-Jiffy/issues)，感谢配合！

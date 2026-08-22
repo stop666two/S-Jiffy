@@ -115,14 +115,13 @@
   <script>
     (function () {
       var categories = [
-        '编解码', '加密哈希', '文本处理', '日期时间', '网络工具',
-        '颜色工具', '数学计算', '格式转换', '正则表达式', '序列生成',
-        '数据处理', '网址工具', '代码美化', '进制转换', '单位换算',
-        '字符串', '时间戳', '随机生成', '密码管理', '安全工具',
-        '编程工具', '前端开发', '数据生成', '文档工具', '网页工具',
-        '代码生成', 'DevOps',
-        '传统文化',
-        '健康', '生活', '金融', '游戏', '购物', '动画'
+        '编程工具', '数据处理', '格式转换', '数学计算', '网页工具',
+        '安全工具', '文档工具', '文本处理', '数据生成', '网络工具',
+        '字符串', '前端开发', '日期时间', '生活', '代码生成',
+        '颜色工具', '加密哈希', '编解码', '随机生成', '传统文化',
+        'DevOps', '代码美化', '进制转换', '单位换算', '健康',
+        '序列生成', '密码管理', '网址工具', '正则表达式', '金融',
+        '游戏', '时间戳', '动画', '购物'
       ];
 
       var tools = [
@@ -834,6 +833,10 @@
         }
 
         if (activeCategory) list = list.filter(function (t) { return t && t.cats.indexOf(activeCategory) !== -1; });
+
+        if (!searchQuery && currentSection === 'all') {
+          list.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh-CN'); });
+        }
 
         var isHistory = (currentSection === 'history');
         var tb = document.getElementById('historyToolbar');

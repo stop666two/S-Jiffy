@@ -254,6 +254,8 @@ body {
   align-items: center;
   gap: 6px;
   height: 32px;
+  max-width: 100%;
+  overflow: hidden;
   padding: 0 12px;
   font-size: var(--font-size-xs);
   font-family: var(--font-family);
@@ -278,15 +280,18 @@ body {
   flex-shrink: 0;
 }
 .lang-trigger-name {
-  max-width: 130px;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .lang-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
+  position: fixed;
+  top: 62px;
+  right: 12px;
   min-width: 210px;
+  max-width: calc(100vw - 48px);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -318,14 +323,17 @@ body {
 .lang-option .lang-name {
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
 }
 .lang-option .lang-sub {
+  display: block;
   font-size: 11px;
   color: var(--color-text-disabled);
   margin-left: auto;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .lang-option .lang-check {
   display: none;

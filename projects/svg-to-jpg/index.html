@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVG转JPG转换器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-formats{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:10px;letter-spacing:.5px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.info-banner{display:flex;gap:8px;align-items:flex-start;font-size:var(--font-size-xs);color:var(--color-text-secondary);background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-3);line-height:1.6;}
+.info-banner-title{font-weight:600;color:var(--color-text-primary);white-space:nowrap;}
+.file-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.file-name{font-size:var(--font-size-sm);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.fmt-badge{font-size:var(--font-size-xs);padding:2px 10px;border:1px solid var(--color-border);border-radius:9999px;color:var(--color-text-secondary);}
+.file-remove{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;margin-left:auto;}
+.opt-block{margin-bottom:var(--space-2);}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.fmt-row{display:flex;gap:8px;flex-wrap:wrap;}
+.fmt-btn{height:34px;min-width:auto;padding:0 16px;font-size:var(--font-size-xs);border-color:var(--color-border);background:transparent;color:var(--color-text-primary);}
+.fmt-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.fmt-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.detect-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin:var(--space-2) 0;}
+@media (max-width:640px){.preview-grid{grid-template-columns:1fr;}}
+.pv-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.pv-frame{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);min-height:120px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pv-frame img{max-width:100%;max-height:320px;display:block;}
+.pv-loading,.pv-ready{font-size:var(--font-size-xs);color:var(--color-text-disabled);}
+.pv-size{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.diff-down{color:var(--color-success);font-weight:600;}
+.diff-up{color:var(--color-error);font-weight:600;}
+.error-box{font-size:var(--font-size-xs);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid rgba(159,47,45,.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-2);}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;}
+.quality-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.quality-row input[type=range]{flex:1;min-width:160px;}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.scale-sel{height:34px;padding:0 10px;font-size:var(--font-size-xs);font-family:var(--font-mono);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);color:var(--color-text-primary);cursor:pointer;outline:none;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">SVG转JPG转换器</h1>
+<p class="tool-desc" data-i18n="desc">将SVG矢量图形转换为JPG格式。无需上传，即时转换。</p>
+
+<div class="card">
+  <div class="info-banner"><span class="info-banner-title" data-i18n="anyFormatTitle">接受任何格式</span><span data-i18n="anyFormatDesc">拖入PNG、JPG、WebP、SVG、AVIF或HEIC图片，转换为任意支持的输出格式。无需匹配当前页面。</span></div>
+  <div class="card" id="uploadCard" style="padding:0;border:none;">
+    <div id="dropZone" class="drop-zone">
+      <div class="dz-icon">🖼️</div>
+      <p class="dz-title" data-i18n="dropImageHere">将图片拖放到此处</p>
+      <p class="dz-sub" data-i18n="formatAutoDetected">格式自动检测 — 无需手动选择</p>
+      <p class="dz-formats">PNG · JPG · WebP · SVG · AVIF · HEIC</p>
+      <p class="dz-hint">最大 50MB · 本地处理，文件不会上传</p>
+    </div>
+    <input type="file" id="fileInput" accept="image/svg+xml,.svg" style="display:none">
+  </div>
+
+  <div class="card" id="workCard" style="display:none;border:none;padding:0;">
+    <div class="file-bar">
+      <span class="file-name" id="fileName"></span>
+      <span class="file-meta" id="fileMeta"></span>
+      <span class="fmt-badge" id="fromBadge"></span>
+      <button type="button" class="btn btn-secondary file-remove" id="removeBtn"></button>
+    </div>
+
+    <div class="opt-block">
+      <p class="opt-label" data-i18n="convertTo">转换为</p>
+      <div class="fmt-row" id="fmtRow">
+        <button type="button" class="btn fmt-btn" data-to="jpg">JPG</button>
+        <button type="button" class="btn fmt-btn" data-to="png">PNG</button>
+        <button type="button" class="btn fmt-btn" data-to="webp">WebP</button>
+        <button type="button" class="btn fmt-btn" data-to="avif">AVIF</button>
+      </div>
+      <p class="detect-hint" id="detectHint"></p>
+    </div>
+
+    <div class="preview-grid">
+      <div class="pv-col">
+        <p class="pv-label" id="origLabel"></p>
+        <div class="pv-frame"><img id="origImg" alt=""></div>
+        <p class="pv-size" id="origSize"></p>
+      </div>
+      <div class="pv-col">
+        <p class="pv-label" id="convLabel"></p>
+        <div class="pv-frame">
+          <p class="pv-loading" id="convLoading" style="display:none"></p>
+          <p class="pv-ready" id="convReady" data-i18n="ready">就绪</p>
+          <img id="convImg" alt="" style="display:none">
+        </div>
+        <p class="pv-size" id="convSize"></p>
+      </div>
+    </div>
+
+    
+      <div class="opt-block" id="scaleRow" style="display:none">
+        <label class="opt-label">缩放倍数</label>
+        <select id="scaleSel" class="scale-sel"></select>
+      </div>
+
+    <div class="opt-block quality-row" id="qualityRow" style="display:none">
+      <label class="opt-label" data-i18n="quality">质量</label>
+      <input type="range" id="qualityRange" min="1" max="100" value="92">
+      <span class="opt-value" id="qualityVal">92%</span>
+    </div>
+
+    <div id="errorBox" class="error-box" style="display:none"></div>
+
+    <div class="tool-row">
+      <button type="button" class="btn btn-primary" id="convertBtn"></button>
+      <button type="button" class="btn btn-secondary" id="downloadBtn" style="display:none"></button>
+    </div>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var PAGE_FROM = 'svg', DEFAULT_TO = 'jpg', DEFAULT_Q = 92;
+  var LABEL = { jpg: 'JPG', png: 'PNG', webp: 'WebP', avif: 'AVIF', svg: 'SVG', heic: 'HEIC' };
+  var EXT = { jpg: 'jpg', png: 'png', webp: 'webp', avif: 'avif' };
+  var MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' };
+  var LOSSY = { jpg: true, webp: true, avif: true };
+  var COMPAT = {
+    png: ['jpg', 'webp', 'avif'], jpg: ['png', 'webp', 'avif'], webp: ['png', 'jpg', 'avif'],
+    svg: ['png', 'jpg', 'webp', 'avif'], avif: ['png', 'jpg', 'webp'], heic: ['png', 'jpg', 'webp', 'avif']
+  };
+
+  var file = null, imgEl = null, fromFmt = PAGE_FROM, toFmt = DEFAULT_TO, quality = DEFAULT_Q;
+  var result = null, converting = false, origUrl = null, timer = null;
+  var scale = 1;
+  var SCALE_OPTS = [1, 2, 3, 4];
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+  function debounce(fn, ms) { clearTimer(); timer = setTimeout(fn, ms); }
+
+  function detectFormat(f) {
+    var n = f.name.toLowerCase(), ty = f.type.toLowerCase();
+    if (ty === 'image/png' || n.indexOf('.png') !== -1) return 'png';
+    if (ty === 'image/jpeg' || n.indexOf('.jpg') !== -1 || n.indexOf('.jpeg') !== -1) return 'jpg';
+    if (ty === 'image/webp' || n.indexOf('.webp') !== -1) return 'webp';
+    if (ty === 'image/svg+xml' || n.indexOf('.svg') !== -1) return 'svg';
+    if (ty === 'image/avif' || n.indexOf('.avif') !== -1) return 'avif';
+    if (ty.indexOf('heic') !== -1 || ty.indexOf('heif') !== -1 || n.indexOf('.heic') !== -1 || n.indexOf('.heif') !== -1) return 'heic';
+    return 'jpg';
+  }
+
+  function setErr(msg) { setStatus(msg, 'error'); var b = $('errorBox'); if (b) { b.textContent = msg; b.style.display = 'block'; } }
+  function clearErr() { var b = $('errorBox'); if (b) { b.textContent = ''; b.style.display = 'none'; } }
+
+  function showWork() {
+    $('uploadCard').style.display = 'none';
+    $('workCard').style.display = 'block';
+    $('fileName').textContent = file.name;
+    $('fileMeta').textContent = fmtBytes(file.size);
+    $('fromBadge').textContent = LABEL[fromFmt];
+    $('origSize').textContent = fmtBytes(file.size);
+    $('origLabel').textContent = t('original', '原图') + ' · ' + LABEL[fromFmt];
+    $('convLabel').textContent = t('converted', '转换后') + ' · ' + LABEL[toFmt];
+    $('convertBtn').textContent = t('convertToFormat', '转换为 {format}').replace('{format}', LABEL[toFmt]);
+    $('removeBtn').textContent = t('remove', '移除');
+    renderFmtButtons();
+    renderQualityRow();
+    $('detectHint').textContent = t('detected', '检测到') + ' ' + LABEL[fromFmt] + ' · ' +
+      t('canConvertTo', '可转换为') + ' ' + COMPAT[fromFmt].map(function (f) { return LABEL[f]; }).join(', ');
+    renderScaleRow();
+  }
+
+  function renderFmtButtons() {
+    var btns = document.querySelectorAll('.fmt-btn');
+    for (var i = 0; i < btns.length; i++) {
+      var f = btns[i].getAttribute('data-to');
+      var ok = COMPAT[fromFmt].indexOf(f) !== -1;
+      btns[i].disabled = !ok;
+      btns[i].className = 'btn fmt-btn' + (f === toFmt && ok ? ' active' : '');
+    }
+  }
+
+  function renderQualityRow() {
+    var show = LOSSY[toFmt];
+    $('qualityRow').style.display = show ? 'flex' : 'none';
+    $('qualityVal').textContent = quality + '%';
+    $('convLabel').textContent = t('converted', '转换后') + ' · ' + LABEL[toFmt];
+    $('convertBtn').textContent = result ? t('reconvertTo', '重新转换为 {format}').replace('{format}', LABEL[toFmt])
+      : t('convertToFormat', '转换为 {format}').replace('{format}', LABEL[toFmt]);
+  }
+  
+  function renderScaleRow() {
+    var sel = $('scaleSel');
+    sel.innerHTML = '';
+    for (var i = 0; i < SCALE_OPTS.length; i++) {
+      var opt = document.createElement('option');
+      opt.value = String(SCALE_OPTS[i]);
+      opt.textContent = SCALE_OPTS[i] + 'x';
+      if (SCALE_OPTS[i] === scale) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    $('scaleRow').style.display = 'block';
+  }
+
+  function setConverting(on) {
+    converting = on;
+    $('convertBtn').disabled = on;
+    if (on) {
+      $('convertBtn').textContent = t('converting', '转换中…');
+      $('convImg').style.display = 'none';
+      $('convReady').style.display = 'none';
+      $('convLoading').style.display = 'block';
+      $('convLoading').textContent = t('converting', '转换中…');
+      $('convSize').textContent = '';
+      $('downloadBtn').style.display = 'none';
+    }
+  }
+
+  function showResult(blob) {
+    if (result && result.url) URL.revokeObjectURL(result.url);
+    result = { blob: blob, url: URL.createObjectURL(blob) };
+    $('convImg').src = result.url;
+    $('convImg').style.display = 'block';
+    $('convLoading').style.display = 'none';
+    $('convReady').style.display = 'none';
+    var diff = (blob.size - file.size) / file.size * 100;
+    var sign = diff > 0 ? '+' : '';
+    $('convSize').innerHTML = fmtBytes(blob.size) + ' <span class="' + (diff <= 0 ? 'diff-down' : 'diff-up') + '">' + sign + diff.toFixed(0) + '%</span>';
+    $('downloadBtn').style.display = 'inline-flex';
+    $('downloadBtn').textContent = t('downloadFormat', '下载 {format}').replace('{format}', LABEL[toFmt]);
+    renderQualityRow();
+    setStatus(t('ready', '就绪'));
+  }
+
+  function loadImg(blob, ok, fail) {
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function () { ok(img); URL.revokeObjectURL(url); };
+    img.onerror = function () { URL.revokeObjectURL(url); fail(); };
+    img.src = url;
+  }
+  
+  function sourceBlob(cb, fail) {
+    var r = new FileReader();
+    r.onload = function () {
+      try { cb(new Blob([r.result], { type: 'image/svg+xml' })); }
+      catch (e) { fail(); }
+    };
+    r.onerror = function () { fail(); };
+    r.readAsText(file);
+  }
+
+  function convert() {
+    if (!file || converting) return;
+    setErr('');
+    clearErr();
+    setConverting(true);
+    sourceBlob(function (srcBlob) {
+      loadImg(srcBlob, function (img) {
+        var w = Math.round((img.naturalWidth || 800) * scale), h = Math.round((img.naturalHeight || 600) * scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        if (toFmt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); }
+        ctx.drawImage(img, 0, 0, w, h);
+        var q = toFmt === 'avif' ? Math.min(quality, 75) : quality / 100;
+        canvas.toBlob(function (b) {
+          if (!b) {
+            setConverting(false);
+            setErr(toFmt === 'avif' ? t('avifEncodeFailed', '当前浏览器不支持 AVIF 编码，请选择其他输出格式') : t('conversionFailed', '转换失败，请重试。'));
+            return;
+          }
+          setConverting(false);
+          showResult(b);
+        }, MIME[toFmt], q);
+      }, function () {
+        setConverting(false);
+        setErr(t('conversionFailed', '转换失败，请重试。'));
+      });
+    }, function () {
+      setConverting(false);
+      setErr(t('conversionFailed', '转换失败，请重试。'));
+    });
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > MAX_MB * 1024 * 1024) {
+      setErr(t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)));
+      $('fileInput').value = '';
+      return;
+    }
+    if (origUrl) URL.revokeObjectURL(origUrl);
+    result = null; imgEl = null; scale = 1;
+    fromFmt = detectFormat(f);
+    if (COMPAT[fromFmt].indexOf(toFmt) === -1) toFmt = COMPAT[fromFmt][0];
+    quality = DEFAULT_Q;
+    file = f;
+    origUrl = URL.createObjectURL(f);
+    showWork();
+    $('origImg').src = origUrl;
+    convert();
+  }
+
+  function resetAll() {
+    clearTimer();
+    file = null; result = null;
+    if (origUrl) { URL.revokeObjectURL(origUrl); origUrl = null; }
+    toFmt = DEFAULT_TO; quality = DEFAULT_Q; scale = 1;
+    $('fileInput').value = '';
+    $('origImg').removeAttribute('src');
+    $('convImg').removeAttribute('src');
+    $('uploadCard').style.display = 'block';
+    $('workCard').style.display = 'none';
+    clearErr();
+    setStatus('');
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('dragover');
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f) handleFile(f);
+  });
+  $('removeBtn').addEventListener('click', resetAll);
+
+  var fmtBtns = document.querySelectorAll('.fmt-btn');
+  for (var i = 0; i < fmtBtns.length; i++) {
+    fmtBtns[i].addEventListener('click', function () {
+      var f = this.getAttribute('data-to');
+      if (COMPAT[fromFmt].indexOf(f) === -1 || f === toFmt) return;
+      toFmt = f;
+      renderFmtButtons();
+      renderQualityRow();
+      debounce(convert, 300);
+    });
+  }
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 1;
+    $('qualityVal').textContent = quality + '%';
+    debounce(convert, 700);
+  });
+  
+  $('scaleSel').addEventListener('change', function () {
+    scale = parseInt(this.value, 10) || 1;
+    debounce(convert, 300);
+  });
+  $('convertBtn').addEventListener('click', function () { if (file && !converting) convert(); });
+  $('downloadBtn').addEventListener('click', function () {
+    if (!result) return;
+    download(result.blob, baseName(file.name) + '.' + EXT[toFmt]);
+    setStatus(t('downloaded', '已开始下载'));
+  });
+})();
+</script>
+</body>
+</html>

@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">正态分布计算器</h1>
@@ -191,9 +191,9 @@
         ctx.fillStyle = '#111';
         ctx.textAlign = 'center';
         if (isInterval) {
-          ctx.fillText('P(x1≤X≤x2) 阴影区', (left + right) / 2, h - 8);
+          ctx.fillText(t('chart.interval','P(x1≤X≤x2) 阴影区'), (left + right) / 2, h - 8);
         } else {
-          ctx.fillText('P(X≤x) 阴影区', (left + right) / 2, h - 8);
+          ctx.fillText(t('chart.single','P(X≤x) 阴影区'), (left + right) / 2, h - 8);
         }
         ctx.textAlign = 'left';
       }
@@ -248,7 +248,7 @@
         if (mode === 'single') {
           var prob = cdf1;
           html += '<div class="res-grid">';
-          html += '<div class="res-item"><span class="res-label">Z 分数</span><span class="res-value">' + htmlEscape(fmt(z1)) + '</span></div>';
+          html += '<div class="res-item"><span class="res-label">' + t('res.zScore','Z 分数') + '</span><span class="res-value">' + htmlEscape(fmt(z1)) + '</span></div>';
           html += '<div class="res-item"><span class="res-label">P(X ≤ x)</span><span class="res-value">' + htmlEscape(fmt(prob)) + '</span></div>';
           html += '<div class="res-item"><span class="res-label">P(X &gt; x)</span><span class="res-value">' + htmlEscape(fmt(1 - prob)) + '</span></div>';
           html += '</div>';
@@ -257,11 +257,11 @@
           var cdf2 = normCdf(z2);
           var probInterval = cdf2 - cdf1;
           html += '<div class="res-grid">';
-          html += '<div class="res-item"><span class="res-label">Z1 分数</span><span class="res-value">' + htmlEscape(fmt(z1)) + '</span></div>';
-          html += '<div class="res-item"><span class="res-label">Z2 分数</span><span class="res-value">' + htmlEscape(fmt(z2)) + '</span></div>';
+          html += '<div class="res-item"><span class="res-label">' + t('res.z1','Z1 分数') + '</span><span class="res-value">' + htmlEscape(fmt(z1)) + '</span></div>';
+          html += '<div class="res-item"><span class="res-label">' + t('res.z2','Z2 分数') + '</span><span class="res-value">' + htmlEscape(fmt(z2)) + '</span></div>';
           html += '<div class="res-item"><span class="res-label">P(X ≤ x1)</span><span class="res-value">' + htmlEscape(fmt(cdf1)) + '</span></div>';
           html += '<div class="res-item"><span class="res-label">P(x1 ≤ X ≤ x2)</span><span class="res-value">' + htmlEscape(fmt(probInterval)) + '</span></div>';
-          html += '<div class="res-item"><span class="res-label">P(X &lt; x1 或 X &gt; x2)</span><span class="res-value">' + htmlEscape(fmt(1 - probInterval)) + '</span></div>';
+          html += '<div class="res-item"><span class="res-label">' + t('res.pOut','P(X &lt; x1 或 X &gt; x2)') + '</span><span class="res-value">' + htmlEscape(fmt(1 - probInterval)) + '</span></div>';
           html += '</div>';
         }
         outputText.innerHTML = html;
@@ -277,7 +277,7 @@
       function toggleMode() {
         var isInterval = modeEl.value === 'interval';
         x2Field.style.display = isInterval ? '' : 'none';
-        x1Label.textContent = isInterval ? 'X1 值' : 'X 值';
+        x1Label.textContent = isInterval ? t('ui.x1','X1 值') : t('ui.6','X 值');
       }
 
       modeEl.addEventListener('change', function () {

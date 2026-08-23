@@ -78,7 +78,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">本地存储查看器</h1>
@@ -168,23 +168,23 @@
           }
         }
         if (rows.length === 0) {
-          html += '<div class="empty-hint">暂无数据</div>';
+          html += '<div class="empty-hint">' + t('empty','暂无数据') + '</div>';
         } else if (filtered.length === 0) {
-          html += '<div class="empty-hint">没有匹配「' + htmlEscape(filter) + '」的键名</div>';
+          html += '<div class="empty-hint">' + t('noMatchPrefix','没有匹配「') + htmlEscape(filter) + t('noMatchSuffix','」的键名') + '</div>';
         } else {
-          html += '<table class="storage-table"><thead><tr><th style="width:30%;">键名</th><th>值</th><th style="width:80px;text-align:right;">大小</th><th style="width:80px;">操作</th></tr></thead><tbody>';
+          html += '<table class="storage-table"><thead><tr><th style="width:30%;">' + t('thKey','键名') + '</th><th>' + t('thValue','值') + '</th><th style="width:80px;text-align:right;">' + t('thSize','大小') + '</th><th style="width:80px;">' + t('thAction','操作') + '</th></tr></thead><tbody>';
           for (i = 0; i < filtered.length; i++) {
             var row = filtered[i];
             html += '<tr>'
               + '<td class="key-col" title="' + htmlEscape(row.key) + '">' + htmlEscape(row.key) + '</td>'
               + '<td class="val-col" title="' + htmlEscape(row.value) + '">' + htmlEscape(truncate(row.value, 120)) + '</td>'
               + '<td class="size-col">' + row.size + '</td>'
-              + '<td class="act-col"><span class="del-link" data-session="' + (isSession ? '1' : '0') + '" data-key="' + htmlEscape(row.key) + '">删除</span></td>'
+              + '<td class="act-col"><span class="del-link" data-session="' + (isSession ? '1' : '0') + '" data-key="' + htmlEscape(row.key) + '">' + t('del','删除') + '</span></td>'
               + '</tr>';
           }
           html += '</tbody></table>';
         }
-        html += '<div class="storage-stats" style="margin-top:var(--space-2);"><span class="storage-stat">共 ' + rows.length + ' 项</span><span class="storage-stat">总大小 ' + fmtBytes(total) + '</span>' + (filter ? '<span class="storage-stat">筛选后 ' + filtered.length + ' 项</span>' : '') + '</div>';
+        html += '<div class="storage-stats" style="margin-top:var(--space-2);"><span class="storage-stat">' + t('totalPrefix','共 ') + rows.length + t('countSuffix',' 项') + '</span><span class="storage-stat">' + t('totalSize','总大小 ') + fmtBytes(total) + '</span>' + (filter ? '<span class="storage-stat">' + t('filteredPrefix','筛选后 ') + filtered.length + t('countSuffix',' 项') + '</span>' : '') + '</div>';
         return { html: html, count: rows.length, total: total };
       }
 
@@ -219,13 +219,13 @@
       });
 
       addBtn.addEventListener('click', function () {
-        showPrompt('新增键值对 - 键名', t('ui.8','键名'), '', function (key) {
+        showPrompt(t('addPairKeyTitle','新增键值对 - 键名'), t('ui.8','键名'), '', function (key) {
           if (key === null) return;
           if (!String(key).trim()) {
             setStatus(t('ui.100','键名不能为空'), 'error');
             return;
           }
-          showPrompt('新增键值对 - 值', t('ui.7','值（可选）'), '', function (value) {
+          showPrompt(t('addPairValTitle','新增键值对 - 值'), t('ui.7','值（可选）'), '', function (value) {
             if (value === null) return;
             try {
               window.localStorage.setItem(String(key).trim(), String(value));
@@ -239,7 +239,7 @@
       });
 
       clearLocalBtn.addEventListener('click', function () {
-        showConfirm('确定清空 localStorage 吗？此操作不可恢复。', function (ok) {
+        showConfirm(t('confirmClearLocal','确定清空 localStorage 吗？此操作不可恢复。'), function (ok) {
           if (ok) {
             window.localStorage.clear();
             render();
@@ -249,7 +249,7 @@
       });
 
       clearSessionBtn.addEventListener('click', function () {
-        showConfirm('确定清空 sessionStorage 吗？此操作不可恢复。', function (ok) {
+        showConfirm(t('confirmClearSession','确定清空 sessionStorage 吗？此操作不可恢复。'), function (ok) {
           if (ok) {
             window.sessionStorage.clear();
             render();

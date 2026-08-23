@@ -23,7 +23,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Unicode 长度计算器</h1>
@@ -95,7 +95,7 @@
               i++;
             }
           }
-          var tag = isPair ? '代理对' : (isCombining(code) ? '组合标记' : '');
+          var tag = isPair ? t('tag.surrogate','代理对') : (isCombining(code) ? t('tag.combining','组合标记') : '');
           if (isPair) {
             surrogateCount++;
             surrogateChars.push(text.slice(i - 1, i + 1));
@@ -104,9 +104,9 @@
           chars.push({ cp: code, ch: text.slice(i - (isPair ? 1 : 0), i + 1), tag: tag });
         }
         var metrics = [
-          { num: chars.length, lbl: '字符数（码点）' },
-          { num: text.length, lbl: 'UTF-16 长度' },
-          { num: 0, lbl: 'UTF-8 字节数' }
+          { num: chars.length, lbl: '字符数（码点）', labelKey: 'm.charPoints' },
+          { num: text.length, lbl: 'UTF-16 长度', labelKey: 'm.utf16' },
+          { num: 0, lbl: 'UTF-8 字节数', labelKey: 'm.utf8' }
         ];
         var totalBytes = 0;
         for (var j = 0; j < chars.length; j++) {
@@ -116,7 +116,7 @@
         var html = [];
         html.push('<div class="ul-metrics">');
         for (var m = 0; m < metrics.length; m++) {
-          html.push('<div class="ul-metric"><div class="num">' + metrics[m].num + '</div><div class="lbl">' + htmlEscape(metrics[m].lbl) + '</div></div>');
+          html.push('<div class="ul-metric"><div class="num">' + metrics[m].num + '</div><div class="lbl">' + htmlEscape(metrics[m].labelKey ? t(metrics[m].labelKey, metrics[m].lbl) : metrics[m].lbl) + '</div></div>');
         }
         html.push('</div>');
         html.push('<div class="ul-note">');
@@ -125,17 +125,17 @@
           for (var s = 0; s < surrogateChars.length; s++) {
             if (shown.indexOf(surrogateChars[s]) === -1 && shown.length < 12) shown.push(surrogateChars[s]);
           }
-          html.push('<span class="bad">包含 ' + surrogateCount + ' 个代理对字符（emoji 等）</span>：' + htmlEscape(shown.join(' ')) + (surrogateChars.length > shown.length ? '…' : '') + '<br>');
+          html.push('<span class="bad">' + t('note.contains','包含 ') + surrogateCount + t('note.surrogateUnit',' 个代理对字符（emoji 等）') + '</span>：' + htmlEscape(shown.join(' ')) + (surrogateChars.length > shown.length ? '…' : '') + '<br>');
         } else {
-          html.push('不含代理对字符（无 emoji 等超出 BMP 的字符）。<br>');
+          html.push(t('note.noSurrogates','不含代理对字符（无 emoji 等超出 BMP 的字符）。') + '<br>');
         }
         if (combiningCount > 0) {
-          html.push('<span class="bad">包含 ' + combiningCount + ' 个组合标记</span>，与前面的字符组合显示为一个字形（grapheme cluster），按码点统计会多于视觉字符数。<br>');
+          html.push('<span class="bad">' + t('note.contains','包含 ') + combiningCount + t('note.combiningUnit',' 个组合标记') + '</span>' + t('note.combiningInfo','，与前面的字符组合显示为一个字形（grapheme cluster），按码点统计会多于视觉字符数。') + '<br>');
         } else {
           html.push(t('ui.4','不含组合标记，码点数与视觉字符数一致。'));
         }
         html.push('</div>');
-        html.push('<div style="overflow-x:auto;"><table class="ul-tbl"><thead><tr><th>#</th><th>字符</th><th>码点</th><th>UTF-8 字节数</th><th>说明</th></tr></thead><tbody>');
+        html.push('<div style="overflow-x:auto;"><table class="ul-tbl"><thead><tr><th>#</th><th>' + t('tbl.char','字符') + '</th><th>' + t('tbl.codepoint','码点') + '</th><th>' + t('tbl.utf8','UTF-8 字节数') + '</th><th>' + t('tbl.note','说明') + '</th></tr></thead><tbody>');
         for (var k = 0; k < chars.length; k++) {
           var c = chars[k];
           var display = isVisible(c.cp) ? htmlEscape(c.ch) : '<span class="ul-tbl">U+' + hex4(c.cp) + '</span>';
@@ -143,8 +143,8 @@
         }
         html.push('</tbody></table></div>');
         outputEl.innerHTML = html.join('');
-        lastPlain = t('ui.3','码点数：') + chars.length + '\nUTF-16 长度：' + text.length + '\nUTF-8 字节数：' + totalBytes +
-          '\n代理对字符：' + surrogateCount + '\n组合标记：' + combiningCount;
+        lastPlain = t('ui.3','码点数：') + chars.length + '\n' + t('plain.utf16','UTF-16 长度：') + text.length + '\n' + t('plain.utf8','UTF-8 字节数：') + totalBytes +
+          '\n' + t('plain.surrogate','代理对字符：') + surrogateCount + '\n' + t('plain.combining','组合标记：') + combiningCount;
         setStatus(t('ui.2','已分析 ') + chars.length + t('ui.1',' 个码点'));
       }
 

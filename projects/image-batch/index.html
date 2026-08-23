@@ -42,7 +42,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">批量图片处理器</h1>
 <p class="tool-desc" data-i18n="desc">批量处理多张图片：压缩、调整大小、转换格式或添加水印。</p>
@@ -55,10 +55,10 @@
 </div>
 <div class="card" id="opCard" style="display:none;">
 <div class="op-grid">
-<button id="opCompress" class="active">压缩</button>
-<button id="opResize">调整大小</button>
-<button id="opConvert">转换格式</button>
-<button id="opWatermark">添加水印</button>
+<button id="opCompress" class="active" data-i18n="opCompress">压缩</button>
+<button id="opResize" data-i18n="opResize">调整大小</button>
+<button id="opConvert" data-i18n="opConvert">转换格式</button>
+<button id="opWatermark" data-i18n="opWatermark">添加水印</button>
 </div>
 <div id="paramsCompress">
 <div class="param-block">
@@ -68,7 +68,7 @@
 <div class="param-block">
 <label><span data-i18n="ui.112">输出格式</span></label>
 <div class="opt-pills" id="fmtPills">
-<button data-v="auto" class="active">自动（保持原格式）</button>
+<button data-v="auto" class="active" data-i18n="fmtAuto">自动（保持原格式）</button>
 <button data-v="png">PNG</button>
 <button data-v="jpg">JPG</button>
 <button data-v="webp">WebP</button>
@@ -105,12 +105,12 @@
 <div class="param-block">
 <label><span data-i18n="ui.105">位置</span></label>
 <select id="wmPos" style="width:100%;height:38px;font-size:13px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);font-family:var(--font-mono);">
-<option value="bottom-right">右下</option>
-<option value="bottom-left">左下</option>
-<option value="top-right">右上</option>
-<option value="top-left">左上</option>
-<option value="center">居中</option>
-<option value="tile">平铺</option>
+<option value="bottom-right" data-i18n="posBottomRight">右下</option>
+<option value="bottom-left" data-i18n="posBottomLeft">左下</option>
+<option value="top-right" data-i18n="posTopRight">右上</option>
+<option value="top-left" data-i18n="posTopLeft">左上</option>
+<option value="center" data-i18n="posCenter">居中</option>
+<option value="tile" data-i18n="posTile">平铺</option>
 </select>
 </div>
 </div>
@@ -136,7 +136,7 @@
 <div class="btn-row">
 <button id="processBtn" class="btn btn-primary" data-i18n="batchProcessFiles">处理全部文件</button>
 <button id="dlAllBtn" class="btn btn-secondary" data-i18n="batchDownloadAll">全部下载 (0)</button>
-<button id="clearFilesBtn" class="btn btn-secondary">清空列表</button>
+<button id="clearFilesBtn" class="btn btn-secondary" data-i18n="clearFiles">清空列表</button>
 </div>
 <img class="preview-img" id="previewImg" alt="" style="display:none;">
 </div>
@@ -224,8 +224,8 @@ function renderList(){
     var st='';
     if(item.status==='done')st='<span class="fstatus ok">✓ '+fmtBytes(item.resultSize)+'</span>';
     else if(item.status==='error')st='<span class="fstatus err">'+t('batchFailed','失败')+'</span>';
-    else if(item.status==='processing')st='<span class="fstatus run">处理中<span class="bar"><i id="fbar'+i+'"></i></span></span>';
-    else st='<span class="fstatus">待处理</span>';
+    else if(item.status==='processing')st='<span class="fstatus run">'+t('processing','处理中')+'<span class="bar"><i id="fbar'+i+'"></i></span></span>';
+    else st='<span class="fstatus">'+t('pending','待处理')+'</span>';
     row.innerHTML='<span class="fname">'+htmlEscape(item.file.name)+'</span><span class="fsize">'+fmtBytes(item.file.size)+'</span>'+st;
     var dl=document.createElement('button');
     dl.className='btn btn-secondary';
@@ -414,7 +414,7 @@ function processNext(){
     processNext();
   }).catch(function(e){
     item.status='error';
-    item.error=e&&e.message?e.message:'处理失败';
+    item.error=e&&e.message?e.message:t('processFailed','处理失败');
     renderList();
     var pct=Math.round(((fileIdx+1)/files.length)*100);
     progressBar.style.width=pct+'%';
@@ -440,7 +440,7 @@ dlAllBtn.addEventListener('click',function(){
     setTimeout(next,300);
   }
   next();
-  setStatus(t('dlAllStart','开始下载 '+done.length+' 个文件（浏览器可能询问允许下载多个文件）'));
+  setStatus(t('dlAllStart','开始下载 ')+done.length+t('dlAllSuffix',' 个文件（浏览器可能询问允许下载多个文件）'));
 });
 document.getElementById('clearFilesBtn').addEventListener('click',function(){
   if(processing)return;

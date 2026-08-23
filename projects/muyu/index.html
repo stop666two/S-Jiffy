@@ -47,7 +47,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">电子木鱼</h1>
@@ -93,6 +93,7 @@
   <script>
     (function () {
       var WISHES = { '功德+1': '功德+1', '涨工资': '涨工资', '佛祖保佑': '佛祖保佑', '考试必过': '考试必过' };
+      var WISH_KEYS = { '功德+1': 'ui.3', '涨工资': 'ui.4', '佛祖保佑': 'ui.5', '考试必过': 'ui.6' };
       var muyuBtn = document.getElementById('muyuBtn');
       var stage = document.getElementById('muyuStage');
       var ring = document.getElementById('hitRing');
@@ -114,9 +115,9 @@
       function currentWish() {
         if (wishKey === '__custom__') {
           var v = customInput.value.replace(/^\s+|\s+$/g, '');
-          return v ? v : '功德+1';
+          return v ? v : t('ui.3','功德+1');
         }
-        return WISHES[wishKey] || '功德+1';
+        return t(WISH_KEYS[wishKey] || 'ui.3', WISHES[wishKey] || '功德+1');
       }
 
       function updateCount() {
@@ -196,7 +197,7 @@
       function setAuto(on) {
         autoOn = on;
         savePreference('muyuAuto', on);
-        autoBtn.textContent = t('ui.14','自动敲击：') + (on ? '开' : '关');
+        autoBtn.textContent = t('ui.14','自动敲击：') + (on ? t('ui.on','开') : t('ui.off','关'));
         autoBtn.className = 'btn ctl-btn' + (on ? ' on' : '');
         clearTimeout(autoTimer);
         if (on) scheduleAuto();
@@ -238,7 +239,7 @@
       soundBtn.addEventListener('click', function () {
         soundOn = !soundOn;
         savePreference('muyuSound', soundOn);
-        soundBtn.textContent = t('ui.12','声音：') + (soundOn ? '开' : '关');
+        soundBtn.textContent = t('ui.12','声音：') + (soundOn ? t('ui.on','开') : t('ui.off','关'));
         soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
         if (soundOn) playHit();
       });
@@ -259,13 +260,13 @@
       });
 
       function syncFullLabel() {
-        fullBtn.textContent = (d.fullscreenElement || d.webkitFullscreenElement) ? '退出全屏' : '全屏';
+        fullBtn.textContent = (d.fullscreenElement || d.webkitFullscreenElement) ? t('ui.fullExit','退出全屏') : t('ui.fullEnter','全屏');
       }
       d.addEventListener('fullscreenchange', syncFullLabel);
       d.addEventListener('webkitfullscreenchange', syncFullLabel);
 
       clearBtn.addEventListener('click', function () {
-        showConfirm('确定要清零累计功德吗？清零后无法恢复。', function (ok) {
+        showConfirm(t('ui.16','确定要清零累计功德吗？清零后无法恢复。'), function (ok) {
           if (ok) {
             count = 0;
             savePreference('muyuCount', 0);
@@ -277,7 +278,7 @@
 
       updateCount();
       syncWishUI();
-      soundBtn.textContent = t('ui.12','声音：') + (soundOn ? '开' : '关');
+      soundBtn.textContent = t('ui.12','声音：') + (soundOn ? t('ui.on','开') : t('ui.off','关'));
       soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
       setAuto(autoOn);
       syncFullLabel();

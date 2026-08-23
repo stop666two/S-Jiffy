@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>熵值计算 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.stat-row:last-child{border:none;}.stat-label{color:var(--color-text-secondary);}.stat-val{font-weight:600;font-family:var(--font-mono);}.strength-box{padding:16px;text-align:center;border-radius:var(--radius-md);margin-top:var(--space-2);font-weight:600;}.strength-very-weak{background:#fce8e6;color:var(--color-error);}.strength-weak{background:#fef7e0;color:#e37400;}.strength-fair{background:#e8f0fe;color:#096bde;}.strength-strong{background:#e6f4ea;color:var(--color-success);}.strength-very-strong{background:#e6f4ea;color:#1b5e20;}.char-bar{display:flex;gap:1px;height:40px;align-items:flex-end;margin-top:var(--space-2);}.char-bar-item{flex:1;background:var(--color-accent);border-radius:1px 1px 0 0;min-width:2px;opacity:0.6;}</style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">熵值计算</h1><p class="tool-desc" data-i18n="desc">计算文本/密码的 Shannon 信息熵，评估复杂度</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要计算熵值的文本或密码..." style="min-height:80px;"></textarea></div>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary" data-i18n="ui.1">计算熵值</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
@@ -37,7 +37,7 @@ function calcCharsetBits(str){
   return bits;
 }
 function guessTime(entropy){var perSec=1e9;var combos=Math.pow(2,entropy);var secs=combos/perSec;
-  if(secs<1)return'即时';if(secs<60)return Math.round(secs)+ t('ui.second','秒');
+  if(secs<1)return t('instant','即时');if(secs<60)return Math.round(secs)+ t('ui.second','秒');
   var mins=secs/60;if(mins<60)return Math.round(mins)+ t('ui.minute','分钟');
   var hrs=mins/60;if(hrs<24)return Math.round(hrs)+ t('ui.hour','小时');
   var days=hrs/24;if(days<365)return Math.round(days)+ t('ui.day','天');
@@ -50,20 +50,20 @@ calcBtn.addEventListener('click',function(){
   var maxEntropy=Math.log2(charsetBits)*len;
   var strength=entropy/len;
   var cls,label;
-  if(strength<1.5){cls='strength-very-weak';label='非常弱';}
-  else if(strength<2.5){cls='strength-weak';label='弱';}
-  else if(strength<3.5){cls='strength-fair';label='一般';}
-  else if(strength<4.5){cls='strength-strong';label='强';}
-  else{cls='strength-very-strong';label='非常强';}
+  if(strength<1.5){cls='strength-very-weak';label=t('strengthVeryWeak','非常弱');}
+  else if(strength<2.5){cls='strength-weak';label=t('strengthWeak','弱');}
+  else if(strength<3.5){cls='strength-fair';label=t('strengthFair','一般');}
+  else if(strength<4.5){cls='strength-strong';label=t('strengthStrong','强');}
+  else{cls='strength-very-strong';label=t('strengthVeryStrong','非常强');}
   strengthBox.className='strength-box '+cls;strengthBox.textContent=label+' ('+entropy.toFixed(2)+' bits)';
   var html='';
-  html+='<div class="stat-row"><span class="stat-label">字符长度</span><span class="stat-val">'+len+'</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">Shannon 熵</span><span class="stat-val">'+entropy.toFixed(4)+' bits</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">每字符熵</span><span class="stat-val">'+strength.toFixed(4)+' bits</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">字符集大小</span><span class="stat-val">'+charsetBits+' 种可能</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">最大熵</span><span class="stat-val">'+maxEntropy.toFixed(2)+' bits</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">暴力破解估计</span><span class="stat-val">'+guessTime(entropy)+'</span></div>';
-  html+='<div class="stat-row"><span class="stat-label">唯一字符数</span><span class="stat-val">'+new Set(txt).size+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statLen','字符长度')+'</span><span class="stat-val">'+len+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statShannon','Shannon 熵')+'</span><span class="stat-val">'+entropy.toFixed(4)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statPerChar','每字符熵')+'</span><span class="stat-val">'+strength.toFixed(4)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statCharset','字符集大小')+'</span><span class="stat-val">'+charsetBits+t('possibleSuffix',' 种可能')+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statMaxEntropy','最大熵')+'</span><span class="stat-val">'+maxEntropy.toFixed(2)+' bits</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statBruteForce','暴力破解估计')+'</span><span class="stat-val">'+guessTime(entropy)+'</span></div>';
+  html+='<div class="stat-row"><span class="stat-label">'+t('statUnique','唯一字符数')+'</span><span class="stat-val">'+new Set(txt).size+'</span></div>';
   entropyStats.innerHTML=html;
   var barHtml='';var freq={};for(var i=0;i<txt.length;i++){var c=txt[i];freq[c]=(freq[c]||0)+1;}
   var maxFreq=0;for(var k in freq){if(freq[k]>maxFreq)maxFreq=freq[k];}

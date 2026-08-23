@@ -23,7 +23,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">密码破解时间估算</h1>
@@ -33,17 +33,17 @@
         <label class="field-label" for="passwordInput" data-i18n="ui.1">密码</label>
         <div class="pwd-row">
           <input id="passwordInput" class="input js-focus-input" type="password" maxlength="128" data-i18n-placeholder="ui.102" placeholder="请输入要评估的密码">
-          <label class="pwd-toggle"><input id="showPwd" type="checkbox"> 显示</label>
-          <span class="len-hint">长度：<span id="lenText">0</span></span>
+          <label class="pwd-toggle"><input id="showPwd" type="checkbox"> <span data-i18n="ui.show">显示</span></label>
+          <span class="len-hint"><span data-i18n="ui.length">长度：</span><span id="lenText">0</span></span>
         </div>
       </div>
       <div class="form-row">
         <span class="field-label" data-i18n="ui.2">字符集（可能使用的字符种类）</span>
         <div class="chk-group">
-          <label class="chk-item"><input type="checkbox" id="chkLower" checked> 小写字母 (26)</label>
-          <label class="chk-item"><input type="checkbox" id="chkUpper"> 大写字母 (26)</label>
-          <label class="chk-item"><input type="checkbox" id="chkDigit"> 数字 (10)</label>
-          <label class="chk-item"><input type="checkbox" id="chkSymbol"> 符号 (32)</label>
+          <label class="chk-item"><input type="checkbox" id="chkLower" checked> <span data-i18n="chkLower">小写字母</span> (26)</label>
+          <label class="chk-item"><input type="checkbox" id="chkUpper"> <span data-i18n="chkUpper">大写字母</span> (26)</label>
+          <label class="chk-item"><input type="checkbox" id="chkDigit"> <span data-i18n="chkDigit">数字</span> (10)</label>
+          <label class="chk-item"><input type="checkbox" id="chkSymbol"> <span data-i18n="chkSymbol">符号</span> (32)</label>
         </div>
       </div>
       <div class="form-row" style="margin-bottom:0">
@@ -76,7 +76,7 @@
       var copyBtn = document.getElementById('copyBtn');
       var chkIds = ['chkLower', 'chkUpper', 'chkDigit', 'chkSymbol'];
       var chkSizes = { chkLower: 26, chkUpper: 26, chkDigit: 10, chkSymbol: 32 };
-      var chkNames = { chkLower: '小写字母', chkUpper: '大写字母', chkDigit: '数字', chkSymbol: '符号' };
+      var chkNames = { chkLower: t('chkLower','小写字母'), chkUpper: t('chkUpper','大写字母'), chkDigit: t('chkDigit','数字'), chkSymbol: t('chkSymbol','符号') };
       var copyText = '';
 
       function fmtInt(n) {
@@ -115,11 +115,11 @@
       }
 
       function adviceOf(grade) {
-        if (grade === '极弱') return '密码可被瞬间破解。请加长密码至 12 位以上，并启用多种字符集，避免使用常见单词、生日或连续数字。';
-        if (grade === '弱') return '密码较脆弱。建议加长密码并增加字符集种类，最好使用密码管理器生成随机密码。';
-        if (grade === '一般') return '密码强度一般。建议加长至 12-16 位并启用全部字符集，优先使用密码管理器。';
-        if (grade === '强') return '密码强度良好。继续保持随机性与长度，并开启双因素认证进一步提升安全性。';
-        return '密码几乎不可被暴力破解。请使用密码管理器妥善保管，并避免在不同站点重复使用同一密码。';
+        if (grade === t('ui.23','极弱')) return t('adv.weakest','密码可被瞬间破解。请加长密码至 12 位以上，并启用多种字符集，避免使用常见单词、生日或连续数字。');
+        if (grade === t('ui.22','弱')) return t('adv.weak','密码较脆弱。建议加长密码并增加字符集种类，最好使用密码管理器生成随机密码。');
+        if (grade === t('ui.21','一般')) return t('adv.fair','密码强度一般。建议加长至 12-16 位并启用全部字符集，优先使用密码管理器。');
+        if (grade === t('ui.20','强')) return t('adv.strong','密码强度良好。继续保持随机性与长度，并开启双因素认证进一步提升安全性。');
+        return t('adv.uncrackable','密码几乎不可被暴力破解。请使用密码管理器妥善保管，并避免在不同站点重复使用同一密码。');
       }
 
       function calc() {

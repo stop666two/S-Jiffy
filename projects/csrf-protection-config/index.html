@@ -38,7 +38,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">CSRF 防护生成器</h1>
@@ -249,23 +249,23 @@
 
       var NOTES = {
         express_csurf: [
-          'csurf 将随机 token 绑定在会话/Cookie 中，渲染表单时通过 req.csrfToken() 注入隐藏字段。',
-          '校验规则：非 GET/HEAD/OPTIONS 请求必须携带 _csrf 字段或 csrf-token 请求头，否则返回 403。', t('ui.28','所有表单（含登录、上传）都要加上 _csrf 隐藏字段；AJAX 请求用 X-CSRF-Token 请求头。'),
-          'csurf 4.x 仅兼容 Express 4；Express 5 请改用 csrf-csrf 包或下方双提交 Cookie 方案。', t('ui.27','GET 请求若改变状态（如删除），应改为 POST/DELETE 并纳入 CSRF 校验。')
+          t('note.csurfBind','csurf 将随机 token 绑定在会话/Cookie 中，渲染表单时通过 req.csrfToken() 注入隐藏字段。'),
+          t('note.validateRule','校验规则：非 GET/HEAD/OPTIONS 请求必须携带 _csrf 字段或 csrf-token 请求头，否则返回 403。'), t('ui.28','所有表单（含登录、上传）都要加上 _csrf 隐藏字段；AJAX 请求用 X-CSRF-Token 请求头。'),
+          t('note.csurfCompat','csurf 4.x 仅兼容 Express 4；Express 5 请改用 csrf-csrf 包或下方双提交 Cookie 方案。'), t('ui.27','GET 请求若改变状态（如删除），应改为 POST/DELETE 并纳入 CSRF 校验。')
         ],
         express_double: [ t('ui.26','双提交 Cookie 不依赖会话存储：服务端只比对 Cookie 值与请求头/请求体中的值是否一致。'), t('ui.25','Cookie 必须设置 httpOnly:false，否则前端 JS 无法读取用于请求头。'), t('ui.24','sameSite 建议设为 Lax 或 Strict，作为第二层防护；Secure 在生产环境必须开启。'), t('ui.23','缺点：若站点存在 XSS，攻击者可读取 Cookie 伪造请求头，因此仍需严格输出转义。'), t('ui.22','适合前后端分离、无会话的 API 服务；登录类应用建议优先使用会话内 token（csurf）。')
         ],
         spring: [ t('ui.21','Spring Security 6 默认开启 CSRF 校验，非 GET 请求缺少 token 时返回 403。'),
-          'CookieCsrfTokenRepository.withHttpOnlyFalse() 让前端可读取 XSRF-TOKEN Cookie 并回传。', t('ui.20','前端需将请求头 X-XSRF-TOKEN 与 Cookie 中的值保持一致（axios 可自动完成）。'), t('ui.19','ignoringRequestMatchers 仅用于白名单无状态回调（如 webhook），不要扩大范围。'), t('ui.18','纯 API 且不依赖 Cookie 会话时，可评估使用 token 认证替代 CSRF 防护。')
+          t('note.springHttpOnlyFalse','CookieCsrfTokenRepository.withHttpOnlyFalse() 让前端可读取 XSRF-TOKEN Cookie 并回传。'), t('ui.20','前端需将请求头 X-XSRF-TOKEN 与 Cookie 中的值保持一致（axios 可自动完成）。'), t('ui.19','ignoringRequestMatchers 仅用于白名单无状态回调（如 webhook），不要扩大范围。'), t('ui.18','纯 API 且不依赖 Cookie 会话时，可评估使用 token 认证替代 CSRF 防护。')
         ],
         flask: [
-          'flask-wtf 的 CSRFProtect 全局拦截所有 POST 请求，必须携带有效 token，否则返回 400。',
-          '模板中 {{ csrf_token() }} 会输出隐藏 input；使用 Flask-WTF 表单时用 {{ form.csrf_token }}。', t('ui.17','SECRET_KEY 是 token 签名基础，必须使用高强度随机值且通过环境变量注入。'), t('ui.16','WTF_CSRF_TIME_LIMIT 控制 token 有效期（默认 3600 秒），可据业务调整。'),
-          'csrf.exempt() 仅用于无状态回调，且应同时校验来源与签名。'
+          t('note.flaskIntercept','flask-wtf 的 CSRFProtect 全局拦截所有 POST 请求，必须携带有效 token，否则返回 400。'),
+          t('note.flaskTemplate','模板中 {{ csrf_token() }} 会输出隐藏 input；使用 Flask-WTF 表单时用 {{ form.csrf_token }}。'), t('ui.17','SECRET_KEY 是 token 签名基础，必须使用高强度随机值且通过环境变量注入。'), t('ui.16','WTF_CSRF_TIME_LIMIT 控制 token 有效期（默认 3600 秒），可据业务调整。'),
+          t('note.flaskExempt','csrf.exempt() 仅用于无状态回调，且应同时校验来源与签名。')
         ],
         django: [
-          'Django 默认开启 CSRF，模板中 {% csrf_token %} 生成隐藏字段 csrfmiddlewaretoken。', t('ui.15','AJAX 请求必须携带 X-CSRFToken 请求头（值取隐藏字段内容），否则返回 403。'),
-          'CSRF_COOKIE_SECURE=True 让 Cookie 仅经 HTTPS 传输；配合 CSRF_COOKIE_SAMESITE 更安全。', t('ui.14','反向代理/多域名场景需配置 CSRF_TRUSTED_ORIGINS 来源白名单，否则校验失败。'), t('ui.13','csrf_exempt 会关闭整个视图的防护，仅限无状态回调使用并应记录审计。')
+          t('note.djangoDefault','Django 默认开启 CSRF，模板中 {% csrf_token %} 生成隐藏字段 csrfmiddlewaretoken。'), t('ui.15','AJAX 请求必须携带 X-CSRFToken 请求头（值取隐藏字段内容），否则返回 403。'),
+          t('note.djangoSecureCookie','CSRF_COOKIE_SECURE=True 让 Cookie 仅经 HTTPS 传输；配合 CSRF_COOKIE_SAMESITE 更安全。'), t('ui.14','反向代理/多域名场景需配置 CSRF_TRUSTED_ORIGINS 来源白名单，否则校验失败。'), t('ui.13','csrf_exempt 会关闭整个视图的防护，仅限无状态回调使用并应记录审计。')
         ],
         generic: [ t('ui.12','SameSite=Lax 是最低成本的基础防护，可拦截绝大多数跨站 POST；敏感站点用 Strict。'), t('ui.11','双提交 Cookie 需要两处 token 值一致，攻击者无法读取目标站点 Cookie 因此无法伪造。'), t('ui.10','响应头 X-Frame-Options / CSP / Referrer-Policy 用于缓解点击劫持与信息泄露。'), t('ui.9','无论哪种方案，配合 CORS 白名单与 Origin 校验能进一步降低跨站风险。')
         ]

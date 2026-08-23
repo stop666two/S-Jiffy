@@ -55,7 +55,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">视口尺寸工具</h1>
@@ -102,9 +102,9 @@
       }
 
       function classify(width) {
-        if (width < 600) return '手机';
-        if (width <= 1024) return '平板';
-        return '桌面';
+        if (width < 600) return t('devicePhone','手机');
+        if (width <= 1024) return t('deviceTablet','平板');
+        return t('deviceDesktop','桌面');
       }
 
       function fmt(n) {
@@ -125,32 +125,32 @@
         var device = classify(innerW);
 
         var items = [
-          { label: t('ui.12','窗口尺寸 outer'), value: outerW + ' × ' + outerH + ' px', sub: '浏览器窗口整体' },
-          { label: t('ui.11','视口尺寸 inner'), value: innerW + ' × ' + innerH + ' px', sub: '页面可用区域' },
-          { label: t('ui.10','设备像素比 DPR'), value: fmt(dpr) + 'x', sub: 'CSS px → 物理 px 倍率' },
-          { label: t('ui.9','CSS 像素'), value: innerW + ' × ' + innerH + ' px', sub: '视口逻辑尺寸' },
-          { label: t('ui.8','物理像素'), value: fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr) + ' px', sub: '实际渲染像素' },
-          { label: t('ui.7','滚动条宽度'), value: scrollW + ' px', sub: '实测，无滚动条为 0' },
+          { label: t('ui.12','窗口尺寸 outer'), value: outerW + ' × ' + outerH + ' px', sub: '浏览器窗口整体', subKey: 'subWindowOverall' },
+          { label: t('ui.11','视口尺寸 inner'), value: innerW + ' × ' + innerH + ' px', sub: '页面可用区域', subKey: 'subPageArea' },
+          { label: t('ui.10','设备像素比 DPR'), value: fmt(dpr) + 'x', sub: 'CSS px → 物理 px 倍率', subKey: 'subDprRatio' },
+          { label: t('ui.9','CSS 像素'), value: innerW + ' × ' + innerH + ' px', sub: '视口逻辑尺寸', subKey: 'subLogicalSize' },
+          { label: t('ui.8','物理像素'), value: fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr) + ' px', sub: '实际渲染像素', subKey: 'subRenderedPixels' },
+          { label: t('ui.7','滚动条宽度'), value: scrollW + ' px', sub: '实测，无滚动条为 0', subKey: 'subMeasured' },
           { label: t('ui.6','屏幕尺寸'), value: screenW + ' × ' + screenH + ' px', sub: 'screen.width / height' },
-          { label: t('ui.5','颜色深度'), value: colorDepth + ' bit', sub: '颜色通道位数' }
+          { label: t('ui.5','颜色深度'), value: colorDepth + ' bit', sub: '颜色通道位数', subKey: 'subColorChannels' }
         ];
         var html = '';
         var i;
         for (i = 0; i < items.length; i++) {
           html += '<div class="vp-item"><div class="vp-label">' + htmlEscape(items[i].label) + '</div>'
             + '<div class="vp-value">' + htmlEscape(items[i].value) + '</div>'
-            + '<div class="vp-sub">' + htmlEscape(items[i].sub) + '</div></div>';
+            + '<div class="vp-sub">' + htmlEscape(items[i].subKey?t(items[i].subKey,items[i].sub):items[i].sub) + '</div></div>';
         }
         gridEl.innerHTML = html;
-        deviceEl.innerHTML = '<span class="device-badge">当前设备推断：' + htmlEscape(device) + '</span>';
+        deviceEl.innerHTML = '<span class="device-badge">' + t('deviceInferred','当前设备推断：') + htmlEscape(device) + '</span>';
         outputEl.textContent = t('ui.4','窗口：') + outerW + ' × ' + outerH
-          + '\n视口：' + innerW + ' × ' + innerH
+          + t('outViewport','\n视口：') + innerW + ' × ' + innerH
           + '\nDPR：' + fmt(dpr)
-          + '\n物理像素：' + fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr)
-          + '\n屏幕：' + screenW + ' × ' + screenH
-          + '\n颜色深度：' + colorDepth + ' bit'
-          + '\n滚动条宽度：' + scrollW + ' px'
-          + '\n设备推断：' + device;
+          + t('outPhysical','\n物理像素：') + fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr)
+          + t('outScreen','\n屏幕：') + screenW + ' × ' + screenH
+          + t('outColorDepth','\n颜色深度：') + colorDepth + ' bit'
+          + t('outScrollbar','\n滚动条宽度：') + scrollW + ' px'
+          + t('outDevice','\n设备推断：') + device;
       }
 
       window.addEventListener('resize', render);

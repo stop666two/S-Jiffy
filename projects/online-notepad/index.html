@@ -30,7 +30,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">在线记事本</h1>
 <p class="tool-desc" data-i18n="desc">基于浏览器的记事本，自动保存到localStorage，支持Markdown预览和PDF/TXT导出，无需账号。</p>
@@ -78,7 +78,7 @@
 </div>
 <div class="np-actions">
 <button id="btnExportTxt" class="btn btn-secondary" data-i18n="notepadExportTxt">导出 .txt</button>
-<button id="btnExportMd" class="btn btn-secondary">导出 .md</button>
+<button id="btnExportMd" class="btn btn-secondary" data-i18n="notepadExportMd">导出 .md</button>
 <button id="btnClear" class="btn btn-secondary" data-i18n="notepadNew">新建文档</button>
 </div>
 <div class="note" style="font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-2);line-height:1.7;" data-i18n="ui.101">内容每 500 毫秒自动保存到浏览器 localStorage（键 s-jiffy:notepad），关闭页面后再次打开仍然保留。所有内容仅存于本机，不会上传。</div>
@@ -94,12 +94,12 @@ var STORAGE_KEY='s-jiffy:notepad';
 var editor=document.getElementById('editor');
 var saveState=document.getElementById('saveState');
 var wordCountEl=document.getElementById('wordCount'),charCountEl=document.getElementById('charCount');
-var FONTS=[{g:'通用',f:[['默认',''],['Arial','Arial'],['Georgia','Georgia'],['Impact','Impact'],['Tahoma','Tahoma'],['Times New Roman','Times New Roman'],['Verdana','Verdana'],['Courier New','Courier New']]},{g:'中文字体',f:[['微软雅黑','Microsoft YaHei'],['宋体','SimSun'],['黑体','SimHei'],['楷体','KaiTi'],['仿宋','FangSong'],['思源黑体','Noto Sans SC']]}];
+var FONTS=[{g:'通用',gKey:'fontGroupGeneral',f:[{label:'默认',value:'',labelKey:'fontDefault'},{label:'Arial',value:'Arial'},{label:'Georgia',value:'Georgia'},{label:'Impact',value:'Impact'},{label:'Tahoma',value:'Tahoma'},{label:'Times New Roman',value:'Times New Roman'},{label:'Verdana',value:'Verdana'},{label:'Courier New',value:'Courier New'}]},{g:'中文字体',gKey:'fontGroupCjk',f:[{label:'微软雅黑',value:'Microsoft YaHei',labelKey:'fontMicrosoftYaHei'},{label:'宋体',value:'SimSun',labelKey:'fontSimSun'},{label:'黑体',value:'SimHei',labelKey:'fontSimHei'},{label:'楷体',value:'KaiTi',labelKey:'fontKaiTi'},{label:'仿宋',value:'FangSong',labelKey:'fontFangSong'},{label:'思源黑体',value:'Noto Sans SC',labelKey:'fontNotoSansSC'}]}];
 var SIZES=['10','12','14','16','18','20','24','28','32','36','48','64'];
 var fontSel=document.getElementById('fontSel'),sizeSel=document.getElementById('sizeSel');
 FONTS.forEach(function(g){
-  var og=document.createElement('optgroup');og.label=g.g;
-  g.f.forEach(function(p){var o=document.createElement('option');o.value=p[1];o.textContent=p[0];og.appendChild(o);});
+  var og=document.createElement('optgroup');og.label=g.gKey?t(g.gKey,g.g):g.g;
+  g.f.forEach(function(p){var o=document.createElement('option');o.value=p.value;o.textContent=p.labelKey?t(p.labelKey,p.label):p.label;og.appendChild(o);});
   fontSel.appendChild(og);
 });
 SIZES.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s+'px';if(s==='16')o.selected=true;sizeSel.appendChild(o);});

@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">素数检测器</h1>
     <p class="tool-desc" data-i18n="desc">检测质数、分解质因数、查找最近质数。</p>
@@ -78,21 +78,21 @@
         var raw = input.value.trim();
         if (!raw) { o.innerHTML = ''; setStatus(''); return; }
         var num = parseInt(raw, 10);
-        if (isNaN(num) || num < 1) { o.innerHTML = '<span style="color:var(--color-error)">请输入正整数</span>'; setStatus(t('ui.100','输入无效'), 'error'); return; }
+        if (isNaN(num) || num < 1) { o.innerHTML = '<span style="color:var(--color-error)">' + t('ui.101','请输入正整数') + '</span>'; setStatus(t('ui.100','输入无效'), 'error'); return; }
 
         var prime = isPrime(num);
         var factors = factorize(num);
         var allFactors = getFactors(num);
         var nearest = nearestPrimes(num);
-        var factorStr = factors.length ? factors.join(' × ') : '（无）';
+        var factorStr = factors.length ? factors.join(' × ') : t('ui.102','（无）');
 
         var html = '<div class="result-grid">';
-        html += '<div class="result-item"><label>检测结果</label><span style="font-size:var(--font-size-base);font-weight:600;color:' + (prime ? 'var(--color-success)' : 'var(--color-error)') + '">' + (prime ? '是质数' : '不是质数') + '</span></div>';
-        html += '<div class="result-item"><label>质因数分解</label><span>' + htmlEscape(raw) + ' = ' + factorStr + '</span></div>';
-        html += '<div class="result-item"><label>因数数量</label><span>' + allFactors.length + ' 个</span></div>';
-        html += '<div class="result-item"><label>所有因数</label><span>' + allFactors.join(', ') + '</span></div>';
-        html += '<div class="result-item"><label>前一个质数</label><span>' + (nearest.prev !== null ? nearest.prev : '无') + '</span></div>';
-        html += '<div class="result-item"><label>后一个质数</label><span>' + nearest.next + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.result','检测结果') + '</label><span style="font-size:var(--font-size-base);font-weight:600;color:' + (prime ? 'var(--color-success)' : 'var(--color-error)') + '">' + (prime ? t('res.isPrime','是质数') : t('res.isNotPrime','不是质数')) + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.factorization','质因数分解') + '</label><span>' + htmlEscape(raw) + ' = ' + factorStr + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.factorCount','因数数量') + '</label><span>' + allFactors.length + t('ui.103',' 个') + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.allFactors','所有因数') + '</label><span>' + allFactors.join(', ') + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.prevPrime','前一个质数') + '</label><span>' + (nearest.prev !== null ? nearest.prev : t('res.none','无')) + '</span></div>';
+        html += '<div class="result-item"><label>' + t('res.nextPrime','后一个质数') + '</label><span>' + nearest.next + '</span></div>';
         html += '</div>';
         o.innerHTML = html;
         setStatus('');

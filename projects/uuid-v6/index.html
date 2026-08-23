@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">UUID v6 生成器</h1>
     <p class="tool-desc" data-i18n="desc">生成 UUID v6（重新排序的时间基 UUID），显示十六进制拆分。</p>
@@ -24,7 +24,7 @@
         <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="1" min="1" max="100"></div>
       </div>
       <div class="u6-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="upperChk" type="checkbox"> 大写</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="upperChk" type="checkbox"> <span data-i18n="ui.upper">大写</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
       <div class="hex-breakdown" id="breakdown"></div>
@@ -98,13 +98,13 @@
 
         if (i === 0) {
           var p = parseHex(uuid);
-          breakHtml = '<div style="font-size:12px;color:var(--color-text-secondary);">UUID v6 十六进制拆分:</div>';
-          breakHtml += '<div><strong>时间戳高位+中位:</strong> ' + p.timeHiMid + ' (48 bits)</div>';
-          breakHtml += '<div><strong>时间戳中低位:</strong> ' + p.timeMidLow + ' (12+12 bits)</div>';
-          breakHtml += '<div><strong>时间低位+版本:</strong> ' + p.timeLowVersion + ' (12+4 bits, v=6)</div>';
-          breakHtml += '<div><strong>时钟序列+变体:</strong> ' + p.clockSeq + ' (14+2 bits)</div>';
-          breakHtml += '<div><strong>节点:</strong> ' + p.node + ' (48 bits)</div>';
-          breakHtml += '<div style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);">时间戳: ' + new Date().toISOString() + '</div>';
+          breakHtml = '<div style="font-size:12px;color:var(--color-text-secondary);">' + t('ui.breakdown','UUID v6 十六进制拆分:') + '</div>';
+          breakHtml += '<div><strong>' + t('ui.timeHiMid','时间戳高位+中位:') + '</strong> ' + p.timeHiMid + ' (48 bits)</div>';
+          breakHtml += '<div><strong>' + t('ui.timeMidLow','时间戳中低位:') + '</strong> ' + p.timeMidLow + ' (12+12 bits)</div>';
+          breakHtml += '<div><strong>' + t('ui.timeLowVersion','时间低位+版本:') + '</strong> ' + p.timeLowVersion + ' (12+4 bits, v=6)</div>';
+          breakHtml += '<div><strong>' + t('ui.clockSeq','时钟序列+变体:') + '</strong> ' + p.clockSeq + ' (14+2 bits)</div>';
+          breakHtml += '<div><strong>' + t('ui.node','节点:') + '</strong> ' + p.node + ' (48 bits)</div>';
+          breakHtml += '<div style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);">' + t('ui.timestamp','时间戳: ') + new Date().toISOString() + '</div>';
         }
       }
 

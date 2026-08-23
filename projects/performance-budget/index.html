@@ -19,7 +19,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">性能预算计算器</h1>
@@ -43,9 +43,9 @@
       <div class="field-row">
         <label data-i18n="ui.4">网络速度</label>
         <select id="netSelect" class="input">
-          <option value="4g">4G（10 Mbps）</option>
-          <option value="3g">3G（1.5 Mbps）</option>
-          <option value="2g">2G（0.15 Mbps）</option>
+          <option value="4g" data-i18n="net4g">4G（10 Mbps）</option>
+          <option value="3g" data-i18n="net3g">3G（1.5 Mbps）</option>
+          <option value="2g" data-i18n="net2g">2G（0.15 Mbps）</option>
         </select>
       </div>
       <div class="btn-row">
@@ -106,15 +106,15 @@
         var diff = total - target;
         var pass = diff <= 0;
         var html = '';
-        html += '<div class="budget-line">传输时间：' + transferSec.toFixed(2) + t('ui.12',' 秒（') + kb + ' KB ÷ ' + mbps + ' Mbps）</div>';
-        html += '<div class="budget-line">请求开销：' + reqs + ' × ' + PER_REQUEST_MS + 'ms = ' + overheadSec.toFixed(2) + ' 秒</div>';
-        html += '<div class="budget-line" style="font-size:var(--font-size-base);margin:8px 0;">预估总耗时：<b>' + total.toFixed(2) + '</b> 秒</div>';
+        html += '<div class="budget-line">' + t('transferTime','传输时间：') + transferSec.toFixed(2) + t('ui.12',' 秒（') + kb + ' KB ÷ ' + mbps + t('ui.13',' Mbps）') + '</div>';
+        html += '<div class="budget-line">' + t('requestOverhead','请求开销：') + reqs + ' × ' + PER_REQUEST_MS + 'ms = ' + overheadSec.toFixed(2) + t('ui.second',' 秒') + '</div>';
+        html += '<div class="budget-line" style="font-size:var(--font-size-base);margin:8px 0;">' + t('estimatedTotal','预估总耗时：') + '<b>' + total.toFixed(2) + '</b>' + t('ui.second',' 秒') + '</div>';
         if (pass) {
-          html += '<div class="budget-line" style="color:var(--color-success);font-size:var(--font-size-base);">结论：达标（目标 ' + target + t('ui.11',' 秒，富余 ') + (-diff).toFixed(2) + ' 秒）</div>';
+          html += '<div class="budget-line" style="color:var(--color-success);font-size:var(--font-size-base);">' + t('conclusionPass','结论：达标（目标 ') + target + t('ui.11',' 秒，富余 ') + (-diff).toFixed(2) + t('ui.15',' 秒）') + '</div>';
         } else {
-          html += '<div class="budget-line" style="color:var(--color-error);font-size:var(--font-size-base);">结论：超预算 ' + diff.toFixed(2) + ' 秒</div>';
+          html += '<div class="budget-line" style="color:var(--color-error);font-size:var(--font-size-base);">' + t('conclusionFail','结论：超预算 ') + diff.toFixed(2) + t('ui.second',' 秒') + '</div>';
         }
-        html += '<div class="budget-line" style="color:var(--color-text-secondary);margin-top:var(--space-2);">建议：</div>';
+        html += '<div class="budget-line" style="color:var(--color-text-secondary);margin-top:var(--space-2);">' + t('adviceLabel','建议：') + '</div>';
         var tips = [];
         if (kb >= 2000) tips.push(t('ui.10','压缩资源体积：图片转 WebP/AVIF、CSS/JS 压缩、开启 Gzip 或 Brotli'));
         if (reqs >= 30) tips.push(t('ui.9','合并请求：合并 JS/CSS 文件、使用 HTTP/2 多路复用、CSS 雪碧图'));
@@ -125,7 +125,7 @@
           html += '<div class="budget-tip">· ' + htmlEscape(tips[i]) + '</div>';
         }
         outputText.innerHTML = html;
-        setStatus(pass ? '预算评估完成：达标' : '预算评估完成：超预算', pass ? undefined : 'error');
+        setStatus(pass ? t('statusPass','预算评估完成：达标') : t('statusFail','预算评估完成：超预算'), pass ? undefined : 'error');
       }
 
       document.getElementById('calcBtn').addEventListener('click', calc);

@@ -46,7 +46,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">Apex英雄灵敏度转换器</h1>
 <p class="tool-desc" data-i18n="desc">将任何游戏的灵敏度转换为Apex英雄。基于cm/360精确计算。</p>
@@ -70,7 +70,7 @@
 <p class="sens-note" id="fromNote" style="display:none;"></p>
 </div>
 <div class="swap-col">
-<button type="button" id="swapBtn" class="swap-btn" title="⇄ 互换">互换</button>
+<button type="button" id="swapBtn" class="swap-btn" data-i18n="swapGames" title="⇄ 互换">互换</button>
 </div>
 <div class="game-col">
 <div class="field-label" id="toLbl" data-i18n="ui.104">目标游戏</div>
@@ -119,7 +119,7 @@ function cm360(dpi,sens,yaw){return (360*2.54)/(dpi*sens*yaw);}
 function sensFromCm360(dpi,cm,yaw){return (360*2.54)/(dpi*cm*yaw);}
 function fmtSens(v){return v.toFixed(v<0.1?4:(v<1?3:2));}
 function game(id){for(var i=0;i<GAMES.length;i++){if(GAMES[i].id===id)return GAMES[i];}return null;}
-function label(g){return t(g.label,g.label==='sensLabelMouseSensitivity'?'鼠标灵敏度':(g.label==='sensLabelGeneralSensitivity'?'综合灵敏度':(g.label==='sensLabelMousePct'?'鼠标灵敏度 %':(g.label==='sensLabelXY'?'X/Y 灵敏度':'灵敏度'))));}
+function label(g){return t(g.label,g.label==='sensLabelMouseSensitivity'?t('sensLabelMouseSensitivity','鼠标灵敏度'):(g.label==='sensLabelGeneralSensitivity'?t('sensLabelGeneralSensitivity','综合灵敏度'):(g.label==='sensLabelMousePct'?t('sensLabelMousePct','鼠标灵敏度 %'):(g.label==='sensLabelXY'?t('sensLabelXY','X/Y 灵敏度'):t('sensLabelSensitivity','灵敏度')))));}
 
 document.getElementById('sensDesc').textContent=t('sensConverterDesc','输入灵敏度和 DPI，转换结果自动更新。');
 document.getElementById('dpiLabel').textContent=t('mouseDPILabel','鼠标 DPI');
@@ -168,8 +168,8 @@ function syncFields(){
   toSensLbl.textContent=label(tt)+t('sensResultSuffix','（结果）');
   fromNote.style.display=f.note?'block':'none';
   toNote.style.display=tt.note?'block':'none';
-  if(f.note)fromNote.textContent=t(f.note,'使用 X 轴灵敏度');
-  if(tt.note)toNote.textContent=t(tt.note,'使用 X 轴灵敏度');
+  if(f.note)fromNote.textContent=t(f.note,t('sensNoteXAxis','使用 X 轴灵敏度'));
+  if(tt.note)toNote.textContent=t(tt.note,t('sensNoteXAxis','使用 X 轴灵敏度'));
 }
 function getDpi(){
   var d=parseFloat(dpiInput.value);
@@ -264,7 +264,7 @@ document.getElementById('copyBtn').addEventListener('click',function(){
   var f=game(fromId),tt=game(toId);
   var s=parseFloat(fromSens.value);
   var d=getDpi();
-  var text=tt.name+' 灵敏度: '+v;
+  var text=tt.name+t('sensResultLabel',' 灵敏度: ')+v;
   if(!isNaN(s)&&s>0&&d){text+=' | cm/360: '+cm360(d,s,f.yaw).toFixed(2)+' cm | DPI: '+d;}
   copyToClipboard(text,this);
   setStatus(t('common.copied','已复制'));

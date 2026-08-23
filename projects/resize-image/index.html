@@ -50,7 +50,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">图片调整大小</h1>
 <p class="tool-desc" data-i18n="desc">即时调整图片大小到任意尺寸。支持所有主要图片格式。</p>
@@ -115,9 +115,9 @@
   </div>
 
   <div class="tool-row">
-    <button type="button" class="btn btn-primary" id="applyBtn">调整尺寸</button>
-    <button type="button" class="btn btn-secondary" id="resetResultBtn" style="display:none">重新调整</button>
-    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none">下载</button>
+    <button type="button" class="btn btn-primary" id="applyBtn" data-i18n="resize">调整尺寸</button>
+    <button type="button" class="btn btn-secondary" id="resetResultBtn" style="display:none" data-i18n="reResize">重新调整</button>
+    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none" data-i18n="download">下载</button>
   </div>
 </div>
 </main>
@@ -132,26 +132,26 @@
   'use strict';
   var MAX_MB = 50;
   var PRESETS = [
-    { group: '短视频 & 竖版', items: [
+    { group: '短视频 & 竖版', groupKey: 'groupShortVideo', items: [
       { key: 'presetTiktok', label: 'TikTok · 抖音 · IG Story', w: 1080, h: 1920 },
       { key: 'presetXhsPortraitCover', label: '小红书 竖版图文封面', w: 1242, h: 1660 },
       { key: 'presetXhsVideoPortrait', label: '小红书 视频竖版封面', w: 1080, h: 1440 },
       { key: 'presetInstagramPortrait', label: 'Instagram Portrait', w: 1080, h: 1350 }
     ] },
-    { group: '横版封面', items: [
+    { group: '横版封面', groupKey: 'groupLandscape', items: [
       { key: 'presetYtBilibili', label: 'YouTube · B站 视频封面', w: 1280, h: 720 },
       { key: 'presetBilibiliFullHd', label: 'Full HD · B站个人空间头图', w: 1920, h: 1080 },
       { key: 'presetBilibiliUpload', label: 'B站 投稿封面', w: 1146, h: 717 },
       { key: 'presetBilibiliHome', label: 'B站 首页推荐封面', w: 960, h: 720 },
       { key: 'presetXhsLandscape', label: '小红书 横版封面', w: 1200, h: 900 }
     ] },
-    { group: '方形 & 其他平台', items: [
+    { group: '方形 & 其他平台', groupKey: 'groupSquare', items: [
       { key: 'presetXhsSquare', label: '小红书 · Instagram 方形', w: 1080, h: 1080 },
       { key: 'presetWechatOa', label: '微信公众号首图', w: 900, h: 500 },
       { key: 'presetTwitterShare', label: 'Twitter · X 分享图', w: 1200, h: 675 },
       { key: 'presetWallpaper4k', label: '4K 壁纸', w: 3840, h: 2160 }
     ] },
-    { group: '证件照 (300 dpi)', items: [
+    { group: '证件照 (300 dpi)', groupKey: 'groupIdPhoto', items: [
       { key: 'presetIdPhoto1', label: '1寸证件照', w: 295, h: 413 },
       { key: 'presetIdPhoto2', label: '2寸证件照', w: 413, h: 579 },
       { key: 'presetPassport', label: '护照照片', w: 390, h: 567 },
@@ -200,7 +200,7 @@
   function renderPresets(container) {
     var html = '';
     for (var g = 0; g < PRESETS.length; g++) {
-      html += '<div class="preset-group"><p class="preset-group-title">' + htmlEscape(PRESETS[g].group) + '</p><div class="preset-row">';
+      html += '<div class="preset-group"><p class="preset-group-title">' + htmlEscape(PRESETS[g].groupKey ? t(PRESETS[g].groupKey, PRESETS[g].group) : PRESETS[g].group) + '</p><div class="preset-row">';
       for (var i = 0; i < PRESETS[g].items.length; i++) {
         var it = PRESETS[g].items[i];
         var label = t(it.key, it.label);

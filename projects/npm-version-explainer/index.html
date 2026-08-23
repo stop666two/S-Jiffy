@@ -14,7 +14,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">npm 版本范围解释器</h1>
@@ -111,10 +111,10 @@
           var parts = s.split('.');
           if (parts.length === 2) {
             var low = { major: toNum(parts[0], 0), minor: 0, patch: 0 };
-            return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], '^' + s + ' 表示 >=' + verStr(low) + ' 且 <' + verStr(nextMajor(low)) + t('ui.24','（仅主版本不变）'));
+            return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], '^' + s + t('meansGte',' 表示 >=') + verStr(low) + t('andLt',' 且 <') + verStr(nextMajor(low)) + t('ui.24','（仅主版本不变）'));
           }
           var low2 = { major: toNum(parts[0], 0), minor: toNum(parts[1], 0), patch: 0 };
-          return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], '^' + s + ' 表示 >=' + verStr(low2) + ' 且 <' + verStr(nextMinor(low2)) + t('ui.23','（主次版本不变）'));
+          return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], '^' + s + t('meansGte',' 表示 >=') + verStr(low2) + t('andLt',' 且 <') + verStr(nextMinor(low2)) + t('ui.23','（主次版本不变）'));
         }
         var v = parseVersion(s);
         if (!v) return null;
@@ -129,7 +129,7 @@
         } else {
           return atom([{ op: '=', v: low }], t('ui.22','^0.0.0 表示仅允许 0.0.0'));
         }
-        return atom([{ op: '>=', v: low }, { op: '<', v: high }], raw + ' 表示 >=' + verStr(low) + ' 且 <' + verStr(high) + t('ui.21','（主版本不变，允许次版本与补丁版本更新）'));
+        return atom([{ op: '>=', v: low }, { op: '<', v: high }], raw + t('meansGte',' 表示 >=') + verStr(low) + t('andLt',' 且 <') + verStr(high) + t('ui.21','（主版本不变，允许次版本与补丁版本更新）'));
       }
 
       function tildeAtom(raw) {
@@ -141,10 +141,10 @@
           var parts = s.split('.');
           if (parts.length === 1 || parts[1] === 'x') {
             var low = { major: toNum(parts[0], 0), minor: 0, patch: 0 };
-            return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], '~' + s + ' 表示 >=' + verStr(low) + ' 且 <' + verStr(nextMajor(low)) + t('ui.20','（仅补丁版本更新）'));
+            return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], '~' + s + t('meansGte',' 表示 >=') + verStr(low) + t('andLt',' 且 <') + verStr(nextMajor(low)) + t('ui.20','（仅补丁版本更新）'));
           }
           var low2 = { major: toNum(parts[0], 0), minor: toNum(parts[1], 0), patch: 0 };
-          return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], '~' + s + ' 表示 >=' + verStr(low2) + ' 且 <' + verStr(nextMinor(low2)) + t('ui.20','（仅补丁版本更新）'));
+          return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], '~' + s + t('meansGte',' 表示 >=') + verStr(low2) + t('andLt',' 且 <') + verStr(nextMinor(low2)) + t('ui.20','（仅补丁版本更新）'));
         }
         var v = parseVersion(s);
         if (!v) return null;
@@ -155,7 +155,7 @@
         } else {
           high = nextMinor(v);
         }
-        return atom([{ op: '>=', v: low }, { op: '<', v: high }], raw + ' 表示 >=' + verStr(low) + ' 且 <' + verStr(high) + t('ui.19','（仅允许补丁版本更新）'));
+        return atom([{ op: '>=', v: low }, { op: '<', v: high }], raw + t('meansGte',' 表示 >=') + verStr(low) + t('andLt',' 且 <') + verStr(high) + t('ui.19','（仅允许补丁版本更新）'));
       }
 
       function wildcardAtom(token) {
@@ -172,10 +172,10 @@
         }
         if (parts.length === 1 || parts[1] === 'x') {
           var low = { major: toNum(parts[0], 0), minor: 0, patch: 0 };
-          return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], token + t('ui.17',' 表示 ') + parts[0] + ' 的最新版本（>=' + verStr(low) + ' 且 <' + verStr(nextMajor(low)) + '）');
+          return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], token + t('ui.17',' 表示 ') + parts[0] + t('latestVersionRange',' 的最新版本（>=') + verStr(low) + t('andLt',' 且 <') + verStr(nextMajor(low)) + t('closeParen','）'));
         }
         var low2 = { major: toNum(parts[0], 0), minor: toNum(parts[1], 0), patch: 0 };
-        return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], token + t('ui.17',' 表示 ') + parts[0] + '.' + parts[1] + ' 的最新版本（>=' + verStr(low2) + ' 且 <' + verStr(nextMinor(low2)) + '）');
+        return atom([{ op: '>=', v: low2 }, { op: '<', v: nextMinor(low2) }], token + t('ui.17',' 表示 ') + parts[0] + '.' + parts[1] + t('latestVersionRange',' 的最新版本（>=') + verStr(low2) + t('andLt',' 且 <') + verStr(nextMinor(low2)) + t('closeParen','）'));
       }
 
       function bareAtom(token) {
@@ -186,16 +186,16 @@
         }
         var low = { major: v.major, minor: v.minor, patch: v.patch };
         if (v.parts === 1) {
-          return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], token + t('ui.17',' 表示 ') + v.major + ' 的最新版本（>=' + verStr(low) + ' 且 <' + verStr(nextMajor(low)) + '）');
+          return atom([{ op: '>=', v: low }, { op: '<', v: nextMajor(low) }], token + t('ui.17',' 表示 ') + v.major + t('latestVersionRange',' 的最新版本（>=') + verStr(low) + t('andLt',' 且 <') + verStr(nextMajor(low)) + t('closeParen','）'));
         }
-        return atom([{ op: '>=', v: low }, { op: '<', v: nextMinor(low) }], token + t('ui.17',' 表示 ') + v.major + '.' + v.minor + ' 的最新版本（>=' + verStr(low) + ' 且 <' + verStr(nextMinor(low)) + '）');
+        return atom([{ op: '>=', v: low }, { op: '<', v: nextMinor(low) }], token + t('ui.17',' 表示 ') + v.major + '.' + v.minor + t('latestVersionRange',' 的最新版本（>=') + verStr(low) + t('andLt',' 且 <') + verStr(nextMinor(low)) + t('closeParen','）'));
       }
 
       function comparatorAtom(op, token) {
         var v = parseVersion(token);
         if (!v) return null;
         var low = { major: v.major, minor: v.minor, patch: v.patch };
-        var label = op === '=' ? '等于' : op === '>' ? '大于' : op === '>=' ? '大于等于' : op === '<' ? '小于' : '小于等于';
+        var label = op === '=' ? t('opEqual','等于') : op === '>' ? t('opGt','大于') : op === '>=' ? t('opGte','大于等于') : op === '<' ? t('opLt','小于') : t('opLte','小于等于');
         return atom([{ op: op, v: low }], op + token + t('ui.16',' 表示版本') + label + ' ' + verStr(low));
       }
 
@@ -212,7 +212,7 @@
           comparators.push({ op: '<', v: nextMajor(highV) });
         }
         var highLabel = highV.parts >= 3 ? '<=' + verStr(highV) : '<' + verStr(highV.parts === 2 ? nextMinor(highV) : nextMajor(highV));
-        return { atom: atom(comparators, tokens[idx - 1] + ' - ' + tokens[idx + 1] + ' 表示版本范围：>=' + verStr(lowV) + t('ui.9',' 且 ') + highLabel + t('ui.15','（含两端）')), consumed: true };
+        return { atom: atom(comparators, tokens[idx - 1] + ' - ' + tokens[idx + 1] + t('rangeMeans',' 表示版本范围：>=') + verStr(lowV) + t('ui.9',' 且 ') + highLabel + t('ui.15','（含两端）')), consumed: true };
       }
 
       function parseBranch(tokens) {
@@ -301,7 +301,7 @@
           return;
         }
         if (expr === 'latest') {
-          outputEl.textContent = '范围表达式：latest\n\nlatest 是发布标签（dist-tag），表示当前最新发布版本，不属于语义版本范围，无法枚举具体版本。\n\n建议使用：npm install <包名>@latest 获取最新版本。';
+          outputEl.textContent = t('ui.11','范围表达式：') + 'latest\n\n' + t('latestDesc','latest 是发布标签（dist-tag），表示当前最新发布版本，不属于语义版本范围，无法枚举具体版本。') + '\n\n' + t('latestAdvice','建议使用：npm install <包名>@latest 获取最新版本。');
           setStatus(t('ui.13','已解释 latest 标签'));
           return;
         }
@@ -321,13 +321,13 @@
         lines.push('');
         lines.push(t('ui.10','语义解释：'));
         for (var j = 0; j < branches.length; j++) {
-          var sep = j < branches.length - 1 ? '；或 ' : '';
+          var sep = j < branches.length - 1 ? t('branchSep','；或 ') : '';
           lines.push('  ' + branches[j].texts.join(t('ui.9',' 且 ')) + sep);
         }
         lines.push('');
         var examples = listExamples(branches);
         if (examples.length) {
-          lines.push(t('ui.8','允许范围（数值）：') + (branches.length === 1 ? branches[0].texts.join('，') : '多个分支的并集'));
+          lines.push(t('ui.8','允许范围（数值）：') + (branches.length === 1 ? branches[0].texts.join(t('commaJoin','，')) : t('unionBranches','多个分支的并集')));
           lines.push('');
           var shown = examples.length > 100 ? 100 : examples.length;
           lines.push(t('ui.7','匹配版本示例（从 1.0.0 到 3.0.0 扫描，共 ') + examples.length + t('ui.6',' 个，显示前 ') + shown + t('ui.5',' 个）：'));

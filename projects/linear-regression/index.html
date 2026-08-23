@@ -23,7 +23,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">线性回归计算器</h1>
@@ -206,15 +206,15 @@
         var r2 = r * r;
         var html = '';
         html += '<div class="res-grid">';
-        html += '<div class="res-item"><span class="res-label">数据点数量 n</span><span class="res-value">' + htmlEscape(String(n)) + '</span></div>';
-        html += '<div class="res-item"><span class="res-label">斜率 b</span><span class="res-value">' + htmlEscape(b === null ? '无法计算（x 恒定）' : fmt(b)) + '</span></div>';
-        html += '<div class="res-item"><span class="res-label">截距 a</span><span class="res-value">' + htmlEscape(a === null ? '—' : fmt(a)) + '</span></div>';
-        html += '<div class="res-item"><span class="res-label">相关系数 r</span><span class="res-value">' + htmlEscape(fmt(r)) + '</span></div>';
-        html += '<div class="res-item"><span class="res-label">决定系数 R²</span><span class="res-value">' + htmlEscape(fmt(r2)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">' + t('res.n','数据点数量 n') + '</span><span class="res-value">' + htmlEscape(String(n)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">' + t('res.slope','斜率 b') + '</span><span class="res-value">' + htmlEscape(b === null ? t('res.xConstant','无法计算（x 恒定）') : fmt(b)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">' + t('res.intercept','截距 a') + '</span><span class="res-value">' + htmlEscape(a === null ? '—' : fmt(a)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">' + t('res.correlation','相关系数 r') + '</span><span class="res-value">' + htmlEscape(fmt(r)) + '</span></div>';
+        html += '<div class="res-item"><span class="res-label">' + t('res.rSquared','决定系数 R²') + '</span><span class="res-value">' + htmlEscape(fmt(r2)) + '</span></div>';
         html += '</div>';
         if (b !== null) {
           var sign = a >= 0 ? ' + ' : ' - ';
-          html += '<div class="eq-line">回归方程：y = ' + htmlEscape(fmt(b)) + 'x' + sign + htmlEscape(fmt(Math.abs(a))) + '</div>';
+          html += '<div class="eq-line">' + t('res.equation','回归方程：y = ') + htmlEscape(fmt(b)) + 'x' + sign + htmlEscape(fmt(Math.abs(a))) + '</div>';
           var pxv = predictEl.value.trim();
           if (pxv !== '') {
             if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(pxv)) {
@@ -223,7 +223,7 @@
             }
             var xv = parseFloat(pxv);
             var yv = b * xv + a;
-            html += '<div class="eq-line">预测：x = ' + htmlEscape(fmt(xv)) + t('ui.5',' 时，y = ') + htmlEscape(fmt(yv)) + '</div>';
+            html += '<div class="eq-line">' + t('res.predict','预测：x = ') + htmlEscape(fmt(xv)) + t('ui.5',' 时，y = ') + htmlEscape(fmt(yv)) + '</div>';
           }
         }
         outputText.innerHTML = html;

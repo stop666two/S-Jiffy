@@ -27,7 +27,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">MongoDB 聚合管道构建器</h1>
@@ -113,27 +113,27 @@
       if (!obj) return base;
       var extra = '';
       if (step.op === '$match') {
-        extra = t('ui.16','（条件字段：') + Object.keys(obj).join('、') + '）';
+        extra = t('ui.16','（条件字段：') + Object.keys(obj).join(t('listJoiner','、')) + t('parenClose','）');
       } else if (step.op === '$sort') {
         var dirs = [];
         var keys = Object.keys(obj);
         for (var i = 0; i < keys.length; i++) {
-          dirs.push(keys[i] + ' ' + (obj[keys[i]] < 0 ? '降序' : '升序'));
+          dirs.push(keys[i] + ' ' + (obj[keys[i]] < 0 ? t('sortDesc','降序') : t('sortAsc','升序')));
         }
-        extra = '（' + dirs.join('，') + '）';
+        extra = t('parenOpen','（') + dirs.join(t('commaJoiner','，')) + t('parenClose','）');
       } else if (step.op === '$group') {
-        extra = t('ui.15','（按 ') + String(obj['_id'] || '自定义键') + t('ui.14',' 分组）');
+        extra = t('ui.15','（按 ') + String(obj['_id'] || t('customKey','自定义键')) + t('ui.14',' 分组）');
       } else if (step.op === '$project') {
-        extra = t('ui.13','（输出字段：') + Object.keys(obj).join('、') + '）';
+        extra = t('ui.13','（输出字段：') + Object.keys(obj).join(t('listJoiner','、')) + t('parenClose','）');
       } else if (step.op === '$limit' || step.op === '$skip') {
         var n = obj['n'] !== undefined ? obj['n'] : (obj[step.op.replace('$', '')] !== undefined ? obj[step.op.replace('$', '')] : '');
-        if (n !== '') extra = t('ui.12','（数量：') + n + '）';
+        if (n !== '') extra = t('ui.12','（数量：') + n + t('parenClose','）');
       } else if (step.op === '$unwind') {
-        extra = t('ui.11','（路径：') + String(obj['path'] || obj['$unwind'] || '') + '）';
+        extra = t('ui.11','（路径：') + String(obj['path'] || obj['$unwind'] || '') + t('parenClose','）');
       } else if (step.op === '$lookup') {
-        extra = t('ui.10','（关联集合 ') + String(obj['from'] || '?') + '，' + String(obj['localField'] || '?') + ' = ' + String(obj['foreignField'] || '?') + '）';
+        extra = t('ui.10','（关联集合 ') + String(obj['from'] || '?') + t('commaJoiner','，') + String(obj['localField'] || '?') + ' = ' + String(obj['foreignField'] || '?') + t('parenClose','）');
       } else if (step.op === '$addFields') {
-        extra = t('ui.9','（新增字段：') + Object.keys(obj).join('、') + '）';
+        extra = t('ui.9','（新增字段：') + Object.keys(obj).join(t('listJoiner','、')) + t('parenClose','）');
       }
       return base + extra;
     }
@@ -156,16 +156,16 @@
         var valid = parseJson(s.text) !== null;
         html += '<div class="step-row' + (valid ? '' : ' invalid') + '" id="step_' + i + '">'
           + '<div class="step-head">'
-          + '<span class="step-no">步骤 ' + (i + 1) + '</span>'
+          + '<span class="step-no">' + t('stepLabel','步骤 ') + (i + 1) + '</span>'
           + '<select class="input" data-idx="' + i + '" data-role="op">';
         for (var o = 0; o < OPS.length; o++) {
           html += '<option value="' + htmlEscape(OPS[o].value) + '"' + (OPS[o].value === s.op ? ' selected' : '') + '>' + htmlEscape(OPS[o].label) + '</option>';
         }
         html += '</select>'
           + '<span class="step-actions">'
-          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="up"' + (i === 0 ? ' disabled' : '') + '>上移</button>'
-          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="down"' + (i === steps.length - 1 ? ' disabled' : '') + '>下移</button>'
-          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="del"' + (steps.length === 1 ? ' disabled' : '') + '>删除</button>'
+          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="up"' + (i === 0 ? ' disabled' : '') + '>' + t('moveUp','上移') + '</button>'
+          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="down"' + (i === steps.length - 1 ? ' disabled' : '') + '>' + t('moveDown','下移') + '</button>'
+          + '<button class="btn btn-secondary" data-idx="' + i + '" data-role="del"' + (steps.length === 1 ? ' disabled' : '') + '>' + t('deleteStep','删除') + '</button>'
           + '</span>'
           + '</div>'
           + '<textarea class="input textarea" data-idx="' + i + '" data-role="json" placeholder="' + htmlEscape(DEFAULTS[s.op] || '{}') + '">' + htmlEscape(s.text) + '</textarea>'
@@ -173,7 +173,7 @@
           + '</div>';
       }
       stepList.innerHTML = html;
-      stepHint.textContent = steps.length === 0 ? '当前没有步骤，点击「添加步骤」开始构建。' : t('ui.total','共 ') + steps.length + t('ui.8',' 个步骤，参数以 JSON 对象书写。');
+      stepHint.textContent = steps.length === 0 ? t('noSteps','当前没有步骤，点击「添加步骤」开始构建。') : t('ui.total','共 ') + steps.length + t('ui.8',' 个步骤，参数以 JSON 对象书写。');
       bindEvents();
       updateOutput();
     }

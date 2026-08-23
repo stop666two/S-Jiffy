@@ -79,7 +79,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">代码片段库</h1>
@@ -138,10 +138,10 @@
         { cat: 'JavaScript', title: t('ui.69','sleep 延迟函数'), lang: 'js', code: ["function sleep(ms) {", "  return new Promise(function (resolve) {", "    setTimeout(resolve, ms);", "  });", "}"].join('\n') },
         { cat: 'JavaScript', title: t('ui.68','日期格式化'), lang: 'js', code: ["function formatDate(d) {", "  var pad = function (n) { return String(n).padStart(2, '0'); };", "  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())", "    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());", "}"].join('\n') },
         { cat: 'HTML', title: t('ui.67','页面骨架'), lang: 'html', code: ['<!DOCTYPE html>', '<html lang="zh-CN">', '<head>', '  <meta charset="UTF-8">', '  <title data-i18n="ui.4">页面标题</title>', '</head>', '<body>', '  <h1 data-i18n="ui.5">你好，世界</h1>', '</body>', '</html>'].join('\n') },
-        { cat: 'HTML', title: t('ui.66','移动端 viewport meta'), lang: 'html', code: ['<meta name="viewport" content="width=device-width, initial-scale=1.0">', '<meta name="description" content="页面描述">', '<meta name="theme-color" content="#111111">'].join('\n') },
-        { cat: 'HTML', title: t('ui.65','语义化结构'), lang: 'html', code: ['<header>站点头部</header>', '<nav>导航链接</nav>', '<main>', '  <article>文章正文</article>', '  <aside>侧边栏</aside>', '</main>', '<footer>页脚信息</footer>'].join('\n') },
-        { cat: 'HTML', title: t('ui.64','表单示例'), lang: 'html', code: ['<form action="/submit" method="post">', '  <label for="name">姓名</label>', '  <input id="name" name="name" type="text" required>', '  <label for="email">邮箱</label>', '  <input id="email" name="email" type="email">', '  <button type="submit">提交</button>', '</form>'].join('\n') },
-        { cat: 'HTML', title: t('ui.63','响应式图片 srcset'), lang: 'html', code: ['<img src="small.jpg"', '     srcset="small.jpg 480w, medium.jpg 1024w, large.jpg 1920w"', '     sizes="(max-width: 600px) 100vw, 50vw"', '     alt="响应式图片">'].join('\n') },
+        { cat: 'HTML', title: t('ui.66','移动端 viewport meta'), lang: 'html', code: ['<meta name="viewport" content="width=device-width, initial-scale=1.0">', '<meta name="description" content="' + t('sampleMetaDesc','页面描述') + '">', '<meta name="theme-color" content="#111111">'].join('\n') },
+        { cat: 'HTML', title: t('ui.65','语义化结构'), lang: 'html', code: ['<header>' + t('sampleHeader','站点头部') + '</header>', '<nav>' + t('sampleNav','导航链接') + '</nav>', '<main>', '  <article>' + t('sampleArticle','文章正文') + '</article>', '  <aside>' + t('sampleAside','侧边栏') + '</aside>', '</main>', '<footer>' + t('sampleFooter','页脚信息') + '</footer>'].join('\n') },
+        { cat: 'HTML', title: t('ui.64','表单示例'), lang: 'html', code: ['<form action="/submit" method="post">', '  <label for="name">' + t('sampleName','姓名') + '</label>', '  <input id="name" name="name" type="text" required>', '  <label for="email">' + t('sampleEmail','邮箱') + '</label>', '  <input id="email" name="email" type="email">', '  <button type="submit">' + t('sampleSubmit','提交') + '</button>', '</form>'].join('\n') },
+        { cat: 'HTML', title: t('ui.63','响应式图片 srcset'), lang: 'html', code: ['<img src="small.jpg"', '     srcset="small.jpg 480w, medium.jpg 1024w, large.jpg 1920w"', '     sizes="(max-width: 600px) 100vw, 50vw"', '     alt="' + t('sampleImgAlt','响应式图片') + '">'].join('\n') },
         { cat: 'HTML', title: t('ui.62','视频标签'), lang: 'html', code: ['<video controls width="640">', '  <source src="movie.mp4" type="video/mp4">', '  <source src="movie.webm" type="video/webm">', t('ui.61','  您的浏览器不支持 video 标签。'), '</video>'].join('\n') },
         { cat: 'HTML', title: t('ui.60','音频标签'), lang: 'html', code: ['<audio controls>', '  <source src="song.mp3" type="audio/mpeg">', t('ui.59','  您的浏览器不支持 audio 标签。'), '</audio>'].join('\n') },
         { cat: 'HTML', title: t('ui.58','内联 SVG'), lang: 'html', code: ['<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">', '  <circle cx="50" cy="50" r="40" fill="#4a90d9"/>', '</svg>'].join('\n') },
@@ -210,10 +210,10 @@
           html += '<div class="snippet-card" data-index="' + i + '">'
             + '<div class="snippet-head"><span class="snippet-title">' + htmlEscape(s.title) + '</span><span class="lang-badge">' + htmlEscape(s.lang) + '</span></div>'
             + '<pre class="snippet-code"></pre>'
-            + '<button class="btn btn-secondary snippet-copy">复制</button>'
+            + '<button class="btn btn-secondary snippet-copy">' + t('common.copy','复制') + '</button>'
             + '</div>';
         }
-        gridEl.innerHTML = html || '<div class="empty-hint">没有匹配的片段，换个关键词试试</div>';
+        gridEl.innerHTML = html || '<div class="empty-hint">' + t('emptyHint','没有匹配的片段，换个关键词试试') + '</div>';
         var pres = gridEl.querySelectorAll('.snippet-code');
         var shown = gridEl.querySelectorAll('.snippet-card');
         for (i = 0; i < shown.length; i++) {

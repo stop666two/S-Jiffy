@@ -11,7 +11,7 @@
 .cookie-table .attr-val { color:var(--color-text-primary); }
 .warning-text { color:var(--color-error); font-size:12px; }
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Cookie 解析</h1><p class="tool-desc" data-i18n="desc">解析和格式化 HTTP Cookie 字符串</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="sessionId=abc123; Path=/; HttpOnly; Secure; SameSite=Lax
 theme=dark; Max-Age=3600
@@ -38,7 +38,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
     'httponly': { name: 'HttpOnly', desc: t('ui.7','禁止 JavaScript 访问') },
     'samesite': { name: 'SameSite', desc: t('ui.6','跨站请求策略: Strict/Lax/None') },
     'priority': { name: 'Priority', desc: t('ui.5','Cookie 优先级: Low/Medium/High') },
-    'partitioned': { name: 'Partitioned', desc: '分区存储 (CHIPS)' }
+    'partitioned': { name: 'Partitioned', desc: t('ui.13','分区存储 (CHIPS)') }
   };
 
   var SAMESITE_VALUES = { strict: 'Strict', lax: 'Lax', none: 'None' };
@@ -106,8 +106,8 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
       html += '<div class="card" style="padding:var(--space-2);margin-bottom:12px;">';
       html += '<table class="cookie-table">';
       html += '<tr><th colspan="2" style="font-size:13px;">Cookie #' + (ci + 1) + ': ' + htmlEscape(cookie.name) + '</th></tr>';
-      html += '<tr><td class="attr-name" style="width:100px;">名称</td><td class="attr-val"><strong>' + htmlEscape(cookie.name) + '</strong></td></tr>';
-      html += '<tr><td class="attr-name">值</td><td class="attr-val" style="word-break:break-all;">' + htmlEscape(cookie.value.length > 100 ? cookie.value.substring(0, 100) + '...' : cookie.value) + '</td></tr>';
+      html += '<tr><td class="attr-name" style="width:100px;">' + t('name','名称') + '</td><td class="attr-val"><strong>' + htmlEscape(cookie.name) + '</strong></td></tr>';
+      html += '<tr><td class="attr-name">' + t('value','值') + '</td><td class="attr-val" style="word-break:break-all;">' + htmlEscape(cookie.value.length > 100 ? cookie.value.substring(0, 100) + '...' : cookie.value) + '</td></tr>';
 
       var attrKeys = Object.keys(cookie.attrs);
       if (attrKeys.length > 0) {
@@ -118,7 +118,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
           var displayName = attrInfo ? attrInfo.name : ak;
           var displayVal;
           if (av === true) {
-            displayVal = '<span style="color:var(--color-success);font-weight:600;">✓ 已设置</span>';
+            displayVal = '<span style="color:var(--color-success);font-weight:600;">' + t('attrSet','✓ 已设置') + '</span>';
           } else if (ak === 'samesite' && SAMESITE_VALUES[av.toLowerCase()]) {
             displayVal = SAMESITE_VALUES[av.toLowerCase()];
           } else if (ak === 'max-age') {
@@ -126,7 +126,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
             if (!isNaN(secs)) {
               var hours = Math.floor(secs / 3600);
               var mins = Math.floor((secs % 3600) / 60);
-              displayVal = av + ' 秒 (' + hours + 'h ' + mins + 'm)';
+              displayVal = av + t('secondsLabel',' 秒 (') + hours + 'h ' + mins + 'm)';
             } else {
               displayVal = av;
             }
@@ -137,7 +137,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
           html += '<tr><td class="attr-name">' + htmlEscape(displayName) + '</td><td class="attr-val">' + htmlEscape(String(displayVal)) + desc + '</td></tr>';
         }
       } else {
-        html += '<tr><td class="attr-name">属性</td><td style="color:var(--color-text-disabled);font-size:12px;">无属性 (仅键值对)</td></tr>';
+        html += '<tr><td class="attr-name">' + t('attr','属性') + '</td><td style="color:var(--color-text-disabled);font-size:12px;">' + t('noAttrs','无属性 (仅键值对)') + '</td></tr>';
       }
 
       if (cookie.errors) {

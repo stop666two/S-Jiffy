@@ -34,7 +34,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">MP4转GIF工具</h1>
 <p class="tool-desc" data-i18n="desc">在线将MP4视频转换为动态GIF动图，可设置开始/结束时间、帧率和输出宽度，全程本地处理。</p>
@@ -71,13 +71,13 @@
 <div class="opt-pills" id="widthPills"></div>
 </div>
 <div class="info-row">
-<span>时长 <b id="lenInfo">—</b></span>
+<span><span data-i18n="duration">时长</span> <b id="lenInfo">—</b></span>
 <span><span data-i18n="frames">帧</span> <b id="frameInfo">—</b></span>
-<span>内存 <b id="memInfo">—</b></span>
+<span><span data-i18n="memory">内存</span> <b id="memInfo">—</b></span>
 </div>
 <div class="err-box" id="setupErr" style="display:none;"></div>
 <div class="btn-row">
-<button id="convertBtn" class="btn btn-primary">转换 GIF</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="convert">转换 GIF</button>
 <button id="changeBtn" class="btn btn-secondary" data-i18n="tryAnotherFile">← 尝试其他文件</button>
 </div>
 </div>
@@ -192,7 +192,7 @@ function loadFile(f){
   }
   var ok=f.type==='video/mp4'||/\.mp4$/i.test(f.name);
   if(!ok){
-    showErr('仅支持 MP4 格式，请更换文件');
+    showErr(t('err.mp4Only','仅支持 MP4 格式，请更换文件'));
     return;
   }
   currentFile=f;
@@ -207,7 +207,7 @@ function loadFile(f){
   player.load();
   player.onloadedmetadata=function(){
     duration=player.duration;
-    if(!isFinite(duration)||duration<=0){showErr('无法读取视频时长，文件可能损坏');return;}
+    if(!isFinite(duration)||duration<=0){showErr(t('err.duration','无法读取视频时长，文件可能损坏'));return;}
     endRange.max=Math.min(duration,MAX_CLIP);
     endRange.value=Math.min(duration,MAX_CLIP);
     startRange.max=Math.max(0,endRange.value-0.1);
@@ -266,12 +266,12 @@ function convert(){
   if(converting)return;
   var start=parseFloat(startRange.value),end=parseFloat(endRange.value);
   var clip=end-start;
-  if(!(clip>0&&clip<=MAX_CLIP)){showErr('片段长度需在 0–'+MAX_CLIP+' 秒之间');return;}
-  if(!window.GIFEncoder){showErr('GIF 编码库加载失败，请检查网络后刷新页面');return;}
+  if(!(clip>0&&clip<=MAX_CLIP)){showErr(t('err.clipStart','片段长度需在 0–')+MAX_CLIP+t('err.clipEnd',' 秒之间'));return;}
+  if(!window.GIFEncoder){showErr(t('err.gifLib','GIF 编码库加载失败，请检查网络后刷新页面'));return;}
   var framesTotal=Math.max(1,Math.round(clip*fps));
   var w=outWidth,h=Math.max(1,Math.round(outWidth*(player.videoHeight||360)/(player.videoWidth||640)));
   if(w*h*framesTotal*4>250*1024*1024){
-    showErr('帧内存占用过大，请降低帧率、缩短片段或减小宽度');
+    showErr(t('err.frameMem','帧内存占用过大，请降低帧率、缩短片段或减小宽度'));
     return;
   }
   converting=true;abort=false;
@@ -297,10 +297,10 @@ function convert(){
       var imgData=ctx.getImageData(0,0,w,h);
       frames.push(new Uint8ClampedArray(imgData.data));
       step++;
-      setProgress((step/framesTotal)*50,t('extractingFrames','抽取视频帧…'),'第 '+step+' / '+framesTotal+' 帧 · 请稍候');
+      setProgress((step/framesTotal)*50,t('extractingFrames','抽取视频帧…'),t('ui.progressPrefix','第 ')+step+' / '+framesTotal+t('ui.frameSuffix',' 帧')+' · '+t('pleaseWait','请稍候'));
       setTimeout(extractNext,0);
     }).catch(function(){
-      finishFail('视频帧抽取失败，请尝试缩短片段或更换文件');
+      finishFail(t('err.frameExtract','视频帧抽取失败，请尝试缩短片段或更换文件'));
     });
   };
   var encodePhase=function(){
@@ -320,7 +320,7 @@ function convert(){
           gifUrl=URL.createObjectURL(gifBlob);
           var base=(currentFile.name.replace(/\.[^/.]+$/,'')||'video')+'.gif';
           gifPreview.src=gifUrl;
-          gifMeta.textContent=fmtBytes(gifBlob.size)+' · '+w+'px · '+fps+' FPS · '+frames.length+' 帧';
+          gifMeta.textContent=fmtBytes(gifBlob.size)+' · '+w+'px · '+fps+' FPS · '+frames.length+t('ui.frameSuffix',' 帧');
           downloadBtn.dataset.name=base;
           setProgress(100,t('done','完成'),'');
           progressCard.style.display='none';
@@ -328,7 +328,7 @@ function convert(){
           setStatus(t('gifReady','GIF 已生成，可下载'));
           converting=false;
         }catch(e){
-          finishFail('GIF 编码失败：'+e.message);
+          finishFail(t('err.gifEncode','GIF 编码失败：')+e.message);
         }
         return;
       }
@@ -337,10 +337,10 @@ function convert(){
         var index=window.applyPalette(frames[enc],palette);
         gif.writeFrame(index,w,h,{palette:palette,delay:delay});
         enc++;
-        setProgress(50+(enc/frames.length)*50,t('encodingGif','编码GIF…'),'第 '+enc+' / '+frames.length+' 帧');
+        setProgress(50+(enc/frames.length)*50,t('encodingGif','编码GIF…'),t('ui.progressPrefix','第 ')+enc+' / '+frames.length+t('ui.frameSuffix',' 帧'));
         setTimeout(encNext,0);
       }catch(e){
-        finishFail('GIF 编码失败：'+e.message);
+        finishFail(t('err.gifEncode','GIF 编码失败：')+e.message);
       }
     };
     encNext();

@@ -15,7 +15,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">性能测试</h1>
     <p class="tool-desc" data-i18n="desc">通过循环计算测试浏览器 JavaScript 引擎性能，评估你的设备算力。</p>
@@ -53,7 +53,7 @@
           sum += i * 3 - 7;
         }
         var t1 = performance.now() - start;
-        results['整数运算 (5000万次)'] = t1.toFixed(1);
+        results[t('bm.int','整数运算 (5000万次)')] = t1.toFixed(1);
 
         // Test 2: Float arithmetic (20M operations)
         start = performance.now();
@@ -62,7 +62,7 @@
           f += Math.sqrt(i * 1.5) * Math.sin(i * 0.1);
         }
         var t2 = performance.now() - start;
-        results['浮点运算 (2000万次)'] = t2.toFixed(1);
+        results[t('bm.float','浮点运算 (2000万次)')] = t2.toFixed(1);
 
         // Test 3: String concatenation (500K iterations, growing string)
         start = performance.now();
@@ -71,7 +71,7 @@
           s += String.fromCharCode(65 + (i % 26));
         }
         var t3 = performance.now() - start;
-        results['字符串拼接 (50万次)'] = t3.toFixed(1);
+        results[t('bm.str','字符串拼接 (50万次)')] = t3.toFixed(1);
 
         // Test 4: Array sort (100 arrays of 1000 elements)
         start = performance.now();
@@ -81,7 +81,7 @@
           arr.sort(function(a,b) { return a - b; });
         }
         var t4 = performance.now() - start;
-        results['数组排序 (100×1000)'] = t4.toFixed(1);
+        results[t('bm.sort','数组排序 (100×1000)')] = t4.toFixed(1);
 
         // Test 5: Object operations (500K iterations)
         start = performance.now();
@@ -91,7 +91,7 @@
           var v = obj['key' + (i % 1000)];
         }
         var t5 = performance.now() - start;
-        results['对象操作 (50万次)'] = t5.toFixed(1);
+        results[t('bm.obj','对象操作 (50万次)')] = t5.toFixed(1);
 
         // Compute score: weighted composite (lower ms = higher score)
         var totalMs = t1 + t2 + t3 + t4 + t5;
@@ -100,19 +100,19 @@
         // Show results
         scoreDisplay.textContent = score;
         var label;
-        if (score > 500) label = '🚀 极速';
-        else if (score > 200) label = '⚡ 快速';
-        else if (score > 100) label = '👍 良好';
-        else if (score > 50) label = '👌 一般';
-        else label = '🐢 较慢';
-        scoreLabel.textContent = t('ui.7','评分: ') + label + ' (总分越高越好)';
+        if (score > 500) label = t('grade.fastest','🚀 极速');
+        else if (score > 200) label = t('grade.fast','⚡ 快速');
+        else if (score > 100) label = t('grade.good','👍 良好');
+        else if (score > 50) label = t('grade.fair','👌 一般');
+        else label = t('grade.slow','🐢 较慢');
+        scoreLabel.textContent = t('ui.7','评分: ') + label + t('ui.8',' (总分越高越好)');
 
         var html = '';
         var keys = Object.keys(results);
         for (var i = 0; i < keys.length; i++) {
           html += '<div class="bm-row"><span>' + keys[i] + '</span><span>' + results[keys[i]] + ' ms</span></div>';
         }
-        html += '<div class="bm-row" style="font-weight:600;"><span>总耗时</span><span>' + totalMs.toFixed(1) + ' ms</span></div>';
+        html += '<div class="bm-row" style="font-weight:600;"><span>' + t('ui.total','总耗时') + '</span><span>' + totalMs.toFixed(1) + ' ms</span></div>';
         detailRows.innerHTML = html;
 
         resultCard.style.display = 'block';

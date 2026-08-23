@@ -21,7 +21,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">IP 段计算器</h1>
     <p class="tool-desc" data-i18n="desc">CIDR 网段与 IP 范围计算。</p>
@@ -98,29 +98,29 @@
         var raw = cidrEl.value.trim();
         if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
         var parts = raw.split('/');
-        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus(t('ui.100','格式错误'), 'error'); return; }
+        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">' + t('err.format','格式错误。示例: 192.168.1.0/24') + '</span>'; setStatus(t('ui.100','格式错误'), 'error'); return; }
         var octets = parts[0].split('.').map(Number);
         if (octets.length !== 4 || octets.some(function (n) { return isNaN(n) || n < 0 || n > 255; })) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus(t('ui.101','IP 无效'), 'error'); return;
+          outputEl.innerHTML = '<span style="color:var(--color-error)">' + t('err.invalidIp','无效 IP 地址') + '</span>'; setStatus(t('ui.101','IP 无效'), 'error'); return;
         }
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus(t('ui.102','前缀无效'), 'error'); return;
+          outputEl.innerHTML = '<span style="color:var(--color-error)">' + t('err.prefixRange','前缀长度需在 0-32 之间') + '</span>'; setStatus(t('ui.102','前缀无效'), 'error'); return;
         }
         var r = compute(octets, prefix);
 
         var html = '<div class="info-grid">';
-        html += '<div class="info-item"><label>网络地址</label><span>' + toOctetStr(r.network) + '</span></div>';
-        html += '<div class="info-item"><label>广播地址</label><span>' + toOctetStr(r.broadcast) + '</span></div>';
-        html += '<div class="info-item"><label>子网掩码</label><span>' + toOctetStr(r.mask) + '</span></div>';
-        html += '<div class="info-item"><label>通配符掩码</label><span>' + toOctetStr(r.wildcard) + '</span></div>';
-        html += '<div class="info-item"><label>首可用 IP</label><span>' + toOctetStr(r.firstHost) + '</span></div>';
-        html += '<div class="info-item"><label>末可用 IP</label><span>' + toOctetStr(r.lastHost) + '</span></div>';
-        html += '<div class="info-item"><label>可用主机数</label><span>' + r.hostCount + '</span></div>';
+        html += '<div class="info-item"><label>' + t('net','网络地址') + '</label><span>' + toOctetStr(r.network) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('broadcast','广播地址') + '</label><span>' + toOctetStr(r.broadcast) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('mask','子网掩码') + '</label><span>' + toOctetStr(r.mask) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('wildcard','通配符掩码') + '</label><span>' + toOctetStr(r.wildcard) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('firstHost','首可用 IP') + '</label><span>' + toOctetStr(r.firstHost) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('lastHost','末可用 IP') + '</label><span>' + toOctetStr(r.lastHost) + '</span></div>';
+        html += '<div class="info-item"><label>' + t('hostCount','可用主机数') + '</label><span>' + r.hostCount + '</span></div>';
         html += '<div class="info-item"><label>CIDR</label><span>' + htmlEscape(parts[0]) + '/' + r.prefix + '</span></div>';
         html += '</div>';
-        html += renderBits('IP 地址二进制', r.ip, r.prefix, 'ip');
-        html += renderBits('子网掩码二进制', r.mask, 32, 'mask');
+        html += renderBits(t('bin.ip','IP 地址二进制'), r.ip, r.prefix, 'ip');
+        html += renderBits(t('bin.mask','子网掩码二进制'), r.mask, 32, 'mask');
 
         outputEl.innerHTML = html;
         setStatus('');

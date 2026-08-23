@@ -37,7 +37,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">EXIF 查看器</h1>
@@ -305,26 +305,26 @@
 
       function fmtFlash(v) {
         if (v === null || v === undefined) return '—';
-        return (v & 1) ? '触发' : '未触发';
+        return (v & 1) ? t('flash.on','触发') : t('flash.off','未触发');
       }
 
       function fmtWhiteBalance(v) {
         if (v === null || v === undefined) return '—';
-        if (v === 0) return '自动';
-        if (v === 1) return '手动';
+        if (v === 0) return t('wb.auto','自动');
+        if (v === 1) return t('wb.manual','手动');
         return String(v);
       }
 
       function fmtOrientation(v) {
         var map = {
-          1: '横向（正常）',
-          2: '水平翻转',
-          3: '旋转 180°',
-          4: '垂直翻转',
-          5: '旋转 90° 后水平翻转',
-          6: '顺时针旋转 90°',
-          7: '旋转 90° 后垂直翻转',
-          8: '逆时针旋转 90°'
+          1: t('orient.normal','横向（正常）'),
+          2: t('orient.hFlip','水平翻转'),
+          3: t('orient.rot180','旋转 180°'),
+          4: t('orient.vFlip','垂直翻转'),
+          5: t('orient.rot90HF','旋转 90° 后水平翻转'),
+          6: t('orient.rot90Cw','顺时针旋转 90°'),
+          7: t('orient.rot90VF','旋转 90° 后垂直翻转'),
+          8: t('orient.rot90Ccw','逆时针旋转 90°')
         };
         if (v === null || v === undefined) return '—';
         return map[v] || String(v);
@@ -349,7 +349,7 @@
         if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return 'GIF';
         if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4D) return 'BMP';
         if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8) return 'JPEG';
-        return '未知';
+        return t('fmt.unknown','未知');
       }
 
       function renderRows(rows) {
@@ -381,7 +381,7 @@
           var fields = {};
           var err = null;
           if (tiffOff === -1) {
-            err = '此 JPEG 不包含 EXIF 段';
+            err = t('ui.24','此 JPEG 不包含 EXIF 段');
           } else {
             var result = parseTiff(dv, tiffOff);
             if (result.ok) {
@@ -416,7 +416,7 @@
           ];
           exifTable.style.display = 'table';
           exifBody.innerHTML = renderRows(rows);
-          outputEl.textContent = t('ui.7','已解析 ') + file.name + '：' + (dims ? dims.width + '×' + dims.height : '尺寸未知') + t('ui.6','，共 14 个字段。');
+          outputEl.textContent = t('ui.7','已解析 ') + file.name + '：' + (dims ? dims.width + '×' + dims.height : t('ui.25','尺寸未知')) + t('ui.6','，共 14 个字段。');
           fileInfo.textContent = t('ui.5','已选择：') + file.name + '（JPEG，' + Math.round(file.size / 1024) + ' KB）';
           setStatus(t('ui.4','EXIF 解析完成'));
         };

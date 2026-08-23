@@ -28,7 +28,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">距离计算器</h1>
@@ -102,10 +102,10 @@
         p1Box.innerHTML = '';
         p2Box.innerHTML = '';
         if (mode === 'geo') {
-          makeField(p1Box, 'lat1', '纬度 (°)');
-          makeField(p1Box, 'lon1', '经度 (°)');
-          makeField(p2Box, 'lat2', '纬度 (°)');
-          makeField(p2Box, 'lon2', '经度 (°)');
+          makeField(p1Box, 'lat1', t('latLabel','纬度 (°)'));
+          makeField(p1Box, 'lon1', t('lonLabel','经度 (°)'));
+          makeField(p2Box, 'lat2', t('latLabel','纬度 (°)'));
+          makeField(p2Box, 'lon2', t('lonLabel','经度 (°)'));
         } else if (mode === '3d') {
           makeField(p1Box, 'x1', 'x');
           makeField(p1Box, 'y1', 'y');
@@ -206,7 +206,7 @@
           ha = Math.min(1, Math.max(0, ha));
           var ang = 2 * Math.atan2(Math.sqrt(ha), Math.sqrt(1 - ha));
           km = 6371 * ang;
-          formulaNote = '球面距离（Haversine 公式，地球半径 6371 km）';
+          formulaNote = t('haversineNote','球面距离（Haversine 公式，地球半径 6371 km）');
         } else if (mode === '3d') {
           var dx = vals[3] - vals[0];
           var dy = vals[4] - vals[1];
@@ -224,10 +224,10 @@
         var nautical = km * 0.539957;
         var html = '';
         html += '<div class="res-grid">';
-        html += item('公里 (km)', fmt(km));
-        html += item('米 (m)', fmt(meters));
-        html += item('英里 (mi)', fmt(miles));
-        html += item('海里 (nmi)', fmt(nautical));
+        html += item(t('unitKm','公里 (km)'), fmt(km));
+        html += item(t('unitM','米 (m)'), fmt(meters));
+        html += item(t('unitMi','英里 (mi)'), fmt(miles));
+        html += item(t('unitNmi','海里 (nmi)'), fmt(nautical));
         html += '</div>';
         html += '<div class="formula-note">' + formulaNote + '</div>';
         outputText.innerHTML = html;

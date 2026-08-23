@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>X.509 证书解析 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.cert-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;gap:8px;}.cert-row:last-child{border:none;}.cert-label{color:var(--color-text-secondary);min-width:100px;font-weight:500;}.cert-val{font-family:var(--font-mono);word-break:break-all;}.section-title{font-weight:600;font-size:var(--font-size-sm);margin:var(--space-2) 0 var(--space-1);color:var(--color-text-primary);}.pem-block{font-family:var(--font-mono);font-size:12px;background:var(--color-bg-soft);padding:10px;border-radius:var(--radius-sm);white-space:pre-wrap;word-break:break-all;max-height:120px;overflow:auto;}</style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">X.509 证书解析</h1><p class="tool-desc" data-i18n="desc">解析 PEM 格式 X.509 数字证书，查看主题、签发者、有效期、算法等信息</p>
 <div class="card"><textarea id="certInput" class="input textarea js-focus-input" placeholder="-----BEGIN CERTIFICATE-----&#10;MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw..." style="min-height:140px;font-size:13px;"></textarea></div>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
@@ -47,7 +47,7 @@ function parseDN(b64){
       }
     }
     return parts.join(', ');
-  }catch(e){return '(无法解析 DN)';}
+  }catch(e){return t('dnParseFailed','(无法解析 DN)');}
 }
 parseBtn.addEventListener('click',function(){
   var text=certInput.value.trim();if(!text){setStatus(t('ui.100','请输入 PEM 证书'),'error');return;}
@@ -63,14 +63,14 @@ parseBtn.addEventListener('click',function(){
   var body=bodyLines.join('');var html='';var binary='';
   try{binary=atob(body);}catch(e){setStatus(t('ui.102','Base64 解码失败'),'error');return;}
   var bytes=[];for(var i=0;i<binary.length;i++)bytes.push(binary.charCodeAt(i));
-  html+='<div class="section-title">基本信息</div>';
-  html+='<div class="cert-row"><span class="cert-label">格式</span><span class="cert-val">X.509 v3</span></div>';
-  html+='<div class="cert-row"><span class="cert-label">编码长度</span><span class="cert-val">'+bytes.length+' 字节</span></div>';
+  html+='<div class="section-title">'+t('secBasic','基本信息')+'</div>';
+  html+='<div class="cert-row"><span class="cert-label">'+t('lblFormat','格式')+'</span><span class="cert-val">X.509 v3</span></div>';
+  html+='<div class="cert-row"><span class="cert-label">'+t('lblEncLen','编码长度')+'</span><span class="cert-val">'+bytes.length+t('bytesSuffix',' 字节')+'</span></div>';
   var raw='';for(var i=0;i<Math.min(bytes.length,32);i++)raw+=bytes[i].toString(16).padStart(2,'0')+' ';
-  html+='<div class="cert-row"><span class="cert-label">前 32 字节 (Hex)</span><span class="cert-val" style="font-size:12px;">'+htmlEscape(raw.trim())+'</span></div>';
+  html+='<div class="cert-row"><span class="cert-label">'+t('lblFirst32','前 32 字节 (Hex)')+'</span><span class="cert-val" style="font-size:12px;">'+htmlEscape(raw.trim())+'</span></div>';
   if(bytes.length>2&&bytes[0]===0x30){
     var tbsOffset=4+((bytes[1]&0x80)?(bytes[1]&0x7f):0)+4;
-    html+='<div class="cert-row"><span class="cert-label">TBS 证书偏移</span><span class="cert-val">~'+tbsOffset+' 字节</span></div>';
+    html+='<div class="cert-row"><span class="cert-label">'+t('lblTbsOffset','TBS 证书偏移')+'</span><span class="cert-val">~'+tbsOffset+t('bytesSuffix',' 字节')+'</span></div>';
   }
   if(bytes.length>0){
     var sigAlgOID='';
@@ -85,16 +85,16 @@ parseBtn.addEventListener('click',function(){
         if(bytes[tbsEnd]===0x06){tbsEnd++;var oidLen=parseASN1Length(bytes,tbsEnd);tbsEnd+=oidLen.bytesUsed;
           var oidVal=[];for(var i=0;i<oidLen.length;i++)oidVal.push(bytes[tbsEnd+i]);
           sigAlgOID=oidVal.join('.');
-          var algoName='未知';var oidMap={'1.2.840.113549.1.1.5':'sha256WithRSAEncryption','1.2.840.113549.1.1.11':'sha256WithRSAEncryption','1.2.840.113549.1.1.12':'sha384WithRSAEncryption','1.2.840.113549.1.1.13':'sha512WithRSAEncryption','1.2.840.10045.4.3.2':'ecdsa-with-SHA256','1.2.840.10045.4.3.3':'ecdsa-with-SHA384','1.2.840.113549.1.1.1':'rsaEncryption','1.2.840.10045.2.1':'ecPublicKey'};
+          var algoName=t('unknown','未知');var oidMap={'1.2.840.113549.1.1.5':'sha256WithRSAEncryption','1.2.840.113549.1.1.11':'sha256WithRSAEncryption','1.2.840.113549.1.1.12':'sha384WithRSAEncryption','1.2.840.113549.1.1.13':'sha512WithRSAEncryption','1.2.840.10045.4.3.2':'ecdsa-with-SHA256','1.2.840.10045.4.3.3':'ecdsa-with-SHA384','1.2.840.113549.1.1.1':'rsaEncryption','1.2.840.10045.2.1':'ecPublicKey'};
           if(oidMap[oidVal.join('.')])algoName=oidMap[oidVal.join('.')];
-          html+='<div class="cert-row"><span class="cert-label">签名算法</span><span class="cert-val">'+algoName+' (OID: '+oidVal.join('.')+')</span></div>';
+          html+='<div class="cert-row"><span class="cert-label">'+t('lblSigAlg','签名算法')+'</span><span class="cert-val">'+algoName+' (OID: '+oidVal.join('.')+')</span></div>';
         }
       }
     }
   }
-  html+='<div style="margin-top:var(--space-1);font-size:var(--font-size-sm);color:var(--color-text-secondary);">注意：精确解析需要完整的 ASN.1 解码库。以上为基本信息提取。</div>';
+  html+='<div style="margin-top:var(--space-1);font-size:var(--font-size-sm);color:var(--color-text-secondary);">'+t('parserNote','注意：精确解析需要完整的 ASN.1 解码库。以上为基本信息提取。')+'</div>';
   certInfo.innerHTML=html;resultCard.style.display='block';
-  outputText.textContent='X.509 证书 ('+bytes.length+' 字节)';
+  outputText.textContent=t('certTitle','X.509 证书 (')+bytes.length+t('bytesSuffix',' 字节')+')';
   setStatus(t('ui.1','解析完成'));
 });
 clearBtn.addEventListener('click',function(){certInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');certInput.focus();});

@@ -17,7 +17,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">CSS 选择器权重计算器</h1>
@@ -227,7 +227,7 @@
             r = readIdent(str, i + 1);
             if (!r.name) {
               s.valid = false;
-              s.error = '无效的 ID 选择器';
+              s.error = t('ui.idInvalid','无效的 ID 选择器');
               break;
             }
             i = r.end;
@@ -236,7 +236,7 @@
             r = readIdent(str, i + 1);
             if (!r.name) {
               s.valid = false;
-              s.error = '无效的类选择器';
+              s.error = t('ui.classInvalid','无效的类选择器');
               break;
             }
             i = r.end;
@@ -274,10 +274,10 @@
       }
 
       function levelLabel(spec) {
-        if (spec.a > 0) return '二级选择器（含 ID）';
-        if (spec.b > 0) return '三级选择器（含类/属性/伪类）';
-        if (spec.c > 0) return '四级选择器（元素/伪元素）';
-        return '无权重（通配符）';
+        if (spec.a > 0) return t('ui.level2','二级选择器（含 ID）');
+        if (spec.b > 0) return t('ui.level3','三级选择器（含类/属性/伪类）');
+        if (spec.c > 0) return t('ui.level4','四级选择器（元素/伪元素）');
+        return t('ui.level0','无权重（通配符）');
       }
 
       function weightNum(spec) {
@@ -311,14 +311,14 @@
           setStatus(t('ui.100','请输入选择器'), 'error');
           return;
         }
-        var html = '<div class="spec-row" style="font-size:var(--font-size-base);">综合权重（取最高）：(' +
-          best.a + ',' + best.b + ',' + best.c + ') · 权值 ' + weightNum(best) + ' · ' + htmlEscape(levelLabel(best)) + '</div>';
+        var html = '<div class="spec-row" style="font-size:var(--font-size-base);">' + t('ui.overall','综合权重（取最高）：(') +
+          best.a + ',' + best.b + ',' + best.c + ')' + t('ui.weight',' · 权值 ') + weightNum(best) + ' · ' + htmlEscape(levelLabel(best)) + '</div>';
         for (var k = 0; k < rows.length; k++) {
           html += '<div class="spec-row" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">' +
             htmlEscape(rows[k].text) + ' → (' + rows[k].spec.a + ',' + rows[k].spec.b + ',' + rows[k].spec.c +
-            ') 权值 ' + weightNum(rows[k].spec) + ' · ' + htmlEscape(levelLabel(rows[k].spec)) + '</div>';
+            ')' + t('ui.weight2',' 权值 ') + weightNum(rows[k].spec) + ' · ' + htmlEscape(levelLabel(rows[k].spec)) + '</div>';
         }
-        html += '<div class="spec-note">权重规则：内联样式(1,0,0,0) &gt; ID(1,0,0) &gt; 类/属性/伪类(0,1,0) &gt; 元素/伪元素(0,0,1)</div>';
+        html += '<div class="spec-note">' + t('ui.note','权重规则：内联样式(1,0,0,0) &gt; ID(1,0,0) &gt; 类/属性/伪类(0,1,0) &gt; 元素/伪元素(0,0,1)') + '</div>';
         outputText.innerHTML = html;
         setStatus(t('ui.4','解析完成：') + rows.length + t('ui.3',' 个选择器'));
       }

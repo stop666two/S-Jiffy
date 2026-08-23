@@ -103,7 +103,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">在线鼓机</h1>
@@ -169,11 +169,15 @@
   <script>
     (function () {
       var TRACKS = [
-        { name: '底鼓' }, { name: '军鼓' }, { name: '闭镲' }, { name: '开镲' },
-        { name: '拍手' }, { name: '叮叮镲' }, { name: '高音鼓' }, { name: '中音鼓' }, { name: '低音鼓' }
+        { name: '底鼓', key: 'trackKick' }, { name: '军鼓', key: 'trackSnare' }, { name: '闭镲', key: 'trackHatClosed' }, { name: '开镲', key: 'trackHatOpen' },
+        { name: '拍手', key: 'trackClap' }, { name: '叮叮镲', key: 'trackRide' }, { name: '高音鼓', key: 'trackTomHigh' }, { name: '中音鼓', key: 'trackTomMid' }, { name: '低音鼓', key: 'trackTomLow' }
       ];
       var STEP_COUNT = 32;
       var MAX_HISTORY = 30;
+
+      function trackName(tr) {
+        return TRACKS[tr].key ? t(TRACKS[tr].key, TRACKS[tr].name) : TRACKS[tr].name;
+      }
       var patterns = [];
       var muted = [];
       var solo = [];
@@ -264,28 +268,28 @@
           row.className = 'drum-row';
           var label = document.createElement('div');
           label.className = 'track-label';
-          label.textContent = TRACKS[t].name;
+          label.textContent = trackName(t);
           row.appendChild(label);
           var btns = document.createElement('div');
           btns.className = 'track-btns';
           var mBtn = document.createElement('button');
           mBtn.textContent = 'M';
-          mBtn.title = '静音';
+          mBtn.title = t('mute','静音');
           mBtn.addEventListener('click', (function (tr) {
             return function (e) {
               muted[tr] = !muted[tr];
               e.currentTarget.className = muted[tr] ? 'on' : '';
-              setStatus(TRACKS[tr].name + (muted[tr] ? ' 已静音' : ' 取消静音'));
+              setStatus(trackName(tr) + (muted[tr] ? t('trackMuted',' 已静音') : t('trackUnmuted',' 取消静音')));
             };
           })(t));
           var sBtn = document.createElement('button');
           sBtn.textContent = 'S';
-          sBtn.title = '独奏';
+          sBtn.title = t('solo','独奏');
           sBtn.addEventListener('click', (function (tr) {
             return function (e) {
               solo[tr] = !solo[tr];
               e.currentTarget.className = solo[tr] ? 'on' : '';
-              setStatus(TRACKS[tr].name + (solo[tr] ? ' 已独奏' : ' 取消独奏'));
+              setStatus(trackName(tr) + (solo[tr] ? t('trackSoloed',' 已独奏') : t('trackUnsoloed',' 取消独奏')));
             };
           })(t));
           btns.appendChild(mBtn);
@@ -318,13 +322,13 @@
           rev.className = 'row-rev';
           var revBtn = document.createElement('button');
           revBtn.textContent = t('ui.109','反转');
-          revBtn.title = '反转整轨音符';
+          revBtn.title = t('reverseTrackTitle','反转整轨音符');
           revBtn.addEventListener('click', (function (tr) {
             return function () {
               pushHistory();
               patterns[tr].reverse();
               paintRow(tr);
-              setStatus(TRACKS[tr].name + ' 已反转');
+              setStatus(trackName(tr) + t('trackReversed',' 已反转'));
             };
           })(t));
           rev.appendChild(revBtn);
@@ -379,7 +383,7 @@
         pushHistory();
         patterns = deepCopy(presets[key]);
         paintAll();
-        setStatus('已加载预设：' + document.getElementById('presetSel').selectedOptions[0].textContent);
+        setStatus(t('presetLoaded','已加载预设：') + document.getElementById('presetSel').selectedOptions[0].textContent);
       }
 
       function ensureAudio() {
@@ -604,7 +608,7 @@
 
       function exportProject() {
         var data = {
-          name: 'S-Jiffy 鼓机工程',
+          name: t('projectName','S-Jiffy 鼓机工程'),
           version: 1,
           bpm: bpm,
           swing: swing,
@@ -637,12 +641,12 @@
           try {
             var data = JSON.parse(reader.result);
             if (!data || !data.tracks || data.tracks.length !== TRACKS.length) {
-              throw new Error('字段不完整');
+              throw new Error(t('errFieldsIncomplete','字段不完整'));
             }
             var grid = [];
             for (var t = 0; t < TRACKS.length; t++) {
               var pat = data.tracks[t].pattern;
-              if (!pat || pat.length !== STEP_COUNT) throw new Error('音序长度不符');
+              if (!pat || pat.length !== STEP_COUNT) throw new Error(t('errPatternLen','音序长度不符'));
               var row = [];
               for (var s = 0; s < STEP_COUNT; s++) row.push(pat[s] ? 1 : 0);
               grid.push(row);

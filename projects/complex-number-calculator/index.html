@@ -22,7 +22,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">复数计算器</h1>
@@ -230,9 +230,9 @@
         } else if (op === 'modulus') {
           html += '<div class="main-result">|z1| = ' + htmlEscape(fmtNum(modulus(z1))) + '</div>';
           html += '<div class="res-grid">';
-          html += item('z1 代数式', fmtComplex(z1));
-          html += item('辐角（弧度）', fmtNum(argument(z1)));
-          html += item('辐角（角度）', fmtNum(argument(z1) * 180 / Math.PI) + '°');
+          html += item(t('result.z1AlgebraicForm','z1 代数式'), fmtComplex(z1));
+          html += item(t('result.argRad','辐角（弧度）'), fmtNum(argument(z1)));
+          html += item(t('result.argDeg','辐角（角度）'), fmtNum(argument(z1) * 180 / Math.PI) + '°');
           html += '</div>';
           outputText.innerHTML = html;
           setStatus(t('ui.calcDone','计算完成'));
@@ -243,9 +243,9 @@
           var arg = argument(z1);
           html += '<div class="main-result">arg(z1) = ' + htmlEscape(fmtNum(arg)) + t('ui.7',' 弧度（') + htmlEscape(fmtNum(arg * 180 / Math.PI)) + '°）</div>';
           html += '<div class="res-grid">';
-          html += item('z1 代数式', fmtComplex(z1));
-          html += item('模 |z1|', fmtNum(modulus(z1)));
-          html += item('极坐标形式', fmtNum(modulus(z1)) + '·(cos ' + fmtNum(arg) + ' + i·sin ' + fmtNum(arg) + ')');
+          html += item(t('result.z1AlgebraicForm','z1 代数式'), fmtComplex(z1));
+          html += item(t('result.modulusZ1','模 |z1|'), fmtNum(modulus(z1)));
+          html += item(t('result.polarForm','极坐标形式'), fmtNum(modulus(z1)) + '·(cos ' + fmtNum(arg) + ' + i·sin ' + fmtNum(arg) + ')');
           html += '</div>';
           outputText.innerHTML = html;
           setStatus(t('ui.calcDone','计算完成'));
@@ -253,14 +253,14 @@
         }
         var r = modulus(res);
         var argR = argument(res);
-        html += '<div class="main-result">结果：' + htmlEscape(fmtComplex(res)) + '</div>';
+        html += '<div class="main-result">' + t('result.result','结果：') + htmlEscape(fmtComplex(res)) + '</div>';
         html += '<div class="res-grid">';
-        html += item('代数式', fmtComplex(res));
-        html += item('模 |z|', fmtNum(r));
-        html += item('辐角（弧度）', fmtNum(argR));
-        html += item('辐角（角度）', fmtNum(argR * 180 / Math.PI) + '°');
-        html += item('极坐标形式', fmtNum(r) + '·(cos ' + fmtNum(argR) + ' + i·sin ' + fmtNum(argR) + ')');
-        html += item('指数形式', fmtNum(r) + '·e^(i·' + fmtNum(argR) + ')');
+        html += item(t('result.algebraicForm','代数式'), fmtComplex(res));
+        html += item(t('result.modulusZ','模 |z|'), fmtNum(r));
+        html += item(t('result.argRad','辐角（弧度）'), fmtNum(argR));
+        html += item(t('result.argDeg','辐角（角度）'), fmtNum(argR * 180 / Math.PI) + '°');
+        html += item(t('result.polarForm','极坐标形式'), fmtNum(r) + '·(cos ' + fmtNum(argR) + ' + i·sin ' + fmtNum(argR) + ')');
+        html += item(t('result.exponentialForm','指数形式'), fmtNum(r) + '·e^(i·' + fmtNum(argR) + ')');
         html += '</div>';
         outputText.innerHTML = html;
         setStatus(t('ui.calcDone','计算完成'));

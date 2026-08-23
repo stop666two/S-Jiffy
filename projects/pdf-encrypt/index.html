@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF加密 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .fm{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:12px;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;}
+.file-bar .x:hover{color:var(--color-error);}
+.note-box{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 16px;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:12px;}
+.note-box b{display:block;font-size:var(--font-size-sm);color:var(--color-text-primary);margin-bottom:2px;}
+.pw-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pw-grid .full{grid-column:1/3;}
+.opt-group label{font-size:var(--font-size-sm);display:block;margin-bottom:6px;color:var(--color-text-secondary);}
+.pw-wrap{position:relative;}
+.pw-wrap input{width:100%;height:44px;padding:0 40px 0 12px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;}
+.pw-wrap input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:14px;padding:4px;}
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-top:6px;}
+.perm-grid label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:8px;color:var(--color-text-primary);}
+.perm-grid input{accent-color:var(--color-accent);}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">PDF加密</h1>
+<p class="tool-desc" data-i18n="desc">用密码保护您的PDF。在浏览器中安全加密PDF。</p>
+<div class="card">
+<div class="note-box">
+<b data-i18n="aes256Title">AES-256浏览器加密</b>
+<span data-i18n="encryptNoteText">加密的.enc文件可以使用PDF解密工具解密。请使用PDF解密还原原始PDF。</span>
+</div>
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">🔒</div>
+<div class="dz-label" data-i18n="uploadPdfFiles">上传PDF文件</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".pdf,application/pdf" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<span class="fm" id="fileMeta"></span>
+<button class="x" id="removeBtn" title="×">✕</button>
+</div>
+<div class="pw-grid">
+<div>
+<div class="opt-group"><label>用户密码（必填，打开文件需输入）</label></div>
+<div class="pw-wrap"><input type="password" id="userPw" placeholder="用户密码"><button type="button" class="pw-eye" data-for="userPw">👁</button></div>
+</div>
+<div>
+<div class="opt-group"><label>确认用户密码</label></div>
+<div class="pw-wrap"><input type="password" id="userPw2" placeholder="再次输入用户密码"></div>
+</div>
+<div>
+<div class="opt-group"><label>所有者密码（可选，可解锁文件）</label></div>
+<div class="pw-wrap"><input type="password" id="ownerPw" placeholder="所有者密码（可选）"><button type="button" class="pw-eye" data-for="ownerPw">👁</button></div>
+</div>
+<div>
+<div class="opt-group"><label>确认所有者密码</label></div>
+<div class="pw-wrap"><input type="password" id="ownerPw2" placeholder="再次输入所有者密码"></div>
+</div>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="encryptBtn" disabled data-i18n="encryptPdf">加密PDF</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var file=null;
+var MAGIC=[0x41,0x50,0x45,0x4e,0x43];
+var enc=new TextEncoder();
+var dz=$('dropZone'),fi=$('fileInput'),btn=$('encryptBtn');
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function isPdfName(name){return name&&name.toLowerCase().indexOf('.pdf')!==-1;}
+function deriveKey(pw){
+  return crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']).then(function(km){
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt:enc.encode('artink-pdf-salt'),iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  });
+}
+function encBlob(data,key){
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,data).then(function(ct){
+    var out=new Uint8Array(12+ct.byteLength);
+    out.set(iv,0);
+    out.set(new Uint8Array(ct),12);
+    return out;
+  });
+}
+function loadFile(f){
+  var isP=(f.type==='application/pdf')||isPdfName(f.name);
+  if(!isP){setStatus(t('notPdf','请选择PDF文件'),'error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  file=f;
+  $('workCard').style.display='block';
+  $('fileName').textContent=f.name;
+  $('fileMeta').textContent=fmtSize(f.size);
+  setStatus('');
+  updateBtn();
+}
+function updateBtn(){
+  btn.disabled=!file||btn.getAttribute('data-busy')==='1';
+  btn.textContent=btn.getAttribute('data-busy')==='1'?t('encrypting','加密中...'):t('encryptPdf','加密PDF');
+}
+function doEncrypt(){
+  if(!file||btn.getAttribute('data-busy')==='1')return;
+  var upw=$('userPw').value;
+  var upw2=$('userPw2').value;
+  var opw=$('ownerPw').value;
+  var opw2=$('ownerPw2').value;
+  if(!upw){setStatus(t('pwRequired','请输入用户密码'),'error');return;}
+  if(upw.length<4){setStatus(t('pwTooShort','密码长度至少 4 位'),'error');return;}
+  if(upw!==upw2){setStatus(t('pwMismatch','两次输入的用户密码不一致'),'error');return;}
+  if(opw!==opw2){setStatus(t('pwMismatch','两次输入的所有者密码不一致'),'error');return;}
+  btn.setAttribute('data-busy','1');
+  updateBtn();
+  setStatus('');
+  readAB(file,function(buf){
+    var pdfBytes=new Uint8Array(buf);
+    Promise.all([deriveKey(upw),opw?deriveKey(opw):Promise.resolve(null)]).then(function(keys){
+      var key=keys[0],okey=keys[1];
+      var iv=crypto.getRandomValues(new Uint8Array(12));
+      crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,pdfBytes).then(function(ct){
+        var flags=okey?1:0;
+        var head=new Uint8Array(MAGIC.length+1+12+(okey?2:0));
+        head.set(MAGIC,0);
+        head[5]=flags;
+        head.set(iv,6);
+        var chain=Promise.resolve();
+        if(okey){
+          chain=encBlob(enc.encode(upw),okey).then(function(ownerBlock){
+            head[18]=(ownerBlock.length>>8)&255;
+            head[19]=ownerBlock.length&255;
+            var body=new Uint8Array(ownerBlock.length+ct.byteLength);
+            body.set(ownerBlock,0);
+            body.set(new Uint8Array(ct),ownerBlock.length);
+            return body;
+          });
+        }else{
+          chain=Promise.resolve(new Uint8Array(ct));
+        }
+        chain.then(function(body){
+          var out=new Uint8Array(head.length+body.length);
+          out.set(head,0);
+          out.set(body,head.length);
+          var base=file.name.replace(/\.pdf$/i,'');
+          download(new Blob([out.buffer],{type:'application/octet-stream'}),base+'.enc');
+          btn.removeAttribute('data-busy');
+          updateBtn();
+          setStatus(t('encryptedDownloaded','已下载加密文件！使用PDF解密工具恢复它。'));
+        });
+      });
+    }).catch(function(){
+      btn.removeAttribute('data-busy');
+      updateBtn();
+      setStatus(t('encryptFailed','加密失败'),'error');
+    });
+  });
+}
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('removeBtn').addEventListener('click',function(){file=null;$('workCard').style.display='none';updateBtn();setStatus('');});
+btn.addEventListener('click',doEncrypt);
+var eyes=document.querySelectorAll('.pw-eye'),i;
+for(i=0;i<eyes.length;i++){
+  eyes[i].addEventListener('click',function(){
+    var inp=document.getElementById(this.getAttribute('data-for'));
+    inp.type=inp.type==='password'?'text':'password';
+  });
+}
+$('dzSub').textContent=t('supportedFormats','支持：{formats}').replace('{formats}','PDF')+' · '+t('maxPdfHint','最大20MB · .pdf');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符串分析器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .sa-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--space-1); margin-bottom: var(--space-2); }
+    .sa-stat { background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); text-align: center; }
+    .sa-stat .val { font-size: var(--font-size-lg); font-weight: 700; }
+    .sa-stat .lbl { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 2px; }
+    .sa-freq-row { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-1); }
+    .sa-char { font-family: var(--font-mono); font-size: var(--font-size-sm); min-width: 34px; text-align: center; background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 2px 6px; word-break: break-all; }
+    .sa-bar-wrap { flex: 1; background: var(--color-bg-soft); border-radius: 999px; height: 12px; overflow: hidden; }
+    .sa-bar { height: 100%; background: var(--color-text-primary); border-radius: 999px; transition: width .2s; }
+    .sa-count { font-size: var(--font-size-xs); color: var(--color-text-secondary); width: 40px; text-align: right; font-family: var(--font-mono); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">字符串分析器</h1>
+    <p class="tool-desc" data-i18n="desc">分析文本：字符数、单词数、行数、字节数、唯一字符数与字符频率。</p>
+    <div class="card">
+      <textarea id="textInput" class="input textarea js-focus-input" data-i18n-placeholder="stringAnalyzeHint" placeholder="粘贴或输入文本进行分析..."></textarea>
+    </div>
+    <div class="card" id="resultCard" style="display:none;">
+      <div class="sa-stats">
+        <div class="sa-stat"><div class="val" id="vChars">0</div><div class="lbl" data-i18n="charsLabel">字符数</div></div>
+        <div class="sa-stat"><div class="val" id="vBytes">0</div><div class="lbl" data-i18n="bytesUtf8Label">字节（UTF-8）</div></div>
+        <div class="sa-stat"><div class="val" id="vWords">0</div><div class="lbl" data-i18n="wordsLabel">单词数</div></div>
+        <div class="sa-stat"><div class="val" id="vLines">0</div><div class="lbl" data-i18n="linesLabel">行数</div></div>
+        <div class="sa-stat"><div class="val" id="vUnique">0</div><div class="lbl" data-i18n="uniqueCharsLabel">唯一字符数</div></div>
+      </div>
+      <div id="freqBox">
+        <p class="tool-desc" style="margin-bottom:var(--space-2);font-size:var(--font-size-sm);" data-i18n="top10CharsLabel">出现最多的10个字符</p>
+        <div id="freqList"></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      var textEl = document.getElementById('textInput');
+      var resultCard = document.getElementById('resultCard');
+      var freqList = document.getElementById('freqList');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function codePointLength(s) {
+        var count = 0, i;
+        for (i = 0; i < s.length; i++) {
+          var code = s.charCodeAt(i);
+          if (code >= 0xD800 && code <= 0xDBFF && i + 1 < s.length) {
+            var next = s.charCodeAt(i + 1);
+            if (next >= 0xDC00 && next <= 0xDFFF) { i++; }
+          }
+          count++;
+        }
+        return count;
+      }
+
+      function utf8Bytes(s) {
+        try {
+          if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(s).length;
+        } catch (e) {}
+        var b = 0, i, c;
+        for (i = 0; i < s.length; i++) {
+          c = s.charCodeAt(i);
+          if (c < 0x80) b += 1;
+          else if (c < 0x800) b += 2;
+          else if (c >= 0xD800 && c <= 0xDBFF && i + 1 < s.length) {
+            var c2 = s.charCodeAt(i + 1);
+            if (c2 >= 0xDC00 && c2 <= 0xDFFF) {
+              b += 4; i++;
+            } else b += 3;
+          } else b += 3;
+        }
+        return b;
+      }
+
+      function analyze() {
+        var text = textEl.value;
+        if (!text) {
+          resultCard.style.display = 'none';
+          outputEl.textContent = '';
+          return;
+        }
+        var chars = codePointLength(text);
+        var bytes = utf8Bytes(text);
+        var trimmed = text.trim();
+        var words = trimmed === '' ? 0 : trimmed.split(/\s+/).length;
+        var lines = text === '' ? 0 : text.split('\n').length;
+
+        var freq = {};
+        var i, ch, c;
+        for (i = 0; i < text.length; i++) {
+          c = text.charCodeAt(i);
+          ch = text.charAt(i);
+          if (c >= 0xD800 && c <= 0xDBFF && i + 1 < text.length) {
+            var c2 = text.charCodeAt(i + 1);
+            if (c2 >= 0xDC00 && c2 <= 0xDFFF) { ch = text.substr(i, 2); i++; }
+          }
+          if (!freq[ch]) freq[ch] = 0;
+          freq[ch]++;
+        }
+        var entries = [];
+        for (var k in freq) {
+          if (freq.hasOwnProperty(k)) entries.push({ char: k, count: freq[k] });
+        }
+        entries.sort(function (x, y) { return y.count - x.count; });
+        var top = entries.slice(0, 10);
+        var maxFreq = top.length ? top[0].count : 1;
+
+        document.getElementById('vChars').textContent = chars.toLocaleString();
+        document.getElementById('vBytes').textContent = bytes.toLocaleString();
+        document.getElementById('vWords').textContent = words.toLocaleString();
+        document.getElementById('vLines').textContent = lines.toLocaleString();
+        document.getElementById('vUnique').textContent = entries.length.toLocaleString();
+
+        freqList.innerHTML = '';
+        var j, row, charEl, barWrap, bar, countEl, disp;
+        for (j = 0; j < top.length; j++) {
+          row = document.createElement('div');
+          row.className = 'sa-freq-row';
+          charEl = document.createElement('span');
+          charEl.className = 'sa-char';
+          disp = top[j].char;
+          if (disp === ' ') disp = '\u2423';
+          else if (disp === '\n') disp = '\u21B5';
+          else if (disp === '\t') disp = '\u21E5';
+          else if (disp === '\r') disp = '\u21A9';
+          charEl.textContent = disp;
+          charEl.title = top[j].char === ' ' ? t('space', '空格') : top[j].char;
+          barWrap = document.createElement('div');
+          barWrap.className = 'sa-bar-wrap';
+          bar = document.createElement('div');
+          bar.className = 'sa-bar';
+          bar.style.width = (top[j].count / maxFreq * 100).toFixed(2) + '%';
+          barWrap.appendChild(bar);
+          countEl = document.createElement('span');
+          countEl.className = 'sa-count';
+          countEl.textContent = top[j].count;
+          row.appendChild(charEl);
+          row.appendChild(barWrap);
+          row.appendChild(countEl);
+          freqList.appendChild(row);
+        }
+
+        outputEl.textContent =
+          t('charsLabel', '字符数') + ': ' + chars + ' | ' +
+          t('bytesUtf8Label', '字节（UTF-8）') + ': ' + bytes + ' | ' +
+          t('wordsLabel', '单词数') + ': ' + words + ' | ' +
+          t('linesLabel', '行数') + ': ' + lines + ' | ' +
+          t('uniqueCharsLabel', '唯一字符数') + ': ' + entries.length;
+        resultCard.style.display = '';
+      }
+
+      textEl.addEventListener('input', analyze);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus(t('common.copied', '已复制'));
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

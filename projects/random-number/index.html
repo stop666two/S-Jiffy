@@ -7,95 +7,170 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .rn-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
-    .rn-row .field { flex:1; min-width:100px; }
-    .rn-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .rn-row { display: flex; gap: var(--space-2); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .rn-field { flex: 1; min-width: 110px; }
+    .rn-field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .rn-check { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); color: var(--color-text-secondary); cursor: pointer; margin-bottom: var(--space-2); }
+    .rn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--space-1); max-height: 260px; overflow-y: auto; }
+    .rn-grid .num { font-family: var(--font-mono); font-size: var(--font-size-sm); background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-sm); text-align: center; padding: 6px 4px; }
+    .rn-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-top: var(--space-2); }
+    .rn-stat { background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); text-align: center; }
+    .rn-stat .lbl { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+    .rn-stat .val { font-family: var(--font-mono); font-weight: 600; margin-top: 2px; }
   </style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <a href="../../index.html" class="back-btn">← 返回</a></header>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
   <main class="tool-workspace">
-    <h1>随机数生成器</h1>
-    <p class="tool-desc">在指定范围内生成随机整数，可设置生成数量和是否允许重复。</p>
+    <h1 data-i18n="h1">随机数生成器</h1>
+    <p class="tool-desc" data-i18n="desc">在指定范围内生成随机整数或小数，可设置生成数量、小数位数和是否允许重复。</p>
     <div class="card">
       <div class="rn-row">
-        <div class="field"><label for="minVal">最小值</label><input id="minVal" class="input" type="number" value="1"></div>
-        <div class="field"><label for="maxVal">最大值</label><input id="maxVal" class="input" type="number" value="100"></div>
-        <div class="field"><label for="countVal">生成数量</label><input id="countVal" class="input" type="number" value="1" min="1" max="1000"></div>
+        <div class="rn-field">
+          <label data-i18n="min">最小值</label>
+          <input id="minVal" class="input" type="number" value="1">
+        </div>
+        <div class="rn-field">
+          <label data-i18n="max">最大值</label>
+          <input id="maxVal" class="input" type="number" value="100">
+        </div>
+        <div class="rn-field">
+          <label data-i18n="count">数量</label>
+          <input id="countVal" class="input" type="number" value="10" min="1" max="1000">
+        </div>
+        <div class="rn-field">
+          <label data-i18n="decimals">小数位数</label>
+          <input id="decVal" class="input" type="number" value="0" min="0" max="10">
+        </div>
       </div>
-      <div class="rn-row">
-        <label style="display:flex;align-items:center;gap:8px;">
-          <input id="allowRepeat" type="checkbox" checked> 允许重复
-        </label>
+      <label class="rn-check">
+        <input id="allowRepeat" type="checkbox" checked>
+        <span id="allowRepeatLabel">允许重复</span>
+      </label>
+      <div>
+        <button id="generateBtn" class="btn btn-primary">生成</button>
       </div>
-      <div><button id="generateBtn" class="btn btn-primary">生成</button></div>
+    </div>
+    <div class="card" id="resultCard" style="display:none;">
+      <p class="tool-desc" id="generatedCount" style="margin-bottom:var(--space-2);"></p>
+      <div class="rn-grid" id="numGrid"></div>
+      <div class="rn-stats">
+        <div class="rn-stat"><div class="lbl" data-i18n="min">最小值</div><div class="val" id="statMin">—</div></div>
+        <div class="rn-stat"><div class="lbl" data-i18n="max">最大值</div><div class="val" id="statMax">—</div></div>
+        <div class="rn-stat"><div class="lbl" data-i18n="average">平均值</div><div class="val" id="statAvg">—</div></div>
+      </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
-    (function() {
+    (function () {
       var minEl = document.getElementById('minVal');
       var maxEl = document.getElementById('maxVal');
       var countEl = document.getElementById('countVal');
+      var decEl = document.getElementById('decVal');
       var repeatEl = document.getElementById('allowRepeat');
       var generateBtn = document.getElementById('generateBtn');
       var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
+      var resultCard = document.getElementById('resultCard');
+      var numGrid = document.getElementById('numGrid');
+      var statMin = document.getElementById('statMin');
+      var statMax = document.getElementById('statMax');
+      var statAvg = document.getElementById('statAvg');
+      var generatedCount = document.getElementById('generatedCount');
+      var results = [];
+
+      document.getElementById('allowRepeatLabel').textContent = t('allowRepeat', '允许重复');
+      generateBtn.textContent = t('generate', '生成');
 
       function generate() {
-        var min = parseInt(minEl.value, 10) || 0;
-        var max = parseInt(maxEl.value, 10) || 100;
+        var min = parseFloat(minEl.value);
+        var max = parseFloat(maxEl.value);
         var count = parseInt(countEl.value, 10) || 1;
+        var decimals = parseInt(decEl.value, 10) || 0;
         var allowRepeat = repeatEl.checked;
 
-        if (min > max) { setStatus('最小值不能大于最大值', 'error'); return; }
+        if (isNaN(min) || isNaN(max)) { setStatus(t('invalidRange', '请输入有效的最小值和最大值'), 'error'); return; }
+        if (min > max) { setStatus(t('minMaxError', '最小值不能大于最大值'), 'error'); return; }
         if (count < 1) count = 1;
         if (count > 10000) count = 10000;
+        if (decimals < 0) decimals = 0;
+        if (decimals > 10) decimals = 10;
 
+        var factor = Math.pow(10, decimals);
+        var isInt = decimals === 0;
         var range = max - min + 1;
-        if (!allowRepeat && count > range) {
-          setStatus('不允许重复时，数量不能超过范围大小 (' + range + ')', 'error');
+        var uniqueRangeOk = isInt && !allowRepeat && range < 1e7;
+
+        if (!allowRepeat && !isInt) {
+          setStatus(t('noRepeatDecimals', '小数随机数不支持不重复模式，请使用整数或允许重复'), 'error');
+          return;
+        }
+        if (!allowRepeat && isInt && count > range) {
+          setStatus(t('countExceedsRange', '不允许重复时，数量不能超过范围大小 (') + range + ')', 'error');
           return;
         }
 
-        var result = [];
+        results = [];
+        var i, j, tmp, pool;
         if (allowRepeat) {
-          for (var i = 0; i < count; i++) {
-            result.push(Math.floor(Math.random() * range) + min);
+          for (i = 0; i < count; i++) {
+            var raw = Math.random() * (max - min) + min;
+            results.push(Math.round(raw * factor) / factor);
           }
         } else {
-          var pool = [];
-          for (var i = min; i <= max; i++) pool.push(i);
-          for (var i = pool.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var tmp = pool[i];
+          pool = [];
+          for (i = min; i <= max; i++) pool.push(i);
+          for (i = pool.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            tmp = pool[i];
             pool[i] = pool[j];
             pool[j] = tmp;
           }
-          result = pool.slice(0, count);
+          results = pool.slice(0, count);
         }
 
-        outputEl.textContent = result.join('\n');
-        setStatus('已生成 ' + count + ' 个随机数');
+        renderResults();
+        outputEl.textContent = results.join('\n');
+        setStatus(t('generated', '已生成 ') + count + t('numbersSuffix', ' 个随机数'));
+      }
+
+      function renderResults() {
+        numGrid.innerHTML = '';
+        var i, span;
+        for (i = 0; i < results.length; i++) {
+          span = document.createElement('span');
+          span.className = 'num';
+          span.textContent = results[i];
+          numGrid.appendChild(span);
+        }
+        var sum = 0;
+        for (i = 0; i < results.length; i++) sum += results[i];
+        statMin.textContent = Math.min.apply(null, results);
+        statMax.textContent = Math.max.apply(null, results);
+        statAvg.textContent = Math.round(sum / results.length * 100) / 100;
+        generatedCount.textContent = results.length + ' ' + t('numbersGenerated', '个数字已生成');
+        resultCard.style.display = '';
       }
 
       generateBtn.addEventListener('click', generate);
-
-      copyBtn.addEventListener('click', function() {
+      copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('common.copied', '已复制'));
         }
       });
     })();

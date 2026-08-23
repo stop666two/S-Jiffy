@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音频降噪器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.audio-drop{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.audio-drop.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.audio-drop .ico{font-size:34px;display:block;margin-bottom:8px;color:var(--color-text-disabled);}
+.audio-drop .hint{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.audio-drop input{display:none;}
+.file-chip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+.file-chip .meta{color:var(--color-text-secondary);font-size:var(--font-size-xs);margin-top:2px;}
+.file-chip .x{cursor:pointer;border:none;background:none;color:var(--color-text-secondary);font-size:14px;padding:4px;}
+.file-chip .x:hover{color:var(--color-error);}
+.wave-box{position:relative;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;}
+.wave-box canvas{display:block;width:100%;height:140px;touch-action:none;}
+.ab-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+.ab-row .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:4px;}
+.ab-btn{padding:6px 16px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:999px;background:transparent;cursor:pointer;color:var(--color-text-primary);}
+.ab-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.ab-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ab-tag{font-size:var(--font-size-xs);color:var(--color-text-disabled);}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.btn-sm{height:36px;padding:0 16px;font-size:var(--font-size-sm);}
+.panel{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;margin-bottom:12px;}
+.panel h3{font-size:var(--font-size-sm);font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.tag-ai{font-size:var(--font-size-xs);color:#8250df;background:#f3eefb;border:1px solid #d8c8f0;padding:2px 10px;border-radius:999px;}
+.panel .desc{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:10px;}
+.warn-box{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:#fff4e0;border:1px solid #e8c47a;color:#9a6700;border-radius:var(--radius-md);font-size:var(--font-size-xs);margin-bottom:10px;}
+.first-run{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-bottom:10px;}
+.param-row{margin-bottom:10px;}
+.param-row .ph{display:flex;justify-content:space-between;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.param-row .ph b{color:var(--color-text-primary);}
+.param-row input[type=range]{width:100%;accent-color:var(--color-text-primary);cursor:pointer;}
+.param-row .scale{display:flex;justify-content:space-between;font-size:var(--font-size-xs);color:var(--color-text-disabled);}
+.progress{height:6px;background:var(--color-bg-soft);border-radius:3px;overflow:hidden;margin:10px 0 4px;}
+.progress>div{height:100%;width:0;background:var(--color-text-primary);transition:width .15s;}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;}
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:var(--radius-md);border:none;background:var(--color-text-primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;flex:1;min-width:150px;}
+.dl-btn:disabled{opacity:.4;cursor:not-allowed;}
+.dl-btn.violet{background:#8250df;}
+.dl-btn.green{background:var(--color-success);}
+.hidden{display:none;}
+.err-msg{padding:10px 14px;background:#fdecea;border:1px solid #f5c6c2;color:var(--color-error);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+</style>
+</head>
+<body>
+<header class="global-header">
+<a href="../../index.html" class="logo">S-Jiffy</a>
+<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">音频降噪器</h1>
+<p class="tool-desc" data-i18n="desc">使用噪声门限去除音频中的背景噪声。可调节阈值。</p>
+<div class="card">
+<label class="audio-drop" id="dropZone">
+<span class="ico">🎵</span>
+<span class="hint"></span>
+<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.mp4">
+</label>
+<div class="file-chip hidden" id="fileChip">
+<div><div id="fileName"></div><div class="meta" id="fileMeta"></div></div>
+<button class="x" id="fileRemove" type="button">✕</button>
+</div>
+<div class="err-msg hidden" id="errBox"></div>
+<div id="waveWrap" class="hidden">
+<div class="ab-row">
+<span class="lbl" data-i18n="compareLabel">对比</span>
+<button class="ab-btn active" id="abBefore" type="button">原始</button>
+<button class="ab-btn" id="abAfter" type="button">处理后</button>
+<span class="ab-tag" id="abTag"></span>
+</div>
+<div class="wave-box"><canvas id="waveCanvas"></canvas></div>
+<div class="ctrl-row">
+<button class="btn btn-secondary btn-sm" id="btnPlay" type="button"><span data-i18n="playAll">播放全部</span></button>
+<button class="btn btn-secondary btn-sm hidden" id="btnStop" type="button"><span data-i18n="stop">停止</span></button>
+<button class="btn btn-secondary btn-sm" id="btnPause" type="button" style="display:none"><span data-i18n="pause">暂停</span></button>
+</div>
+<div class="panel" id="gatePanel">
+<h3><span data-i18n="noiseGateBasic">噪声门（基础版）</span><span class="tag-ai" data-i18n="notAiBased">非 AI 算法</span></h3>
+<p class="desc" data-i18n="gateDesc">将低于阈值的信号静音。启动时间控制门打开速度，释放时间控制门关闭速度。</p>
+<div class="param-row">
+<div class="ph"><span data-i18n="thresholdLabel">阈值</span><b id="thrVal">20</b></div>
+<input type="range" id="thrSlider" min="0" max="50" step="1" value="20">
+<div class="scale"><span data-i18n="subtleLabel">轻微（0）</span><span data-i18n="aggressiveLabel">强力（50）</span></div>
+</div>
+<div class="param-row">
+<div class="ph"><span data-i18n="attackLabel">起音</span><b id="atkVal">20ms</b></div>
+<input type="range" id="atkSlider" min="1" max="200" step="1" value="20">
+</div>
+<div class="param-row">
+<div class="ph"><span data-i18n="releaseLabel">释音</span><b id="relVal">100ms</b></div>
+<input type="range" id="relSlider" min="10" max="500" step="10" value="100">
+</div>
+<button class="dl-btn" id="btnGate" type="button" disabled>⚙ <span data-i18n="applyingGate">应用噪声门</span></button>
+</div>
+<div class="panel">
+<h3><span data-i18n="rnnoiseTitle">AI 降噪</span><span class="tag-ai" data-i18n="rnnoiseAiTag">AI · Powered</span></h3>
+<p class="desc" data-i18n="rnnoiseDesc">基于语音训练的深度学习模型，在保留人声清晰度的同时有效去除背景噪声。</p>
+<div class="warn-box hidden" id="srWarn"></div>
+<div class="first-run"><span data-i18n="rnnoiseFirstRun">首次运行将下载 AI 模型（约 100 KB）</span></div>
+<button class="dl-btn violet" id="btnAi" type="button" disabled>✨ <span data-i18n="rnnoiseApply">应用 AI 降噪</span></button>
+</div>
+<div class="progress hidden" id="progress"><div id="progressFill"></div></div>
+<div class="action-row">
+<button class="dl-btn green hidden" id="btnDownload" type="button">⬇ <span data-i18n="downloadWav">下载 WAV</span></button>
+</div>
+</div>
+</div>
+</main>
+<footer class="global-footer">
+<div class="tool-status" id="statusBar"></div>
+<div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../assets/js/audio-core.js"></script>
+<script>
+(function () {
+  var AK = window.AudioKit;
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var fileChip = document.getElementById('fileChip');
+  var fileName = document.getElementById('fileName');
+  var fileMeta = document.getElementById('fileMeta');
+  var fileRemove = document.getElementById('fileRemove');
+  var errBox = document.getElementById('errBox');
+  var waveWrap = document.getElementById('waveWrap');
+  var canvas = document.getElementById('waveCanvas');
+  var abBefore = document.getElementById('abBefore');
+  var abAfter = document.getElementById('abAfter');
+  var abTag = document.getElementById('abTag');
+  var btnPlay = document.getElementById('btnPlay');
+  var btnStop = document.getElementById('btnStop');
+  var btnPause = document.getElementById('btnPause');
+  var thrSlider = document.getElementById('thrSlider');
+  var atkSlider = document.getElementById('atkSlider');
+  var relSlider = document.getElementById('relSlider');
+  var thrVal = document.getElementById('thrVal');
+  var atkVal = document.getElementById('atkVal');
+  var relVal = document.getElementById('relVal');
+  var btnGate = document.getElementById('btnGate');
+  var btnAi = document.getElementById('btnAi');
+  var btnDownload = document.getElementById('btnDownload');
+  var srWarn = document.getElementById('srWarn');
+  var progress = document.getElementById('progress');
+  var progressFill = document.getElementById('progressFill');
+
+  var file = null;
+  var buffer = null;
+  var peaks = null;
+  var duration = 0;
+  var outBuffer = null;
+  var outPeaks = null;
+  var outBlob = null;
+  var abMode = 'before';
+  var processing = false;
+
+  function t(key, fb) { var v = (window.I18N && I18N.t) ? I18N.t(key) : null; return (v === key || v == null) ? fb : v; }
+  function showErr(msg) { errBox.textContent = msg; errBox.classList.remove('hidden'); }
+  function hideErr() { errBox.classList.add('hidden'); }
+  function setProgress(p) {
+    if (p >= 1) { progress.classList.add('hidden'); return; }
+    progress.classList.remove('hidden');
+    progressFill.style.width = Math.round(p * 100) + '%';
+  }
+  function activeBuffer() { return abMode === 'after' && outBuffer ? outBuffer : buffer; }
+  function activePeaks() { return abMode === 'after' && outPeaks ? outPeaks : peaks; }
+
+  function draw() {
+    AK.drawWaveform(canvas, { peaks: activePeaks(), duration: duration, viewStart: 0, viewDuration: duration, playheadSec: 0 });
+  }
+
+  function updateAB() {
+    var afterReady = !!outBuffer;
+    abAfter.disabled = !afterReady;
+    abBefore.classList.toggle('active', abMode === 'before');
+    abAfter.classList.toggle('active', abMode === 'after');
+    abTag.textContent = abMode === 'before' ? '原始音频' : (outBuffer ? t('gateApplied', '已应用降噪门') : '');
+    draw();
+  }
+
+  function loadFile(f) {
+    hideErr();
+    setStatus('正在解码音频…');
+    AK.decodeAudioFile(f, function (buf) {
+      file = f;
+      buffer = buf;
+      duration = buf.duration;
+      peaks = AK.computePeaks(buf);
+      outBuffer = null; outPeaks = null; outBlob = null;
+      abMode = 'before';
+      fileName.textContent = f.name;
+      var rate = buf.sampleRate;
+      var mono = buf.numberOfChannels === 1;
+      fileMeta.textContent = AK.formatDuration(duration) + ' · ' + AK.formatBytes(f.size) + ' · ' + (rate / 1000) + 'kHz · ' + (mono ? 'Mono' : 'Stereo');
+      fileChip.classList.remove('hidden');
+      waveWrap.classList.remove('hidden');
+      dropZone.style.display = 'none';
+      btnGate.disabled = false;
+      btnAi.disabled = false;
+      btnDownload.classList.add('hidden');
+      if (rate !== 48000) {
+        srWarn.textContent = t('rnnoiseSrWarning', '您的音频采样率为 {sr} kHz。RNNoise 最佳工作在 48 kHz，将自动重采样。').replace('{sr}', (rate / 1000).toFixed(1));
+        srWarn.classList.remove('hidden');
+      } else {
+        srWarn.classList.add('hidden');
+      }
+      updateAB();
+      setStatus('文件已就绪');
+    }, function () {
+      showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
+      setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
+    });
+  }
+
+  function stopAudio() {
+    btnStop.classList.add('hidden');
+    btnPause.style.display = 'none';
+  }
+
+  var playCtx = null;
+
+  function playBuffer(buf) {
+    if (!buf) return;
+    if (playCtx) { try { playCtx.close(); } catch (e) {} playCtx = null; }
+    stopAudio();
+    var ctx;
+    try { ctx = AK.createAudioContext(); }
+    catch (e) { setStatus('浏览器不支持音频播放', 'error'); return; }
+    playCtx = ctx;
+    if (ctx.state === 'suspended') ctx.resume();
+    var src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    btnStop.classList.remove('hidden');
+    btnPause.style.display = '';
+    btnPause.querySelector('span').textContent = t('pause', '暂停');
+    var playing = true;
+    src.onended = function () {
+      try { ctx.close(); } catch (e) {}
+      if (playCtx === ctx) playCtx = null;
+      stopAudio();
+    };
+    btnPause.onclick = function () {
+      if (!playing) return;
+      if (ctx.state === 'running') {
+        ctx.suspend();
+        btnPause.querySelector('span').textContent = t('resume', '继续');
+      } else {
+        ctx.resume();
+        btnPause.querySelector('span').textContent = t('pause', '暂停');
+      }
+    };
+    btnStop.onclick = function () {
+      playing = false;
+      try { ctx.close(); } catch (e) {}
+      if (playCtx === ctx) playCtx = null;
+      stopAudio();
+    };
+  }
+
+  btnPlay.addEventListener('click', function () { playBuffer(activeBuffer()); });
+
+  abBefore.addEventListener('click', function () { abMode = 'before'; updateAB(); });
+  abAfter.addEventListener('click', function () { if (!outBuffer) return; abMode = 'after'; updateAB(); });
+
+  thrSlider.addEventListener('input', function () { thrVal.textContent = thrSlider.value; });
+  atkSlider.addEventListener('input', function () { atkVal.textContent = atkSlider.value + 'ms'; });
+  relSlider.addEventListener('input', function () { relVal.textContent = relSlider.value + 'ms'; });
+
+  function doneWith(buf, blob) {
+    outBuffer = buf;
+    outPeaks = AK.computePeaks(buf);
+    outBlob = blob;
+    abMode = 'after';
+    updateAB();
+    btnDownload.classList.remove('hidden');
+    setProgress(1);
+    processing = false;
+    btnGate.disabled = false;
+    btnAi.disabled = false;
+    setStatus('降噪完成');
+  }
+  function fail(msg) {
+    setProgress(1);
+    processing = false;
+    btnGate.disabled = false;
+    btnAi.disabled = false;
+    showErr(msg);
+    setStatus(msg, 'error');
+  }
+
+  btnGate.addEventListener('click', function () {
+    if (!buffer || processing) return;
+    processing = true;
+    btnGate.disabled = true;
+    btnAi.disabled = true;
+    hideErr();
+    setProgress(0);
+    setStatus(t('applyingGate', '正在应用噪声门…'));
+    setTimeout(function () {
+      try {
+        AK.applyNoiseGate(buffer, Number(thrSlider.value), Number(atkSlider.value), Number(relSlider.value), function (p) {
+          setProgress(0.1 + p * 0.7);
+        }, function (out) {
+          var blob = AK.audioBufferToWav(out);
+          doneWith(out, blob);
+        });
+      } catch (e) {
+        fail('噪声门处理失败');
+      }
+    }, 50);
+  });
+
+  btnAi.addEventListener('click', function () {
+    if (!buffer || processing) return;
+    processing = true;
+    btnGate.disabled = true;
+    btnAi.disabled = true;
+    hideErr();
+    setProgress(0);
+    setStatus(t('rnnoiseApplying', '正在应用 AI 降噪…'));
+    var inBuf = buffer;
+    AK.denoiseWithRNNoise(inBuf, function (p) {
+      setProgress(0.05 + p * 0.9);
+    }, function (blob) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var ctx;
+        try { ctx = AK.createAudioContext(); }
+        catch (e) { doneWithOut(blob); return; }
+        ctx.decodeAudioData(fr.result, function (buf) {
+          try { ctx.close(); } catch (e2) {}
+          doneWith(buf, blob);
+        }, function () { doneWithOut(blob); });
+      };
+      fr.onerror = function () { doneWithOut(blob); };
+      fr.readAsArrayBuffer(blob);
+      function doneWithOut(blob2) {
+        outBlob = blob2;
+        outBuffer = null;
+        outPeaks = null;
+        abMode = 'after';
+        updateAB();
+        btnDownload.classList.remove('hidden');
+        setProgress(1);
+        processing = false;
+        btnGate.disabled = false;
+        btnAi.disabled = false;
+        setStatus('AI 降噪完成');
+      }
+    }, function (err) {
+      setProgress(1);
+      fail('AI 降噪模型加载失败。已改用基础噪声门方案，请使用上方「噪声门（基础版）」。原因：' + (err && err.message ? err.message : '网络错误'));
+    });
+  });
+
+  btnDownload.addEventListener('click', function () {
+    if (!outBlob) return;
+    AK.downloadBlob(outBlob, AK.getOutputName(file.name, 'denoised'));
+    setStatus('已开始下载');
+  });
+
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+  dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files.length) loadFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+  fileRemove.addEventListener('click', function () {
+    file = null; buffer = null; peaks = null; outBuffer = null; outPeaks = null; outBlob = null;
+    fileChip.classList.add('hidden');
+    waveWrap.classList.add('hidden');
+    dropZone.style.display = '';
+    btnGate.disabled = true;
+    btnAi.disabled = true;
+    btnDownload.classList.add('hidden');
+    setStatus('');
+  });
+
+  document.getElementById('dropZone').querySelector('.hint').textContent = t('hint', '点击或拖放音频文件到这里（MP3 / WAV / OGG / AAC / FLAC / M4A，≤50MB）');
+})();
+</script>
+</body>
+</html>

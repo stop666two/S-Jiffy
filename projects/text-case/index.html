@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本大小写转换 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.case-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:var(--space-3);}
+.case-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;background:var(--color-bg);}
+.case-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.case-label{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.case-copy{background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:var(--font-size-xs);padding:2px 6px;border-radius:var(--radius-sm);}
+.case-copy:hover{color:var(--color-text-primary);background:rgba(0,0,0,0.03);}
+.case-value{font-family:var(--font-mono);font-size:13px;word-break:break-all;color:var(--color-text-primary);}
+.case-value.empty{color:var(--color-text-disabled);}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">文本大小写转换</h1>
+    <p class="tool-desc" data-i18n="desc">在 UPPERCASE、lowercase、Title Case、Sentence case、camelCase、PascalCase、snake_case、kebab-case、CONSTANT_CASE 之间即时转换文本。</p>
+
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:8px;">输入文本</label>
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="hello world example" style="min-height:120px;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);align-self:center;" id="statInfo"></span>
+      </div>
+    </div>
+
+    <div class="case-grid" id="caseGrid"></div>
+
+    <div class="output-box" id="outputContainer" style="min-height:60px;margin-top:var(--space-3);">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var inputEl = document.getElementById('inputText');
+      var grid = document.getElementById('caseGrid');
+      var statInfo = document.getElementById('statInfo');
+      var outputEl = document.getElementById('outputText');
+      var lastValues = {};
+
+      var CASES = [
+        { key: 'upper',    label: 'UPPER CASE',    example: 'HELLO WORLD' },
+        { key: 'lower',    label: 'lower case',    example: 'hello world' },
+        { key: 'title',    label: 'Title Case',    example: 'Hello World' },
+        { key: 'sentence', label: 'Sentence case', example: 'Hello world' },
+        { key: 'camel',    label: 'camelCase',     example: 'helloWorld' },
+        { key: 'pascal',   label: 'PascalCase',    example: 'HelloWorld' },
+        { key: 'snake',    label: 'snake_case',    example: 'hello_world' },
+        { key: 'kebab',    label: 'kebab-case',    example: 'hello-world' },
+        { key: 'constant', label: 'CONSTANT_CASE', example: 'HELLO_WORLD' }
+      ];
+
+      function tokenize(text){
+        return text
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+          .split(/[\s_\-]+/)
+          .filter(function(w){ return w.length > 0; })
+          .map(function(w){ return w.toLowerCase(); });
+      }
+
+      function convertCase(text, targetCase){
+        if (!text) return '';
+        var words = tokenize(text);
+        switch (targetCase) {
+          case 'upper':    return text.toUpperCase();
+          case 'lower':    return text.toLowerCase();
+          case 'title':    return words.map(function(w){ return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+          case 'sentence': {
+            var joined = words.join(' ');
+            return joined.charAt(0).toUpperCase() + joined.slice(1);
+          }
+          case 'camel':
+            return words.map(function(w, i){ return i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1); }).join('');
+          case 'pascal':
+            return words.map(function(w){ return w.charAt(0).toUpperCase() + w.slice(1); }).join('');
+          case 'snake':    return words.join('_');
+          case 'kebab':    return words.join('-');
+          case 'constant': return words.join('_').toUpperCase();
+          default:         return text;
+        }
+      }
+
+      var cards = [];
+      for (var i = 0; i < CASES.length; i++) {
+        (function (c) {
+          var card = document.createElement('div');
+          card.className = 'case-card';
+          var head = document.createElement('div');
+          head.className = 'case-head';
+          var lab = document.createElement('span');
+          lab.className = 'case-label';
+          lab.textContent = c.label;
+          var btn = document.createElement('button');
+          btn.className = 'case-copy';
+          btn.textContent = t('common.copy','复制');
+          btn.addEventListener('click', function () {
+            var v = lastValues[c.key] || '';
+            if (v) { copyToClipboard(v, btn); }
+          });
+          head.appendChild(lab); head.appendChild(btn);
+          var val = document.createElement('div');
+          val.className = 'case-value';
+          card.appendChild(head); card.appendChild(val);
+          grid.appendChild(card);
+          cards.push({ key: c.key, el: val, example: c.example });
+        })(CASES[i]);
+      }
+
+      function render(){
+        var text = inputEl.value;
+        outputEl.textContent = '';
+        var setOutput = false;
+        for (var i = 0; i < cards.length; i++) {
+          var v = text ? convertCase(text, cards[i].key) : cards[i].example;
+          lastValues[cards[i].key] = v;
+          cards[i].el.textContent = v;
+          if (text) cards[i].el.classList.remove('empty');
+          else cards[i].el.classList.add('empty');
+          if (text && cards[i].key === 'snake' && !setOutput) {
+            outputEl.textContent = v;
+            setOutput = true;
+          }
+        }
+        if (text) {
+          statInfo.textContent = text.length + t('charCount',' 字符');
+        } else {
+          statInfo.textContent = '';
+        }
+      }
+
+      inputEl.addEventListener('input', render);
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; statInfo.textContent = ''; lastValues = {}; render(); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('common.copied','已复制')); } });
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# S-Jiffy · 即用即走工具集
+﻿# S-Jiffy · 即用即走工具集
 
 > 轻量、瞬时的生产力工具，零登录零广告，打开即用，用完即走。
 >
@@ -297,3 +297,7 @@ S-Jiffy/
 ## 📄 许可证
 
 MIT License - 仓库地址：[https://github.com/stop666two/S-Jiffy](https://github.com/stop666two/S-Jiffy)
+
+## 🎉 鸣谢
+
+部分工具功能参考自 [SteelyLink Tools](https://github.com/SteelyLink/SteelyLink-Tools)（MIT License），特此鸣谢。

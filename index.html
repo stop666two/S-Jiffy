@@ -85,7 +85,7 @@
 <body>
   <header class="global-header">
     <a href="https://github.com/stop666two/S-Jiffy" target="_blank" class="logo" style="display:flex;align-items:center;gap:6px;">S-Jiffy <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400;">GitHub</span></a>
-  </header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select></header>
   <main class="tool-workspace">
     <h1 data-i18n="home.h1">即用即走工具集</h1>
     <p class="tool-desc" data-i18n-html="home.desc">轻量、瞬时的生产力工具，打开即用，用完即走。所有操作均在浏览器本地完成，极少情况下可能出现问题，请自行校验结果，如有问题请提交 <a href="https://github.com/stop666two/S-Jiffy/issues" target="_blank" style="color:var(--color-text-primary);text-decoration:underline;">Issues</a>。</p>
@@ -124,7 +124,8 @@
         'DevOps', '代码美化', '进制转换', '单位换算', '健康',
         '序列生成', '密码管理', '网址工具', '正则表达式', '金融',
         '游戏', '时间戳', '动画', '购物'
-      ];
+      ,
+        '图片处理', '音频处理'];
 
       var tools = [
         { name: '年龄计算器', desc: '根据出生日期精确计算年龄，显示年/月/日详情', link: 'projects/age-calculator/', cats: ['日期时间', '数学计算'] },
@@ -921,7 +922,102 @@
         document.getElementById('deselectAllBtn').addEventListener('click', function () {
           document.querySelectorAll('.history-cb').forEach(function (cb) { cb.checked = !cb.checked; });
           updateHistoryInfo();
-        });
+        },
+  { name: "PNG转JPG转换器", desc: "在浏览器中即时将PNG图片转换为JPG格式。无需上传，100%隐私。", link: 'projects/png-to-jpg/', cats: ["图片处理"] },
+  { name: "JPG转PNG转换器", desc: "将JPG图片转换为无损PNG格式。快速、免费、安全。", link: 'projects/jpg-to-png/', cats: ["图片处理"] },
+  { name: "WebP转JPG转换器", desc: "将WebP图片转换为JPG格式，提高兼容性。完全在浏览器中运行。", link: 'projects/webp-to-jpg/', cats: ["图片处理"] },
+  { name: "JPG转WebP转换器", desc: "将JPG图片转换为现代WebP格式以减小文件大小。无需上传。", link: 'projects/jpg-to-webp/', cats: ["图片处理"] },
+  { name: "WebP转PNG转换器", desc: "将WebP图片转换为无损PNG格式，保留透明度。", link: 'projects/webp-to-png/', cats: ["图片处理"] },
+  { name: "PNG转WebP转换器", desc: "将PNG转换为WebP以减小文件大小，无质量损失。", link: 'projects/png-to-webp/', cats: ["图片处理"] },
+  { name: "HEIC转JPG转换器", desc: "将iPhone HEIC照片转换为JPG格式。快速、私密，无需上传。", link: 'projects/heic-to-jpg/', cats: ["图片处理"] },
+  { name: "HEIC转PNG转换器", desc: "将iPhone的HEIC图片转换为PNG格式，保留透明度。", link: 'projects/heic-to-png/', cats: ["图片处理"] },
+  { name: "AVIF转JPG转换器", desc: "将AVIF图片转换为JPEG以获得最大浏览器兼容性。", link: 'projects/avif-to-jpg/', cats: ["图片处理"] },
+  { name: "AVIF转PNG转换器", desc: "将AVIF转换为无损PNG格式。免费，纯浏览器运行。", link: 'projects/avif-to-png/', cats: ["图片处理"] },
+  { name: "SVG转PNG转换器", desc: "将SVG矢量图形转换为PNG光栅图像。可设置缩放和尺寸。", link: 'projects/svg-to-png/', cats: ["图片处理","格式转换"] },
+  { name: "SVG转JPG转换器", desc: "将SVG矢量图形转换为JPG格式。无需上传，即时转换。", link: 'projects/svg-to-jpg/', cats: ["图片处理","格式转换"] },
+  { name: "图片压缩器", desc: "压缩图片以减小文件大小，同时保持质量。免费且隐私。", link: 'projects/compress-image/', cats: ["图片处理"] },
+  { name: "背景去除器", desc: "AI 智能去除图片背景，完全在浏览器中运行。无需上传服务器。", link: 'projects/remove-bg/', cats: ["图片处理"] },
+  { name: "图片调整大小", desc: "即时调整图片大小到任意尺寸。支持所有主要图片格式。", link: 'projects/resize-image/', cats: ["图片处理"] },
+  { name: "图片裁剪器", desc: "将图片裁剪到所需的精确大小。快速、免费、隐私保护。", link: 'projects/crop-image/', cats: ["图片处理"] },
+  { name: "图片旋转器", desc: "即时旋转图片90°、180°或270°。无需上传，无需注册。", link: 'projects/rotate-image/', cats: ["图片处理"] },
+  { name: "图片滤镜效果", desc: "对图片应用亮度、对比度、饱和度、模糊、锐化、灰度和褪色效果。", link: 'projects/image-filter/', cats: ["图片处理"] },
+  { name: "水印工具", desc: "向照片添加文字或图片水印。选择位置、透明度和旋转角度。", link: 'projects/add-watermark/', cats: ["图片处理"] },
+  { name: "在线画板", desc: "在浏览器中自由绘图。铅笔、形状、文字、撤销/重做，导出为PNG。", link: 'projects/drawing-canvas/', cats: ["图片处理","动画"] },
+  { name: "批量图片处理器", desc: "批量处理多张图片：压缩、调整大小、转换格式或添加水印。", link: 'projects/image-batch/', cats: ["图片处理"] },
+  { name: "视频转GIF工具", desc: "在浏览器中将MP4、WebM、MOV视频转换为GIF动图。可裁剪片段、设置帧率和尺寸，无需上传。", link: 'projects/video-to-gif/', cats: ["图片处理","格式转换"] },
+  { name: "MP4转GIF工具", desc: "在线将MP4视频转换为高质量GIF动图。设置开始/结束时间、帧率和输出宽度，全程本地处理。", link: 'projects/mp4-to-gif/', cats: ["图片处理","格式转换"] },
+  { name: "图片转PDF", desc: "将多张JPG、PNG或WebP图片合并成一个PDF文件。可拖拽调整页面顺序，选择A4或Letter大小，一键下载，完全在浏览器中处理。", link: 'projects/image-to-pdf/', cats: ["文档工具"] },
+  { name: "PDF合并", desc: "将多个PDF文件合并为一个文档。安全且私密。", link: 'projects/merge-pdf/', cats: ["文档工具"] },
+  { name: "PDF分割", desc: "将PDF文件分割成单独的页面或范围。完全在浏览器中工作。", link: 'projects/split-pdf/', cats: ["文档工具"] },
+  { name: "PDF压缩", desc: "减小PDF文件大小，同时保持文档质量。免费且私密。", link: 'projects/pdf-compress/', cats: ["文档工具"] },
+  { name: "PDF加密", desc: "用密码保护您的PDF。在浏览器中安全加密PDF。", link: 'projects/pdf-encrypt/', cats: ["文档工具","安全工具"] },
+  { name: "PDF解密", desc: "去除PDF文件的密码保护。快速且私密。", link: 'projects/pdf-decrypt/', cats: ["文档工具","安全工具"] },
+  { name: "PDF水印", desc: "向PDF文档添加文字或图片水印。无需上传。", link: 'projects/pdf-watermark/', cats: ["文档工具"] },
+  { name: "PDF转文本", desc: "从PDF文件中提取所有文本内容。快速私密的浏览器工具。", link: 'projects/pdf-to-txt/', cats: ["文档工具"] },
+  { name: "PDF转CSV", desc: "从PDF中提取表格数据并导出为CSV。无需服务器。", link: 'projects/pdf-to-csv/', cats: ["文档工具","数据处理"] },
+  { name: "PDF 转 Word", desc: "在浏览器中将 PDF 文件转换为可编辑的 Word 文档（.docx）。文本在本地提取，无需上传。", link: 'projects/pdf-to-word/', cats: ["文档工具"] },
+  { name: "Word 转 PDF", desc: "在浏览器中将 Word 文档（.docx）转换为 PDF。格式本地保留，无需服务器上传。", link: 'projects/word-to-pdf/', cats: ["文档工具"] },
+  { name: "时间戳转换器", desc: "将Unix时间戳转换为可读日期，反之亦然。", link: 'projects/timestamp-converter/', cats: ["时间戳","编程工具"] },
+  { name: "文本大小写转换", desc: "在驼峰式、下划线式、帕斯卡式、短横线式等格式间转换文本。", link: 'projects/text-case/', cats: ["文本处理"] },
+  { name: "Lorem Ipsum生成器", desc: "生成Lorem ipsum占位文本。可选择段落、句子或字数。", link: 'projects/lorem-ipsum/', cats: ["文本处理","数据生成"] },
+  { name: "CSV格式化器", desc: "解析、验证和格式化CSV数据。自动检测分隔符。", link: 'projects/csv-formatter/', cats: ["数据处理"] },
+  { name: "YAML格式化器", desc: "格式化、验证和转换YAML数据。", link: 'projects/yaml-formatter/', cats: ["数据处理"] },
+  { name: "Markdown编辑器", desc: "实时编写和预览Markdown。即时导出为HTML。", link: 'projects/markdown-formatter/', cats: ["文档工具","编程工具"] },
+  { name: "二维码生成器", desc: "即时为任何URL或文本生成二维码。免费，无水印。", link: 'projects/qr-code/', cats: ["数据生成","网页工具"] },
+  { name: "IP地址查询", desc: "查询任意IP地址的国家、城市、运营商和坐标，页面加载时自动检测您的IP。", link: 'projects/ip-lookup/', cats: ["网络工具"] },
+  { name: "图片文字识别", desc: "通过云服务智能识别从图片中提取文字，支持英文和简繁体中文。", link: 'projects/ocr-tool/', cats: ["文档工具"] },
+  { name: "美国地址生成器", desc: "随机生成逼真的美国地址，包含姓名、电话号码和地图位置。可选择任意州，每个字段一键复制。免税州清晰标注。", link: 'projects/us-address-generator/', cats: ["数据生成"] },
+  { name: "数字进制转换器", desc: "即时在十进制、二进制、八进制和十六进制之间转换数字。", link: 'projects/base-convert/', cats: ["进制转换","数学计算"] },
+  { name: "二进制计算器", desc: "对二进制数进行加减乘除运算。", link: 'projects/binary-calculator/', cats: ["数学计算","进制转换"] },
+  { name: "布尔逻辑计算器", desc: "计算布尔逻辑表达式：AND、OR、XOR、NOT、NAND、NOR、XNOR。", link: 'projects/boolean-calculator/', cats: ["数学计算"] },
+  { name: "位运算计算器", desc: "执行按位AND、OR、XOR、NOT、左移和右移运算。", link: 'projects/bitwise-calculator/', cats: ["数学计算","进制转换"] },
+  { name: "IP/子网计算器", desc: "计算任意IP/CIDR的网络地址、广播地址、子网掩码和主机范围。", link: 'projects/ip-calculator/', cats: ["网络工具","数学计算"] },
+  { name: "日期时间计算器", desc: "精确计算两个日期之间的差值，包括年、月、日。", link: 'projects/time-diff/', cats: ["日期时间","数学计算"] },
+  { name: "字符串分析器", desc: "分析文本：字符数、单词数、词频、唯一单词等。", link: 'projects/string-analyzer/', cats: ["文本处理","字符串"] },
+  { name: "日期计算器", desc: "对任意日期加减天数、月数或年数，即时得到精确结果日期。", link: 'projects/date-calculator/', cats: ["日期时间","数学计算"] },
+  { name: "单位换算器", desc: "即时换算长度、重量和温度单位，支持公制和英制，完全在浏览器中运行。", link: 'projects/unit-converter/', cats: ["单位换算"] },
+  { name: "银行卡BIN查询", desc: "输入银行卡前6-8位数字，查询发卡行、国家、卡类型和品牌信息。", link: 'projects/bank-bin/', cats: ["金融"] },
+  { name: "货币汇率转换", desc: "实时货币汇率转换器，支持30+种货币，汇率每日更新。", link: 'projects/currency-converter/', cats: ["金融","生活"] },
+  { name: "文本编码转换器", desc: "在纯文本、十六进制、二进制、八进制、十进制、Base64、URL、HTML实体、Unicode、ASCII、ROT13和摩尔斯电码之间转换。", link: 'projects/text-encoder/', cats: ["编解码","文本处理"] },
+  { name: "在线记事本", desc: "基于浏览器的记事本，自动保存到localStorage，支持Markdown预览和PDF/TXT导出，无需账号。", link: 'projects/online-notepad/', cats: ["文本处理","生活"] },
+  { name: "音频裁剪器", desc: "通过选择开始和结束时间来裁剪音频文件。下载为WAV格式。", link: 'projects/audio-trim/', cats: ["音频处理"] },
+  { name: "音频分割器", desc: "通过指定时间点将音频分割为片段。下载每个片段。", link: 'projects/audio-split/', cats: ["音频处理"] },
+  { name: "音量调节器", desc: "提升或降低音频音量。调整增益从0%到200%。", link: 'projects/audio-volume/', cats: ["音频处理"] },
+  { name: "音频转换器", desc: "将音频文件转换为WAV或WebM格式。浏览器内运行。", link: 'projects/audio-convert/', cats: ["音频处理","格式转换"] },
+  { name: "音频合并器", desc: "将多个音频文件合并为一个。调整顺序并下载为WAV。", link: 'projects/audio-merge/', cats: ["音频处理"] },
+  { name: "音频降噪器", desc: "使用噪声门限去除音频中的背景噪声。可调节阈值。", link: 'projects/audio-denoise/', cats: ["音频处理"] },
+  { name: "瞄准训练", desc: "练习并提升鼠标瞄准能力。尽可能快速准确地点击目标。30秒挑战。", link: 'projects/aim-trainer/', cats: ["游戏"] },
+  { name: "CPS测试", desc: "测试10秒内的点击速度，看看你每秒能点击多少次。", link: 'projects/cps-test/', cats: ["游戏"] },
+  { name: "游戏灵敏度转换器", desc: "在CS2、Valorant、Apex、守望先锋等13款游戏间精确转换鼠标灵敏度。", link: 'projects/sensitivity-converter/', cats: ["游戏"] },
+  { name: "Valorant灵敏度转换器", desc: "将任何游戏的灵敏度转换为Valorant。输入DPI和源灵敏度，即时获得匹配值。", link: 'projects/valorant-sensitivity-converter/', cats: ["游戏"] },
+  { name: "CS2灵敏度转换器", desc: "将任何游戏的灵敏度转换为CS2。输入DPI和源灵敏度，即时获得匹配值。", link: 'projects/cs2-sensitivity-converter/', cats: ["游戏"] },
+  { name: "Apex英雄灵敏度转换器", desc: "将任何游戏的灵敏度转换为Apex英雄。基于cm/360精确计算。", link: 'projects/apex-sensitivity-converter/', cats: ["游戏"] },
+  { name: "守望先锋2灵敏度转换器", desc: "将任何游戏的灵敏度转换为守望先锋2。输入DPI和源灵敏度即时获结果。", link: 'projects/overwatch2-sensitivity-converter/', cats: ["游戏"] },
+  { name: "彩虹六号围攻灵敏度转换器", desc: "将任何FPS游戏的灵敏度转换为彩虹六号围攻。基于cm/360精确转换。", link: 'projects/r6siege-sensitivity-converter/', cats: ["游戏"] },
+  { name: "绝地求生灵敏度转换器", desc: "将任何FPS游戏灵敏度转换为绝地求生。精确鼠标灵敏度计算。", link: 'projects/pubg-sensitivity-converter/', cats: ["游戏"] },
+  { name: "堡垒之夜灵敏度转换器", desc: "将鼠标灵敏度转换为堡垒之夜格式。支持所有主要FPS游戏。", link: 'projects/fortnite-sensitivity-converter/', cats: ["游戏"] },
+  { name: "使命召唤灵敏度转换器", desc: "将任何游戏灵敏度转换为使命召唤。精确cm/360计算。", link: 'projects/cod-sensitivity-converter/', cats: ["游戏"] },
+  { name: "逃离塔科夫灵敏度转换器", desc: "将FPS灵敏度转换为逃离塔科夫格式。精确cm/360数学计算。", link: 'projects/tarkov-sensitivity-converter/', cats: ["游戏"] },
+  { name: "战地2042灵敏度转换器", desc: "将任何FPS游戏灵敏度转换为战地2042格式。", link: 'projects/bf2042-sensitivity-converter/', cats: ["游戏"] },
+  { name: "光环无限灵敏度转换器", desc: "将FPS灵敏度转换为光环无限。精确cm/360计算。", link: 'projects/halo-sensitivity-converter/', cats: ["游戏"] },
+  { name: "The Finals灵敏度转换器", desc: "将FPS灵敏度转换为The Finals。基于cm/360精确转换。", link: 'projects/thefinals-sensitivity-converter/', cats: ["游戏"] },
+  { name: "星际战甲灵敏度转换器", desc: "将FPS灵敏度转换为星际战甲。精确鼠标灵敏度计算。", link: 'projects/warframe-sensitivity-converter/', cats: ["游戏"] },
+  { name: "CS2转Valorant灵敏度转换器", desc: "即时将CS2/CS:GO灵敏度转换为Valorant。保持精确的cm/360手感。", link: 'projects/cs2-to-valorant-sensitivity/', cats: ["游戏"] },
+  { name: "Valorant转CS2灵敏度转换器", desc: "将Valorant灵敏度转换为CS2/CS:GO。两款游戏相同的cm/360。", link: 'projects/valorant-to-cs2-sensitivity/', cats: ["游戏"] },
+  { name: "Apex转Valorant灵敏度转换器", desc: "将Apex英雄灵敏度转换为Valorant。保留精确的鼠标手感。", link: 'projects/apex-to-valorant-sensitivity/', cats: ["游戏"] },
+  { name: "Valorant转Apex灵敏度转换器", desc: "将Valorant灵敏度转换为Apex英雄。精确cm/360计算。", link: 'projects/valorant-to-apex-sensitivity/', cats: ["游戏"] },
+  { name: "CS2转Apex灵敏度转换器", desc: "将CS2灵敏度转换为Apex英雄。跨游戏保持相同鼠标手感。", link: 'projects/cs2-to-apex-sensitivity/', cats: ["游戏"] },
+  { name: "Apex转CS2灵敏度转换器", desc: "将Apex英雄灵敏度转换为CS2。两款游戏相同的cm/360。", link: 'projects/apex-to-cs2-sensitivity/', cats: ["游戏"] },
+  { name: "守望先锋2转Valorant灵敏度转换器", desc: "将守望先锋2灵敏度转换为Valorant。精确cm/360匹配。", link: 'projects/overwatch2-to-valorant-sensitivity/', cats: ["游戏"] },
+  { name: "Valorant转守望先锋2灵敏度转换器", desc: "将Valorant灵敏度转换为守望先锋2。精确cm/360计算。", link: 'projects/valorant-to-overwatch2-sensitivity/', cats: ["游戏"] },
+  { name: "CS2转守望先锋2灵敏度转换器", desc: "将CS2灵敏度转换为守望先锋2。保持鼠标手感。", link: 'projects/cs2-to-overwatch2-sensitivity/', cats: ["游戏"] },
+  { name: "守望先锋2转CS2灵敏度转换器", desc: "将守望先锋2灵敏度转换为CS2。跨游戏相同cm/360。", link: 'projects/overwatch2-to-cs2-sensitivity/', cats: ["游戏"] },
+  { name: "绝地求生转CS2灵敏度转换器", desc: "将绝地求生灵敏度转换为CS2。基于cm/360精确转换。", link: 'projects/pubg-to-cs2-sensitivity/', cats: ["游戏"] },
+  { name: "CS2转绝地求生灵敏度转换器", desc: "将CS2灵敏度转换为绝地求生。精确鼠标灵敏度计算。", link: 'projects/cs2-to-pubg-sensitivity/', cats: ["游戏"] },
+  { name: "堡垒之夜转Valorant灵敏度转换器", desc: "将堡垒之夜灵敏度转换为Valorant。保持精确的cm/360。", link: 'projects/fortnite-to-valorant-sensitivity/', cats: ["游戏"] },
+  { name: "Valorant转堡垒之夜灵敏度转换器", desc: "将Valorant灵敏度转换为堡垒之夜。两款游戏相同鼠标手感。", link: 'projects/valorant-to-fortnite-sensitivity/', cats: ["游戏"] },
+  { name: "使命召唤转CS2灵敏度转换器", desc: "将使命召唤灵敏度转换为CS2。精确cm/360计算。", link: 'projects/cod-to-cs2-sensitivity/', cats: ["游戏"] },
+  { name: "CS2转使命召唤灵敏度转换器", desc: "将CS2灵敏度转换为使命召唤。精确鼠标灵敏度匹配。", link: 'projects/cs2-to-cod-sensitivity/', cats: ["游戏"] },);
         document.getElementById('deleteSelectedBtn').addEventListener('click', function () {
           var usage = getUsage();
           var count = 0;

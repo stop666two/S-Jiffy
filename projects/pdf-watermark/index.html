@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF水印 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .fm{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:12px;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;}
+.file-bar .x:hover{color:var(--color-error);}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt-group label{font-size:var(--font-size-sm);display:block;margin-bottom:6px;color:var(--color-text-secondary);}
+.opt-group input[type=text]{width:100%;height:44px;padding:0 12px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;}
+.opt-group input[type=text]:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row input[type=range]{flex:1;accent-color:var(--color-accent);}
+.slider-val{font-size:var(--font-size-xs);color:var(--color-text-secondary);min-width:44px;text-align:right;}
+.seg-btns{display:flex;gap:8px;}
+.seg-btn{flex:1;padding:10px 8px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary);}
+.seg-btn.on{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.swatches{display:flex;gap:10px;}
+.color-swatch{width:30px;height:30px;border-radius:8px;border:2px solid transparent;cursor:pointer;display:inline-block;}
+.color-swatch.on{border-color:var(--color-accent);box-shadow:var(--shadow-focus);}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">PDF水印</h1>
+<p class="tool-desc" data-i18n="desc">向PDF文档添加文字或图片水印。无需上传。</p>
+<div class="card">
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">💧</div>
+<div class="dz-label" data-i18n="uploadPdfFiles">上传PDF文件</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".pdf,application/pdf" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<span class="fm" id="fileMeta"></span>
+<button class="x" id="removeBtn" title="×">✕</button>
+</div>
+<div class="opt-grid">
+<div class="opt-group">
+<label>水印文字</label>
+<input type="text" id="wmText" value="CONFIDENTIAL" placeholder="CONFIDENTIAL">
+</div>
+<div class="opt-group">
+<label data-i18n="watermarkPosition">位置</label>
+<div class="seg-btns">
+<button class="seg-btn" data-pos="center" data-i18n="watermarkCenter">居中</button>
+<button class="seg-btn on" data-pos="diagonal" data-i18n="watermarkDiagonal">对角线</button>
+</div>
+</div>
+<div class="opt-group">
+<label data-i18n="watermarkOpacity">不透明度</label>
+<div class="slider-row"><input type="range" id="wmOpacity" min="5" max="100" step="5" value="30"><span class="slider-val" id="wmOpacityVal">30%</span></div>
+</div>
+<div class="opt-group">
+<label data-i18n="watermarkFontSize">字体大小</label>
+<div class="slider-row"><input type="range" id="wmFontSize" min="20" max="120" step="5" value="60"><span class="slider-val" id="wmFontSizeVal">60pt</span></div>
+</div>
+<div class="opt-group" id="rotGroup">
+<label data-i18n="watermarkRotation">旋转角度</label>
+<div class="slider-row"><input type="range" id="wmRotation" min="0" max="90" step="5" value="45"><span class="slider-val" id="wmRotationVal">45°</span></div>
+</div>
+<div class="opt-group">
+<label data-i18n="watermarkColor">颜色</label>
+<div class="swatches" id="swatches">
+<span class="color-swatch" data-c="0.5,0.5,0.5" style="background:#808080" title="灰"></span>
+<span class="color-swatch" data-c="0.8,0.1,0.1" style="background:#cc1a1a" title="红"></span>
+<span class="color-swatch" data-c="0.1,0.3,0.8" style="background:#1a4dcc" title="蓝"></span>
+<span class="color-swatch on" data-c="0,0,0" style="background:#000" title="黑"></span>
+</div>
+</div>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="applyBtn" disabled data-i18n="addWatermark">添加水印</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var file=null,busy=false;
+var pos='diagonal',color=[0,0,0];
+var dz=$('dropZone'),fi=$('fileInput'),btn=$('applyBtn');
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function loadFile(f){
+  var isP=(f.type==='application/pdf')||(f.name&&f.name.toLowerCase().indexOf('.pdf')!==-1);
+  if(!isP){setStatus(t('notPdf','请选择PDF文件'),'error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  file=f;
+  $('workCard').style.display='block';
+  $('fileName').textContent=f.name;
+  $('fileMeta').textContent=fmtSize(f.size);
+  setStatus('');
+  updateBtn();
+}
+function updateBtn(){
+  btn.disabled=busy||!file;
+  btn.textContent=busy?t('addingWatermark','添加水印...'):t('addWatermark','添加水印');
+}
+function doApply(){
+  if(!file||busy)return;
+  var text=$('wmText').value.trim();
+  if(!text){setStatus(t('wmTextEmpty','请输入水印文字'),'error');return;}
+  var opacity=parseInt($('wmOpacity').value,10)/100;
+  var fontSize=parseInt($('wmFontSize').value,10);
+  var rotation=parseInt($('wmRotation').value,10);
+  busy=true;updateBtn();setStatus('');
+  readAB(file,function(buf){
+    PDFLib.PDFDocument.load(new Uint8Array(buf)).then(function(pdf){
+      var pages=pdf.getPages(),i;
+      for(i=0;i<pages.length;i++){
+        var page=pages[i];
+        var size=page.getSize();
+        var est=text.length*fontSize*0.3;
+        var x,y;
+        if(pos==='center'){x=size.width/2-est;y=size.height/2-fontSize/2;}
+        else{x=size.width/4;y=size.height/4;}
+        page.drawText(text,{
+          x:x,y:y,
+          size:fontSize,
+          color:PDFLib.rgb(color[0],color[1],color[2]),
+          opacity:opacity,
+          rotate:PDFLib.degrees(pos==='diagonal'?rotation:0)
+        });
+      }
+      return pdf.save();
+    }).then(function(bytes){
+      download(new Blob([bytes.buffer],{type:'application/pdf'}),'watermarked_'+file.name);
+      busy=false;updateBtn();
+      setStatus(t('watermarkedDownloaded','已下载水印PDF！'));
+    }).catch(function(err){
+      busy=false;updateBtn();
+      setStatus(t('wmFailed','水印添加失败：')+err.message,'error');
+    });
+  },function(){
+    busy=false;updateBtn();
+    setStatus(t('readFailed','文件读取失败'),'error');
+  });
+}
+var segs=document.querySelectorAll('.seg-btn'),i;
+for(i=0;i<segs.length;i++){
+  segs[i].addEventListener('click',function(){
+    pos=this.getAttribute('data-pos');
+    var k;
+    for(k=0;k<segs.length;k++){segs[k].classList.toggle('on',segs[k]===this);}
+  });
+}
+var sws=document.querySelectorAll('.color-swatch');
+for(i=0;i<sws.length;i++){
+  sws[i].addEventListener('click',function(){
+    var parts=this.getAttribute('data-c').split(',');
+    color=[parseFloat(parts[0]),parseFloat(parts[1]),parseFloat(parts[2])];
+    var k;
+    for(k=0;k<sws.length;k++){sws[k].classList.toggle('on',sws[k]===this);}
+  });
+}
+$('wmOpacity').addEventListener('input',function(){$('wmOpacityVal').textContent=this.value+'%';});
+$('wmFontSize').addEventListener('input',function(){$('wmFontSizeVal').textContent=this.value+'pt';});
+$('wmRotation').addEventListener('input',function(){$('wmRotationVal').textContent=this.value+'°';});
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('removeBtn').addEventListener('click',function(){file=null;$('workCard').style.display='none';updateBtn();setStatus('');});
+btn.addEventListener('click',doApply);
+$('dzSub').textContent=t('supportedFormats','支持：{formats}').replace('{formats}','PDF')+' · '+t('maxPdfHint','最大20MB · .pdf');
+})();
+</script>
+</body>
+</html>

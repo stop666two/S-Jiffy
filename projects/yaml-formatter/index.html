@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML 格式化器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.tool-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+.error-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:rgba(159,47,45,0.08);border:1px solid rgba(159,47,45,0.35);color:var(--color-error);white-space:pre-wrap;display:none;}
+.sub-label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">YAML 格式化器</h1>
+    <p class="tool-desc" data-i18n="desc">规范化 YAML 缩进（2 空格）与冒号间距，适合 Kubernetes 清单、CI/CD 配置、Docker Compose 文件。</p>
+    <div class="card">
+      <label class="sub-label" data-i18n="inputYaml">输入YAML</label>
+      <textarea id="inputText" class="input textarea js-focus-input" placeholder="name: John&#10;age: 30&#10;address:&#10;  city: New York&#10;  zip: 10001" style="min-height:200px;"></textarea>
+      <div id="errorDetail" class="error-detail"></div>
+    </div>
+    <div class="tool-row">
+      <button id="formatBtn" class="btn btn-primary" data-i18n="formatYaml">格式化YAML</button>
+      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    </div>
+    <div class="output-box" id="outputContainer">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var inputEl = document.getElementById('inputText');
+      var outputEl = document.getElementById('outputText');
+      var errorDetail = document.getElementById('errorDetail');
+
+      function formatYAML(input){
+        if (!input.trim()) return '';
+        var lines = input.split('\n');
+        var normalized = lines.map(function (line) {
+          var r = line.replace(/^\s*-\s+/, function (m) { return m.replace(/^\s+/, ''); });
+          r = r.replace(/^(\s*[^:#\s][^:]*):([^ \n])/, '$1: $2');
+          return r;
+        });
+        var indentSizes = [];
+        for (var i = 0; i < normalized.length; i++) {
+          if (/^\s+/.test(normalized[i])) {
+            var m = normalized[i].match(/^(\s+)/);
+            if (m) indentSizes.push(m[1].length);
+          }
+        }
+        var minIndent = 2;
+        if (indentSizes.length > 0) {
+          minIndent = indentSizes[0];
+          for (var j = 1; j < indentSizes.length; j++) {
+            if (indentSizes[j] < minIndent) minIndent = indentSizes[j];
+          }
+        }
+        var out = [];
+        for (var k = 0; k < normalized.length; k++) {
+          var match = normalized[k].match(/^(\s*)(.*)/);
+          if (!match) { out.push(normalized[k]); continue; }
+          var spaces = match[1], rest = match[2];
+          if (!spaces) { out.push(rest); continue; }
+          var level = Math.round(spaces.length / minIndent);
+          var pad = '';
+          for (var p = 0; p < level * 2; p++) pad += ' ';
+          out.push(pad + rest);
+        }
+        return out.join('\n');
+      }
+
+      document.getElementById('formatBtn').addEventListener('click', function () {
+        var text = inputEl.value;
+        errorDetail.style.display = 'none';
+        if (!text.trim()) { outputEl.textContent=''; setStatus(t('emptyInput','请输入 YAML'),'error'); return; }
+        try {
+          outputEl.textContent = formatYAML(text);
+          setStatus(t('formatted','已格式化'));
+        } catch (e) {
+          outputEl.textContent = '';
+          errorDetail.textContent = t('yamlError','格式化失败') + ': ' + e.message;
+          errorDetail.style.display = 'block';
+          setStatus(t('yamlError','格式化失败'),'error');
+        }
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; errorDetail.style.display = 'none'; setStatus(''); inputEl.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('common.copied','已复制')); } });
+    })();
+  </script>
+</body>
+</html>

@@ -155,27 +155,33 @@
   function renderSwitcher() {
     var header = document.querySelector('.global-header');
     if (!header) return;
-    var select = document.createElement('select');
-    select.id = 'langSwitch';
-    select.className = 'lang-switch';
-    select.setAttribute('aria-label', 'Language');
-    var i;
-    for (i = 0; i < LANGS.length; i++) {
-      var opt = document.createElement('option');
-      opt.value = LANGS[i].code;
-      opt.textContent = LANGS[i].label;
-      if (LANGS[i].code === lang) opt.selected = true;
-      select.appendChild(opt);
+    var select = header.querySelector('#langSwitch');
+    if (!select) {
+      select = document.createElement('select');
+      select.id = 'langSwitch';
+      select.className = 'lang-switch';
+      select.setAttribute('aria-label', 'Language');
+      var i;
+      for (i = 0; i < LANGS.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = LANGS[i].code;
+        opt.textContent = LANGS[i].label;
+        select.appendChild(opt);
+      }
+      var backBtn = header.querySelector('.back-btn');
+      if (backBtn) {
+        backBtn.parentNode.replaceChild(select, backBtn);
+      } else {
+        header.appendChild(select);
+      }
     }
     select.addEventListener('change', function () {
       try { localStorage.setItem(STORAGE_KEY, select.value); } catch (e) {}
       window.location.reload();
     });
-    var backBtn = header.querySelector('.back-btn');
-    if (backBtn) {
-      backBtn.replaceWith(select);
-    } else {
-      header.appendChild(select);
+    var opts = select.options;
+    for (var j = 0; j < opts.length; j++) {
+      if (opts[j].value === lang) { opts[j].selected = true; break; }
     }
   }
 

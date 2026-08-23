@@ -7,37 +7,38 @@
 .b64-file-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
 .opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:var(--font-size-sm);}
 .valid-msg{padding:4px 12px;border-radius:9999px;font-size:var(--font-size-xs);display:inline-block;}
-.valid-msg.ok{background:#e8f5e9;color:#2e7d32;}
-.valid-msg.fail{background:#ffebee;color:#c62828;}
+.valid-msg.ok{background:rgba(52,101,56,0.12);color:var(--color-success);}
+.valid-msg.fail{background:rgba(159,47,45,0.12);color:var(--color-error);}
+.tool-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="b64.h1">Base64 编解码</h1>
 <p class="tool-desc" data-i18n="b64.desc">文本与 Base64 标准/URL安全模式互相转换，支持文件上传。</p>
 <div class="card">
 <div class="opt-row">
-<label><input type="radio" name="b64mode" value="standard" checked> <span data-i18n="b64.optStandard">标准模式</span></label>
-<label><input type="radio" name="b64mode" value="urlsafe"> <span data-i18n="b64.optUrlSafe">URL 安全模式</span></label>
-<label><input type="checkbox" id="chkValidate"> <span data-i18n="b64.chkValidate">编解码校验</span></label>
+<label><input type="radio" name="b64mode" value="standard" checked> <span data-i18n="b64.optStandard">标准 Base64</span></label>
+<label><input type="radio" name="b64mode" value="urlsafe"> <span data-i18n="b64.optUrlSafe">URL 安全</span></label>
+<label><input type="checkbox" id="chkValidate"> <span data-i18n="b64.chkValidate">解码时校验输入合法性</span></label>
 </div>
-<textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." data-i18n-placeholder="b64.placeholder" style="min-height:120px;"></textarea>
+<textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码或解码的文本..." data-i18n-placeholder="b64.placeholder" style="min-height:120px;"></textarea>
 </div>
 <div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
     <button id="fileBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="common.fileSelect">📁 选择文件</button>
     <input type="file" id="fileInput" style="display:none">
     <span id="fileInfo" class="b64-file-info"></span>
 </div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+<div class="tool-row">
 <button id="encodeBtn" class="btn btn-primary" data-i18n="b64.encode">编码</button>
 <button id="decodeBtn" class="btn btn-secondary" data-i18n="b64.decode">解码</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="b64.clear">清空</button>
 </div>
-<div class="output-box" id="输出Container">
+<div class="output-box" id="outputContainer">
 <span id="outputText" style="display:block;padding-right:60px;"></span>
 <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
 </div>
-<div id="validation结果" style="margin-top:var(--space-2);"></div>
+<div id="validationResult" style="margin-top:var(--space-2);"></div>
 <div id="previewArea" style="display:none;margin-top:var(--space-2);">
 <div class="card" style="text-align:center;">
 <img id="previewImage" class="b64-preview" src="" alt="预览">
@@ -48,8 +49,10 @@
 <script src="../../assets/js/i18n.js"></script>
 <script>
 (function(){
+  'use strict';
   var inputEl=document.getElementById('inputText'),outputEl=document.getElementById('outputText'),fileInput=document.getElementById('fileInput'),fileBtn=document.getElementById('fileBtn'),fileInfo=document.getElementById('fileInfo');
-  var previewArea=document.getElementById('previewArea'),previewImage=document.getElementById('previewImage'),downloadImgBtn=document.getElementById('downloadImgBtn'),vr=document.getElementById('validation结果');
+  var previewArea=document.getElementById('previewArea'),previewImage=document.getElementById('previewImage'),downloadImgBtn=document.getElementById('downloadImgBtn'),vr=document.getElementById('validationResult');
+  var MAX_FILE_MB=20;
 
   function getMode(){var r=document.getElementsByName('b64mode');for(var i=0;i<r.length;i++){if(r[i].checked)return r[i].value;}return'standard';}
 
@@ -60,30 +63,76 @@
 
   function process(type){
     var text=inputEl.value.trim(),mode=getMode(),validate=document.getElementById('chkValidate').checked;
-    if(!text){outputEl.textContent='';previewArea.style.display='none';setStatus(t('b64.emptyInput','请输入内容'),'error');return;}
+    if(!text){outputEl.textContent='';previewArea.style.display='none';vr.innerHTML='';setStatus(t('b64.emptyInput','请先输入文本或选择文件'),'error');return;}
     try{
       var result;
-      if(type==='encode'){var encoded=btoa(unescape(encodeURIComponent(text)));result=mode==='urlsafe'?toUrlSafe(encoded):encoded;
-        if(validate){vr.innerHTML='<span class="valid-msg ok">'+t('b64.validEncode','编码有效（可解码还原）')+'</span>';}}else{var processed=mode==='urlsafe'?toStandard(text):text;
-        if(validate&&!isValidBase64(processed)){vr.innerHTML='<span class="valid-msg fail">'+t('b64.invalidInput','无效的 Base64 输入')+'</span>';}else{vr.innerHTML='';}
-        result=decodeURIComponent(escape(atob(processed)));}
+      if(type==='encode'){
+        var encoded=btoa(unescape(encodeURIComponent(text)));
+        result=mode==='urlsafe'?toUrlSafe(encoded):encoded;
+        if(validate){vr.innerHTML='<span class="valid-msg ok">'+t('b64.validEncode','编码结果已就绪')+'</span>';}
+      }else{
+        var processed=mode==='urlsafe'?toStandard(text):text;
+        if(validate&&!isValidBase64(processed)){
+          vr.innerHTML='<span class="valid-msg fail">'+t('b64.invalidInput','输入不是有效的 Base64')+'</span>';
+          outputEl.textContent='';
+          setStatus(t('b64.invalidInput','输入不是有效的 Base64'),'error');
+          return;
+        }
+        vr.innerHTML='';
+        result=decodeURIComponent(escape(atob(processed)));
+      }
       outputEl.textContent=result;
-      if(type==='decode'){if(text.startsWith('data:image/')){previewArea.style.display='block';previewImage.src=text;
-        var mime=text.match(/^data:([^;]+);/);downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download='decoded.'+(mime?mime[1].split('/')[1]:'png');l.href=text;l.click();setStatus(t('b64.downloaded','已下载'));};}else{previewArea.style.display='none';}}
-      setStatus('');}catch(e){outputEl.textContent='';previewArea.style.display='none';setStatus(t('b64.invalidFormat','无效的 Base64 格式'),'error');}}
+      if(type==='decode'){
+        if(text.indexOf('data:image/')===0){
+          previewArea.style.display='block';previewImage.src=text;
+          var mime=text.match(/^data:([^;]+);/);
+          downloadImgBtn.onclick=function(){
+            var l=document.createElement('a');l.download='decoded.'+(mime?mime[1].split('/')[1]:'png');l.href=text;l.click();
+            setStatus(t('b64.downloaded','图片已开始下载'));
+          };
+        }else{previewArea.style.display='none';}
+      }
+      setStatus('');
+    }catch(e){
+      outputEl.textContent='';previewArea.style.display='none';
+      setStatus(t('b64.invalidFormat','当前输出不是有效的图片数据'),'error');
+    }
+  }
 
   if(fileBtn)fileBtn.addEventListener('click',function(){fileInput.click();});
   fileInput.addEventListener('change',function(){
-    var file=this.files[0];if(!file){fileInfo.textContent='';return;}
+    var file=this.files[0];
+    if(!file){fileInfo.textContent='';return;}
+    if(file.size>MAX_FILE_MB*1024*1024){
+      fileInfo.textContent='';
+      setStatus(t('fileTooLarge','文件过大（上限 20MB）'),'error');
+      this.value='';
+      return;
+    }
     fileInfo.textContent=file.name+' ('+file.size+' '+t('b64.bytes','字节')+')';
     var reader=new FileReader();
-    reader.onload=function(e){var b=e.target.result;inputEl.value=b;outputEl.textContent=b;previewArea.style.display='block';previewImage.src=b;
-      downloadImgBtn.onclick=function(){var l=document.createElement('a');l.download=file.name;l.href=b;l.click();};setStatus(t('b64.fileLoaded','已加载文件'));};
-    reader.readAsDataURL(file);});
+    reader.onload=function(e){
+      var b=e.target.result;
+      inputEl.value=b;outputEl.textContent=b;
+      previewArea.style.display='block';previewImage.src=b;
+      downloadImgBtn.onclick=function(){
+        var l=document.createElement('a');l.download=file.name;l.href=b;l.click();
+      };
+      setStatus(t('b64.fileLoaded','文件已加载，可点击编码'));
+    };
+    reader.onerror=function(){setStatus(t('readFailed','文件读取失败'),'error');};
+    reader.readAsDataURL(file);
+  });
 
-  encodeBtn.addEventListener('click',function(){process('encode');});
-  decodeBtn.addEventListener('click',function(){process('decode');});
-  clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';fileInput.value='';fileInfo.textContent='';previewArea.style.display='none';vr.innerHTML='';setStatus('');inputEl.focus();});
-  copyBtn.addEventListener('click',function(){var r=outputEl.textContent;if(r){copyToClipboard(r,copyBtn);setStatus(t('common.copied','已复制'));}});
+  document.getElementById('encodeBtn').addEventListener('click',function(){process('encode');});
+  document.getElementById('decodeBtn').addEventListener('click',function(){process('decode');});
+  document.getElementById('clearBtn').addEventListener('click',function(){
+    inputEl.value='';outputEl.textContent='';fileInput.value='';fileInfo.textContent='';previewArea.style.display='none';vr.innerHTML='';setStatus('');inputEl.focus();
+  });
+  document.getElementById('copyBtn').addEventListener('click',function(){
+    var r=outputEl.textContent;
+    if(r){copyToClipboard(r,this);setStatus(t('common.copied','已复制'));}
+  });
 })();
-</script></body></html>
+</script>
+</body></html>

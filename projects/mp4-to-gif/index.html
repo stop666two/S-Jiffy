@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP4转GIF工具 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:36px var(--space-3);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-sm);cursor:pointer;transition:border-color .15s,background .15s;user-select:none;}
+.drop-zone.dragging{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone .dz-name{margin-top:8px;color:var(--color-text-primary);word-break:break-all;font-size:var(--font-size-base);}
+.dz-hint{margin-top:6px;color:var(--color-text-disabled);font-size:var(--font-size-xs);}
+.gif-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);align-items:start;}
+.gif-layout video{width:100%;max-height:340px;border-radius:var(--radius-md);border:1px solid var(--color-border);background:#000;display:block;}
+.param-block{margin-bottom:var(--space-2);}
+.param-block label{display:flex;justify-content:space-between;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
+.param-block label b{color:var(--color-text-primary);font-family:var(--font-mono);font-weight:600;}
+.param-block input[type=range]{width:100%;accent-color:var(--color-text-primary);cursor:pointer;}
+.opt-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.opt-pills button{padding:8px 16px;font-size:13px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-mono);}
+.opt-pills button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.info-row{display:flex;gap:12px;font-size:var(--font-size-xs);color:var(--color-text-secondary);flex-wrap:wrap;}
+.info-row span{padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);}
+.info-row b{color:var(--color-text-primary);font-family:var(--font-mono);}
+.progress-track{height:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:999px;overflow:hidden;margin-top:var(--space-2);}
+.progress-bar{height:100%;width:0;background:var(--color-text-primary);border-radius:999px;transition:width .15s;}
+.progress-text{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:6px;}
+.err-box{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+.result-img{width:100%;max-height:340px;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-bg-soft);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.btn-row .btn{height:44px;min-width:0;padding:0 18px;font-size:14px;flex:1 1 160px;}
+.hidden-canvas{position:absolute;left:-9999px;top:-9999px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">MP4转GIF工具</h1>
+<p class="tool-desc" data-i18n="desc">在线将MP4视频转换为动态GIF动图，可设置开始/结束时间、帧率和输出宽度，全程本地处理。</p>
+<div class="card" id="uploadCard">
+<div class="drop-zone" id="dropZone">
+<div data-i18n="dropVideoHere">将视频拖放至此或点击浏览</div>
+<div class="dz-name" id="fileName"></div>
+<div class="dz-hint">MP4 · 最大 50MB · 最长 30秒</div>
+</div>
+<input type="file" id="fileInput" accept=".mp4,video/mp4" style="display:none">
+</div>
+<div class="card" id="setupCard" style="display:none">
+<div class="gif-layout">
+<div>
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);font-weight:600;margin-bottom:6px;" data-i18n="sourceVideoLabel">源视频</p>
+<video id="player" controls muted playsinline preload="metadata"></video>
+</div>
+<div>
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);font-weight:600;margin-bottom:6px;" data-i18n="settingsLabel">设置</p>
+<div class="param-block">
+<label><span data-i18n="startTime">开始时间</span><b id="startVal">0:00.0</b></label>
+<input type="range" id="startRange" min="0" max="30" step="0.1" value="0">
+</div>
+<div class="param-block">
+<label><span data-i18n="endTime">结束时间</span><b id="endVal">0:00.0</b></label>
+<input type="range" id="endRange" min="0.1" max="30" step="0.1" value="1">
+</div>
+<div class="param-block">
+<label><span data-i18n="frameRate">帧率</span></label>
+<div class="opt-pills" id="fpsPills"></div>
+</div>
+<div class="param-block">
+<label><span data-i18n="outputWidth">输出宽度</span></label>
+<div class="opt-pills" id="widthPills"></div>
+</div>
+<div class="info-row">
+<span>时长 <b id="lenInfo">—</b></span>
+<span><span data-i18n="frames">帧</span> <b id="frameInfo">—</b></span>
+<span>内存 <b id="memInfo">—</b></span>
+</div>
+<div class="err-box" id="setupErr" style="display:none;"></div>
+<div class="btn-row">
+<button id="convertBtn" class="btn btn-primary">转换 GIF</button>
+<button id="changeBtn" class="btn btn-secondary" data-i18n="tryAnotherFile">← 尝试其他文件</button>
+</div>
+</div>
+</div>
+</div>
+<div class="card" id="progressCard" style="display:none">
+<div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);color:var(--color-text-secondary);">
+<span id="progressLabel" data-i18n="encodingGif">编码GIF…</span><b id="progressPct" style="font-family:var(--font-mono);color:var(--color-text-primary);">0%</b>
+</div>
+<div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-text" id="progressDetail"></div>
+<button id="cancelBtn" class="btn btn-secondary" style="margin-top:10px;height:36px;min-width:0;font-size:13px;" data-i18n="cancelBtn">取消</button>
+</div>
+<div class="card" id="resultCard" style="display:none">
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);font-weight:600;margin-bottom:6px;" data-i18n="generatedGif">已生成GIF</p>
+<div class="gif-layout">
+<div>
+<img id="gifPreview" class="result-img" alt="GIF 预览">
+<p style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:6px;" id="gifMeta"></p>
+</div>
+<div>
+<button id="downloadBtn" class="btn btn-primary" style="width:100%;" data-i18n="downloadGif">下载 GIF</button>
+<button id="adjustBtn" class="btn btn-secondary" style="width:100%;margin-top:10px;" data-i18n="adjustSettings">调整设置</button>
+<button id="anotherBtn" class="btn btn-secondary" style="width:100%;margin-top:10px;" data-i18n="convertAnotherVideo">转换另一个视频</button>
+</div>
+</div>
+</div>
+<canvas id="workCanvas" class="hidden-canvas" width="640" height="360"></canvas>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script type="module">
+import { GIFEncoder, quantize, applyPalette } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.min.js';
+window.GIFEncoder = GIFEncoder;
+window.quantize = quantize;
+window.applyPalette = applyPalette;
+</script>
+<script>
+(function(){
+'use strict';
+var MAX_MB=50,MAX_CLIP=30;
+var FPS_OPTIONS=[5,10,15,20],WIDTH_OPTIONS=[320,480,640];
+var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput');
+var fileName=document.getElementById('fileName');
+var uploadCard=document.getElementById('uploadCard'),setupCard=document.getElementById('setupCard');
+var progressCard=document.getElementById('progressCard'),resultCard=document.getElementById('resultCard');
+var player=document.getElementById('player');
+var startRange=document.getElementById('startRange'),endRange=document.getElementById('endRange');
+var startVal=document.getElementById('startVal'),endVal=document.getElementById('endVal');
+var lenInfo=document.getElementById('lenInfo'),frameInfo=document.getElementById('frameInfo'),memInfo=document.getElementById('memInfo');
+var convertBtn=document.getElementById('convertBtn'),cancelBtn=document.getElementById('cancelBtn');
+var progressBar=document.getElementById('progressBar'),progressPct=document.getElementById('progressPct');
+var progressLabel=document.getElementById('progressLabel'),progressDetail=document.getElementById('progressDetail');
+var setupErr=document.getElementById('setupErr');
+var gifPreview=document.getElementById('gifPreview'),gifMeta=document.getElementById('gifMeta');
+var downloadBtn=document.getElementById('downloadBtn');
+var adjustBtn=document.getElementById('adjustBtn'),anotherBtn=document.getElementById('anotherBtn'),changeBtn=document.getElementById('changeBtn');
+var workCanvas=document.getElementById('workCanvas');
+var fps=10,outWidth=480,duration=0;
+var gifUrl=null,gifBlob=null,currentFile=null,abort=false,converting=false;
+function fmtTime(s){
+  var m=Math.floor(s/60),sc=Math.floor(s%60),cs=Math.floor((s%1)*10);
+  return m+':'+(sc<10?'0':'')+sc+'.'+cs;
+}
+function fmtBytes(b){
+  if(b<1024*1024)return Math.round(b/1024)+' KB';
+  return (b/1024/1024).toFixed(1)+' MB';
+}
+function setProgress(pct,label,detail){
+  progressBar.style.width=pct+'%';
+  progressPct.textContent=Math.round(pct)+'%';
+  if(label)progressLabel.textContent=label;
+  if(detail)progressDetail.textContent=detail;
+}
+function initPills(container,options,current,cb){
+  options.forEach(function(v){
+    var b=document.createElement('button');
+    b.type='button';
+    b.textContent=v;
+    if(v===current)b.classList.add('active');
+    b.addEventListener('click',function(){
+      container.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      cb(v);
+    });
+    container.appendChild(b);
+  });
+}
+initPills(document.getElementById('fpsPills'),FPS_OPTIONS,fps,function(v){fps=v;updateInfo();});
+initPills(document.getElementById('widthPills'),WIDTH_OPTIONS,outWidth,function(v){outWidth=v;updateInfo();});
+function updateInfo(){
+  var clip=endRange.value-startRange.value;
+  if(clip<0)clip=0;
+  var frames=Math.max(1,Math.round(clip*fps));
+  var w=outWidth,h=Math.round(outWidth*(player.videoHeight||360)/(player.videoWidth||640));
+  lenInfo.textContent=clip.toFixed(1)+'s';
+  frameInfo.textContent='~'+frames;
+  memInfo.textContent=fmtBytes(frames*w*h*4);
+  if(frames*w*h*4>200*1024*1024){
+    memInfo.style.color='var(--color-error)';
+  }else{
+    memInfo.style.color='';
+  }
+  convertBtn.disabled=!(clip>0&&clip<=MAX_CLIP);
+}
+function loadFile(f){
+  if(converting)return;
+  if(f.size>MAX_MB*1024*1024){
+    showErr(t('fileTooLarge','文件过大（上限 50MB），请换用更小的视频'));
+    return;
+  }
+  var ok=f.type==='video/mp4'||/\.mp4$/i.test(f.name);
+  if(!ok){
+    showErr('仅支持 MP4 格式，请更换文件');
+    return;
+  }
+  currentFile=f;
+  fileName.textContent=f.name+'（'+fmtBytes(f.size)+'）';
+  if(gifUrl)URL.revokeObjectURL(gifUrl);
+  gifUrl=null;gifBlob=null;
+  resultCard.style.display='none';
+  progressCard.style.display='none';
+  setupErr.style.display='none';
+  setupCard.style.display='block';
+  player.src=URL.createObjectURL(f);
+  player.load();
+  player.onloadedmetadata=function(){
+    duration=player.duration;
+    if(!isFinite(duration)||duration<=0){showErr('无法读取视频时长，文件可能损坏');return;}
+    endRange.max=Math.min(duration,MAX_CLIP);
+    endRange.value=Math.min(duration,MAX_CLIP);
+    startRange.max=Math.max(0,endRange.value-0.1);
+    startRange.value=0;
+    endVal.textContent=fmtTime(parseFloat(endRange.value));
+    startVal.textContent='0:00.0';
+    updateInfo();
+    setStatus(t('videoLoaded','视频已载入，请调整参数后转换'));
+  };
+}
+function showErr(msg){
+  setupErr.style.display='block';
+  setupErr.textContent=msg;
+  setStatus(msg,'error');
+}
+startRange.addEventListener('input',function(){
+  startVal.textContent=fmtTime(parseFloat(startRange.value));
+  endRange.min=parseFloat(startRange.value)+0.1;
+  updateInfo();
+});
+endRange.addEventListener('input',function(){
+  endVal.textContent=fmtTime(parseFloat(endRange.value));
+  startRange.max=Math.max(0,parseFloat(endRange.value)-0.1);
+  updateInfo();
+});
+dropZone.addEventListener('click',function(){fileInput.click();});
+fileInput.addEventListener('change',function(){
+  if(fileInput.files&&fileInput.files.length>0)loadFile(fileInput.files[0]);
+  fileInput.value='';
+});
+['dragenter','dragover'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add('dragging');});
+});
+['dragleave','drop'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove('dragging');});
+});
+dropZone.addEventListener('drop',function(e){
+  var files=e.dataTransfer&&e.dataTransfer.files;
+  if(files&&files.length>0)loadFile(files[0]);
+});
+function seekTo(video,time){
+  return new Promise(function(resolve){
+    if(Math.abs(video.currentTime-time)<0.005){resolve();return;}
+    var settled=false;
+    var done=function(){if(!settled){settled=true;resolve();}};
+    var t=setTimeout(done,2000);
+    video.addEventListener('seeked',function h(){
+      video.removeEventListener('seeked',h);
+      clearTimeout(t);
+      done();
+    });
+    video.currentTime=time;
+  });
+}
+function convert(){
+  if(converting)return;
+  var start=parseFloat(startRange.value),end=parseFloat(endRange.value);
+  var clip=end-start;
+  if(!(clip>0&&clip<=MAX_CLIP)){showErr('片段长度需在 0–'+MAX_CLIP+' 秒之间');return;}
+  if(!window.GIFEncoder){showErr('GIF 编码库加载失败，请检查网络后刷新页面');return;}
+  var framesTotal=Math.max(1,Math.round(clip*fps));
+  var w=outWidth,h=Math.max(1,Math.round(outWidth*(player.videoHeight||360)/(player.videoWidth||640)));
+  if(w*h*framesTotal*4>250*1024*1024){
+    showErr('帧内存占用过大，请降低帧率、缩短片段或减小宽度');
+    return;
+  }
+  converting=true;abort=false;
+  uploadCard.style.display='none';
+  resultCard.style.display='none';
+  setupErr.style.display='none';
+  progressCard.style.display='block';
+  setProgress(0,t('extractingFrames','抽取视频帧…'),'');
+  workCanvas.width=w;workCanvas.height=h;
+  var ctx=workCanvas.getContext('2d',{willReadFrequently:true});
+  var frames=[];
+  var gif=window.GIFEncoder();
+  var delay=Math.round(1000/fps);
+  var step=0;
+  var extractNext=function(){
+    if(abort){finishAbort();return;}
+    if(step>=framesTotal){
+      encodePhase();
+      return;
+    }
+    seekTo(player,start+step/fps).then(function(){
+      ctx.drawImage(player,0,0,w,h);
+      var imgData=ctx.getImageData(0,0,w,h);
+      frames.push(new Uint8ClampedArray(imgData.data));
+      step++;
+      setProgress((step/framesTotal)*50,t('extractingFrames','抽取视频帧…'),'第 '+step+' / '+framesTotal+' 帧 · 请稍候');
+      setTimeout(extractNext,0);
+    }).catch(function(){
+      finishFail('视频帧抽取失败，请尝试缩短片段或更换文件');
+    });
+  };
+  var encodePhase=function(){
+    if(abort){finishAbort();return;}
+    setProgress(50,t('encodingGif','编码GIF…'),'');
+    var enc=0;
+    var encNext=function(){
+      if(abort){finishAbort();return;}
+      if(enc>=frames.length){
+        try{
+          gif.finish();
+          var raw=gif.bytes();
+          var ab=new ArrayBuffer(raw.byteLength);
+          new Uint8Array(ab).set(raw);
+          gifBlob=new Blob([ab],{type:'image/gif'});
+          if(gifUrl)URL.revokeObjectURL(gifUrl);
+          gifUrl=URL.createObjectURL(gifBlob);
+          var base=(currentFile.name.replace(/\.[^/.]+$/,'')||'video')+'.gif';
+          gifPreview.src=gifUrl;
+          gifMeta.textContent=fmtBytes(gifBlob.size)+' · '+w+'px · '+fps+' FPS · '+frames.length+' 帧';
+          downloadBtn.dataset.name=base;
+          setProgress(100,t('done','完成'),'');
+          progressCard.style.display='none';
+          resultCard.style.display='block';
+          setStatus(t('gifReady','GIF 已生成，可下载'));
+          converting=false;
+        }catch(e){
+          finishFail('GIF 编码失败：'+e.message);
+        }
+        return;
+      }
+      try{
+        var palette=window.quantize(frames[enc],256);
+        var index=window.applyPalette(frames[enc],palette);
+        gif.writeFrame(index,w,h,{palette:palette,delay:delay});
+        enc++;
+        setProgress(50+(enc/frames.length)*50,t('encodingGif','编码GIF…'),'第 '+enc+' / '+frames.length+' 帧');
+        setTimeout(encNext,0);
+      }catch(e){
+        finishFail('GIF 编码失败：'+e.message);
+      }
+    };
+    encNext();
+  };
+  function finishFail(msg){
+    converting=false;abort=false;
+    progressCard.style.display='none';
+    showErr(msg);
+  }
+  function finishAbort(){
+    converting=false;abort=false;
+    progressCard.style.display='none';
+    setupCard.style.display='block';
+    setStatus(t('cancelled','已取消转换'));
+  }
+  extractNext();
+}
+convertBtn.addEventListener('click',convert);
+cancelBtn.addEventListener('click',function(){abort=true;});
+downloadBtn.addEventListener('click',function(){
+  if(!gifUrl)return;
+  var a=document.createElement('a');
+  a.href=gifUrl;
+  a.download=downloadBtn.dataset.name||'video.gif';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setStatus(t('downloadStarted','GIF 开始下载'));
+});
+adjustBtn.addEventListener('click',function(){
+  resultCard.style.display='none';
+  setupCard.style.display='block';
+});
+[anotherBtn,changeBtn].forEach(function(b){
+  b.addEventListener('click',function(){fileInput.click();});
+});
+})();
+</script>
+</body></html>

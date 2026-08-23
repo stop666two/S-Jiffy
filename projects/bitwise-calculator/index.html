@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>位运算计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .bw-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .bw-field { flex: 1; min-width: 220px; }
+    .bw-field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .bw-field .input { font-family: var(--font-mono); }
+    .bw-preview { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 4px; font-family: var(--font-mono); word-break: break-all; }
+    .bw-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--font-size-sm); }
+    .bw-table th { text-align: left; color: var(--color-text-secondary); font-size: var(--font-size-xs); padding: 8px 4px; border-bottom: 1px solid var(--color-border); }
+    .bw-table td { padding: 10px 4px; border-bottom: 1px solid var(--color-border); word-break: break-all; }
+    .bw-table tr:last-child td { border-bottom: none; }
+    .bw-table td.op-name { font-weight: 600; color: var(--color-text-primary); }
+    .bw-table td.bin { color: var(--color-text-secondary); }
+    .bw-table td.hex { color: var(--color-text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">位运算计算器</h1>
+    <p class="tool-desc" data-i18n="desc">执行按位 AND、OR、XOR、NOT、左移和右移运算，结果以十进制、二进制、十六进制显示。</p>
+    <div class="card">
+      <div class="bw-row">
+        <div class="bw-field">
+          <label>A</label>
+          <input id="bwA" class="input js-focus-input" type="number" value="12" step="1">
+          <p class="bw-preview" id="previewA"></p>
+        </div>
+        <div class="bw-field">
+          <label data-i18n="bitwiseBLabel">B（移位量）</label>
+          <input id="bwB" class="input" type="number" value="10" step="1">
+          <p class="bw-preview" id="previewB"></p>
+        </div>
+      </div>
+      <table class="bw-table">
+        <thead>
+          <tr>
+            <th>OP</th>
+            <th data-i18n="operations">结果</th>
+            <th class="bin">BIN</th>
+            <th class="hex">HEX</th>
+          </tr>
+        </thead>
+        <tbody id="bwBody"></tbody>
+      </table>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      var aEl = document.getElementById('bwA');
+      var bEl = document.getElementById('bwB');
+      var previewA = document.getElementById('previewA');
+      var previewB = document.getElementById('previewB');
+      var bwBody = document.getElementById('bwBody');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var ops = ['AND', 'OR', 'XOR', 'NOT', 'LSHIFT', 'RSHIFT'];
+
+      function fmtBin(n) {
+        return n < 0 ? '-' + Math.abs(n).toString(2) : n.toString(2);
+      }
+      function fmtHex(n) {
+        return n < 0 ? '-' + Math.abs(n).toString(16).toUpperCase() : n.toString(16).toUpperCase();
+      }
+      function bitwiseCalc(pa, pb, op) {
+        switch (op) {
+          case 'AND': return pa & pb;
+          case 'OR': return pa | pb;
+          case 'XOR': return pa ^ pb;
+          case 'NOT': return ~pa;
+          case 'LSHIFT': return pa << pb;
+          case 'RSHIFT': return pa >> pb;
+        }
+        return 0;
+      }
+
+      function render() {
+        var na = parseInt(aEl.value, 10);
+        var nb = parseInt(bEl.value, 10);
+        if (isNaN(na)) na = 0;
+        if (isNaN(nb)) nb = 0;
+        previewA.textContent = 'BIN: ' + fmtBin(na) + ' | HEX: 0x' + fmtHex(na);
+        previewB.textContent = 'BIN: ' + fmtBin(nb) + ' | HEX: 0x' + fmtHex(nb);
+
+        bwBody.innerHTML = '';
+        var lines = [];
+        var i, tr, td, r;
+        for (i = 0; i < ops.length; i++) {
+          r = bitwiseCalc(na, nb, ops[i]);
+          lines.push(ops[i] + ': ' + r + ' (' + fmtBin(r) + ', ' + (r < 0 ? '-0x' : '0x') + fmtHex(r) + ')');
+          tr = document.createElement('tr');
+          td = document.createElement('td');
+          td.className = 'op-name';
+          td.textContent = ops[i];
+          tr.appendChild(td);
+          td = document.createElement('td');
+          td.textContent = r;
+          tr.appendChild(td);
+          td = document.createElement('td');
+          td.className = 'bin';
+          td.textContent = fmtBin(r);
+          tr.appendChild(td);
+          td = document.createElement('td');
+          td.className = 'hex';
+          td.textContent = (r < 0 ? '-0x' : '0x') + Math.abs(r).toString(16).toUpperCase();
+          tr.appendChild(td);
+          bwBody.appendChild(tr);
+        }
+        outputEl.textContent = lines.join('\n');
+      }
+
+      aEl.addEventListener('input', render);
+      bEl.addEventListener('input', render);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus(t('common.copied', '已复制'));
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

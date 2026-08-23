@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>货币汇率转换 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.fx-status{display:flex;justify-content:space-between;align-items:center;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:var(--space-2);flex-wrap:wrap;gap:6px;}
+.fx-live{color:var(--color-success);font-weight:600;letter-spacing:.5px;}
+.fx-live.off{color:var(--color-text-disabled);}
+.fx-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;}
+.fx-field label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.fx-field select,.fx-field input{width:100%;height:44px;padding:0 10px;font-size:14px;border:1px solid #DDDDDD;border-radius:var(--radius-md);outline:none;background:var(--color-bg);font-family:var(--font-mono);}
+.fx-field input{font-size:18px;}
+.fx-swap{width:44px;height:44px;border:1px solid #DDDDDD;border-radius:var(--radius-md);background:transparent;cursor:pointer;font-size:16px;color:var(--color-text-secondary);}
+.fx-swap:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}
+.fx-result{margin-top:var(--space-2);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);text-align:center;}
+.fx-result .from-line{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.fx-result .to-line{font-size:28px;font-weight:600;margin:6px 0;}
+.fx-result .rate-line{font-size:var(--font-size-xs);color:var(--color-text-disabled);}
+.fx-quick{margin-top:var(--space-2);}
+.fx-quick h3{font-size:var(--font-size-xs);color:var(--color-text-secondary);font-weight:600;margin-bottom:8px;}
+.fx-quick .pairs{display:flex;flex-wrap:wrap;gap:8px;}
+.fx-quick .pairs button{font-size:12px;padding:6px 12px;border:1px solid var(--color-border);border-radius:999px;background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-mono);}
+.fx-quick .pairs button:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}
+.fx-table{margin-top:var(--space-2);max-height:260px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.fx-table table{width:100%;border-collapse:collapse;font-size:12px;}
+.fx-table td{padding:6px 12px;border-bottom:1px solid var(--color-border);}
+.fx-table tr:last-child td{border-bottom:none;}
+.fx-table td:first-child{font-weight:600;width:90px;}
+.fx-table td:last-child{text-align:right;color:var(--color-text-secondary);font-family:var(--font-mono);}
+.fx-err{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+@media(max-width:640px){.fx-grid{grid-template-columns:1fr;}.fx-swap{width:100%;}}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">货币汇率转换</h1>
+<p class="tool-desc" data-i18n="desc">实时货币汇率转换器，支持30+种货币，汇率每日更新。</p>
+<div class="card">
+<div class="fx-status">
+<span class="fx-live" id="liveBadge" data-i18n="liveRatesLabel">实时汇率</span>
+<span id="refreshInfo" data-i18n="connectingLabel">连接中…</span>
+</div>
+<div class="fx-grid">
+<div class="fx-field">
+<label data-i18n="fromCurrencyLabel">来源货币</label>
+<select id="fromSel"></select>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:center;">
+<button class="fx-swap" id="swapBtn" title="互换币种">⇄</button>
+</div>
+<div class="fx-field">
+<label data-i18n="toCurrencyLabel">目标货币</label>
+<select id="toSel"></select>
+</div>
+</div>
+<div class="fx-field" style="margin-top:12px;">
+<label data-i18n="amountCurrencyLabel">金额</label>
+<input id="amountInput" type="number" min="0" step="any" value="1" data-i18n-placeholder="enterAmountPlaceholder" placeholder="输入金额">
+</div>
+<div class="fx-result" id="resultBox" style="display:none;"></div>
+<div id="errBox" class="fx-err" style="display:none;"></div>
+<div class="fx-quick">
+<h3 data-i18n="quickPairsLabel">快速货币对</h3>
+<div class="pairs" id="quickPairs"></div>
+</div>
+<div class="fx-quick">
+<h3 data-i18n="allRatesLabel">所有汇率 — 1 USD = …</h3>
+<div class="fx-table"><table id="rateTable"></table></div>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var CURRENCIES=[
+{code:'USD',name:'美元'},{code:'EUR',name:'欧元'},{code:'GBP',name:'英镑'},{code:'JPY',name:'日元'},
+{code:'CNY',name:'人民币'},{code:'CAD',name:'加元'},{code:'AUD',name:'澳元'},{code:'CHF',name:'瑞士法郎'},
+{code:'HKD',name:'港币'},{code:'SGD',name:'新加坡元'},{code:'INR',name:'印度卢比'},{code:'KRW',name:'韩元'},
+{code:'MXN',name:'墨西哥比索'},{code:'BRL',name:'巴西雷亚尔'},{code:'RUB',name:'俄罗斯卢布'},{code:'ZAR',name:'南非兰特'},
+{code:'SEK',name:'瑞典克朗'},{code:'NOK',name:'挪威克朗'},{code:'DKK',name:'丹麦克朗'},{code:'NZD',name:'新西兰元'},
+{code:'THB',name:'泰铢'},{code:'MYR',name:'马来西亚林吉特'},{code:'IDR',name:'印尼盾'},{code:'PHP',name:'菲律宾比索'},
+{code:'VND',name:'越南盾'},{code:'TWD',name:'新台币'},{code:'AED',name:'阿联酋迪拉姆'},{code:'SAR',name:'沙特里亚尔'},
+{code:'TRY',name:'土耳其里拉'},{code:'PLN',name:'波兰兹罗提'},{code:'CZK',name:'捷克克朗'},{code:'HUF',name:'匈牙利福林'}
+];
+var QUICK_PAIRS=[['USD','EUR'],['USD','CNY'],['USD','JPY'],['EUR','GBP'],['USD','GBP'],['USD','INR'],['EUR','JPY'],['USD','CAD'],['CNY','HKD'],['CNY','JPY']];
+var SOURCES=[
+{name:'open.er-api.com',url:function(base){return 'https://open.er-api.com/v6/latest/'+base;},parse:function(j){if(j&&j.result==='success'&&j.rates)return j.rates;throw new Error('bad');}},
+{name:'frankfurter.app',url:function(base){return 'https://api.frankfurter.app/latest?from='+base;},parse:function(j){if(j&&j.rates)return j.rates;throw new Error('bad');}}
+];
+var CACHE_KEY='s-jiffy:fx-rates';
+var fromSel=document.getElementById('fromSel'),toSel=document.getElementById('toSel');
+var swapBtn=document.getElementById('swapBtn');
+var amountInput=document.getElementById('amountInput');
+var resultBox=document.getElementById('resultBox'),errBox=document.getElementById('errBox');
+var liveBadge=document.getElementById('liveBadge'),refreshInfo=document.getElementById('refreshInfo');
+var rates=null,base='USD',lastUpdate=0,countdown=0,usingCache=false;
+function fill(sel,selected){
+  CURRENCIES.forEach(function(c){
+    var o=document.createElement('option');
+    o.value=c.code;o.textContent=c.code+' — '+c.name;
+    if(c.code===selected)o.selected=true;
+    sel.appendChild(o);
+  });
+}
+fill(fromSel,'USD');fill(toSel,'EUR');
+function loadCache(){
+  try{
+    var raw=localStorage.getItem(CACHE_KEY);
+    if(!raw)return null;
+    var d=JSON.parse(raw);
+    if(d&&d.rates&&d.ts)return d;
+  }catch(e){}
+  return null;
+}
+function saveCache(r,src){
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({rates:r,ts:Date.now(),source:src}));}catch(e){}
+}
+function fetchRates(baseCode,cb){
+  var i=0;
+  var useCache=function(){
+    var c=loadCache();
+    if(c){
+      rates=c.rates;base=baseCode;usingCache=true;lastUpdate=c.ts;
+      liveBadge.classList.add('off');
+      refreshInfo.textContent='离线缓存 · '+(c.source||'')+' · '+new Date(c.ts).toLocaleTimeString();
+      cb(true);
+    }else{
+      errBox.style.display='block';
+      errBox.textContent='无法获取实时汇率：网络异常且无离线缓存。请检查网络后重试。';
+      setStatus('汇率获取失败（所有数据源不可用）','error');
+      cb(false);
+    }
+  };
+  (function next(){
+    if(i>=SOURCES.length){useCache();return;}
+    var src=SOURCES[i];
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',src.url(baseCode),true);
+    xhr.timeout=8000;
+    xhr.onload=function(){
+      if(xhr.status===200){
+        try{
+          var j=JSON.parse(xhr.responseText);
+          var r=src.parse(j);
+          rates=r;base=baseCode;usingCache=false;lastUpdate=Date.now();
+          saveCache(r,src.name);
+          liveBadge.classList.remove('off');
+          refreshInfo.textContent=src.name;
+          cb(true);
+          return;
+        }catch(e){}
+      }
+      i++;next();
+    };
+    xhr.onerror=function(){i++;next();};
+    xhr.ontimeout=function(){i++;next();};
+    xhr.send(null);
+  })();
+}
+function fmt(n){
+  if(n==null||isNaN(n))return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
+}
+function render(){
+  var amount=parseFloat(amountInput.value);
+  if(isNaN(amount))amount=0;
+  var rate=rates?rates[toSel.value]:null;
+  if(rate!=null){
+    var html='<div class="from-line">'+htmlEscape(amount.toLocaleString())+' '+htmlEscape(fromSel.value)+' =</div>'+
+      '<div class="to-line">'+htmlEscape(fmt(amount*rate))+' '+htmlEscape(toSel.value)+'</div>'+
+      '<div class="rate-line">1 '+htmlEscape(fromSel.value)+' = '+htmlEscape(rate.toFixed(6))+' '+htmlEscape(toSel.value)+'</div>';
+    resultBox.style.display='block';
+    resultBox.innerHTML=html;
+  }else{
+    resultBox.style.display='none';
+  }
+  var tb=document.getElementById('rateTable');
+  tb.innerHTML='';
+  var baseRates=rates||{};
+  Object.keys(baseRates).forEach(function(code){
+    if(baseRates[code]==null)return;
+    var tr=document.createElement('tr');
+    var td1=document.createElement('td');td1.textContent=code;
+    var td2=document.createElement('td');td2.textContent=fmt(baseRates[code]);
+    tr.appendChild(td1);tr.appendChild(td2);
+    tb.appendChild(tr);
+  });
+}
+function refreshCountdown(){
+  countdown++;
+  var s=60-countdown;
+  if(s<=0){s=1;}
+  if(!usingCache){
+    refreshInfo.textContent=t('refreshInLabel','{s} 秒后刷新').replace('{s}',s);
+  }
+}
+function tick(){
+  render();
+}
+function doRefresh(){
+  fetchRates(fromSel.value,function(ok){
+    countdown=0;
+    if(ok){errBox.style.display='none';render();setStatus(usingCache?'已使用离线缓存的汇率':'汇率已更新');}
+  });
+}
+swapBtn.addEventListener('click',function(){
+  var f=fromSel.value;fromSel.value=toSel.value;toSel.value=f;
+  doRefresh();
+});
+fromSel.addEventListener('change',function(){doRefresh();});
+amountInput.addEventListener('input',function(){render();});
+function initQuickPairs(){
+  var qp=document.getElementById('quickPairs');
+  QUICK_PAIRS.forEach(function(p){
+    var b=document.createElement('button');
+    b.textContent=p[0]+'/'+p[1];
+    b.addEventListener('click',function(){
+      fromSel.value=p[0];toSel.value=p[1];
+      doRefresh();
+      setStatus('已切换至 '+p[0]+'/'+p[1]);
+    });
+    qp.appendChild(b);
+  });
+}
+initQuickPairs();
+refreshInfo.textContent=t('fetchingRatesLabel','获取实时汇率中…');
+doRefresh();
+setInterval(doRefresh,60000);
+setInterval(refreshCountdown,1000);
+})();
+</script>
+</body></html>

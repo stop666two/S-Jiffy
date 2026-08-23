@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF压缩 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .fm{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:12px;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;}
+.file-bar .x:hover{color:var(--color-error);}
+.opt-label{font-size:var(--font-size-sm);font-weight:600;margin-bottom:10px;}
+.lvl-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.lvl{flex:1;min-width:140px;text-align:center;padding:14px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;background:transparent;font-size:var(--font-size-sm);transition:all .15s;}
+.lvl .t{font-weight:600;display:block;}
+.lvl .s{font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;margin-top:2px;}
+.lvl.on{border-color:var(--color-text-primary);background:var(--color-bg-soft);box-shadow:var(--shadow-focus);}
+.note{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.progress-wrap{margin:12px 0;}
+.progress-bar{height:6px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:9999px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--color-accent);width:0;transition:width .2s;}
+.progress-txt{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.stats-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;}
+.stat-box{flex:1;min-width:120px;text-align:center;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;}
+.stat-box .v{font-size:var(--font-size-lg);font-weight:600;}
+.stat-box .l{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">PDF压缩</h1>
+<p class="tool-desc" data-i18n="desc">减小PDF文件大小，同时保持文档质量。免费且私密。</p>
+<div class="card">
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">🗜️</div>
+<div class="dz-label" data-i18n="uploadPdfFiles">上传PDF文件</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".pdf,application/pdf" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<span class="fm" id="fileMeta"></span>
+<button class="x" id="removeBtn" title="×">✕</button>
+</div>
+<p class="opt-label" data-i18n="compressionLevel">压缩级别</p>
+<div class="lvl-grid">
+<button class="lvl" data-lvl="low"><span class="t" data-i18n="compressMaximum">最大压缩</span><span class="s" data-i18n="compressSmallestFile">文件最小</span></button>
+<button class="lvl on" data-lvl="medium"><span class="t" data-i18n="compressBalanced">均衡</span><span class="s" data-i18n="compressRecommended">推荐</span></button>
+<button class="lvl" data-lvl="high"><span class="t" data-i18n="compressMinimal">最小压缩</span><span class="s" data-i18n="compressBestQuality">最佳质量</span></button>
+</div>
+<p class="note" data-i18n="compressRasterNote">页面将被栅格化 — 压缩后的文件中文字将不可搜索。</p>
+<div class="progress-wrap" id="progressWrap" style="display:none">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-txt" id="progressTxt"></div>
+</div>
+<div id="statsWrap" style="display:none">
+<div class="stats-grid">
+<div class="stat-box"><div class="v" id="statOrig"></div><div class="l" id="lblOrig">原大小</div></div>
+<div class="stat-box"><div class="v" id="statNew"></div><div class="l" data-i18n="compressedLabel">压缩后</div></div>
+<div class="stat-box"><div class="v" id="statSave"></div><div class="l" data-i18n="savedLabel">节省</div></div>
+</div>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="compressBtn" disabled data-i18n="compressPdf">压缩PDF</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var file=null,level='medium',busy=false;
+var CFGS={low:{scale:0.85,q:0.45},medium:{scale:1.3,q:0.72},high:{scale:1.8,q:0.88}};
+var dz=$('dropZone'),fi=$('fileInput'),btn=$('compressBtn');
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function loadFile(f){
+  var isPdf=(f.type==='application/pdf')||(f.name&&f.name.toLowerCase().indexOf('.pdf')!==-1);
+  if(!isPdf){setStatus(t('notPdf','请选择PDF文件'),'error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  file=f;
+  $('workCard').style.display='block';
+  $('fileName').textContent=f.name;
+  $('fileMeta').textContent=fmtSize(f.size);
+  $('statsWrap').style.display='none';
+  $('progressWrap').style.display='none';
+  setStatus('');
+  updateBtn();
+}
+function updateBtn(){
+  btn.disabled=busy||!file;
+  btn.textContent=busy?t('processingDots','处理中…'):t('compressPdf','压缩PDF');
+}
+function setProgress(cur,total){
+  $('progressWrap').style.display='block';
+  $('progressFill').style.width=(cur/total*100).toFixed(0)+'%';
+  $('progressTxt').textContent=t('compressingPages','压缩页面…')+' '+cur+' / '+total;
+}
+function doCompress(){
+  if(!file||busy)return;
+  busy=true;updateBtn();setStatus('');
+  $('statsWrap').style.display='none';
+  var cfg=CFGS[level];
+  readAB(file,function(buf){
+    var src=new Uint8Array(buf);
+    pdfjsLib.getDocument({data:src}).promise.then(function(pdf){
+      PDFLib.PDFDocument.create().then(function(out){
+        var n=pdf.numPages,i;
+        function nextPage(pn){
+          if(pn>n){return finish(pdf,out);}
+          setProgress(pn,n);
+          return pdf.getPage(pn).then(function(page){
+            var vp=page.getViewport({scale:cfg.scale});
+            var c=document.createElement('canvas');
+            c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+            return page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise.then(function(){
+              var dataUrl=c.toDataURL('image/jpeg',cfg.q);
+              c.width=0;
+              var bin=atob(dataUrl.split(',')[1]),j=bin.length,u8=new Uint8Array(j);
+              for(;j--;){u8[j]=bin.charCodeAt(j);}
+              return out.embedJpg(u8).then(function(img){
+                var pg=out.addPage([vp.width,vp.height]);
+                pg.drawImage(img,{x:0,y:0,width:vp.width,height:vp.height});
+              });
+            });
+          }).then(function(){return nextPage(pn+1);});
+        }
+        nextPage(1);
+        function finish(pdfDoc,outDoc){
+          pdfDoc.destroy();
+          return outDoc.save({useObjectStreams:true}).then(function(bytes){
+            var blob=new Blob([bytes.buffer],{type:'application/pdf'});
+            download(blob,'compressed_'+file.name);
+            $('statOrig').textContent=fmtSize(file.size);
+            $('statNew').textContent=fmtSize(blob.size);
+            $('statSave').textContent=Math.max(0,Math.round((1-blob.size/file.size)*100))+'%';
+            $('statsWrap').style.display='block';
+            $('progressWrap').style.display='none';
+            busy=false;updateBtn();
+            setStatus(t('compressedDone','压缩完成，文件已下载'));
+          });
+        }
+      });
+    },function(){
+      busy=false;updateBtn();
+      setStatus(t('badPdf','无法解析的PDF文件或PDF已损坏'),'error');
+    });
+  },function(){
+    busy=false;updateBtn();
+    setStatus(t('readFailed','文件读取失败'),'error');
+  });
+}
+var lvls=document.querySelectorAll('.lvl'),i;
+for(i=0;i<lvls.length;i++){
+  lvls[i].addEventListener('click',function(){
+    level=this.getAttribute('data-lvl');
+    var k;
+    for(k=0;k<lvls.length;k++){lvls[k].classList.toggle('on',lvls[k]===this);}
+  });
+}
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('removeBtn').addEventListener('click',function(){file=null;$('workCard').style.display='none';updateBtn();setStatus('');});
+btn.addEventListener('click',doCompress);
+$('dzSub').textContent=t('supportedFormats','支持：{formats}').replace('{formats}','PDF')+' · '+t('maxPdfHint','最大20MB · .pdf');
+})();
+</script>
+</body>
+</html>

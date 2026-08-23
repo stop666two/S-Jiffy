@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF解密 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .fm{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:12px;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;}
+.file-bar .x:hover{color:var(--color-error);}
+.note-box{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 16px;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:12px;}
+.note-box b{display:block;font-size:var(--font-size-sm);color:var(--color-text-primary);margin-bottom:2px;}
+.opt-group label{font-size:var(--font-size-sm);display:block;margin-bottom:6px;color:var(--color-text-secondary);}
+.pw-wrap{position:relative;max-width:420px;}
+.pw-wrap input{width:100%;height:44px;padding:0 40px 0 12px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;}
+.pw-wrap input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:14px;padding:4px;}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">PDF解密</h1>
+<p class="tool-desc" data-i18n="desc">去除PDF文件的密码保护。快速且私密。</p>
+<div class="card">
+<div class="note-box">
+<b data-i18n="supportedFormat">支持的格式</b>
+<span data-i18n="decryptFormatNote">• 本站PDF加密工具创建的.enc文件（AES-256-GCM）</span>
+</div>
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">🔓</div>
+<div class="dz-label" data-i18n="uploadPdfOrEnc">上传PDF或.enc文件</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".pdf,.enc,application/pdf" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<span class="fm" id="fileMeta"></span>
+<button class="x" id="removeBtn" title="×">✕</button>
+</div>
+<div class="opt-group"><label data-i18n="enterDecryptPassword">输入解密密码</label></div>
+<div class="pw-wrap">
+<input type="password" id="pw" placeholder="输入用户或所有者密码">
+<button type="button" class="pw-eye" id="pwEye">👁</button>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="decryptBtn" disabled data-i18n="decryptPdf">解密PDF</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var file=null;
+var enc=new TextEncoder();
+var dec=new TextDecoder();
+var dz=$('dropZone'),fi=$('fileInput'),btn=$('decryptBtn');
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function startsWithMagic(u8){
+  if(u8.length<5)return false;
+  return u8[0]===0x41&&u8[1]===0x50&&u8[2]===0x45&&u8[3]===0x4e&&u8[4]===0x43;
+}
+function deriveKey(pw){
+  return crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']).then(function(km){
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt:enc.encode('artink-pdf-salt'),iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  });
+}
+function tryDecrypt(ct,iv,key){
+  return crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct);
+}
+function loadFile(f){
+  var isP=(f.type==='application/pdf')||(f.name&&(f.name.toLowerCase().indexOf('.pdf')!==-1||f.name.toLowerCase().indexOf('.enc')!==-1));
+  if(!isP){setStatus(t('notPdfEnc','请选择 .enc 或 PDF 文件'),'error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  file=f;
+  $('workCard').style.display='block';
+  $('fileName').textContent=f.name;
+  $('fileMeta').textContent=fmtSize(f.size);
+  setStatus('');
+  updateBtn();
+}
+function updateBtn(){
+  btn.disabled=!file||btn.getAttribute('data-busy')==='1';
+  btn.textContent=btn.getAttribute('data-busy')==='1'?t('decrypting','解密中...'):t('decryptPdf','解密PDF');
+}
+function fail(msg){btn.removeAttribute('data-busy');updateBtn();setStatus(msg,'error');}
+function doDecrypt(){
+  if(!file||btn.getAttribute('data-busy')==='1')return;
+  var pw=$('pw').value;
+  btn.setAttribute('data-busy','1');
+  updateBtn();
+  setStatus('');
+  readAB(file,function(buf){
+    var data=new Uint8Array(buf);
+    if(!startsWithMagic(data)){fail(t('notEncFile','该文件不是本工具加密的 .enc 文件（也暂不支持标准的密码保护 PDF，请使用本站加密工具生成的 .enc）'));return;}
+    var flags=data[5];
+    var iv=data.slice(6,18);
+    var off=18;
+    var ownerBlock=null;
+    if(flags&1){
+      if(data.length<20){fail(t('badEnc','加密文件损坏'));return;}
+      var olen=(data[18]<<8)|data[19];
+      if(20+olen>data.length){fail(t('badEnc','加密文件损坏'));return;}
+      ownerBlock=data.slice(20,20+olen);
+      off=20+olen;
+    }
+    var ct=data.slice(off);
+    function withKey(key){
+      return tryDecrypt(ct,iv,key).then(function(pt){
+        var base=file.name.replace(/\.(enc|pdf)$/i,'');
+        download(new Blob([pt],{type:'application/pdf'}),base+'_decrypted.pdf');
+        btn.removeAttribute('data-busy');
+        updateBtn();
+        setStatus(t('decryptedDownloaded','PDF已成功解密并下载！'));
+        return true;
+      },function(){return false;});
+    }
+    function withOwner(){
+      if(!ownerBlock||!pw)return Promise.resolve(false);
+      return deriveKey(pw).then(function(okey){
+        return tryDecrypt(ownerBlock.slice(12),ownerBlock.slice(0,12),okey).then(function(upwBytes){
+          var upw=dec.decode(upwBytes);
+          return deriveKey(upw).then(function(ukey){
+            return withKey(ukey);
+          });
+        },function(){return false;});
+      });
+    }
+    if(!pw){
+      withOwner().then(function(ok){if(!ok){fail(t('wrongPw','请输入密码，或密码不正确'));}});
+      return;
+    }
+    deriveKey(pw).then(function(key){
+      withKey(key).then(function(ok){
+        if(ok)return;
+        withOwner().then(function(ok2){
+          if(!ok2)fail(t('wrongPw','密码不正确'));
+        });
+      });
+    },function(){fail(t('decryptFailed','解密失败'));});
+  },function(){fail(t('readFailed','文件读取失败'));});
+}
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('removeBtn').addEventListener('click',function(){file=null;$('workCard').style.display='none';updateBtn();setStatus('');});
+btn.addEventListener('click',doDecrypt);
+$('pwEye').addEventListener('click',function(){
+  var inp=$('pw');
+  inp.type=inp.type==='password'?'text':'password';
+});
+$('dzSub').textContent=t('supportedFormats','支持：{formats}').replace('{formats}','.enc · PDF');
+})();
+</script>
+</body>
+</html>

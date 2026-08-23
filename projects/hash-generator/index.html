@@ -2,51 +2,205 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>哈希生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
-<style>.hash-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-3);}</style></head>
+<style>
+.hash-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-3);}
+.hash-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--color-bg);}
+.hash-algo{font-size:var(--font-size-xs);font-weight:600;color:var(--color-accent-hover);width:70px;flex-shrink:0;}
+.hash-val{font-family:var(--font-mono);font-size:12px;word-break:break-all;flex:1;min-width:0;}
+.hash-copy{background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:var(--font-size-xs);flex-shrink:0;padding:4px 8px;border-radius:var(--radius-sm);}
+.hash-copy:hover{color:var(--color-text-primary);background:rgba(0,0,0,0.03);}
+.sub-label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
+</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1>Hash 计算器</h1>
-<p class="tool-desc">支持 SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256 / SHA3-256 / SHA3-384 / SHA3-512，支持文本与文件。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要哈希的文本..." style="min-height:120px;"></textarea></div>
+<h1 data-i18n="h1">Hash 计算器</h1>
+<p class="tool-desc" data-i18n="desc">支持 MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256，支持文本与文件，可一次生成全部常见哈希。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+<div class="card"><label class="sub-label">输入文本</label><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要哈希的文本..." style="min-height:120px;"></textarea></div>
 <div class="hash-opts">
 <select id="algoSelect" class="input" style="width:auto;min-width:150px;">
-<option value="SHA-1">SHA-1</option><option value="SHA-224">SHA-224</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA-512/224">SHA-512/224</option><option value="SHA-512/256">SHA-512/256</option>
+<option value="MD5">MD5</option><option value="SHA-1">SHA-1</option><option value="SHA-224">SHA-224</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA-512/224">SHA-512/224</option><option value="SHA-512/256">SHA-512/256</option>
 </select>
 <select id="fmtSelect" class="input" style="width:auto;min-width:80px;"><option value="hex">Hex</option><option value="base64">Base64</option></select>
-<button id="hashBtn" class="btn btn-primary">计算</button>
+<button id="hashBtn" class="btn btn-primary" data-i18n="hash">计算</button>
+<button id="allBtn" class="btn btn-primary">一次生成全部</button>
 <button id="fileBtn" class="btn btn-secondary">选择文件</button>
 <input type="file" id="fileInput" style="display:none;">
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<div class="output-box" id="输出Container"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box" id="outputContainer"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div id="allHashes" style="display:none;margin-top:var(--space-3);">
+<div class="card">
+<label class="sub-label" data-i18n="generateHashes">生成哈希</label>
+<div id="allHashList"></div>
+</div>
+</div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
 <script>
 (function(){
+  'use strict';
   var i=document.getElementById('inputText'),algo=document.getElementById('algoSelect'),fmt=document.getElementById('fmtSelect'),o=document.getElementById('outputText'),fi=document.getElementById('fileInput');
-  function toHex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
+  var allHashes=document.getElementById('allHashes'),allHashList=document.getElementById('allHashList');
+  var ALL_ALGOS=['MD5','SHA-1','SHA-256','SHA-384','SHA-512'];
+
+  function pad2(h){return h.length<2?'0'+h:h;}
+  function toHex(buf){var bytes=new Uint8Array(buf),out='';for(var x=0;x<bytes.length;x++)out+=pad2(bytes[x].toString(16));return out;}
   function toBase64(buf){var bytes=new Uint8Array(buf),str='';for(var x=0;x<bytes.length;x++)str+=String.fromCharCode(bytes[x]);return btoa(str);}
-  function doHash(data){
-    var mapped = algo.value;
-    crypto.subtle.digest(mapped, data).then(function(buf){
-      o.textContent=fmt.value==='hex'?toHex(buf):toBase64(buf);
-      setStatus('');
-    }).catch(function(e){setStatus('错误: '+e.message,'error');});
+  function bufToStr(buf,format){return format==='hex'?toHex(buf):toBase64(buf);}
+
+  function md5(input){
+    var utf8=unescape(encodeURIComponent(input));
+    var nblk=((utf8.length+8)>>6)+1;
+    var blks=new Array(nblk*16);
+    var z;
+    for(z=0;z<blks.length;z++)blks[z]=0;
+    for(z=0;z<utf8.length;z++)blks[z>>2]|=utf8.charCodeAt(z)<<((z%4)*8);
+    blks[utf8.length>>2]|=0x80<<((utf8.length%4)*8);
+    blks[nblk*16-2]=utf8.length*8;
+    function safeAdd(x,y){var lsw=(x&0xffff)+(y&0xffff);var msw=(x>>16)+(y>>16)+(lsw>>16);return(msw<<16)|(lsw&0xffff);}
+    function bitRotateLeft(num,cnt){return(num<<cnt)|(num>>>(32-cnt));}
+    function cmn(q,a,b,x,s,t){return safeAdd(bitRotateLeft(safeAdd(safeAdd(a,q),safeAdd(x,t)),s),b);}
+    function ff(a,b,c,d,x,s,t){return cmn((b&c)|(~b&d),a,b,x,s,t);}
+    function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&~d),a,b,x,s,t);}
+    function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t);}
+    function ii(a,b,c,d,x,s,t){return cmn(c^(b|~d),a,b,x,s,t);}
+    var a=1732584193,b=-271733879,c=-1732584194,d=271733878;
+    for(var i3=0;i3<blks.length;i3+=16){
+      var olda=a,oldb=b,oldc=c,oldd=d;
+      a=ff(a,b,c,d,blks[i3+ 0], 7,-680876936);d=ff(d,a,b,c,blks[i3+ 1],12,-389564586);
+      c=ff(c,d,a,b,blks[i3+ 2],17, 606105819);b=ff(b,c,d,a,blks[i3+ 3],22,-1044525330);
+      a=ff(a,b,c,d,blks[i3+ 4], 7,-176418897);d=ff(d,a,b,c,blks[i3+ 5],12,1200080426);
+      c=ff(c,d,a,b,blks[i3+ 6],17,-1473231341);b=ff(b,c,d,a,blks[i3+ 7],22,-45705983);
+      a=ff(a,b,c,d,blks[i3+ 8], 7,1770035416);d=ff(d,a,b,c,blks[i3+ 9],12,-1958414417);
+      c=ff(c,d,a,b,blks[i3+10],17,-42063);     b=ff(b,c,d,a,blks[i3+11],22,-1990404162);
+      a=ff(a,b,c,d,blks[i3+12], 7,1804603682);d=ff(d,a,b,c,blks[i3+13],12,-40341101);
+      c=ff(c,d,a,b,blks[i3+14],17,-1502002290);b=ff(b,c,d,a,blks[i3+15],22,1236535329);
+      a=gg(a,b,c,d,blks[i3+ 1], 5,-165796510);d=gg(d,a,b,c,blks[i3+ 6], 9,-1069501632);
+      c=gg(c,d,a,b,blks[i3+11],14, 643717713);b=gg(b,c,d,a,blks[i3+ 0],20,-373897302);
+      a=gg(a,b,c,d,blks[i3+ 5], 5,-701558691);d=gg(d,a,b,c,blks[i3+10], 9, 38016083);
+      c=gg(c,d,a,b,blks[i3+15],14,-660478335);b=gg(b,c,d,a,blks[i3+ 4],20,-405537848);
+      a=gg(a,b,c,d,blks[i3+ 9], 5, 568446438);d=gg(d,a,b,c,blks[i3+14], 9,-1019803690);
+      c=gg(c,d,a,b,blks[i3+ 3],14,-187363961);b=gg(b,c,d,a,blks[i3+ 8],20,1163531501);
+      a=gg(a,b,c,d,blks[i3+13], 5,-1444681467);d=gg(d,a,b,c,blks[i3+ 2], 9,-51403784);
+      c=gg(c,d,a,b,blks[i3+ 7],14,1735328473);b=gg(b,c,d,a,blks[i3+12],20,-1926607734);
+      a=hh(a,b,c,d,blks[i3+ 5], 4,-378558);    d=hh(d,a,b,c,blks[i3+ 8],11,-2022574463);
+      c=hh(c,d,a,b,blks[i3+11],16,1839030562); b=hh(b,c,d,a,blks[i3+14],23,-35309556);
+      a=hh(a,b,c,d,blks[i3+ 1], 4,-1530992060);d=hh(d,a,b,c,blks[i3+ 4],11,1272893353);
+      c=hh(c,d,a,b,blks[i3+ 7],16,-155497632); b=hh(b,c,d,a,blks[i3+10],23,-1094730640);
+      a=hh(a,b,c,d,blks[i3+13], 4, 681279174); d=hh(d,a,b,c,blks[i3+ 0],11,-358537222);
+      c=hh(c,d,a,b,blks[i3+ 3],16,-722521979); b=hh(b,c,d,a,blks[i3+ 6],23, 76029189);
+      a=hh(a,b,c,d,blks[i3+ 9], 4,-640364487); d=hh(d,a,b,c,blks[i3+12],11,-421815835);
+      c=hh(c,d,a,b,blks[i3+15],16, 530742520); b=hh(b,c,d,a,blks[i3+ 2],23,-995338651);
+      a=ii(a,b,c,d,blks[i3+ 0], 6,-198630844); d=ii(d,a,b,c,blks[i3+ 7],10,1126891415);
+      c=ii(c,d,a,b,blks[i3+14],15,-1416354905);b=ii(b,c,d,a,blks[i3+ 5],21,-57434055);
+      a=ii(a,b,c,d,blks[i3+12], 6,1700485571); d=ii(d,a,b,c,blks[i3+ 3],10,-1894986606);
+      c=ii(c,d,a,b,blks[i3+10],15,-1051523);   b=ii(b,c,d,a,blks[i3+ 1],21,-2054922799);
+      a=ii(a,b,c,d,blks[i3+ 8], 6,1873313359); d=ii(d,a,b,c,blks[i3+15],10,-30611744);
+      c=ii(c,d,a,b,blks[i3+ 6],15,-1560198380);b=ii(b,c,d,a,blks[i3+13],21,1309151649);
+      a=ii(a,b,c,d,blks[i3+ 4], 6,-145523070); d=ii(d,a,b,c,blks[i3+11],10,-1120210379);
+      c=ii(c,d,a,b,blks[i3+ 2],15, 718787259); b=ii(b,c,d,a,blks[i3+ 9],21,-343485551);
+      a=safeAdd(a,olda);b=safeAdd(b,oldb);c=safeAdd(c,oldc);d=safeAdd(d,oldd);
+    }
+    var buf=new ArrayBuffer(16),view=new DataView(buf);
+    view.setInt32(0,a,true);view.setInt32(4,b,true);view.setInt32(8,c,true);view.setInt32(12,d,true);
+    return toHex(buf);
   }
+
+  function hexToBase64(hex){
+    var out='';
+    for(var x=0;x<hex.length;x+=2)out+=String.fromCharCode(parseInt(hex.substr(x,2),16));
+    return btoa(out);
+  }
+
+  function digestText(text,algorithm){
+    if(algorithm==='MD5')return Promise.resolve(md5(text));
+    var encoder=new TextEncoder();
+    var data=encoder.encode(text);
+    return crypto.subtle.digest(algorithm,data).then(function(hb){return toHex(hb);});
+  }
+
+  function formatForAlgo(hex){
+    return fmt.value==='base64'?hexToBase64(hex):hex;
+  }
+
+  function hasSubtle(){
+    return window.crypto&&window.crypto.subtle&&crypto.subtle.digest;
+  }
+
+  function doHash(data){
+    if(!hasSubtle()){
+      if(algo.value==='MD5'){o.textContent=fmt.value==='hex'?md5(data):hexToBase64(md5(data));setStatus('');return;}
+      setStatus(t('httpsRequired','当前环境不支持 Web Crypto（需 HTTPS/localhost）'),'error');return;
+    }
+    digestText(data,algo.value).then(function(hex){
+      o.textContent=formatForAlgo(hex);
+      setStatus('');
+    }).catch(function(e){
+      var msg=e.message||'';
+      if(msg.indexOf('Unrecognized name')!==-1){
+        setStatus(t('algoUnsupported','当前浏览器不支持该算法（Web Crypto 仅支持 SHA-1/SHA-256/SHA-384/SHA-512）'),'error');
+      }else{
+        setStatus(t('hashError','错误: ')+e.message,'error');
+      }
+    });
+  }
+
   document.getElementById('hashBtn').addEventListener('click',function(){
-    var text=i.value.trim();if(!text){setStatus('请输入内容','error');return;}
-    doHash(new TextEncoder().encode(text));
+    var text=i.value;
+    if(!text.trim()){setStatus(t('emptyInput','请输入内容'),'error');return;}
+    doHash(text);
   });
+
+  document.getElementById('allBtn').addEventListener('click',function(){
+    var text=i.value;
+    if(!text.trim()){setStatus(t('emptyInput','请输入内容'),'error');return;}
+    if(!hasSubtle()){setStatus(t('httpsRequired','当前环境不支持 Web Crypto（需 HTTPS/localhost）'),'error');return;}
+    setStatus(t('generatingDots','生成中...'));
+    allHashList.innerHTML='';
+    allHashes.style.display='block';
+    var pending=ALL_ALGOS.length;
+    for(var a=0;a<ALL_ALGOS.length;a++){
+      (function(algoName){
+        var row=document.createElement('div');
+        row.className='hash-row';
+        var lab=document.createElement('span');
+        lab.className='hash-algo';
+        lab.textContent=algoName;
+        var val=document.createElement('span');
+        val.className='hash-val';
+        val.textContent=t('generatingDots','生成中...');
+        var btn=document.createElement('button');
+        btn.className='hash-copy';
+        btn.textContent=t('common.copy','复制');
+        row.appendChild(lab);row.appendChild(val);row.appendChild(btn);
+        allHashList.appendChild(row);
+        digestText(text,algoName).then(function(b64){
+          val.textContent=b64;
+          btn.addEventListener('click',function(){copyToClipboard(b64,btn);});
+          pending--;
+          if(pending===0)setStatus('');
+        }).catch(function(e){val.textContent=t('algoUnsupported','当前浏览器不支持该算法');pending--;if(pending===0)setStatus('');});
+      })(ALL_ALGOS[a]);
+    }
+  });
+
   document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
   fi.addEventListener('change',function(){
-    if(!fi.files[0])return;
+    var file=fi.files[0];
+    if(!file)return;
     var reader=new FileReader();
-    reader.onload=function(e){doHash(e.target.result);setStatus('正在计算文件哈希...');};
-    reader.onerror=function(){setStatus('文件读取失败','error');};
-    reader.readAsArrayBuffer(fi.files[0]);
+    reader.onload=function(e){
+      setStatus(t('computing','正在计算文件哈希...'));
+      var text=String.fromCharCode.apply(null,new Uint8Array(e.target.result));
+      doHash(text);
+    };
+    reader.onerror=function(){setStatus(t('readFailed','文件读取失败'),'error');};
+    reader.readAsArrayBuffer(file);
   });
-  document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();fi.value='';});
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+  document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';allHashes.style.display='none';allHashList.innerHTML='';setStatus('');i.focus();fi.value='';});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('common.copied','已复制'));}});
 })();
-if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script></body></html>
+if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}
+</script></body></html>

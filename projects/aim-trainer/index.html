@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞄准训练 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.game-desc{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
+.start-panel{min-height:300px;border:1px dashed var(--color-border);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-2);cursor:pointer;transition:border-color .2s,background .2s;}
+.start-panel:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.start-panel .icon{width:64px;height:64px;border-radius:50%;border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.start-panel .t1{font-weight:600;font-size:var(--font-size-lg);}
+.start-panel .t2{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:var(--font-size-sm);}
+.hud-stats{font-weight:600;}
+.hud-hits{color:var(--color-success);}
+.hud-misses{color:var(--color-text-secondary);}
+.hud-sep{margin:0 8px;color:var(--color-text-disabled);}
+.timebar{width:140px;height:6px;background:var(--color-bg-soft);border-radius:9999px;overflow:hidden;}
+.timebar-fill{height:100%;background:var(--color-accent);transition:width .1s linear;}
+.timebar-fill.low{background:var(--color-error);}
+.hud-time{font-family:var(--font-mono);font-weight:700;margin-left:8px;}
+#gameCanvas{display:block;width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);cursor:crosshair;}
+.result-panel{margin-top:var(--space-3);}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-2);margin-bottom:var(--space-3);}
+.res-item{padding:var(--space-2);background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center;}
+.res-item .v{font-size:var(--font-size-xl);font-weight:700;font-family:var(--font-mono);}
+.res-item .l{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.rating-line{text-align:center;font-size:var(--font-size-xl);font-weight:700;margin-bottom:var(--space-3);}
+.rating-table{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-1);margin-bottom:var(--space-3);}
+.rt-item{text-align:center;padding:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);}
+.rt-item .l{font-weight:700;font-size:var(--font-size-sm);}
+.rt-item .r{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.again-row{text-align:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">瞄准训练</h1>
+<p class="tool-desc" data-i18n="desc">练习并提升鼠标瞄准能力。尽可能快速准确地点击目标，30 秒挑战。</p>
+<div class="card">
+<p class="game-desc" id="gameDesc"></p>
+<div id="stageWrap">
+<div id="startPanel" class="start-panel">
+<div class="icon">◎</div>
+<p class="t1" id="startTitle">点击开始</p>
+<p class="t2" id="startSub"></p>
+</div>
+<div id="hud" class="hud" style="display:none;">
+<div class="hud-stats"><span class="hud-hits" id="hudHits">0</span><span class="hud-sep">·</span><span class="hud-misses" id="hudMisses">0</span></div>
+<div style="display:flex;align-items:center;">
+<div class="timebar"><div class="timebar-fill" id="timeBar" style="width:100%;"></div></div>
+<span class="hud-time" id="hudTime">30</span>
+</div>
+</div>
+<canvas id="gameCanvas" style="display:none;"></canvas>
+</div>
+<div id="resultPanel" class="result-panel" style="display:none;">
+<div class="res-grid">
+<div class="res-item"><div class="v" id="resHits">0</div><div class="l" id="lblHits">命中</div></div>
+<div class="res-item"><div class="v" id="resMisses">0</div><div class="l" id="lblMisses">未命中</div></div>
+<div class="res-item"><div class="v" id="resAcc">0%</div><div class="l" id="lblAcc">准确率</div></div>
+<div class="res-item"><div class="v" id="resAvg">—</div><div class="l" id="lblAvg">平均用时</div></div>
+</div>
+<p class="rating-line" id="ratingLine"></p>
+<div class="rating-table">
+<div class="rt-item"><div class="l" id="rtCasual">休闲</div><div class="r">&lt; 24</div></div>
+<div class="rt-item"><div class="l" id="rtGood">良好</div><div class="r">24–39</div></div>
+<div class="rt-item"><div class="l" id="rtPro">专业</div><div class="r">40–59</div></div>
+<div class="rt-item"><div class="l" id="rtGodlike">神级</div><div class="r">60+</div></div>
+</div>
+<div class="again-row"><button id="playAgainBtn" class="btn btn-primary">再玩一次</button></div>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var DURATION=30, TARGET_R=36, TARGET_TTL=2000, FADE_IN=180, FADE_OUT=450;
+var canvas=document.getElementById('gameCanvas'),wrap=document.getElementById('stageWrap');
+var startPanel=document.getElementById('startPanel'),hud=document.getElementById('hud');
+var resultPanel=document.getElementById('resultPanel');
+var timeBar=document.getElementById('timeBar'),hudTime=document.getElementById('hudTime');
+var hudHits=document.getElementById('hudHits'),hudMisses=document.getElementById('hudMisses');
+
+function t(key,fb){return (window.I18N&&I18N.dict[key]!=null)?I18N.dict[key]:fb;}
+function fmt(key,fb,vars){var s=t(key,fb);for(var k in vars){if(vars.hasOwnProperty(k))s=s.split('{'+k+'}').join(vars[k]);}return s;}
+
+document.getElementById('gameDesc').textContent=fmt('aimDesc','尽快点击目标。你有 {duration} 秒——每次只出现一个目标。',{duration:DURATION});
+document.getElementById('startTitle').textContent=t('clickToStart','点击开始');
+document.getElementById('startSub').textContent=fmt('aimChallenge','{duration} 秒射击挑战',{duration:DURATION});
+document.getElementById('lblHits').textContent=t('hitsStatLabel','命中');
+document.getElementById('lblMisses').textContent=t('missesStatLabel','未命中');
+document.getElementById('lblAcc').textContent=t('accuracyStatLabel','准确率');
+document.getElementById('lblAvg').textContent=t('avgTimeStatLabel','平均用时');
+document.getElementById('rtCasual').textContent=t('ratingCasual','休闲');
+document.getElementById('rtGood').textContent=t('ratingGood','良好');
+document.getElementById('rtPro').textContent=t('ratingPro','专业');
+document.getElementById('rtGodlike').textContent=t('ratingGodlike','神级');
+document.getElementById('playAgainBtn').textContent=t('playAgain','再玩一次');
+
+var phase='idle',targets=[],ripples=[],startAt=0,hits=0,misses=0,hitTimes=[],rafId=0,timerId=0,nextId=0;
+var csize={w:0,h:0},audioCtx=null;
+
+function playHit(){
+  try{
+    if(!audioCtx){var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();}
+    var ac=audioCtx,now=ac.currentTime;
+    var body=ac.createOscillator(),bg=ac.createGain();
+    body.type='sine';body.frequency.setValueAtTime(520,now);
+    body.frequency.exponentialRampToValueAtTime(180,now+0.045);
+    bg.gain.setValueAtTime(0.28,now);bg.gain.exponentialRampToValueAtTime(0.0001,now+0.07);
+    body.connect(bg);bg.connect(ac.destination);body.start(now);body.stop(now+0.07);
+    var spark=ac.createOscillator(),sg=ac.createGain();
+    spark.type='triangle';spark.frequency.value=1600;
+    sg.gain.setValueAtTime(0.07,now);sg.gain.exponentialRampToValueAtTime(0.0001,now+0.025);
+    spark.connect(sg);sg.connect(ac.destination);spark.start(now);spark.stop(now+0.025);
+  }catch(e){}
+}
+
+function spawnTarget(){
+  var w=csize.w,h=csize.h,margin=TARGET_R+12;
+  var x=margin+Math.random()*(w-margin*2);
+  var y=margin+Math.random()*(h-margin*2);
+  targets=[{id:nextId++,x:x,y:y,r:TARGET_R,born:performance.now()}];
+}
+
+function drawFrame(){
+  var ctx=canvas.getContext('2d');
+  var w=csize.w,h=csize.h,now=performance.now();
+  ctx.fillStyle='#0e1117';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,0.04)';
+  var gs=28,x,y;
+  for(x=gs;x<w;x+=gs){for(y=gs;y<h;y+=gs){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}}
+  if(phase==='playing'){
+    var expired=0;
+    for(var i=targets.length-1;i>=0;i--){if(now-targets[i].born>TARGET_TTL){expired++;targets.splice(i,1);}}
+    if(expired>0){misses+=expired;hudMisses.textContent=misses;spawnTarget();}
+  }
+  for(var r=0;r<ripples.length;r++){
+    var rp=ripples[r],age=now-rp.born;
+    if(age>=500){ripples.splice(r,1);r--;continue;}
+    var p=age/500,rad=TARGET_R*(0.8+p*1.4);
+    ctx.beginPath();ctx.arc(rp.x,rp.y,rad,0,Math.PI*2);
+    ctx.strokeStyle='rgba(96,165,250,'+((1-p)*0.55).toFixed(3)+')';ctx.lineWidth=2;ctx.stroke();
+    var rad2=TARGET_R*(0.5+p*0.9);
+    ctx.beginPath();ctx.arc(rp.x,rp.y,rad2,0,Math.PI*2);
+    ctx.strokeStyle='rgba(147,197,253,'+((1-p)*0.35).toFixed(3)+')';ctx.lineWidth=1.5;ctx.stroke();
+  }
+  for(var j=0;j<targets.length;j++){
+    var tg=targets[j],age2=now-tg.born;
+    var fadeIn=Math.min(age2/FADE_IN,1);
+    var fadeOut=age2>TARGET_TTL-FADE_OUT?Math.max(0,1-(age2-(TARGET_TTL-FADE_OUT))/FADE_OUT):1;
+    var a=fadeIn*fadeOut;
+    if(a<=0.01)continue;
+    var px=tg.x,py=tg.y,pr=tg.r;
+    var timePct=Math.max(0,1-age2/TARGET_TTL);
+    ctx.shadowColor='rgba(96,165,250,'+(a*0.55).toFixed(3)+')';ctx.shadowBlur=20;
+    ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);
+    ctx.strokeStyle='rgba(147,197,253,'+(a*0.85).toFixed(3)+')';ctx.lineWidth=2;ctx.stroke();
+    ctx.shadowBlur=0;
+    var fill=ctx.createRadialGradient(px-pr*0.3,py-pr*0.35,0,px,py,pr);
+    fill.addColorStop(0,'rgba(186,219,255,'+(a*0.22).toFixed(3)+')');
+    fill.addColorStop(0.55,'rgba(59,130,246,'+(a*0.10).toFixed(3)+')');
+    fill.addColorStop(1,'rgba(15,23,42,'+(a*0.06).toFixed(3)+')');
+    ctx.beginPath();ctx.arc(px,py,pr-1,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();
+    var sheen=ctx.createRadialGradient(px-pr*0.38,py-pr*0.45,0,px-pr*0.15,py-pr*0.15,pr*0.75);
+    sheen.addColorStop(0,'rgba(255,255,255,'+(a*0.32).toFixed(3)+')');
+    sheen.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();ctx.arc(px,py,pr-1,0,Math.PI*2);ctx.fillStyle=sheen;ctx.fill();
+    ctx.shadowColor='rgba(96,165,250,'+(a*0.7).toFixed(3)+')';ctx.shadowBlur=6;
+    ctx.beginPath();ctx.arc(px,py,pr-3.5,-Math.PI/2,-Math.PI/2+timePct*Math.PI*2);
+    ctx.strokeStyle='rgba(96,165,250,'+(a*0.95).toFixed(3)+')';ctx.lineWidth=3;ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(px,py,pr*0.48,0,Math.PI*2);
+    ctx.strokeStyle='rgba(147,197,253,'+(a*0.55).toFixed(3)+')';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.shadowColor='rgba(200,230,255,'+a.toFixed(3)+')';ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(px,py,4.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+a.toFixed(3)+')';ctx.fill();
+    ctx.shadowBlur=0;
+  }
+  if(phase==='playing')rafId=requestAnimationFrame(drawFrame);
+}
+
+function handleCanvasClick(e){
+  if(phase!=='playing')return;
+  var rect=canvas.getBoundingClientRect();
+  var cx=(e.clientX-rect.left)*csize.w/rect.width;
+  var cy=(e.clientY-rect.top)*csize.h/rect.height;
+  var now=performance.now(),hit=false;
+  for(var i=0;i<targets.length;i++){
+    var tg=targets[i],dx=cx-tg.x,dy=cy-tg.y;
+    if(Math.sqrt(dx*dx+dy*dy)<=tg.r){
+      hit=true;hits++;hitTimes.push(now-tg.born);
+      hudHits.textContent=hits;
+      ripples.push({x:tg.x,y:tg.y,born:now});
+      targets=[];
+      playHit();
+      spawnTarget();
+      break;
+    }
+  }
+  if(!hit){misses++;hudMisses.textContent=misses;}
+}
+
+function startGame(){
+  var w=wrap.clientWidth||800;
+  var h=Math.max(320,Math.min(480,Math.round(w*0.56)));
+  canvas.width=w;canvas.height=h;csize={w:w,h:h};
+  phase='playing';hits=0;misses=0;hitTimes=[];targets=[];ripples=[];nextId=0;startAt=Date.now();
+  hudHits.textContent=0;hudMisses.textContent=0;
+  startPanel.style.display='none';resultPanel.style.display='none';
+  hud.style.display='flex';canvas.style.display='block';
+  timeBar.style.width='100%';timeBar.className='timebar-fill';
+  hudTime.textContent=DURATION;
+  spawnTarget();
+  timerId=setInterval(function(){
+    var elapsed=(Date.now()-startAt)/1000;
+    var left=Math.max(0,DURATION-elapsed);
+    hudTime.textContent=Math.ceil(left);
+    timeBar.style.width=(left/DURATION*100)+'%';
+    if(left<=10)timeBar.className='timebar-fill low';
+    if(elapsed>=DURATION){
+      clearInterval(timerId);
+      phase='done';targets=[];
+      var avg=0;
+      if(hitTimes.length>0){var s=0;for(var i=0;i<hitTimes.length;i++)s+=hitTimes[i];avg=Math.round(s/hitTimes.length);}
+      showResult(avg);
+    }
+  },100);
+  rafId=requestAnimationFrame(drawFrame);
+}
+
+function showResult(avg){
+  cancelAnimationFrame(rafId);
+  hud.style.display='none';canvas.style.display='none';
+  resultPanel.style.display='block';
+  var acc=hits+misses>0?Math.round(hits/(hits+misses)*100):0;
+  document.getElementById('resHits').textContent=hits;
+  document.getElementById('resMisses').textContent=misses;
+  document.getElementById('resAcc').textContent=acc+'%';
+  document.getElementById('resAvg').textContent=avg?avg+'ms':'—';
+  var rating;
+  if(hits>=60)rating=t('ratingGodlike','神级');
+  else if(hits>=40)rating=t('ratingPro','专业');
+  else if(hits>=24)rating=t('ratingGood','良好');
+  else rating=t('ratingCasual','休闲');
+  document.getElementById('ratingLine').textContent=rating;
+  setStatus(fmt('targetsHitResult','命中 {hits} 个目标 · 准确率 {accuracy}%',{hits:hits,accuracy:acc}));
+}
+
+startPanel.addEventListener('click',function(){startGame();});
+document.getElementById('playAgainBtn').addEventListener('click',function(){startGame();});
+canvas.addEventListener('click',handleCanvasClick);
+})();
+</script>
+</body>
+</html>

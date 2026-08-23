@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>批量图片处理器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:32px var(--space-3);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-sm);cursor:pointer;transition:border-color .15s,background .15s;user-select:none;}
+.drop-zone.dragging{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-hint{margin-top:6px;color:var(--color-text-disabled);font-size:var(--font-size-xs);}
+.op-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:var(--space-2);}
+.op-grid button{padding:12px 8px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-size:13px;color:var(--color-text-secondary);font-family:var(--font-mono);}
+.op-grid button.active{border-color:var(--color-text-primary);background:var(--color-bg-soft);color:var(--color-text-primary);}
+.param-block{margin-bottom:12px;}
+.param-block label{display:flex;justify-content:space-between;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
+.param-block label b{color:var(--color-text-primary);font-family:var(--font-mono);}
+.param-block input[type=range]{width:100%;accent-color:var(--color-text-primary);cursor:pointer;}
+.param-block input[type=number]{width:100%;height:38px;padding:0 10px;font-size:14px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);outline:none;font-family:var(--font-mono);}
+.opt-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.opt-pills button{padding:7px 14px;font-size:12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-mono);}
+.opt-pills button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:8px;font-size:13px;}
+.file-row .fname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-row .fsize{font-size:var(--font-size-xs);color:var(--color-text-disabled);font-family:var(--font-mono);}
+.file-row .fstatus{font-size:var(--font-size-xs);flex-shrink:0;}
+.file-row .fstatus.ok{color:var(--color-success);}
+.file-row .fstatus.err{color:var(--color-error);}
+.file-row .fstatus.run{color:var(--color-text-secondary);}
+.file-row .fstatus .bar{display:inline-block;width:60px;height:4px;background:var(--color-bg-soft);border-radius:999px;overflow:hidden;vertical-align:middle;margin-left:6px;}
+.file-row .fstatus .bar i{display:block;height:100%;background:var(--color-text-primary);width:0;}
+.file-row button{height:30px;min-width:0;padding:0 10px;font-size:12px;flex-shrink:0;}
+.progress-track{height:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:999px;overflow:hidden;margin-top:var(--space-2);}
+.progress-bar{height:100%;width:0;background:var(--color-text-primary);border-radius:999px;transition:width .15s;}
+.progress-text{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:6px;}
+.err-box{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.btn-row .btn{height:44px;min-width:0;padding:0 18px;font-size:14px;flex:1 1 160px;}
+.preview-img{max-width:100%;max-height:280px;border:1px solid var(--color-border);border-radius:var(--radius-md);display:block;margin:8px auto 0;}
+@media(max-width:640px){.op-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">批量图片处理器</h1>
+<p class="tool-desc" data-i18n="desc">批量处理多张图片：压缩、调整大小、转换格式或添加水印。</p>
+<div class="card">
+<div class="drop-zone" id="dropZone">
+<div data-i18n="batchDropHint">拖放图片或点击选择</div>
+<div class="dz-hint" data-i18n="batchHint">最多 20 张 · JPG、PNG、WebP</div>
+</div>
+<input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none">
+</div>
+<div class="card" id="opCard" style="display:none;">
+<div class="op-grid">
+<button id="opCompress" class="active">压缩</button>
+<button id="opResize">调整大小</button>
+<button id="opConvert">转换格式</button>
+<button id="opWatermark">添加水印</button>
+</div>
+<div id="paramsCompress">
+<div class="param-block">
+<label><span>质量</span><b id="qVal">80%</b></label>
+<input type="range" id="qRange" min="10" max="100" value="80">
+</div>
+<div class="param-block">
+<label><span>输出格式</span></label>
+<div class="opt-pills" id="fmtPills">
+<button data-v="auto" class="active">自动（保持原格式）</button>
+<button data-v="png">PNG</button>
+<button data-v="jpg">JPG</button>
+<button data-v="webp">WebP</button>
+</div>
+</div>
+</div>
+<div id="paramsResize" style="display:none;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div class="param-block"><label><span>宽度（像素）</span></label><input type="number" id="rw" value="800" min="1" max="16384"></div>
+<div class="param-block"><label><span>高度（像素）</span></label><input type="number" id="rh" value="600" min="1" max="16384"></div>
+</div>
+<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;margin-bottom:12px;">
+<input type="checkbox" id="keepAR" checked> <span data-i18n="maintainAspectRatio">保持宽高比</span>
+</label>
+</div>
+<div id="paramsConvert" style="display:none;">
+<div class="param-block">
+<label><span>目标格式</span></label>
+<div class="opt-pills" id="convPills">
+<button data-v="jpg" class="active">JPG</button>
+<button data-v="png">PNG</button>
+<button data-v="webp">WebP</button>
+</div>
+</div>
+<div class="param-block">
+<label><span>质量</span><b id="cqVal">85%</b></label>
+<input type="range" id="cqRange" min="10" max="100" value="85">
+</div>
+</div>
+<div id="paramsWatermark" style="display:none;">
+<div class="param-block"><label><span>水印文字</span></label><input type="text" id="wmText" value="© S-Jiffy" style="width:100%;height:38px;padding:0 10px;font-size:14px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div class="param-block"><label><span>颜色</span></label><input type="color" id="wmColor" value="#ffffff" style="width:100%;height:38px;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:2px;"></div>
+<div class="param-block">
+<label><span>位置</span></label>
+<select id="wmPos" style="width:100%;height:38px;font-size:13px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);font-family:var(--font-mono);">
+<option value="bottom-right">右下</option>
+<option value="bottom-left">左下</option>
+<option value="top-right">右上</option>
+<option value="top-left">左上</option>
+<option value="center">居中</option>
+<option value="tile">平铺</option>
+</select>
+</div>
+</div>
+<div class="param-block">
+<label><span>透明度</span><b id="wmOpVal">70%</b></label>
+<input type="range" id="wmOpRange" min="10" max="100" value="70">
+</div>
+<div class="param-block">
+<label><span>字号</span><b id="wmSizeVal">48</b></label>
+<input type="range" id="wmSizeRange" min="12" max="120" value="48">
+</div>
+<div class="param-block">
+<label><span>旋转角度</span><b id="wmRotVal">0°</b></label>
+<input type="range" id="wmRotRange" min="0" max="360" value="0">
+</div>
+</div>
+</div>
+<div class="card" id="filesCard" style="display:none;">
+<div id="fileList"></div>
+<div class="progress-track" id="progressTrack" style="display:none;"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-text" id="progressText"></div>
+<div class="err-box" id="errBox" style="display:none;"></div>
+<div class="btn-row">
+<button id="processBtn" class="btn btn-primary" data-i18n="batchProcessFiles">处理全部文件</button>
+<button id="dlAllBtn" class="btn btn-secondary" data-i18n="batchDownloadAll">全部下载 (0)</button>
+<button id="clearFilesBtn" class="btn btn-secondary">清空列表</button>
+</div>
+<img class="preview-img" id="previewImg" alt="" style="display:none;">
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var MAX_FILES=20;
+var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput');
+var opCard=document.getElementById('opCard'),filesCard=document.getElementById('filesCard');
+var fileList=document.getElementById('fileList');
+var processBtn=document.getElementById('processBtn'),dlAllBtn=document.getElementById('dlAllBtn');
+var progressTrack=document.getElementById('progressTrack'),progressBar=document.getElementById('progressBar'),progressText=document.getElementById('progressText');
+var errBox=document.getElementById('errBox');
+var previewImg=document.getElementById('previewImg');
+var op='compress',files=[],processing=false,fileIdx=0;
+function setErr(msg){errBox.style.display=msg?'block':'none';errBox.textContent=msg;}
+function setOp(o){
+  op=o;
+  ['opCompress','opResize','opConvert','opWatermark'].forEach(function(id){
+    document.getElementById(id).classList.toggle('active',id==='op'+o.charAt(0).toUpperCase()+o.slice(1));
+  });
+  document.getElementById('paramsCompress').style.display=o==='compress'?'block':'none';
+  document.getElementById('paramsResize').style.display=o==='resize'?'block':'none';
+  document.getElementById('paramsConvert').style.display=o==='convert'?'block':'none';
+  document.getElementById('paramsWatermark').style.display=o==='watermark'?'block':'none';
+}
+document.getElementById('opCompress').addEventListener('click',function(){setOp('compress');});
+document.getElementById('opResize').addEventListener('click',function(){setOp('resize');});
+document.getElementById('opConvert').addEventListener('click',function(){setOp('convert');});
+document.getElementById('opWatermark').addEventListener('click',function(){setOp('watermark');});
+function bindPills(container,onChange){
+  container.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){
+      container.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      if(onChange)onChange(b.getAttribute('data-v'));
+    });
+  });
+}
+var compressFmt='auto',convertFmt='jpg';
+bindPills(document.getElementById('fmtPills'),function(v){compressFmt=v;});
+bindPills(document.getElementById('convPills'),function(v){convertFmt=v;});
+var qRange=document.getElementById('qRange'),qVal=document.getElementById('qVal');
+qRange.addEventListener('input',function(){qVal.textContent=this.value+'%';});
+var cqRange=document.getElementById('cqRange'),cqVal=document.getElementById('cqVal');
+cqRange.addEventListener('input',function(){cqVal.textContent=this.value+'%';});
+var wmOpRange=document.getElementById('wmOpRange'),wmOpVal=document.getElementById('wmOpVal');
+wmOpRange.addEventListener('input',function(){wmOpVal.textContent=this.value+'%';});
+var wmSizeRange=document.getElementById('wmSizeRange'),wmSizeVal=document.getElementById('wmSizeVal');
+wmSizeRange.addEventListener('input',function(){wmSizeVal.textContent=this.value;});
+var wmRotRange=document.getElementById('wmRotRange'),wmRotVal=document.getElementById('wmRotVal');
+wmRotRange.addEventListener('input',function(){wmRotVal.textContent=this.value+'°';});
+function fmtBytes(b){
+  if(b<1024)return b+' B';
+  if(b<1024*1024)return Math.round(b/1024)+' KB';
+  return (b/1024/1024).toFixed(1)+' MB';
+}
+function addFiles(newFiles){
+  if(processing)return;
+  setErr('');
+  var added=0;
+  for(var i=0;i<newFiles.length&&files.length<MAX_FILES;i++){
+    var f=newFiles[i];
+    if(!f.type.match(/^image\/(jpeg|png|webp)$/))continue;
+    files.push({file:f,status:'pending',result:null,resultName:null,resultSize:0,error:''});
+    added++;
+  }
+  if(added>0){
+    opCard.style.display='block';
+    filesCard.style.display='block';
+    renderList();
+  }
+  if(newFiles.length>files.length)setStatus(t('someSkipped','部分文件被忽略（仅支持 JPG/PNG/WebP，最多 20 张）'));
+}
+function renderList(){
+  fileList.innerHTML='';
+  files.forEach(function(item,i){
+    var row=document.createElement('div');
+    row.className='file-row';
+    row.id='frow'+i;
+    var st='';
+    if(item.status==='done')st='<span class="fstatus ok">✓ '+fmtBytes(item.resultSize)+'</span>';
+    else if(item.status==='error')st='<span class="fstatus err">'+t('batchFailed','失败')+'</span>';
+    else if(item.status==='processing')st='<span class="fstatus run">处理中<span class="bar"><i id="fbar'+i+'"></i></span></span>';
+    else st='<span class="fstatus">待处理</span>';
+    row.innerHTML='<span class="fname">'+htmlEscape(item.file.name)+'</span><span class="fsize">'+fmtBytes(item.file.size)+'</span>'+st;
+    var dl=document.createElement('button');
+    dl.className='btn btn-secondary';
+    dl.textContent='下载';
+    dl.style.display=item.status==='done'?'':'none';
+    dl.addEventListener('click',(function(item){return function(){
+      if(item.result&&item.resultName){
+        var a=document.createElement('a');
+        a.href=URL.createObjectURL(item.result);
+        a.download=item.resultName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };})(item));
+    row.appendChild(dl);
+    var prev=document.createElement('button');
+    prev.className='btn btn-secondary';
+    prev.textContent='预览';
+    prev.addEventListener('click',(function(f){return function(){
+      var img=new Image();
+      img.onload=function(){
+        previewImg.src=img.src;
+        previewImg.style.display='block';
+        setStatus(f.name+' · '+img.naturalWidth+'×'+img.naturalHeight+'px');
+      };
+      img.src=URL.createObjectURL(f);
+    };})(item.file));
+    row.appendChild(prev);
+    fileList.appendChild(row);
+  });
+  updateDlCount();
+}
+function updateDlCount(){
+  var n=files.filter(function(f){return f.status==='done';}).length;
+  dlAllBtn.textContent=t('batchDownloadAll','全部下载 ('+n+')');
+  dlAllBtn.disabled=n===0;
+}
+function loadImage(file){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      if(img.naturalWidth>16384||img.naturalHeight>16384){
+        reject(new Error(t('imgTooBig','图片尺寸超过 canvas 上限')));
+        return;
+      }
+      resolve(img);
+    };
+    img.onerror=function(){reject(new Error(t('imgLoadFail','图片加载失败')));};
+    img.src=URL.createObjectURL(file);
+  });
+}
+function canvasToBlob(canvas,mime,quality){
+  return new Promise(function(resolve,reject){
+    canvas.toBlob(function(b){
+      if(b)resolve(b);
+      else reject(new Error(t('encodeFail','编码失败')));
+    },mime,quality);
+  });
+}
+function processOne(item){
+  return loadImage(item.file).then(function(img){
+    var nameBase=item.file.name.replace(/\.[^/.]+$/,'');
+    var mime=item.file.type;
+    if(op==='compress'){
+      var fmt=compressFmt;
+      var outMime=fmt==='png'?'image/png':fmt==='webp'?'image/webp':(mime==='image/png'?'image/png':mime==='image/webp'?'image/webp':'image/jpeg');
+      var outExt=fmt==='auto'?(mime==='image/png'?'png':mime==='image/webp'?'webp':'jpg'):fmt;
+      var c=document.createElement('canvas');
+      c.width=img.naturalWidth;c.height=img.naturalHeight;
+      c.getContext('2d').drawImage(img,0,0);
+      return canvasToBlob(c,outMime,parseInt(qRange.value,10)/100).then(function(b){
+        return {blob:b,name:nameBase+'_compress.'+outExt};
+      });
+    }
+    if(op==='resize'){
+      var w=parseInt(document.getElementById('rw').value,10)||img.naturalWidth;
+      var h=parseInt(document.getElementById('rh').value,10)||img.naturalHeight;
+      if(document.getElementById('keepAR').checked){
+        var r=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+        w=Math.round(img.naturalWidth*r);
+        h=Math.round(img.naturalHeight*r);
+      }
+      if(w<1)w=1;if(h<1)h=1;
+      if(w>16384||h>16384)throw new Error(t('imgTooBig','目标尺寸超过 canvas 上限（16384px）'));
+      var c2=document.createElement('canvas');
+      c2.width=w;c2.height=h;
+      c2.getContext('2d').drawImage(img,0,0,w,h);
+      var ext2=(item.file.name.split('.').pop()||'jpg').toLowerCase();
+      if(ext2==='webp'||ext2==='png')mime='image/'+ext2;
+      return canvasToBlob(c2,mime,parseInt(qRange.value,10)/100).then(function(b){
+        return {blob:b,name:nameBase+'_resize.'+ext2};
+      });
+    }
+    if(op==='convert'){
+      var outMime2=convertFmt==='png'?'image/png':convertFmt==='webp'?'image/webp':'image/jpeg';
+      var c3=document.createElement('canvas');
+      c3.width=img.naturalWidth;c3.height=img.naturalHeight;
+      var c3ctx=c3.getContext('2d');
+      c3ctx.fillStyle='#ffffff';
+      c3ctx.fillRect(0,0,c3.width,c3.height);
+      c3ctx.drawImage(img,0,0);
+      return canvasToBlob(c3,outMime2,parseInt(cqRange.value,10)/100).then(function(b){
+        return {blob:b,name:nameBase+'_convert.'+convertFmt};
+      });
+    }
+    var wmText=document.getElementById('wmText').value||'';
+    var c4=document.createElement('canvas');
+    c4.width=img.naturalWidth;c4.height=img.naturalHeight;
+    var c4ctx=c4.getContext('2d');
+    c4ctx.drawImage(img,0,0);
+    if(wmText.trim()){
+      var size=Math.round(parseInt(wmSizeRange.value,10)*c4.width/1000);
+      c4ctx.save();
+      c4ctx.font='bold '+size+'px sans-serif';
+      c4ctx.fillStyle=document.getElementById('wmColor').value;
+      c4ctx.globalAlpha=parseInt(wmOpRange.value,10)/100;
+      c4ctx.textBaseline='top';
+      var tw=c4ctx.measureText(wmText).width;
+      var th=size*1.2;
+      var pad=Math.round(c4.width*0.03);
+      var pos=document.getElementById('wmPos').value;
+      var rot=parseInt(wmRotRange.value,10);
+      var drawAt=function(x,y){
+        c4ctx.save();
+        c4ctx.translate(x+tw/2,y+th/2);
+        c4ctx.rotate(rot*Math.PI/180);
+        c4ctx.fillText(wmText,-tw/2,-th/2);
+        c4ctx.restore();
+      };
+      if(pos==='tile'){
+        var stepX=tw+size*2,stepY=th+size;
+        for(var ty=-th;ty<c4.height+th;ty+=stepY){
+          for(var tx=-tw;tx<c4.width+tw;tx+=stepX)drawAt(tx,ty);
+        }
+      }else{
+        var x,y;
+        if(pos==='top-left'){x=pad;y=pad;}
+        else if(pos==='top-right'){x=c4.width-tw-pad;y=pad;}
+        else if(pos==='bottom-left'){x=pad;y=c4.height-th-pad;}
+        else if(pos==='center'){x=(c4.width-tw)/2;y=(c4.height-th)/2;}
+        else{x=c4.width-tw-pad;y=c4.height-th-pad;}
+        drawAt(x,y);
+      }
+      c4ctx.restore();
+    }
+    var ext4=(item.file.name.split('.').pop()||'png').toLowerCase();
+    return canvasToBlob(c4,'image/png',undefined).then(function(b){
+      return {blob:b,name:nameBase+'_watermark.'+ext4};
+    });
+  });
+}
+function processAll(){
+  if(processing||files.length===0)return;
+  processing=true;fileIdx=0;
+  processBtn.disabled=true;
+  setErr('');
+  progressTrack.style.display='block';
+  progressBar.style.width='0%';
+  processNext();
+}
+function processNext(){
+  if(fileIdx>=files.length){
+    processing=false;
+    processBtn.disabled=false;
+    progressTrack.style.display='none';
+    progressText.textContent='';
+    renderList();
+    setStatus(t('batchDone','批量处理完成'));
+    return;
+  }
+  var item=files[fileIdx];
+  item.status='processing';
+  renderList();
+  var row=document.getElementById('frow'+fileIdx);
+  var bar=row?row.querySelector('.fstatus .bar i'):null;
+  processOne(item).then(function(r){
+    item.status='done';
+    item.result=r.blob;
+    item.resultName=r.name;
+    item.resultSize=r.blob.size;
+    var pct=Math.round(((fileIdx+1)/files.length)*100);
+    progressBar.style.width=pct+'%';
+    progressText.textContent=t('batchProgress','处理中 '+(fileIdx+1)+' / '+files.length+'（'+pct+'%）');
+    fileIdx++;
+    processNext();
+  }).catch(function(e){
+    item.status='error';
+    item.error=e&&e.message?e.message:'处理失败';
+    renderList();
+    var pct=Math.round(((fileIdx+1)/files.length)*100);
+    progressBar.style.width=pct+'%';
+    fileIdx++;
+    processNext();
+  });
+}
+processBtn.addEventListener('click',processAll);
+dlAllBtn.addEventListener('click',function(){
+  var done=files.filter(function(f){return f.status==='done';});
+  if(done.length===0)return;
+  var i=0;
+  function next(){
+    if(i>=done.length)return;
+    var item=done[i];
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(item.result);
+    a.download=item.resultName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    i++;
+    setTimeout(next,300);
+  }
+  next();
+  setStatus(t('dlAllStart','开始下载 '+done.length+' 个文件（浏览器可能询问允许下载多个文件）'));
+});
+document.getElementById('clearFilesBtn').addEventListener('click',function(){
+  if(processing)return;
+  files=[];
+  fileList.innerHTML='';
+  filesCard.style.display='none';
+  previewImg.style.display='none';
+  updateDlCount();
+});
+dropZone.addEventListener('click',function(){fileInput.click();});
+fileInput.addEventListener('change',function(){
+  if(fileInput.files&&fileInput.files.length>0)addFiles(Array.prototype.slice.call(fileInput.files));
+  fileInput.value='';
+});
+['dragenter','dragover'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add('dragging');});
+});
+['dragleave','drop'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove('dragging');});
+});
+dropZone.addEventListener('drop',function(e){
+  var fs=e.dataTransfer&&e.dataTransfer.files;
+  if(fs&&fs.length>0)addFiles(Array.prototype.slice.call(fs));
+});
+})();
+</script>
+</body></html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>布尔逻辑计算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .bl-toggles { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .bl-toggle { min-width: 110px; height: 48px; font-size: var(--font-size-base); font-weight: 600; border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .bl-toggle.true { border-color: var(--color-success); color: var(--color-success); }
+    .bl-toggle.false { border-color: var(--color-error); color: var(--color-error); }
+    .bl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--space-1); }
+    .bl-op { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2); text-align: center; }
+    .bl-op .op-name { font-size: var(--font-size-xs); font-weight: 600; opacity: .8; }
+    .bl-op .op-val { font-weight: 700; margin-top: 2px; }
+    .bl-op.res-true { background: var(--color-bg-soft); color: var(--color-success); border-color: var(--color-success); }
+    .bl-op.res-false { color: var(--color-error); border-color: var(--color-error); }
+    .bl-expr { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+    .bl-expr .input { flex: 1; min-width: 240px; font-family: var(--font-mono); }
+    .bl-steps { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-1); word-break: break-all; }
+    .bl-result { margin-top: var(--space-2); padding: var(--space-2); border-radius: var(--radius-md); font-weight: 700; text-align: center; font-size: var(--font-size-lg); }
+    .bl-result.res-true { background: var(--color-bg-soft); color: var(--color-success); }
+    .bl-result.res-false { color: var(--color-error); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">布尔逻辑计算器</h1>
+    <p class="tool-desc" data-i18n="desc">计算布尔逻辑表达式：AND、OR、XOR、NOT、NAND、NOR、XNOR。</p>
+    <div class="card">
+      <p class="tool-desc" style="margin-bottom:var(--space-2);font-size:var(--font-size-sm);">A / B</p>
+      <div class="bl-toggles">
+        <button id="toggleA" class="bl-toggle true" type="button">A</button>
+        <button id="toggleB" class="bl-toggle false" type="button">B</button>
+      </div>
+      <div class="bl-grid" id="opGrid"></div>
+    </div>
+    <div class="card">
+      <p class="tool-desc" style="margin-bottom:var(--space-1);font-size:var(--font-size-sm);" data-i18n="booleanExpression">布尔表达式计算器</p>
+      <p class="tool-desc" style="margin-bottom:var(--space-2);font-size:var(--font-size-xs);" data-i18n="booleanExpressionHint">使用 TRUE/FALSE/0/1 配合 AND, OR, XOR, NOT 和括号</p>
+      <div class="bl-expr">
+        <input id="exprInput" class="input js-focus-input" type="text" autocomplete="off" spellcheck="false" value="TRUE AND (FALSE OR TRUE)">
+        <button id="evalBtn" class="btn btn-primary" data-i18n="evaluate">计算</button>
+      </div>
+      <div id="exprResult" style="display:none;">
+        <p class="bl-steps" id="exprSteps"></p>
+        <div class="bl-result" id="exprVal"></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      var a = true, b = false;
+      var toggleA = document.getElementById('toggleA');
+      var toggleB = document.getElementById('toggleB');
+      var opGrid = document.getElementById('opGrid');
+      var exprInput = document.getElementById('exprInput');
+      var exprResult = document.getElementById('exprResult');
+      var exprSteps = document.getElementById('exprSteps');
+      var exprVal = document.getElementById('exprVal');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+      var ops = ['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+
+      function boolWord(v) { return v ? t('true', 'TRUE') : t('false', 'FALSE'); }
+
+      function booleanCalc(pa, pb, op) {
+        switch (op) {
+          case 'AND': return pa && pb;
+          case 'OR': return pa || pb;
+          case 'XOR': return pa !== pb;
+          case 'NAND': return !(pa && pb);
+          case 'NOR': return !(pa || pb);
+          case 'XNOR': return pa === pb;
+        }
+        return false;
+      }
+
+      function renderToggle(btn, val, label) {
+        btn.textContent = label + ': ' + boolWord(val);
+        btn.className = 'bl-toggle ' + (val ? 'true' : 'false');
+      }
+
+      function renderOps() {
+        opGrid.innerHTML = '';
+        var i, div, nameEl, valEl;
+        for (i = 0; i < ops.length; i++) {
+          div = document.createElement('div');
+          div.className = 'bl-op ' + (booleanCalc(a, b, ops[i]) ? 'res-true' : 'res-false');
+          nameEl = document.createElement('div');
+          nameEl.className = 'op-name';
+          nameEl.textContent = ops[i];
+          valEl = document.createElement('div');
+          valEl.className = 'op-val';
+          valEl.textContent = boolWord(booleanCalc(a, b, ops[i]));
+          div.appendChild(nameEl);
+          div.appendChild(valEl);
+          opGrid.appendChild(div);
+        }
+      }
+
+      toggleA.addEventListener('click', function () { a = !a; renderToggle(toggleA, a, 'A'); renderOps(); });
+      toggleB.addEventListener('click', function () { b = !b; renderToggle(toggleB, b, 'B'); renderOps(); });
+
+      function evaluateExpression(expr) {
+        var steps = [];
+        var e = String(expr).trim();
+        if (!e) return { result: null, steps: steps, error: t('emptyExpr', '表达式为空') };
+        e = e
+          .replace(/\bAND\b/gi, '&&')
+          .replace(/\bOR\b/gi, '||')
+          .replace(/\bXOR\b/gi, '^')
+          .replace(/\bNOT\b/gi, '!')
+          .replace(/\bNAND\b/gi, '!&&')
+          .replace(/\bNOR\b/gi, '!||')
+          .replace(/\bTRUE\b/gi, 'true')
+          .replace(/\bFALSE\b/gi, 'false')
+          .replace(/\b1\b/g, 'true')
+          .replace(/\b0\b/g, 'false');
+        var safePattern = /^[\s\(\)!&|^truefals0-9]+$/;
+        if (!safePattern.test(e)) {
+          return { result: null, steps: steps, error: t('invalidExpr', '表达式包含无效字符') };
+        }
+        try {
+          var fn = new Function('return !!(' + e + ')');
+          var result = fn();
+          return { result: result, steps: steps, error: null };
+        } catch (err) {
+          return { result: null, steps: steps, error: t('exprError', '表达式无法计算') };
+        }
+      }
+
+      function evalExpr() {
+        var r = evaluateExpression(exprInput.value);
+        if (r.error) {
+          exprResult.style.display = '';
+          exprSteps.textContent = t('error', '错误') + ': ' + r.error;
+          exprVal.className = 'bl-result res-false';
+          exprVal.textContent = t('error', '错误');
+          setStatus(r.error, 'error');
+          return;
+        }
+        exprResult.style.display = '';
+        exprSteps.textContent = t('steps', '步骤') + ': ' + exprInput.value.trim() + ' = ' + boolWord(r.result);
+        exprVal.className = 'bl-result ' + (r.result ? 'res-true' : 'res-false');
+        exprVal.textContent = t('result', '结果') + ': ' + boolWord(r.result);
+        outputEl.textContent = exprInput.value.trim() + ' = ' + boolWord(r.result);
+        setStatus(t('done', '计算完成'));
+      }
+
+      document.getElementById('evalBtn').addEventListener('click', evalExpr);
+      exprInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') evalExpr(); });
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus(t('common.copied', '已复制'));
+        }
+      });
+
+      renderToggle(toggleA, a, 'A');
+      renderToggle(toggleB, b, 'B');
+      renderOps();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorem Ipsum 生成器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:560px){.param-grid{grid-template-columns:1fr;}}
+.param-row label{display:flex;justify-content:space-between;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
+.param-row input[type=range]{width:100%;accent-color:var(--color-text-primary);}
+.opt-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:var(--space-2);font-size:var(--font-size-sm);}
+.lorem-body{white-space:pre-wrap;font-size:13px;line-height:1.7;color:var(--color-text-primary);}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">Lorem Ipsum 生成器</h1>
+    <p class="tool-desc" data-i18n="desc">生成 Lorem Ipsum 占位文本，可调段落数、每段词数，支持经典开头。</p>
+
+    <div class="card">
+      <div class="param-grid">
+        <div class="param-row">
+          <label><span data-i18n="loremParagraphs">段落数</span><span id="paraVal">3</span></label>
+          <input type="range" id="paraRange" min="1" max="10" value="3">
+        </div>
+        <div class="param-row">
+          <label><span data-i18n="wordsPerParagraph">每段词数</span><span id="wordVal">50</span></label>
+          <input type="range" id="wordRange" min="10" max="150" step="5" value="50">
+        </div>
+      </div>
+      <div class="opt-row">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="classicChk" checked> <span>以 "Lorem ipsum dolor sit amet..." 开头</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="punctuationChk" checked> <span>添加标点（逗号/句号）</span>
+        </label>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="generateLoremIpsum">生成填充文本</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+    </div>
+
+    <div class="output-box" id="outputContainer" style="min-height:120px;">
+      <div id="outputText" class="lorem-body" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var paraRange = document.getElementById('paraRange'), wordRange = document.getElementById('wordRange');
+      var paraVal = document.getElementById('paraVal'), wordVal = document.getElementById('wordVal');
+      var out = document.getElementById('outputText');
+
+      var WORDS = [
+        'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
+        'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
+        'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud',
+        'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo',
+        'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
+        'velit', 'esse', 'cillum', 'fugiat', 'nulla', 'pariatur', 'excepteur', 'sint',
+        'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui', 'officia',
+        'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum', 'perspiciatis', 'unde',
+        'omnis', 'iste', 'natus', 'error', 'voluptatem', 'accusantium', 'doloremque',
+        'laudantium', 'totam', 'rem', 'aperiam', 'eaque', 'ipsa', 'quae', 'ab',
+        'inventore', 'veritatis', 'quasi', 'architecto', 'beatae', 'vitae', 'dicta',
+        'explicabo', 'nemo', 'voluptas', 'aspernatur', 'aut', 'odit', 'fugit'
+      ];
+      var CLASSIC = ['Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua'];
+
+      var seed = 42;
+      function pseudoRand(){
+        seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+        return (seed >>> 0) / 0x100000000;
+      }
+
+      function pick(){
+        return WORDS[Math.floor(pseudoRand() * WORDS.length)];
+      }
+
+      function generate(){
+        var paragraphs = parseInt(paraRange.value, 10);
+        var wpp = parseInt(wordRange.value, 10);
+        var classic = document.getElementById('classicChk').checked;
+        var punct = document.getElementById('punctuationChk').checked;
+        if (isNaN(paragraphs) || paragraphs < 1) paragraphs = 1;
+        if (paragraphs > 10) paragraphs = 10;
+        if (isNaN(wpp) || wpp < 10) wpp = 10;
+        if (wpp > 150) wpp = 150;
+        seed = paragraphs * 31 + wpp * 17;
+        var paras = [];
+        for (var p = 0; p < paragraphs; p++) {
+          var words = [];
+          var startIdx = 0;
+          if (classic && p === 0) {
+            words = CLASSIC.slice(0, Math.min(wpp, CLASSIC.length));
+            startIdx = words.length;
+          }
+          for (var i = startIdx; i < wpp; i++) words.push(pick());
+          words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+          var text = '';
+          for (var j = 0; j < words.length; j++) {
+            var w = words[j];
+            if (j === 0) { text += w; continue; }
+            var commaEvery = Math.floor(words.length / 3);
+            if (punct && commaEvery > 0 && j % commaEvery === 0 && j < words.length - 1) {
+              text += ', ' + w;
+            } else {
+              text += ' ' + w;
+            }
+          }
+          paras.push(text + '.');
+        }
+        return paras.join('\n\n');
+      }
+
+      paraRange.addEventListener('input', function () { paraVal.textContent = paraRange.value; });
+      wordRange.addEventListener('input', function () { wordVal.textContent = wordRange.value; });
+
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var text = generate();
+        out.textContent = text;
+        setStatus(t('generated','已生成 ')+paraRange.value+t('paraCount',' 段，约 ')+paraRange.value*wordRange.value+t('wordCount',' 词'));
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () { out.textContent = ''; setStatus(''); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (out.textContent) { copyToClipboard(out.textContent, this); setStatus(t('common.copied','已复制')); } });
+    })();
+  </script>
+</body>
+</html>

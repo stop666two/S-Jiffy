@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音频裁剪器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.audio-drop{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.audio-drop.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.audio-drop .ico{font-size:34px;display:block;margin-bottom:8px;color:var(--color-text-disabled);}
+.audio-drop .hint{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.audio-drop input{display:none;}
+.file-chip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+.file-chip .meta{color:var(--color-text-secondary);font-size:var(--font-size-xs);margin-top:2px;}
+.file-chip .x{cursor:pointer;border:none;background:none;color:var(--color-text-secondary);font-size:14px;padding:4px;}
+.file-chip .x:hover{color:var(--color-error);}
+.wave-box{position:relative;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;}
+.wave-box canvas{display:block;width:100%;height:170px;touch-action:none;}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.time-cell{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 14px;}
+.time-cell .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:4px;}
+.time-cell input{width:100%;border:none;outline:none;font-family:var(--font-mono);font-size:var(--font-size-base);background:transparent;color:var(--color-text-primary);}
+.opt-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+.opt-group .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.seg-btn{padding:4px 10px;font-size:var(--font-size-xs);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;color:var(--color-text-primary);}
+.seg-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.progress{height:6px;background:var(--color-bg-soft);border-radius:3px;overflow:hidden;margin:10px 0 4px;}
+.progress>div{height:100%;width:0;background:var(--color-text-primary);transition:width .15s;}
+.kbd-hints{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin:4px 0 12px;}
+kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:3px;font-family:var(--font-mono);}
+.row-info{display:flex;justify-content:space-between;align-items:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:12px;}
+.row-info b{font-family:var(--font-mono);color:var(--color-text-primary);}
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:var(--radius-md);border:none;background:var(--color-text-primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;width:100%;}
+.dl-btn:disabled{opacity:.4;cursor:not-allowed;}
+.hidden{display:none;}
+.err-msg{padding:10px 14px;background:#fdecea;border:1px solid #f5c6c2;color:var(--color-error);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+</style>
+</head>
+<body>
+<header class="global-header">
+<a href="../../index.html" class="logo">S-Jiffy</a>
+<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">音频裁剪器</h1>
+<p class="tool-desc" data-i18n="desc">通过选择开始和结束时间来裁剪音频文件。下载为WAV格式。</p>
+<div class="card">
+<label class="audio-drop" id="dropZone">
+<span class="ico">🎵</span>
+<span class="hint"></span>
+<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.mp4">
+</label>
+<div class="file-chip hidden" id="fileChip">
+<div><div id="fileName"></div><div class="meta" id="fileMeta"></div></div>
+<button class="x" id="fileRemove" type="button">✕</button>
+</div>
+<div class="err-msg hidden" id="errBox"></div>
+<div id="waveWrap" class="hidden">
+<div class="wave-box"><canvas id="waveCanvas"></canvas></div>
+<div class="kbd-hints">
+<span><kbd>Space</kbd> <span data-i18n="kbdPauseResume">暂停 / 继续</span></span>
+<span><span data-i18n="kbdScrollZoom">滚轮缩放</span></span>
+<span><span data-i18n="kbdDragPan">长按拖动平移</span></span>
+</div>
+<div class="ctrl-row">
+<button class="btn btn-secondary btn-sm" id="btnPlayAll" type="button"><span data-i18n="playAll">播放全部</span></button>
+<button class="btn btn-secondary btn-sm" id="btnPlaySel" type="button"><span data-i18n="playSelection">播放选区</span></button>
+<button class="btn btn-secondary btn-sm hidden" id="btnStop" type="button"><span data-i18n="stop">停止</span></button>
+<button class="btn btn-secondary btn-sm" id="btnPause" type="button" style="display:none"><span data-i18n="pause">暂停</span></button>
+<span style="flex:1"></span>
+<span class="btn-seg-wrap" id="zoomWrap"><span class="seg" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:6px" data-i18n="zoomLabel">缩放</span></span>
+</div>
+<div class="time-grid">
+<div class="time-cell"><div class="lbl">Start</div><input id="startInput" type="text" inputmode="decimal"></div>
+<div class="time-cell"><div class="lbl">End</div><input id="endInput" type="text" inputmode="decimal"></div>
+</div>
+<div class="row-info"><span>选区时长</span><b id="selDuration">00:00.000</b></div>
+<div class="opt-row" style="margin-bottom:12px">
+<div class="opt-group"><div class="lbl" data-i18n="formatLabel">格式</div>
+<div id="fmtBtns">
+<button class="seg-btn active" data-fmt="wav" type="button">WAV</button>
+<button class="seg-btn" data-fmt="mp3" type="button">MP3</button>
+</div></div>
+<div class="opt-group hidden" id="bitrateGroup"><div class="lbl" data-i18n="bitrateLabel">比特率</div>
+<div id="bitrateBtns">
+<button class="seg-btn" data-br="128" type="button">128k</button>
+<button class="seg-btn active" data-br="192" type="button">192k</button>
+<button class="seg-btn" data-br="320" type="button">320k</button>
+</div></div>
+</div>
+<div class="progress hidden" id="progress"><div id="progressFill"></div></div>
+<button class="dl-btn" id="btnExport" type="button" disabled>✂ <span>导出 WAV</span></button>
+</div>
+</div>
+</main>
+<footer class="global-footer">
+<div class="tool-status" id="statusBar"></div>
+<div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../assets/js/audio-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<script>
+(function () {
+  var AK = window.AudioKit;
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var fileChip = document.getElementById('fileChip');
+  var fileName = document.getElementById('fileName');
+  var fileMeta = document.getElementById('fileMeta');
+  var fileRemove = document.getElementById('fileRemove');
+  var errBox = document.getElementById('errBox');
+  var waveWrap = document.getElementById('waveWrap');
+  var canvas = document.getElementById('waveCanvas');
+  var btnPlayAll = document.getElementById('btnPlayAll');
+  var btnPlaySel = document.getElementById('btnPlaySel');
+  var btnStop = document.getElementById('btnStop');
+  var btnPause = document.getElementById('btnPause');
+  var startInput = document.getElementById('startInput');
+  var endInput = document.getElementById('endInput');
+  var selDuration = document.getElementById('selDuration');
+  var btnExport = document.getElementById('btnExport');
+  var progress = document.getElementById('progress');
+  var progressFill = document.getElementById('progressFill');
+  var fmtBtns = document.getElementById('fmtBtns');
+  var bitrateBtns = document.getElementById('bitrateBtns');
+  var bitrateGroup = document.getElementById('bitrateGroup');
+  var zoomWrap = document.getElementById('zoomWrap');
+
+  var file = null;
+  var buffer = null;
+  var peaks = null;
+  var duration = 0;
+  var startSec = 0;
+  var endSec = 0;
+  var zoom = 1;
+  var viewStart = 0;
+  var fmt = 'wav';
+  var bitrate = 192;
+  var processing = false;
+
+  var player = AK.createPlayer({
+    getBuffer: function () { return buffer; },
+    onPlayhead: function (t) { draw(); },
+    onState: function (playing, paused) {
+      btnStop.classList.toggle('hidden', !(playing || paused));
+      btnPause.style.display = (playing && !paused) ? '' : 'none';
+      btnPause.querySelector('span').textContent = paused ? t('resume', '继续') : t('pause', '暂停');
+    },
+    onEnd: function () { draw(); }
+  });
+
+  function t(key, fb) { var v = (window.I18N && I18N.t) ? I18N.t(key) : null; return (v === key || v == null) ? fb : v; }
+  function showErr(msg) { errBox.textContent = msg; errBox.classList.remove('hidden'); }
+  function hideErr() { errBox.classList.add('hidden'); }
+  function setProgress(p) {
+    if (p >= 1) { progress.classList.add('hidden'); return; }
+    progress.classList.remove('hidden');
+    progressFill.style.width = Math.round(p * 100) + '%';
+  }
+
+  function draw() {
+    var vd = duration > 0 ? Math.max(0.01, duration / zoom) : 1;
+    if (viewStart > duration - vd) viewStart = Math.max(0, duration - vd);
+    AK.drawWaveform(canvas, {
+      peaks: peaks, duration: duration, viewStart: viewStart, viewDuration: vd,
+      selectionStart: startSec, selectionEnd: endSec, playheadSec: player.getPosition()
+    });
+  }
+
+  function renderFileMeta() {
+    var rate = buffer.sampleRate;
+    var mono = buffer.numberOfChannels === 1;
+    fileMeta.textContent = AK.formatDuration(duration) + ' · ' + AK.formatBytes(file.size) + ' · ' + (rate / 1000) + 'kHz · ' + (mono ? 'Mono' : 'Stereo');
+  }
+
+  function loadFile(f) {
+    hideErr();
+    setStatus('正在解码音频…');
+    AK.decodeAudioFile(f, function (buf) {
+      file = f;
+      buffer = buf;
+      duration = buf.duration;
+      startSec = 0;
+      endSec = duration;
+      zoom = 1;
+      viewStart = 0;
+      peaks = AK.computePeaks(buf);
+      fileName.textContent = f.name;
+      renderFileMeta();
+      fileChip.classList.remove('hidden');
+      waveWrap.classList.remove('hidden');
+      dropZone.style.display = 'none';
+      startInput.value = AK.fmtMs(startSec);
+      endInput.value = AK.fmtMs(endSec);
+      selDuration.textContent = AK.fmtMs(duration);
+      btnExport.disabled = false;
+      draw();
+      setStatus('文件已就绪');
+    }, function () {
+      showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
+      setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
+    });
+  }
+
+  function applyTimes() {
+    var s = AK.parseTimeInput(startInput.value);
+    var e = AK.parseTimeInput(endInput.value);
+    if (s !== null) startSec = AK.clamp(s, 0, Math.max(0, duration - 0.001));
+    if (e !== null) endSec = AK.clamp(e, Math.min(duration, startSec + 0.001), duration);
+    if (endSec <= startSec) endSec = Math.min(duration, startSec + 0.001);
+    startInput.value = AK.fmtMs(startSec);
+    endInput.value = AK.fmtMs(endSec);
+    selDuration.textContent = AK.fmtMs(endSec - startSec);
+    draw();
+  }
+
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+  dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files.length) loadFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+  fileRemove.addEventListener('click', function () {
+    player.stop();
+    file = null; buffer = null; peaks = null; duration = 0;
+    fileChip.classList.add('hidden');
+    waveWrap.classList.add('hidden');
+    dropZone.style.display = '';
+    btnExport.disabled = true;
+    setStatus('');
+  });
+
+  btnPlayAll.addEventListener('click', function () { player.play(0, duration); });
+  btnPlaySel.addEventListener('click', function () { player.play(startSec, endSec); });
+  btnPause.addEventListener('click', function () {
+    if (player.isPaused()) { player.resume(); btnPause.querySelector('span').textContent = t('pause', '暂停'); }
+    else { player.pause(); btnPause.querySelector('span').textContent = t('resume', '继续'); }
+  });
+  btnStop.addEventListener('click', function () { player.stop(); draw(); });
+
+  startInput.addEventListener('change', applyTimes);
+  endInput.addEventListener('change', applyTimes);
+  startInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyTimes(); });
+  endInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyTimes(); });
+
+  [1, 2, 4, 8, 16].forEach(function (z) {
+    var b = document.createElement('button');
+    b.className = 'seg-btn' + (z === 1 ? ' active' : '');
+    b.textContent = z + '×';
+    b.addEventListener('click', function () {
+      zoom = z;
+      var vd = duration / z;
+      var center = player.getPosition() > 0 ? player.getPosition() : viewStart + (duration / zoom) / 2;
+      viewStart = AK.clamp(center - vd / 2, 0, Math.max(0, duration - vd));
+      var btns = zoomWrap.querySelectorAll('.seg-btn');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+      b.classList.add('active');
+      draw();
+    });
+    zoomWrap.appendChild(b);
+  });
+
+  canvas.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var W = canvas.clientWidth;
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var mTime = viewStart + (mx / W) * (duration / zoom);
+    var factor = e.deltaY > 0 ? 0.75 : 1 / 0.75;
+    var newZoom = AK.clamp(zoom * factor, 1, 64);
+    var newVD = duration / newZoom;
+    zoom = newZoom;
+    viewStart = AK.clamp(mTime - (mx / W) * newVD, 0, Math.max(0, duration - newVD));
+    var btns = zoomWrap.querySelectorAll('.seg-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', Number(btns[i].textContent.replace('×', '')) === Math.round(zoom));
+    draw();
+  }, { passive: false });
+
+  var drag = null;
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!buffer) return;
+    var rect = canvas.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var W = canvas.clientWidth;
+    var H = canvas.clientHeight - 30;
+    var vd = duration / zoom;
+    var timeAt = function (px) { return viewStart + (px / W) * vd; };
+    var sX = ((startSec - viewStart) / vd) * W;
+    var eX = ((endSec - viewStart) / vd) * W;
+    if (e.clientY > rect.top + H) return;
+    if (zoom > 1) {
+      drag = { type: 'pan', startX: x, startVS: viewStart };
+    } else if (Math.abs(x - sX) <= 12 && sX >= 0 && sX <= W) {
+      drag = { type: 'left', anchor: startSec };
+      player.stop();
+    } else if (Math.abs(x - eX) <= 12 && eX >= 0 && eX <= W) {
+      drag = { type: 'right', anchor: endSec };
+      player.stop();
+    } else {
+      drag = { type: 'new', anchor: timeAt(x) };
+      player.stop();
+    }
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var rect = canvas.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var W = canvas.clientWidth;
+    var vd = duration / zoom;
+    var timeAt = function (px) { return AK.clamp(viewStart + (px / W) * vd, 0, duration); };
+    if (drag.type === 'pan') {
+      viewStart = AK.clamp(drag.startVS - ((x - drag.startX) / W) * vd, 0, Math.max(0, duration - vd));
+    } else if (drag.type === 'left') {
+      startSec = AK.clamp(timeAt(x), 0, Math.max(0, endSec - 0.001));
+      startInput.value = AK.fmtMs(startSec);
+    } else if (drag.type === 'right') {
+      endSec = AK.clamp(timeAt(x), Math.min(duration, startSec + 0.001), duration);
+      endInput.value = AK.fmtMs(endSec);
+    } else if (drag.type === 'new' && Math.abs(x - drag.startX) > 5) {
+      var t = timeAt(x);
+      if (t <= drag.anchor) { startSec = t; endSec = drag.anchor; }
+      else { startSec = drag.anchor; endSec = t; }
+      startInput.value = AK.fmtMs(startSec);
+      endInput.value = AK.fmtMs(endSec);
+    }
+    selDuration.textContent = AK.fmtMs(endSec - startSec);
+    draw();
+  });
+  canvas.addEventListener('pointerup', function (e) {
+    if (!drag) return;
+    var rect = canvas.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var W = canvas.clientWidth;
+    var vd = duration / zoom;
+    var timeAt = function (px) { return AK.clamp(viewStart + (px / W) * vd, 0, duration); };
+    if (drag.type === 'new' && Math.abs(x - drag.startX) <= 5) {
+      var t = timeAt(x);
+      if (t >= startSec && t <= endSec && endSec - startSec > 0.01) {
+        player.play(Math.max(startSec, t), endSec);
+      }
+    }
+    drag = null;
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.code !== 'Space') return;
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    e.preventDefault();
+    if (player.isPlaying() || player.isPaused()) {
+      if (player.isPaused()) { player.resume(); btnPause.querySelector('span').textContent = t('pause', '暂停'); }
+      else { player.pause(); btnPause.querySelector('span').textContent = t('resume', '继续'); }
+    } else if (buffer) {
+      player.play(startSec, endSec);
+    }
+  });
+
+  window.addEventListener('resize', function () { if (buffer) draw(); });
+
+  fmtBtns.addEventListener('click', function (e) {
+    var b = e.target;
+    if (b.tagName !== 'BUTTON') return;
+    fmt = b.getAttribute('data-fmt');
+    var all = fmtBtns.querySelectorAll('.seg-btn');
+    for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+    b.classList.add('active');
+    bitrateGroup.classList.toggle('hidden', fmt !== 'mp3');
+    btnExport.querySelector('span').textContent = fmt === 'mp3' ? '导出 MP3' : t('exportWav', '导出 WAV');
+  });
+  bitrateBtns.addEventListener('click', function (e) {
+    var b = e.target;
+    if (b.tagName !== 'BUTTON') return;
+    bitrate = Number(b.getAttribute('data-br'));
+    var all = bitrateBtns.querySelectorAll('.seg-btn');
+    for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+    b.classList.add('active');
+  });
+
+  btnExport.addEventListener('click', function () {
+    if (!buffer || processing) return;
+    if (endSec - startSec < 0.01) { setStatus(t('mergeAtLeast', '请先选择有效区间'), 'error'); return; }
+    processing = true;
+    btnExport.disabled = true;
+    hideErr();
+    setProgress(0);
+    AK.trimBuffer(buffer, startSec, endSec, function (trimmed) {
+      var name = file.name.replace(/\.[^.]+$/, '') + '_trimmed.' + fmt;
+      AK.exportBuffer(trimmed, fmt, { bitrate: bitrate }, function (p) {
+        setProgress(p);
+        setStatus(t('exportingLabel', '导出中…'));
+      }, function (blob) {
+        AK.downloadBlob(blob, name);
+        setProgress(1);
+        processing = false;
+        btnExport.disabled = false;
+        setStatus('导出完成');
+      }, function (err) {
+        setProgress(1);
+        processing = false;
+        btnExport.disabled = false;
+        showErr(err && err.message ? err.message : t('failedToLoad', '导出失败'));
+        setStatus('导出失败', 'error');
+      });
+    }, function (err) {
+      processing = false;
+      btnExport.disabled = false;
+      showErr('裁剪失败');
+      setStatus('裁剪失败', 'error');
+    });
+  });
+
+  var h1 = document.querySelector('h1');
+  var dropHint = document.getElementById('dropZone').querySelector('.hint');
+  dropHint.textContent = t('hint', '点击或拖放音频文件到这里（MP3 / WAV / OGG / AAC / FLAC / M4A / WebM，≤50MB）');
+})();
+</script>
+</body>
+</html>

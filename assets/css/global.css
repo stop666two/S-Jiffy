@@ -323,3 +323,30 @@ body {
   background: var(--color-bg-soft);
   color: var(--color-text-primary);
 }
+
+/* 拖放区提示文字：多行居中换行，长文本不挤压框体 */
+.card .audio-drop .hint,
+.tool-workspace .audio-drop .hint {
+  display: block;
+  line-height: 1.7;
+  max-width: 92%;
+  margin: 0 auto;
+  word-break: break-word;
+}
+
+/* i18n.js 迁移返回按钮前，先隐藏 header 内旧返回按钮（消除刷新闪烁） */
+.global-header .back-btn {
+  display: none;
+}
+
+/* 语言切换器：隐藏原生箭头，改用 SVG 下拉箭头 */
+.lang-switch {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+}
+

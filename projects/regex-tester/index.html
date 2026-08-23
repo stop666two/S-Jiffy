@@ -3,77 +3,198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>正则测试器 - S-Jiffy</title>
+  <title>正则表达式测试器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.regex-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+.flag-btn{width:36px;height:36px;font-family:var(--font-mono);font-size:13px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;color:var(--color-text-secondary);cursor:pointer;}
+.flag-btn.on{background:var(--color-text-primary);border-color:var(--color-text-primary);color:#FFFFFF;}
+.flag-btn:hover{border-color:var(--color-text-primary);}
+.hl-mark{background:rgba(255,196,0,0.35);border-radius:2px;padding:0 1px;}
+.match-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;font-family:var(--font-mono);font-size:12px;background:var(--color-bg);}
+.match-idx{color:var(--color-text-disabled);width:24px;flex-shrink:0;}
+.match-text{flex:1;word-break:break-all;}
+.match-pos{color:var(--color-text-disabled);flex-shrink:0;}
+.count-badge{display:inline-block;padding:4px 12px;border-radius:9999px;font-size:var(--font-size-xs);background:rgba(52,101,56,0.12);color:var(--color-success);margin-bottom:8px;}
+.count-badge.zero{background:var(--color-bg-soft);color:var(--color-text-secondary);}
+.sub-label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
+.rep-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+.rep-out{font-family:var(--font-mono);font-size:13px;padding:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:8px;background:var(--color-bg);word-break:break-all;}
+.link-btn{background:none;border:none;color:var(--color-accent-hover);cursor:pointer;font-size:var(--font-size-sm);padding:0;text-decoration:underline;}
+</style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>正则测试器</h1>
-    <p class="tool-desc">编写正则表达式，实时测试匹配结果。</p>
+    <h1 data-i18n="h1">正则表达式测试器</h1>
+    <p class="tool-desc" data-i18n="desc">编写正则表达式，实时测试匹配结果，支持标志位、捕获组、高亮显示与替换预览。</p>
 
-    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">/</label>
-      <input id="patternInput" class="input js-focus-input" placeholder="正则表达式" style="width:280px;">
-      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">/</label>
-      <input id="flagsInput" class="input" placeholder="gim" style="width:60px;">
-      <button id="testBtn" class="btn btn-primary">测试</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    <div class="card">
+      <div class="regex-bar">
+        <span style="font-family:var(--font-mono);">/</span>
+        <input id="patternInput" class="input js-focus-input" placeholder="\b\w+\b" style="flex:1;min-width:160px;">
+        <span style="font-family:var(--font-mono);">/</span>
+        <input id="flagsInput" class="input" placeholder="gim" style="width:64px;">
+        <button id="testBtn" class="btn btn-primary">测试</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div class="regex-bar" style="margin-bottom:0;">
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">标志：</span>
+        <button class="flag-btn" data-flag="g">g</button>
+        <button class="flag-btn" data-flag="i">i</button>
+        <button class="flag-btn" data-flag="m">m</button>
+        <button class="flag-btn" data-flag="s">s</button>
+        <button class="flag-btn" data-flag="u">u</button>
+      </div>
     </div>
 
     <div class="card" style="margin-top:var(--space-3);">
+      <label class="sub-label" data-i18n="testString">测试字符串</label>
       <textarea id="testText" class="input textarea" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
     </div>
 
-    <div class="output-box" id="输出Container" style="min-height:100px;">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
+    <div class="card">
+      <div id="resultArea"></div>
+      <div id="replaceArea" style="display:none;">
+        <div class="rep-row">
+          <input id="replacementInput" class="input" placeholder="$1 - $2（$1 表示捕获组）" style="flex:1;min-width:180px;">
+          <span id="replaceHint" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);"></span>
+        </div>
+        <div id="replaceOut" class="rep-out" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="output-box" id="outputContainer" style="min-height:60px;">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
+      'use strict';
       var pat = document.getElementById('patternInput'), flags = document.getElementById('flagsInput'), text = document.getElementById('testText'), o = document.getElementById('outputText');
-      document.getElementById('testBtn').addEventListener('click', function () {
-        var p = pat.value.trim(), t = text.value;
-        if (!p) { setStatus('请输入正则表达式', 'error'); return; }
-        if (!t) { setStatus('请输入测试文本', 'error'); return; }
+      var resultArea = document.getElementById('resultArea'), replaceArea = document.getElementById('replaceArea');
+      var replacementInput = document.getElementById('replacementInput'), replaceOut = document.getElementById('replaceOut'), replaceHint = document.getElementById('replaceHint');
+      var lastMatches = null;
+
+      function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+      function syncFlagButtons(){
+        var btns = document.querySelectorAll('.flag-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var f = btns[i].getAttribute('data-flag');
+          if (flags.value.indexOf(f) !== -1) btns[i].classList.add('on');
+          else btns[i].classList.remove('on');
+        }
+      }
+      var flagBtns = document.querySelectorAll('.flag-btn');
+      for (var fb = 0; fb < flagBtns.length; fb++) {
+        (function(btn){
+          btn.addEventListener('click', function () {
+            var f = btn.getAttribute('data-flag');
+            if (flags.value.indexOf(f) !== -1) flags.value = flags.value.replace(f, '');
+            else flags.value += f;
+            syncFlagButtons();
+          });
+        })(flagBtns[fb]);
+      }
+      flags.addEventListener('input', syncFlagButtons);
+      syncFlagButtons();
+
+      function highlightHtml(input, matches){
+        if (!matches || matches.length === 0) return escapeHtml(input);
+        var out = '';
+        var last = 0;
+        for (var i = 0; i < matches.length; i++) {
+          var m = matches[i];
+          out += escapeHtml(input.slice(last, m.index));
+          out += '<mark class="hl-mark">' + escapeHtml(m.match) + '</mark>';
+          last = m.index + m.match.length;
+        }
+        out += escapeHtml(input.slice(last));
+        return out;
+      }
+
+      function runTest(){
+        var p = pat.value.trim(), testStr = text.value;
+        if (!p) { setStatus(t('enterPattern','请输入正则表达式'),'error'); return; }
+        if (!testStr) { setStatus(t('enterText','请输入测试文本'),'error'); return; }
         try {
-          var re = new RegExp(p, flags.value);
+          var fs = flags.value;
+          var flagSet = '';
+          if (fs.indexOf('g') === -1) flagSet += 'g';
+          var re = new RegExp(p, fs + flagSet);
           var matches = [];
           var m;
-          while ((m = re.exec(t)) !== null) {
-            var info = '[' + m.index + '-' + (m.index + m[0].length) + '] "' + m[0] + '"';
-            if (m.length > 1) {
-              var groups = [];
-              for (var i = 1; i < m.length; i++) groups.push('$' + i + '="' + (m[i] || '') + '"');
-              info += ' ' + groups.join(' ');
+          while ((m = re.exec(testStr)) !== null) {
+            matches.push({ match: m[0], index: m.index, groups: m.slice(1) });
+            if (re.lastIndex === m.index) re.lastIndex++;
+          }
+          lastMatches = matches;
+          var summary = t('matchCount','共 ')+matches.length+t('matchesFound',' 处匹配');
+          o.textContent = summary + '\n' + matches.map(function(mm){ return '['+mm.index+'-'+(mm.index+mm.match.length)+'] "'+mm.match+'"'; }).join('\n');
+          var html = '';
+          html += '<div class="' + (matches.length > 0 ? 'count-badge' : 'count-badge zero') + '">' + summary + '</div>';
+          if (matches.length > 0) {
+            html += '<div style="font-family:var(--font-mono);font-size:13px;padding:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:10px;word-break:break-all;background:var(--color-bg);">' + highlightHtml(testStr, matches) + '</div>';
+            html += '<div class="match-row" style="font-size:12px;color:var(--color-text-secondary);border:none;padding:0 2px;margin-bottom:4px;">'+t('matchList','匹配列表')+'（前 20 条）</div>';
+            var shown = matches.slice(0, 20);
+            for (var i = 0; i < shown.length; i++) {
+              var mm = shown[i];
+              var groupsText = '';
+              if (mm.groups.length > 0) {
+                var gs = [];
+                for (var g = 1; g <= mm.groups.length; g++) gs.push('$'+g+'="'+(mm.groups[g-1]||'')+'"');
+                groupsText = '<span style="color:var(--color-text-secondary);"> '+gs.join(' ')+'</span>';
+              }
+              html += '<div class="match-row"><span class="match-idx">' + (i + 1) + '</span><span class="match-text">' + escapeHtml(mm.match) + groupsText + '</span><span class="match-pos">@' + mm.index + '</span></div>';
             }
-            matches.push(info);
-            if (!re.global) break;
-          }
-          if (matches.length === 0) {
-            o.textContent = '无匹配结果';
+            if (matches.length > 20) html += '<div style="font-size:var(--font-size-xs);color:var(--color-text-secondary);padding:4px 2px;">… ' + t('moreMatches','另有') + (matches.length - 20) + t('moreMatchesTail',' 处匹配') + '</div>';
           } else {
-            o.textContent = '共 ' + matches.length + ' 处匹配:\n' + matches.join('\n');
+            html += '<div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);padding:6px 0;">' + t('noMatch','无匹配结果') + '</div>';
           }
+          resultArea.innerHTML = html;
+          replaceArea.style.display = 'block';
+          updateReplace();
           setStatus('');
         } catch (e) {
           o.textContent = '';
-          setStatus('正则语法错误: ' + e.message, 'error');
+          resultArea.innerHTML = '<div class="error-detail" style="font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);background:rgba(159,47,45,0.08);border:1px solid rgba(159,47,45,0.35);color:var(--color-error);">' + t('regexError','正则语法错误') + ': ' + escapeHtml(e.message) + '</div>';
+          setStatus(t('regexError','正则语法错误'),'error');
         }
-      });
-      document.getElementById('clearBtn').addEventListener('click', function () { pat.value = ''; flags.value = ''; text.value = ''; o.textContent = ''; setStatus(''); pat.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
-      // realtime test on Ctrl+Enter
-      text.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') { document.getElementById('testBtn').click(); } });
+      }
+
+      function updateReplace(){
+        var p = pat.value.trim();
+        if (!p) return;
+        try {
+          var re2 = new RegExp(p, flags.value);
+          var rp = replacementInput.value;
+          var replaced = text.value.replace(re2, rp);
+          replaceOut.textContent = replaced;
+          replaceOut.style.display = 'block';
+          replaceHint.textContent = '';
+        } catch (e) {
+          replaceOut.style.display = 'none';
+          replaceHint.textContent = t('regexError','正则语法错误') + ': ' + e.message;
+        }
+      }
+
+      document.getElementById('testBtn').addEventListener('click', runTest);
+      document.getElementById('clearBtn').addEventListener('click', function () { pat.value = ''; flags.value = ''; text.value = ''; o.textContent = ''; resultArea.innerHTML = ''; replaceArea.style.display = 'none'; syncFlagButtons(); setStatus(''); pat.focus(); });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('common.copied','已复制')); } });
+      replacementInput.addEventListener('input', updateReplace);
+      text.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') runTest(); });
+      pat.addEventListener('keydown', function (e) { if (e.key === 'Enter') runTest(); });
     })();
   </script>
 </body>

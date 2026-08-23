@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文本编码转换器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.enc-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.enc-grid button{flex:1 1 120px;text-align:left;padding:10px 12px;font-size:12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-mono);}
+.enc-grid button:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}
+.enc-grid button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.enc-grid button b{display:block;font-size:13px;color:inherit;}
+.enc-grid button small{display:block;font-size:10px;opacity:.7;}
+.enc-layout{display:grid;grid-template-columns:1fr 150px 1fr;gap:var(--space-2);}
+.enc-layout textarea{width:100%;min-height:260px;font-size:13px;}
+.enc-center{display:flex;flex-direction:column;gap:10px;padding-top:26px;}
+.enc-center label{font-size:12px;color:var(--color-text-secondary);}
+.enc-center select{width:100%;height:40px;font-size:13px;padding:0 8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);font-family:var(--font-mono);}
+.enc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.enc-head label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.enc-head .char-count{font-size:var(--font-size-xs);color:var(--color-text-disabled);}
+.enc-err{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+@media(max-width:760px){.enc-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">文本编码转换器</h1>
+<p class="tool-desc" data-i18n="desc">在纯文本、十六进制、二进制、八进制、十进制、Base64、URL、HTML实体、Unicode、ASCII、ROT13和摩尔斯电码之间转换。</p>
+<div class="card">
+<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;margin-bottom:var(--space-2);">
+<input type="checkbox" id="autoDetect"> <span data-i18n="autoDetectEncoding">自动检测输入编码</span>
+</label>
+<div class="enc-layout">
+<div>
+<div class="enc-head"><label data-i18n="inputLabel">输入</label><span id="inCount" class="char-count">0 个字符</span></div>
+<textarea id="inText" class="input textarea" data-i18n-placeholder="enterTextToConvert" placeholder="输入要转换的文本..."></textarea>
+</div>
+<div class="enc-center">
+<label data-i18n="fromLabel">从</label>
+<select id="fromSel"></select>
+<button id="swapBtn" class="btn btn-secondary" style="height:38px;min-width:0;font-size:13px;" data-i18n="swapLabel">互换</button>
+<label data-i18n="toLabel">到</label>
+<select id="toSel"></select>
+<button id="convertBtn" class="btn btn-primary" style="height:42px;font-size:14px;">转换</button>
+</div>
+<div>
+<div class="enc-head"><label data-i18n="outputLabel">输出</label><span id="outCount" class="char-count">0 个字符</span></div>
+<textarea id="outText" class="input textarea" readonly style="background:var(--color-bg-soft);"></textarea>
+<div style="margin-top:8px;display:flex;gap:8px;">
+<button id="copyBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;" data-i18n="common.copy">复制</button>
+<button id="clearBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;">清空</button>
+</div>
+</div>
+</div>
+<div id="errBox" class="enc-err" style="display:none;"></div>
+</div>
+<div class="card">
+<h2 style="font-size:var(--font-size-sm);color:var(--color-text-secondary);font-weight:600;" data-i18n="encodingReference">编码参考</h2>
+<div class="enc-grid" id="refGrid"></div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var ENCS=[
+{id:'text',label:'纯文本',short:'TXT'},
+{id:'hex',label:'十六进制',short:'HEX'},
+{id:'binary',label:'二进制',short:'BIN'},
+{id:'octal',label:'八进制',short:'OCT'},
+{id:'decimal',label:'十进制（ASCII）',short:'DEC'},
+{id:'base64',label:'Base64',short:'B64'},
+{id:'url',label:'URL 编码',short:'URL'},
+{id:'html-entity',label:'HTML 实体',short:'HTML'},
+{id:'unicode',label:'Unicode（U+XXXX）',short:'UNI'},
+{id:'ascii',label:'ASCII 码',short:'ASC'},
+{id:'rot13',label:'ROT13',short:'R13'},
+{id:'morse',label:'摩尔斯电码',short:'MOR'}
+];
+var MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.',' ':'/'};
+var MORSE_DECODE={};
+(function(){for(var k in MORSE){if(MORSE.hasOwnProperty(k))MORSE_DECODE[MORSE[k]]=k;}})();
+var NAMED_ENT={'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'",'&nbsp;':'\u00a0','&copy;':'\u00a9','&reg;':'\u00ae','&trade;':'\u2122','&euro;':'\u20ac','&pound;':'\u00a3','&yen;':'\u00a5','&cent;':'\u00a2','&mdash;':'\u2014','&ndash;':'\u2013','&hellip;':'\u2026','&laquo;':'\u00ab','&raquo;':'\u00bb'};
+function codePoints(str){var out=[],i=0,n=str.length;while(i<n){var cp=str.charCodeAt(i);if(cp>=0xD800&&cp<=0xDBFF&&i+1<n){var lo=str.charCodeAt(i+1);if(lo>=0xDC00&&lo<=0xDFFF){out.push((cp-0xD800)*0x400+lo-0xDC00+0x10000);i+=2;continue;}}out.push(cp);i++;}return out;}
+function pad(cp,len){var s=cp.toString(16);while(s.length<len)s='0'+s;return s;}
+function textToHex(t){return codePoints(t).map(function(cp){return pad(cp,cp>0xffff?8:4);}).join(' ');}
+function hexToText(h){return h.trim().replace(/0x/gi,' ').split(/[\s,]+/).filter(Boolean).map(function(x){return String.fromCodePoint(parseInt(x,16));}).join('');}
+function textToBinary(t){return codePoints(t).map(function(cp){var s=cp.toString(2);var len=cp>0xffff?21:8;while(s.length<len)s='0'+s;return s;}).join(' ');}
+function binaryToText(b){return b.trim().split(/[\s,]+/).filter(Boolean).map(function(x){return String.fromCodePoint(parseInt(x,2));}).join('');}
+function textToOctal(t){return codePoints(t).map(function(cp){return cp.toString(8);}).join(' ');}
+function octalToText(o){return o.trim().split(/[\s,]+/).filter(Boolean).map(function(x){return String.fromCodePoint(parseInt(x,8));}).join('');}
+function textToDecimal(t){return codePoints(t).join(' ');}
+function decimalToText(d){return d.trim().split(/[\s,]+/).filter(Boolean).map(function(x){return String.fromCodePoint(parseInt(x,10));}).join('');}
+function textToBase64(t){try{return btoa(unescape(encodeURIComponent(t)));}catch(e){var bytes=new TextEncoder().encode(t);var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return btoa(bin);}}
+function base64ToText(b){try{return decodeURIComponent(escape(atob(b.trim())));}catch(e){throw new Error('Base64 字符串无效');}}
+function textToUrl(t){return encodeURIComponent(t);}
+function urlToText(u){try{return decodeURIComponent(u);}catch(e){throw new Error('URL 编码字符串无效');}}
+function textToHtmlEntity(t){return codePoints(t).map(function(cp){if(cp===0x26)return '&amp;';if(cp===0x3c)return '&lt;';if(cp===0x3e)return '&gt;';if(cp===0x22)return '&quot;';if(cp===0x27)return '&#39;';if(cp>127)return '&#'+cp+';';return String.fromCodePoint(cp);}).join('');}
+function htmlEntityToText(h){return h.replace(/&[a-z]+;/gi,function(m){var e=NAMED_ENT[m.toLowerCase()];return e!==undefined?e:m;}).replace(/&#x([0-9a-f]+);/gi,function(_,x){return String.fromCodePoint(parseInt(x,16));}).replace(/&#(\d+);/g,function(_,d){return String.fromCodePoint(parseInt(d,10));});}
+function textToUnicode(t){return codePoints(t).map(function(cp){return 'U+'+pad(cp,4).toUpperCase();}).join(' ');}
+function unicodeToText(u){return u.trim().split(/[\s,]+/).filter(Boolean).map(function(tok){var c=tok.replace(/^U\+/i,'').replace(/^\\u/i,'');var cp=parseInt(c,16);if(isNaN(cp))throw new Error('无效的 Unicode 记号：'+tok);return String.fromCodePoint(cp);}).join('');}
+function textToAscii(t){return codePoints(t).map(function(cp){if(cp>127)throw new Error('字符 "'+String.fromCodePoint(cp)+'" 不是 ASCII');return String(cp);}).join(' ');}
+function asciiToText(a){return a.trim().split(/[\s,]+/).filter(Boolean).map(function(x){var n=parseInt(x,10);if(isNaN(n)||n<0||n>127)throw new Error('无效的 ASCII 值：'+x);return String.fromCharCode(n);}).join('');}
+function rot13(t){return t.replace(/[a-zA-Z]/g,function(ch){var base=ch<='Z'?65:97;return String.fromCharCode(((ch.charCodeAt(0)-base+13)%26)+base);});}
+function textToMorse(t){return t.toUpperCase().split('').map(function(ch){var code=MORSE[ch];if(code===undefined)throw new Error('字符 "'+ch+'" 没有摩尔斯码');return code;}).join(' ');}
+function morseToText(m){return m.trim().split(/\s+\/\s+|\s{3,}/).map(function(word){return word.trim().split(/\s+/).map(function(sym){if(!sym)return '';var ch=MORSE_DECODE[sym];if(ch===undefined)throw new Error('未知摩尔斯符号：'+sym);return ch;}).join('');}).join(' ');}
+function decodeToText(input,from){
+  switch(from){
+    case 'text':return input;
+    case 'hex':return hexToText(input);
+    case 'binary':return binaryToText(input);
+    case 'octal':return octalToText(input);
+    case 'decimal':return decimalToText(input);
+    case 'base64':return base64ToText(input);
+    case 'url':return urlToText(input);
+    case 'html-entity':return htmlEntityToText(input);
+    case 'unicode':return unicodeToText(input);
+    case 'ascii':return asciiToText(input);
+    case 'rot13':return rot13(input);
+    case 'morse':return morseToText(input);
+    default:return input;
+  }
+}
+function encodeFromText(text,to){
+  switch(to){
+    case 'text':return text;
+    case 'hex':return textToHex(text);
+    case 'binary':return textToBinary(text);
+    case 'octal':return textToOctal(text);
+    case 'decimal':return textToDecimal(text);
+    case 'base64':return textToBase64(text);
+    case 'url':return textToUrl(text);
+    case 'html-entity':return textToHtmlEntity(text);
+    case 'unicode':return textToUnicode(text);
+    case 'ascii':return textToAscii(text);
+    case 'rot13':return rot13(text);
+    case 'morse':return textToMorse(text);
+    default:return text;
+  }
+}
+function detectEncoding(input){
+  var t=input.trim();
+  if(/^[A-Za-z0-9+/]+=*$/.test(t)&&t.length%4===0&&t.length>4)return 'base64';
+  if(/%[0-9A-Fa-f]{2}/.test(t))return 'url';
+  if(/&(#\d+|#x[0-9a-f]+|[a-z]+);/i.test(t))return 'html-entity';
+  if(/U\+[0-9A-Fa-f]{4}/i.test(t))return 'unicode';
+  if(/^[.\-\/ ]+$/.test(t)&&(t.indexOf('.')!==-1||t.indexOf('-')!==-1))return 'morse';
+  if(/^[01 ]+$/.test(t)&&/^[01]{4,}/.test(t.replace(/ /g,'')))return 'binary';
+  if(/^([0-9a-fA-F]{2,8}[\s,]?)+$/.test(t))return 'hex';
+  if(/^([0-7]{1,6}[\s,]?)+$/.test(t))return 'octal';
+  if(/^(\d{1,6}[\s,]?)+$/.test(t))return 'decimal';
+  return 'text';
+}
+var inText=document.getElementById('inText'),outText=document.getElementById('outText');
+var inCount=document.getElementById('inCount'),outCount=document.getElementById('outCount');
+var fromSel=document.getElementById('fromSel'),toSel=document.getElementById('toSel');
+var autoDetect=document.getElementById('autoDetect');
+var errBox=document.getElementById('errBox');
+function fillSelect(sel){ENCS.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=e.label;sel.appendChild(o);});}
+fillSelect(fromSel);fillSelect(toSel);
+fromSel.value='text';toSel.value='base64';
+function showError(msg){errBox.style.display=msg?'block':'none';errBox.textContent=msg;}
+function runConvert(){
+  var input=inText.value;
+  if(!input){outText.value='';showError('');return;}
+  var from=autoDetect.checked?detectEncoding(input):fromSel.value;
+  var to=toSel.value;
+  try{
+    var intermediate=decodeToText(input,from);
+    outText.value=encodeFromText(intermediate,to);
+    showError('');
+  }catch(e){
+    outText.value='';
+    showError(e&&e.message?e.message:'转换失败');
+  }
+}
+document.getElementById('convertBtn').addEventListener('click',runConvert);
+document.getElementById('swapBtn').addEventListener('click',function(){
+  var tmp=inText.value;inText.value=outText.value;outText.value=tmp;
+  var f=fromSel.value;fromSel.value=toSel.value;toSel.value=f;
+  showError('');
+});
+document.getElementById('clearBtn').addEventListener('click',function(){
+  inText.value='';outText.value='';showError('');inText.focus();
+});
+document.getElementById('copyBtn').addEventListener('click',function(){
+  if(outText.value){copyToClipboard(outText.value,this);}
+});
+inText.addEventListener('input',function(){
+  if(autoDetect.checked&&inText.value){fromSel.value=detectEncoding(inText.value);}
+  updateCounts();
+});
+function updateCounts(){
+  inCount.textContent=codePoints(inText.value).length+' '+t('characters','个字符');
+  outCount.textContent=codePoints(outText.value).length+' '+t('characters','个字符');
+}
+var refGrid=document.getElementById('refGrid');
+ENCS.forEach(function(e){
+  var b=document.createElement('button');
+  b.type='button';
+  b.innerHTML='<b>'+htmlEscape(e.short)+'</b><small>'+htmlEscape(e.label)+'</small>';
+  b.addEventListener('click',function(){
+    fromSel.value=e.id;toSel.value='text';
+    refGrid.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    if(inText.value)runConvert();
+    setStatus(e.label);
+  });
+  refGrid.appendChild(b);
+});
+})();
+</script>
+</body></html>

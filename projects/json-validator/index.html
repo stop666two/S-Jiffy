@@ -1,87 +1,140 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON 验证器 - S-Jiffy</title>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>JSON验证器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
-.json-input{min-height:250px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block;tab-size:2}.json-input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.error-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:#fce8e6;color:#9f2f2d;white-space:pre-wrap}.success-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:#e6f4ea;color:#346538}
+.json-input{min-height:250px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block;tab-size:2}
+.json-input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}
+.error-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:rgba(159,47,45,0.08);border:1px solid rgba(159,47,45,0.35);color:var(--color-error);white-space:pre-wrap;display:none}
+.success-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:rgba(52,101,56,0.08);border:1px solid rgba(52,101,56,0.35);color:var(--color-success);white-space:pre-wrap}
+.tool-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.fixed-box{font-family:var(--font-mono);font-size:13px;min-height:150px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);width:100%;display:block;resize:vertical;margin-top:8px;}
+.sub-label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1>JSON 校验器</h1><p class="tool-desc">验证 JSON 格式正确性，显示详细的错误位置和原因。</p>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace"><h1 data-i18n="h1">JSON 校验器</h1><p class="tool-desc" data-i18n="desc">验证 JSON 格式正确性，显示详细的错误位置和原因，支持一键自动修复常见错误。</p>
 <div class="card">
-<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<button id="validateBtn" class="btn btn-primary">验证</button>
-<button id="formatBtn" class="btn btn-secondary">格式化</button>
-<button id="minifyBtn" class="btn btn-secondary">压缩</button>
+<div class="tool-row">
+<button id="validateBtn" class="btn btn-primary" data-i18n="validateJson">验证JSON</button>
+<button id="formatBtn" class="btn btn-secondary" data-i18n="formatJson">格式化JSON</button>
+<button id="minifyBtn" class="btn btn-secondary" data-i18n="minifyJson">压缩JSON</button>
 <button id="clearBtn" class="btn btn-secondary">清空</button>
 </div>
-<textarea id="jsonInput" class="json-input js-focus-input" placeholder='输入 JSON 字符串...'>{&#10;  "name": "S-Jiffy",&#10;  "version": 1.0,&#10;  "tools": ["validator", "converter"]&#10;}</textarea>
+<label class="sub-label" data-i18n="inputJson">输入JSON</label>
+<textarea id="jsonInput" class="json-input js-focus-input" placeholder='{"name":"test","list":[1,2,3]}'>{&#10;  "name": "S-Jiffy",&#10;  "version": 1.0,&#10;  "tools": ["validator", "converter"]&#10;}</textarea>
 <div id="resultArea"></div>
+<div id="fixedArea" style="display:none;">
+<label class="sub-label" data-i18n="fixedJsonTitle">修复后的 JSON</label>
+<textarea id="fixedText" class="fixed-box" readonly></textarea>
+<div class="tool-row" style="margin-top:8px;"><button id="useFixedBtn" class="btn btn-secondary">使用修复结果</button></div>
+</div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>(function(){
+'use strict';
 var jsonInput=document.getElementById('jsonInput');
 var resultArea=document.getElementById('resultArea');
-var validateBtn=document.getElementById('validateBtn');
-var formatBtn=document.getElementById('formatBtn');
-var minifyBtn=document.getElementById('minifyBtn');
-var clearBtn=document.getElementById('clearBtn');
+var fixedArea=document.getElementById('fixedArea');
+var fixedText=document.getElementById('fixedText');
 var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 
+function parseResult(v){
+  try{
+    var parsed=JSON.parse(v);
+    return {ok:true,data:parsed};
+  }catch(e){
+    var msg=e.message;
+    var m=msg.match(/position\s+(\d+)/)||msg.match(/at\s+position\s+(\d+)/);
+    var detail='';
+    if(m){
+      var pos=parseInt(m[1],10);
+      var start=Math.max(0,pos-40);
+      var end=Math.min(v.length,pos+40);
+      var snippet=v.slice(start,end);
+      var pointer='';
+      for(var i=0;i<Math.min(40,pos-start);i++)pointer+=' ';
+      detail='\n'+t('posLabel','位置')+': '+pos+'\n';
+      detail+=t('contextLabel','上下文')+': ...'+snippet+'...\n';
+      detail+='         '+pointer+'↑ '+t('errorHere','此处出错');
+    }
+    return {ok:false,msg:msg,detail:detail};
+  }
+}
+
+function renderResult(r){
+  fixedArea.style.display='none';
+  autoFixBtn=null;
+  if(r.ok){
+    var parsed=r.data;
+    var typeInfo=(typeof parsed==='object')?(Object.prototype.toString.call(parsed)==='[object Array]'?t('arrayType','数组')+' (length '+parsed.length+')':t('objectType','对象')+' ('+t('keyCount','键数')+' '+Object.keys(parsed).length+')'):(typeof parsed);
+    resultArea.innerHTML='<div class="success-detail">✔ '+t('validJson','有效JSON')+'<br>'+t('typeLabel','类型')+': '+typeInfo+'<br>'+t('rootLevel','根层级')+': '+typeInfo+'</div>';
+    outputEl.textContent=t('validJson','有效JSON');
+    setStatus('');
+  }else{
+    resultArea.innerHTML='<div class="error-detail">✘ '+htmlEscape(r.msg)+htmlEscape(r.detail)+'</div>';
+    outputEl.textContent=t('invalidJson','无效JSON');
+    setStatus(t('validationFailed','验证失败'),'error');
+  }
+}
+
+function tryFixJson(s){
+  s=s.replace(/\/\/[^\n]*/g,'');
+  s=s.replace(/\/\*[\s\S]*?\*\//g,'');
+  s=s.replace(/,(\s*[}\]])/g,'$1');
+  s=s.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g,'"$1"');
+  s=s.replace(/:\s*undefined\b/g,': null');
+  return s;
+}
+
+document.getElementById('formatBtn').addEventListener('click',function(){
+  var r=parseResult(jsonInput.value);
+  if(r.ok){jsonInput.value=JSON.stringify(r.data,null,2);renderResult(r);setStatus(t('formatted','已格式化'));}
+  else{resultArea.innerHTML='<div class="error-detail">✘ '+htmlEscape(r.msg)+'</div>';setStatus(t('formatFailed','格式化失败：JSON 无效'),'error');}
+});
+document.getElementById('minifyBtn').addEventListener('click',function(){
+  var r=parseResult(jsonInput.value);
+  if(r.ok){jsonInput.value=JSON.stringify(r.data);renderResult(r);setStatus(t('minified','已压缩'));}
+  else{resultArea.innerHTML='<div class="error-detail">✘ '+htmlEscape(r.msg)+'</div>';setStatus(t('minifyFailed','压缩失败：JSON 无效'),'error');}
+});
+document.getElementById('clearBtn').addEventListener('click',function(){jsonInput.value='';resultArea.innerHTML='';outputEl.textContent='';fixedArea.style.display='none';setStatus('');jsonInput.focus();});
+copyBtn.addEventListener('click',function(){if(jsonInput.value){copyToClipboard(jsonInput.value,copyBtn);setStatus(t('common.copied','已复制'));}});
+
+var autoFixBtn=null;
+function showAutoFix(){
+  if(autoFixBtn)return;
+  var wrap=document.createElement('div');
+  wrap.style.marginTop='8px';
+  wrap.innerHTML='<button class="btn btn-secondary" style="height:36px;font-size:13px;">'+t('autoFixJson','自动修复')+'</button>';
+  resultArea.appendChild(wrap);
+  autoFixBtn=wrap.firstChild;
+  autoFixBtn.addEventListener('click',function(){
+    var attempt=tryFixJson(jsonInput.value);
+    var r=parseResult(attempt);
+    if(r.ok){
+      fixedText.value=JSON.stringify(r.data,null,2);
+      fixedArea.style.display='block';
+      resultArea.innerHTML='<div class="success-detail">✔ '+t('validJson','有效JSON')+' '+t('afterFix','（修复后）')+'</div>';
+      outputEl.textContent=t('validJson','有效JSON');
+      setStatus('');
+    }else{
+      resultArea.innerHTML='<div class="error-detail">✘ '+htmlEscape(r.msg)+'</div>';
+      setStatus(t('fixFailed','自动修复未能解决'),'error');
+    }
+  });
+}
+document.getElementById('useFixedBtn').addEventListener('click',function(){
+  if(fixedText.value){jsonInput.value=fixedText.value;fixedArea.style.display='none';resultArea.innerHTML='';outputEl.textContent='';setStatus(t('fixedApplied','已应用修复结果'));}
+});
 function validate(){
-var text=jsonInput.value;
-if(!text.trim()){resultArea.innerHTML='<div class="error-detail">请输入 JSON 内容</div>';outputEl.textContent='';return;}
-try{
-var parsed=JSON.parse(text);
-resultArea.innerHTML='<div class="success-detail">✔ JSON 有效！<br>类型：'+(typeof parsed)+'<br>根层级：'+(Array.isArray(parsed)?'数组 (length '+parsed.length+')':'对象 (键数 '+Object.keys(parsed).length+')')+'</div>';
-outputEl.textContent='JSON 有效';
-setStatus('');
-}catch(e){
-var msg=e.message;
-var m=msg.match(/position\s+(\d+)/);
-var detail='';
-if(m){
-var pos=parseInt(m[1]);
-var start=Math.max(0,pos-40);
-var end=Math.min(text.length,pos+40);
-var snippet=text.slice(start,end);
-var pointer='';
-for(var i=0;i<Math.min(40,pos-start);i++)pointer+=' ';
-detail+='\n位置: 第 '+pos+' 字符\n';
-detail+='上下文: ...'+snippet+'...\n';
-detail+='         '+pointer+'↑ 此处出错';
+  var text=jsonInput.value;
+  if(!text.trim()){resultArea.innerHTML='<div class="error-detail">'+t('emptyInput','请输入 JSON 内容')+'</div>';outputEl.textContent='';return;}
+  var r=parseResult(text);
+  renderResult(r);
+  if(!r.ok)showAutoFix();
 }
-     resultArea.innerHTML='<div class="error-detail">✘ '+htmlEscape(msg)+htmlEscape(detail)+'</div>';
-outputEl.textContent='JSON 无效';
-setStatus('验证失败','error');
-}
-}
-
-function format(){
-try{
-var parsed=JSON.parse(jsonInput.value);
-jsonInput.value=JSON.stringify(parsed,null,2);
-validate();
-setStatus('已格式化');
-}catch(e){
-setStatus('格式化失败：JSON 无效','error');
-}
-}
-
-function minify(){
-try{
-var parsed=JSON.parse(jsonInput.value);
-jsonInput.value=JSON.stringify(parsed);
-validate();
-setStatus('已压缩');
-}catch(e){
-setStatus('压缩失败：JSON 无效','error');
-}
-}
-
-validateBtn.addEventListener('click',validate);
-formatBtn.addEventListener('click',format);
-minifyBtn.addEventListener('click',minify);
-clearBtn.addEventListener('click',function(){jsonInput.value='';resultArea.innerHTML='';outputEl.textContent='';setStatus('');jsonInput.focus();});
-copyBtn.addEventListener('click',function(){if(jsonInput.value){copyToClipboard(jsonInput.value,copyBtn);setStatus('已复制');}});
+document.getElementById('validateBtn').addEventListener('click',validate);
 })();</script></body></html>

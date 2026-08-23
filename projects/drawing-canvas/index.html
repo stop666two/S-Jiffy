@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线画板 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dc-wrap{display:flex;flex-direction:column;gap:12px;}
+.dc-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);}
+.dc-toolbar button{min-width:38px;height:36px;padding:0 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);cursor:pointer;font-size:13px;color:var(--color-text-primary);font-family:var(--font-mono);}
+.dc-toolbar button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.dc-toolbar .sep{width:1px;height:24px;background:var(--color-border);margin:0 4px;}
+.dc-toolbar label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary);}
+.dc-toolbar input[type=color]{width:34px;height:30px;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:2px;cursor:pointer;}
+.dc-toolbar input[type=range]{width:90px;accent-color:var(--color-text-primary);}
+.dc-canvas-wrap{position:relative;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#fff;touch-action:none;}
+.dc-canvas-wrap canvas{display:block;width:100%;cursor:crosshair;}
+.dc-canvas-wrap .dc-size{position:absolute;bottom:8px;right:10px;font-size:var(--font-size-xs);color:var(--color-text-disabled);background:rgba(255,255,255,.85);padding:2px 8px;border-radius:999px;}
+.err-box{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;}
+.note{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-2);line-height:1.7;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">在线画板</h1>
+<p class="tool-desc" data-i18n="desc">在浏览器中自由绘图。铅笔、形状、文字、撤销/重做，导出为PNG。</p>
+<div class="card">
+<div class="dc-wrap">
+<div class="dc-toolbar">
+<button id="toolPen" class="active" data-i18n="drawToolPen">画笔</button>
+<button id="toolEraser" data-i18n="drawToolEraser">橡皮</button>
+<button id="toolLine" data-i18n="drawToolLine">直线</button>
+<button id="toolRect" data-i18n="drawToolRect">矩形</button>
+<button id="toolCircle" data-i18n="drawToolCircle">圆形</button>
+<button id="toolText" data-i18n="drawToolText">文字</button>
+<button id="toolFill" data-i18n="drawToolFill">填充</button>
+<span class="sep"></span>
+<label><span data-i18n="drawStroke">描边</span> <input type="color" id="strokeColor" value="#111111"></label>
+<label><span data-i18n="drawFillColor">填充</span> <input type="color" id="fillColor" value="#6366f1"></label>
+<label><span data-i18n="drawWidth">粗细</span> <input type="range" id="widthRange" min="1" max="40" value="3"><b id="widthVal" style="font-family:var(--font-mono);">3</b></label>
+<label><span data-i18n="drawFontSize">字号</span> <input type="range" id="fontRange" min="10" max="72" value="24"><b id="fontVal" style="font-family:var(--font-mono);">24</b></label>
+<label><span data-i18n="drawTextColor">文字</span> <input type="color" id="textColor" value="#111111"></label>
+<span class="sep"></span>
+<button id="undoBtn">↩</button>
+<button id="redoBtn">↪</button>
+<button id="deleteTextBtn" data-i18n="drawTextDelete">删除文字</button>
+<span class="sep"></span>
+<button id="loadImgBtn" data-i18n="drawLoadBaseImage">加载底图</button>
+<button id="downloadPngBtn" data-i18n="drawDownloadPng">下载 PNG</button>
+<button id="downloadJpgBtn" data-i18n="drawDownloadJpg">下载 JPG</button>
+<button id="fullscreenBtn" data-i18n="drawFullscreen">全屏</button>
+</div>
+<div class="dc-canvas-wrap" id="canvasWrap">
+<canvas id="canvas" width="900" height="600"></canvas>
+<span class="dc-size" id="sizeLabel">900 × 600</span>
+</div>
+<div class="err-box" id="errBox" style="display:none;"></div>
+<input type="file" id="baseImgInput" accept="image/jpeg,image/png,image/webp" style="display:none">
+<div class="note" data-i18n="drawTextHint">点击可编辑 · 拖动可移动 — 选中「文字」工具后点击画布输入文字；文字对象可拖拽移动，选中后点「删除文字」移除。矩形/圆形使用描边色 + 填充色，画笔与橡皮使用描边色与粗细。全部内容仅在本机处理。</div>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var CW=900,CH=600;
+var canvas=document.getElementById('canvas');
+var ctx=canvas.getContext('2d',{willReadFrequently:true});
+var canvasWrap=document.getElementById('canvasWrap');
+var tool='pen';
+var strokeColor='#111111',fillColor='#6366f1',textColor='#111111';
+var strokeWidth=3,fontSize=24;
+var drawing=false,startX=0,startY=0,lastX=0,lastY=0;
+var baseSnapshot=null;
+var texts=[],selectedText=-1,dragText=false;
+var history=[],historyIdx=-1,MAX_HISTORY=30;
+var sizeLabel=document.getElementById('sizeLabel');
+function setErr(msg){var e=document.getElementById('errBox');e.style.display=msg?'block':'none';e.textContent=msg;}
+function pushHistory(){
+  var snap=ctx.getImageData(0,0,CW,CH);
+  history=history.slice(0,historyIdx+1);
+  history.push({px:snap,texts:texts.map(function(t){return {x:t.x,y:t.y,text:t.text,size:t.size,color:t.color};})});
+  if(history.length>MAX_HISTORY)history.shift();
+  historyIdx=history.length-1;
+}
+function redrawWithText(){
+  texts.forEach(function(t){
+    ctx.save();
+    ctx.font='bold '+t.size+'px sans-serif';
+    ctx.fillStyle=t.color;
+    ctx.textBaseline='top';
+    if(selectedText>=0&&texts[selectedText]===t){
+      var w=ctx.measureText(t.text).width;
+      ctx.strokeStyle='#6366f1';
+      ctx.lineWidth=1;
+      ctx.strokeRect(t.x-2,t.y-2,w+4,t.size+4);
+    }
+    ctx.fillText(t.text,t.x,t.y);
+    ctx.restore();
+  });
+}
+function renderAll(){
+  var entry=history[historyIdx];
+  ctx.putImageData(entry.px,0,0);
+  texts=entry.texts.map(function(t){return {x:t.x,y:t.y,text:t.text,size:t.size,color:t.color};});
+  selectedText=-1;
+  redrawWithText();
+}
+function setTool(t){
+  tool=t;
+  ['toolPen','toolEraser','toolLine','toolRect','toolCircle','toolText','toolFill'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(id==='tool'+t.charAt(0).toUpperCase()+t.slice(1))el.classList.add('active');
+    else el.classList.remove('active');
+  });
+  if(t!=='text'){selectedText=-1;}
+}
+['toolPen','toolEraser','toolLine','toolRect','toolCircle','toolText','toolFill'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(){setTool(id.replace('tool','').toLowerCase());});
+});
+document.getElementById('strokeColor').addEventListener('input',function(){strokeColor=this.value;});
+document.getElementById('fillColor').addEventListener('input',function(){fillColor=this.value;});
+document.getElementById('textColor').addEventListener('input',function(){textColor=this.value;});
+document.getElementById('widthRange').addEventListener('input',function(){
+  strokeWidth=parseInt(this.value,10);
+  document.getElementById('widthVal').textContent=this.value;
+});
+document.getElementById('fontRange').addEventListener('input',function(){
+  fontSize=parseInt(this.value,10);
+  document.getElementById('fontVal').textContent=this.value;
+});
+function getPos(e){
+  var rect=canvas.getBoundingClientRect();
+  var x=(e.clientX-rect.left)*(CW/rect.width);
+  var y=(e.clientY-rect.top)*(CH/rect.height);
+  return {x:x,y:y};
+}
+function hitText(x,y){
+  for(var i=texts.length-1;i>=0;i--){
+    var t=texts[i];
+    ctx.save();
+    ctx.font='bold '+t.size+'px sans-serif';
+    var w=ctx.measureText(t.text).width;
+    ctx.restore();
+    if(x>=t.x-4&&x<=t.x+w+4&&y>=t.y-4&&y<=t.y+t.size+4)return i;
+  }
+  return -1;
+}
+canvas.addEventListener('pointerdown',function(e){
+  e.preventDefault();
+  var p=getPos(e);
+  if(tool==='text'){
+    var hit=hitText(p.x,p.y);
+    if(hit>=0){
+      selectedText=hit;
+      renderAll();
+      return;
+    }
+    showPrompt('输入文字内容','文字', '', function(val){
+      if(val===null)return;
+      if(!val.trim()){setStatus(t('textEmpty','文字内容为空，已忽略'));return;}
+      texts.push({x:p.x,y:p.y,text:val.trim(),size:fontSize,color:textColor});
+      selectedText=texts.length-1;
+      pushHistory();
+      renderAll();
+    });
+    return;
+  }
+  var hit=hitText(p.x,p.y);
+  if(hit>=0&&selectedText===hit&&tool!=='eraser'){
+    dragText=true;
+    return;
+  }
+  drawing=true;
+  startX=p.x;startY=p.y;lastX=p.x;lastY=p.y;
+  if(tool==='line'||tool==='rect'||tool==='circle'){
+    baseSnapshot=ctx.getImageData(0,0,CW,CH);
+  }
+  if(tool==='fill'){
+    drawing=false;
+    floodFill(Math.floor(p.x),Math.floor(p.y));
+  }
+  try{canvas.setPointerCapture(e.pointerId);}catch(err){}
+});
+canvas.addEventListener('pointermove',function(e){
+  e.preventDefault();
+  var p=getPos(e);
+  if(dragText&&selectedText>=0){
+    var t=texts[selectedText];
+    t.x=p.x-10;t.y=p.y-10;
+    renderAll();
+    return;
+  }
+  if(!drawing)return;
+  if(tool==='pen'||tool==='eraser'){
+    ctx.strokeStyle=tool==='eraser'?'#ffffff':strokeColor;
+    ctx.lineWidth=strokeWidth*(tool==='eraser'?3:1);
+    ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(lastX,lastY);
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+    lastX=p.x;lastY=p.y;
+  }else if(tool==='line'||tool==='rect'||tool==='circle'){
+    ctx.putImageData(baseSnapshot,0,0,0,0,CW,CH);
+    ctx.lineWidth=strokeWidth;
+    ctx.strokeStyle=strokeColor;
+    if(tool==='line'){
+      ctx.beginPath();
+      ctx.moveTo(startX,startY);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }else if(tool==='rect'){
+      ctx.fillStyle=fillColor;
+      ctx.fillRect(Math.min(startX,p.x),Math.min(startY,p.y),Math.abs(p.x-startX),Math.abs(p.y-startY));
+      ctx.strokeRect(Math.min(startX,p.x),Math.min(startY,p.y),Math.abs(p.x-startX),Math.abs(p.y-startY));
+    }else{
+      ctx.beginPath();
+      ctx.ellipse((startX+p.x)/2,(startY+p.y)/2,Math.abs(p.x-startX)/2,Math.abs(p.y-startY)/2,0,0,Math.PI*2);
+      ctx.fillStyle=fillColor;
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+});
+canvas.addEventListener('pointerup',function(e){
+  e.preventDefault();
+  if(dragText){
+    dragText=false;
+    pushHistory();
+    return;
+  }
+  if(!drawing)return;
+  drawing=false;
+  if(tool==='line'||tool==='rect'||tool==='circle'){
+    var p=getPos(e);
+    ctx.lineWidth=strokeWidth;
+    ctx.strokeStyle=strokeColor;
+    if(tool==='line'){
+      ctx.beginPath();
+      ctx.moveTo(startX,startY);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }else if(tool==='rect'){
+      ctx.fillStyle=fillColor;
+      ctx.fillRect(Math.min(startX,p.x),Math.min(startY,p.y),Math.abs(p.x-startX),Math.abs(p.y-startY));
+      ctx.strokeRect(Math.min(startX,p.x),Math.min(startY,p.y),Math.abs(p.x-startX),Math.abs(p.y-startY));
+    }else{
+      ctx.beginPath();
+      ctx.ellipse((startX+p.x)/2,(startY+p.y)/2,Math.abs(p.x-startX)/2,Math.abs(p.y-startY)/2,0,0,Math.PI*2);
+      ctx.fillStyle=fillColor;
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+  pushHistory();
+});
+canvas.addEventListener('pointercancel',function(){drawing=false;dragText=false;});
+function floodFill(x,y){
+  if(x<0||y<0||x>=CW||y>=CH)return;
+  var imgData=ctx.getImageData(0,0,CW,CH);
+  var px=imgData.data;
+  var targetIdx=(y*CW+x)*4;
+  var target=[px[targetIdx],px[targetIdx+1],px[targetIdx+2],px[targetIdx+3]];
+  var fr=parseInt(fillColor.slice(1,3),16);
+  var fg=parseInt(fillColor.slice(3,5),16);
+  var fb=parseInt(fillColor.slice(5,7),16);
+  if(target[0]===fr&&target[1]===fg&&target[2]===fb&&target[3]===255)return;
+  var stack=[x+y*CW];
+  var visited=new Uint8Array(CW*CH);
+  var maxIter=CW*CH;
+  var iter=0;
+  function matches(i){
+    return px[i]===target[0]&&px[i+1]===target[1]&&px[i+2]===target[2]&&px[i+3]===target[3];
+  }
+  while(stack.length&&iter<maxIter){
+    var cur=stack.pop();
+    if(visited[cur])continue;
+    visited[cur]=1;
+    var pi=cur*4;
+    if(!matches(pi))continue;
+    px[pi]=fr;px[pi+1]=fg;px[pi+2]=fb;px[pi+3]=255;
+    var cx=cur%CW,cy=Math.floor(cur/CW);
+    if(cx>0)stack.push(cur-1);
+    if(cx<CW-1)stack.push(cur+1);
+    if(cy>0)stack.push(cur-CW);
+    if(cy<CH-1)stack.push(cur+CW);
+    iter++;
+  }
+  ctx.putImageData(imgData,0,0);
+  pushHistory();
+  setStatus(t('fillDone','填充完成'));
+}
+document.getElementById('undoBtn').addEventListener('click',function(){
+  if(historyIdx>0){
+    historyIdx--;
+    renderAll();
+  }
+});
+document.getElementById('redoBtn').addEventListener('click',function(){
+  if(historyIdx<history.length-1){
+    historyIdx++;
+    renderAll();
+  }
+});
+document.getElementById('deleteTextBtn').addEventListener('click',function(){
+  if(selectedText<0||!texts[selectedText]){
+    setStatus(t('noTextSelected','请先点击选中一个文字对象'),'error');
+    return;
+  }
+  texts.splice(selectedText,1);
+  selectedText=-1;
+  pushHistory();
+  renderAll();
+});
+document.getElementById('loadImgBtn').addEventListener('click',function(){
+  document.getElementById('baseImgInput').click();
+});
+document.getElementById('baseImgInput').addEventListener('change',function(){
+  var f=this.files&&this.files[0];
+  if(!f)return;
+  var img=new Image();
+  img.onload=function(){
+    if(img.naturalWidth>16384||img.naturalHeight>16384){
+      setErr(t('imgTooBig','图片尺寸超过浏览器 canvas 上限（16384px）'));
+      return;
+    }
+    ctx.clearRect(0,0,CW,CH);
+    var scale=Math.min(CW/img.naturalWidth,CH/img.naturalHeight,1);
+    var w=Math.round(img.naturalWidth*scale),h=Math.round(img.naturalHeight*scale);
+    ctx.drawImage(img,(CW-w)/2,(CH-h)/2,w,h);
+    texts=[];
+    pushHistory();
+    renderAll();
+    setStatus(t('baseLoaded','底图已加载'));
+    setErr('');
+  };
+  img.onerror=function(){setErr(t('imgLoadFail','图片加载失败'));};
+  img.src=URL.createObjectURL(f);
+});
+function exportCanvas(type){
+  var mime=type==='png'?'image/png':'image/jpeg';
+  var url=canvas.toDataURL(mime,type==='png'?undefined:0.9);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='drawing.'+type;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setStatus(t('exportDone','已导出 '+type.toUpperCase()));
+}
+document.getElementById('downloadPngBtn').addEventListener('click',function(){exportCanvas('png');});
+document.getElementById('downloadJpgBtn').addEventListener('click',function(){exportCanvas('jpg');});
+document.getElementById('fullscreenBtn').addEventListener('click',function(){
+  if(!document.fullscreenElement){
+    if(canvasWrap.requestFullscreen)canvasWrap.requestFullscreen();
+  }else{
+    document.exitFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange',function(){
+  var b=document.getElementById('fullscreenBtn');
+  b.textContent=document.fullscreenElement?t('drawExitFullscreen','退出'):t('drawFullscreen','全屏');
+});
+function resizeCanvas(w,h){
+  var snap=ctx.getImageData(0,0,CW,CH);
+  var c2=document.createElement('canvas');
+  c2.width=CW;c2.height=CH;
+  c2.getContext('2d').putImageData(snap,0,0);
+  canvas.width=w;canvas.height=h;
+  ctx.drawImage(c2,0,0);
+  CW=w;CH=h;
+  sizeLabel.textContent=w+' × '+h;
+  pushHistory();
+}
+if(!canvas.getContext('2d',{willReadFrequently:true})){
+  setErr(t('noCanvas','当前浏览器不支持 Canvas 2D'));
+}
+pushHistory();
+renderAll();
+})();
+</script>
+</body></html>

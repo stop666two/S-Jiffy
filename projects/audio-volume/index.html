@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音量调节器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.audio-drop{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.audio-drop.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.audio-drop .ico{font-size:34px;display:block;margin-bottom:8px;color:var(--color-text-disabled);}
+.audio-drop .hint{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.audio-drop input{display:none;}
+.file-chip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+.file-chip .meta{color:var(--color-text-secondary);font-size:var(--font-size-xs);margin-top:2px;}
+.file-chip .x{cursor:pointer;border:none;background:none;color:var(--color-text-secondary);font-size:14px;padding:4px;}
+.file-chip .x:hover{color:var(--color-error);}
+.wave-box{position:relative;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;}
+.wave-box canvas{display:block;width:100%;height:170px;touch-action:none;}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.vol-panel{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;margin-bottom:12px;}
+.vol-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.vol-head .db{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.badge{font-size:var(--font-size-xs);font-weight:600;padding:2px 8px;border-radius:999px;}
+.badge.safe{background:#e7f2e8;color:var(--color-success);}
+.badge.loud{background:#fff4e0;color:#9a6700;}
+.badge.distorted{background:#fdecea;color:var(--color-error);}
+.vol-head .pct{font-weight:700;color:var(--color-text-primary);min-width:44px;text-align:right;}
+.vol-panel input[type=range]{width:100%;accent-color:var(--color-text-primary);cursor:pointer;}
+.vol-scale{display:flex;justify-content:space-between;font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:4px;}
+.warn-box{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:#fdecea;border:1px solid #f5c6c2;color:var(--color-error);border-radius:var(--radius-md);font-size:var(--font-size-xs);margin-top:10px;}
+.progress{height:6px;background:var(--color-bg-soft);border-radius:3px;overflow:hidden;margin:10px 0 4px;}
+.progress>div{height:100%;width:0;background:var(--color-text-primary);transition:width .15s;}
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:var(--radius-md);border:none;background:var(--color-text-primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;width:100%;}
+.dl-btn:disabled{opacity:.4;cursor:not-allowed;}
+.hidden{display:none;}
+.err-msg{padding:10px 14px;background:#fdecea;border:1px solid #f5c6c2;color:var(--color-error);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-bottom:12px;}
+.btn-sm{height:36px;padding:0 16px;font-size:var(--font-size-sm);}
+</style>
+</head>
+<body>
+<header class="global-header">
+<a href="../../index.html" class="logo">S-Jiffy</a>
+<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">音量调节器</h1>
+<p class="tool-desc" data-i18n="desc">提升或降低音频音量。调整增益从0%到200%。</p>
+<div class="card">
+<label class="audio-drop" id="dropZone">
+<span class="ico">🎵</span>
+<span class="hint"></span>
+<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.mp4">
+</label>
+<div class="file-chip hidden" id="fileChip">
+<div><div id="fileName"></div><div class="meta" id="fileMeta"></div></div>
+<button class="x" id="fileRemove" type="button">✕</button>
+</div>
+<div class="err-msg hidden" id="errBox"></div>
+<div id="waveWrap" class="hidden">
+<div class="wave-box"><canvas id="waveCanvas"></canvas></div>
+<div class="ctrl-row">
+<button class="btn btn-secondary btn-sm" id="btnPlay" type="button"><span data-i18n="playAll">播放全部</span></button>
+<button class="btn btn-secondary btn-sm hidden" id="btnStop" type="button"><span data-i18n="stop">停止</span></button>
+<button class="btn btn-secondary btn-sm" id="btnPause" type="button" style="display:none"><span data-i18n="pause">暂停</span></button>
+</div>
+<div class="vol-panel">
+<div class="vol-head">
+<span class="lbl" data-i18n="volumeLabel">音量</span>
+<span class="db" id="dbDisplay">0.0 dB</span>
+<span class="badge safe" id="volBadge">正常</span>
+<span class="pct" id="volPct">100%</span>
+</div>
+<input type="range" id="volSlider" min="0" max="300" step="1" value="100">
+<div class="vol-scale">
+<span data-i18n="volumeMin">0%（静音）</span>
+<span data-i18n="volumeOriginal">100%（原始）</span>
+<span data-i18n="volumeMax">300%</span>
+</div>
+<div class="warn-box hidden" id="clipWarn">⚠ <span data-i18n="clippingWarning">音量超过 100% 可能导致导出音频出现削波失真。</span></div>
+</div>
+<div class="progress hidden" id="progress"><div id="progressFill"></div></div>
+<button class="dl-btn" id="btnExport" type="button" disabled><span>导出 WAV（100%）</span></button>
+</div>
+</div>
+</main>
+<footer class="global-footer">
+<div class="tool-status" id="statusBar"></div>
+<div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../assets/js/audio-core.js"></script>
+<script>
+(function () {
+  var AK = window.AudioKit;
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var fileChip = document.getElementById('fileChip');
+  var fileName = document.getElementById('fileName');
+  var fileMeta = document.getElementById('fileMeta');
+  var fileRemove = document.getElementById('fileRemove');
+  var errBox = document.getElementById('errBox');
+  var waveWrap = document.getElementById('waveWrap');
+  var canvas = document.getElementById('waveCanvas');
+  var btnPlay = document.getElementById('btnPlay');
+  var btnStop = document.getElementById('btnStop');
+  var btnPause = document.getElementById('btnPause');
+  var volSlider = document.getElementById('volSlider');
+  var volPct = document.getElementById('volPct');
+  var dbDisplay = document.getElementById('dbDisplay');
+  var volBadge = document.getElementById('volBadge');
+  var clipWarn = document.getElementById('clipWarn');
+  var btnExport = document.getElementById('btnExport');
+  var progress = document.getElementById('progress');
+  var progressFill = document.getElementById('progressFill');
+
+  var file = null;
+  var buffer = null;
+  var peaks = null;
+  var duration = 0;
+  var volume = 100;
+  var gainNode = null;
+  var audioCtx = null;
+  var playing = false;
+  var processing = false;
+
+  function t(key, fb) { var v = (window.I18N && I18N.t) ? I18N.t(key) : null; return (v === key || v == null) ? fb : v; }
+  function showErr(msg) { errBox.textContent = msg; errBox.classList.remove('hidden'); }
+  function hideErr() { errBox.classList.add('hidden'); }
+  function setProgress(p) {
+    if (p >= 1) { progress.classList.add('hidden'); return; }
+    progress.classList.remove('hidden');
+    progressFill.style.width = Math.round(p * 100) + '%';
+  }
+
+  function draw() {
+    AK.drawWaveform(canvas, { peaks: peaks, duration: duration, viewStart: 0, viewDuration: duration, playheadSec: 0 });
+  }
+
+  function updateVolumeUI() {
+    volPct.textContent = volume + '%';
+    dbDisplay.textContent = volume === 0 ? '−∞ dB' : (20 * Math.log10(volume / 100)).toFixed(1) + ' dB';
+    var cls = 'safe';
+    var label = '正常';
+    if (volume > 150) { cls = 'distorted'; label = t('distortedLabel', '失真'); }
+    else if (volume > 100) { cls = 'loud'; label = t('loudLabel', '增强'); }
+    volBadge.className = 'badge ' + cls;
+    volBadge.textContent = label;
+    clipWarn.classList.toggle('hidden', volume <= 100);
+    btnExport.querySelector('span').textContent = '导出 WAV（' + volume + '%）';
+    if (gainNode) gainNode.gain.value = volume / 100;
+  }
+
+  function stopPlayback() {
+    if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+    playing = false;
+    btnStop.classList.add('hidden');
+    btnPause.style.display = 'none';
+  }
+
+  function loadFile(f) {
+    hideErr();
+    setStatus('正在解码音频…');
+    AK.decodeAudioFile(f, function (buf) {
+      file = f;
+      buffer = buf;
+      duration = buf.duration;
+      peaks = AK.computePeaks(buf);
+      fileName.textContent = f.name;
+      var rate = buf.sampleRate;
+      var mono = buf.numberOfChannels === 1;
+      fileMeta.textContent = AK.formatDuration(duration) + ' · ' + AK.formatBytes(f.size) + ' · ' + (rate / 1000) + 'kHz · ' + (mono ? 'Mono' : 'Stereo');
+      fileChip.classList.remove('hidden');
+      waveWrap.classList.remove('hidden');
+      dropZone.style.display = 'none';
+      btnExport.disabled = false;
+      draw();
+      setStatus('文件已就绪');
+    }, function () {
+      showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
+      setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
+    });
+  }
+
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+  dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files.length) loadFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+  fileRemove.addEventListener('click', function () {
+    stopPlayback();
+    file = null; buffer = null; peaks = null;
+    fileChip.classList.add('hidden');
+    waveWrap.classList.add('hidden');
+    dropZone.style.display = '';
+    btnExport.disabled = true;
+    setStatus('');
+  });
+
+  volSlider.addEventListener('input', function () {
+    volume = Number(volSlider.value);
+    updateVolumeUI();
+  });
+
+  btnPlay.addEventListener('click', function () {
+    if (!buffer) return;
+    stopPlayback();
+    if (!audioCtx) {
+      try { audioCtx = AK.createAudioContext(); }
+      catch (e) { setStatus('浏览器不支持音频播放', 'error'); return; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = volume / 100;
+    var src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    src.start(0);
+    playing = true;
+    btnStop.classList.remove('hidden');
+    btnPause.style.display = '';
+    btnPause.querySelector('span').textContent = t('pause', '暂停');
+    src.onended = function () {
+      stopPlayback();
+      setStatus('');
+    };
+  });
+  btnPause.addEventListener('click', function () {
+    if (!audioCtx || !playing) return;
+    if (audioCtx.state === 'running') {
+      audioCtx.suspend();
+      btnPause.querySelector('span').textContent = t('resume', '继续');
+    } else {
+      audioCtx.resume();
+      btnPause.querySelector('span').textContent = t('pause', '暂停');
+    }
+  });
+  btnStop.addEventListener('click', function () {
+    if (audioCtx && audioCtx.close) {
+      audioCtx.close();
+      audioCtx = null;
+      gainNode = null;
+    }
+    stopPlayback();
+  });
+
+  btnExport.addEventListener('click', function () {
+    if (!buffer || processing) return;
+    processing = true;
+    btnExport.disabled = true;
+    hideErr();
+    setProgress(0);
+    setStatus(t('processingLabel', '处理中…'));
+    setTimeout(function () {
+      try {
+        var off = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+        var src = off.createBufferSource();
+        src.buffer = buffer;
+        var gain = off.createGain();
+        gain.gain.value = volume / 100;
+        src.connect(gain);
+        gain.connect(off.destination);
+        src.start(0);
+        off.startRendering().then(function (rendered) {
+          var blob = AK.audioBufferToWav(rendered);
+          AK.downloadBlob(blob, AK.getOutputName(file.name, 'vol' + volume + 'pct'));
+          setProgress(1);
+          processing = false;
+          btnExport.disabled = false;
+          setStatus('导出完成');
+        }, function () {
+          setProgress(1);
+          processing = false;
+          btnExport.disabled = false;
+          showErr('音量调整失败');
+          setStatus('音量调整失败', 'error');
+        });
+      } catch (e) {
+        setProgress(1);
+        processing = false;
+        btnExport.disabled = false;
+        showErr('音量调整失败');
+        setStatus('音量调整失败', 'error');
+      }
+    }, 50);
+  });
+
+  updateVolumeUI();
+  var h1 = document.querySelector('h1');
+  document.getElementById('dropZone').querySelector('.hint').textContent = t('hint', '点击或拖放音频文件到这里（MP3 / WAV / OGG / AAC / FLAC / M4A / WebM，≤50MB）');
+})();
+</script>
+</body>
+</html>

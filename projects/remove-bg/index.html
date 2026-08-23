@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>背景去除器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:36px var(--space-3);text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-sm);cursor:pointer;transition:border-color .15s,background .15s;user-select:none;}
+.drop-zone.dragging{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone .dz-name{margin-top:8px;color:var(--color-text-primary);word-break:break-all;font-size:var(--font-size-base);}
+.dz-hint{margin-top:6px;color:var(--color-text-disabled);font-size:var(--font-size-xs);}
+.bg-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);}
+.bg-panel{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;padding:8px;}
+.bg-panel p{font-size:var(--font-size-xs);color:var(--color-text-secondary);font-weight:600;margin-bottom:6px;}
+.bg-panel .img-wrap{max-height:320px;overflow:auto;display:flex;align-items:center;justify-content:center;background:var(--color-bg-soft);border-radius:var(--radius-sm);min-height:200px;}
+.bg-panel img{max-width:100%;max-height:320px;display:block;}
+.checkerboard{background-image:linear-gradient(45deg,#eee 25%,transparent 25%),linear-gradient(-45deg,#eee 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eee 75%),linear-gradient(-45deg,transparent 75%,#eee 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;background-color:#fff;}
+.engine-pill{display:inline-block;font-size:var(--font-size-xs);padding:2px 10px;border-radius:999px;border:1px solid var(--color-border);color:var(--color-text-secondary);margin-top:var(--space-2);}
+.engine-pill.ok{color:var(--color-success);border-color:var(--color-success);}
+.engine-pill.bad{color:var(--color-error);border-color:var(--color-error);}
+.mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.mode-row button{flex:1 1 200px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:transparent;cursor:pointer;text-align:left;font-family:var(--font-mono);font-size:13px;color:var(--color-text-secondary);}
+.mode-row button.active{border-color:var(--color-text-primary);color:var(--color-text-primary);background:var(--color-bg-soft);}
+.mode-row button b{display:block;color:var(--color-text-primary);margin-bottom:4px;font-size:14px;}
+.param-block{margin-bottom:12px;}
+.param-block label{display:flex;justify-content:space-between;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:6px;}
+.param-block label b{color:var(--color-text-primary);font-family:var(--font-mono);}
+.param-block input[type=range]{width:100%;accent-color:var(--color-text-primary);cursor:pointer;}
+.color-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.color-row input[type=color]{width:44px;height:36px;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:2px;cursor:pointer;}
+.progress-track{height:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:999px;overflow:hidden;margin-top:var(--space-2);}
+.progress-bar{height:100%;width:0;background:var(--color-text-primary);border-radius:999px;transition:width .15s;}
+.progress-text{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:6px;}
+.err-box{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.btn-row .btn{height:44px;min-width:0;padding:0 18px;font-size:14px;flex:1 1 160px;}
+.note{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-2);line-height:1.7;}
+@media(max-width:640px){.bg-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">背景去除器</h1>
+<p class="tool-desc" data-i18n="desc">AI 智能去除图片背景，完全在浏览器中运行。无需上传服务器。</p>
+<div class="card" id="modeCard">
+<div class="mode-row">
+<button id="modeAI" class="active"><b>AI 智能抠图（推荐）</b>基于 RMBG-1.4 分割模型，边缘精准；首次使用需下载模型（约 90MB+），之后浏览器会缓存</button>
+<button id="modeSimple"><b>简易抠图（免下载）</b>基于背景色差异（色度键）算法，适合纯色背景图片；无模型下载，立即处理</button>
+</div>
+<div class="param-block" id="simpleParams" style="display:none;">
+<label><span>容差（颜色差异阈值）</span><b id="tolVal">60</b></label>
+<input type="range" id="tolRange" min="0" max="200" step="1" value="60">
+<label style="margin-top:10px;"><span>羽化（边缘过渡宽度）</span><b id="featherVal">5</b></label>
+<input type="range" id="featherRange" min="0" max="50" step="1" value="5">
+<div class="color-row" style="margin-top:12px;">
+<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);">背景色 <input type="color" id="bgColor" value="#ffffff"></label>
+<button id="pickBgBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;">从图片左上角取色</button>
+</div>
+</div>
+<span class="engine-pill" id="enginePill">模式：AI 智能抠图（模型未加载）</span>
+</div>
+<div class="card">
+<div class="drop-zone" id="dropZone">
+<div>点击选择图片，或将图片文件拖拽到此处</div>
+<div class="dz-name" id="fileName"></div>
+<div class="dz-hint">支持 JPG / PNG / WebP · 最大 50MB</div>
+</div>
+<input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none;">
+<div class="bg-grid">
+<div class="bg-panel">
+<p data-i18n="beforeLabel">之前</p>
+<div class="img-wrap"><img id="origImg" alt="原图"></div>
+</div>
+<div class="bg-panel">
+<p data-i18n="afterLabel">之后</p>
+<div class="img-wrap checkerboard" id="resultWrap">
+<img id="resultImg" alt="结果" style="display:none;">
+<div id="resultPlaceholder" style="font-size:var(--font-size-sm);color:var(--color-text-disabled);">处理后在此显示</div>
+</div>
+</div>
+</div>
+<div class="progress-track" id="progressTrack" style="display:none;"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-text" id="progressText"></div>
+<div class="err-box" id="errBox" style="display:none;"></div>
+<div class="btn-row">
+<button id="processBtn" class="btn btn-primary">去除背景</button>
+<button id="downloadBtn" class="btn btn-primary" style="display:none;">下载透明 PNG</button>
+<button id="resetBtn" class="btn btn-secondary" style="display:none;">重新选择</button>
+</div>
+<div class="note">两种模式的差异：AI 模式用分割模型识别主体（适合人像、物体、复杂背景），需要下载约 90MB 的模型文件且首次处理较慢；简易模式按颜色距离去除背景（适合白底/纯色底），无需下载任何文件。所有处理均在本地浏览器完成，图片不会上传。</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script type="module">
+import * as tf from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.min.js';
+window.__transformers = tf;
+</script>
+<script>
+(function(){
+'use strict';
+var MODEL_ID='briaai/RMBG-1.4';
+var MAX_MB=50,MAX_SIDE=4096;
+var mode='ai';
+var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput');
+var fileName=document.getElementById('fileName');
+var modeCard=document.getElementById('modeCard'),workCard=document.getElementById('workCard');
+var origImg=document.getElementById('origImg'),resultImg=document.getElementById('resultImg');
+var resultPlaceholder=document.getElementById('resultPlaceholder'),resultWrap=document.getElementById('resultWrap');
+var processBtn=document.getElementById('processBtn'),downloadBtn=document.getElementById('downloadBtn'),resetBtn=document.getElementById('resetBtn');
+var progressTrack=document.getElementById('progressTrack'),progressBar=document.getElementById('progressBar'),progressText=document.getElementById('progressText');
+var errBox=document.getElementById('errBox');
+var enginePill=document.getElementById('enginePill');
+var simpleParams=document.getElementById('simpleParams');
+var tolRange=document.getElementById('tolRange'),featherRange=document.getElementById('featherRange');
+var tolVal=document.getElementById('tolVal'),featherVal=document.getElementById('featherVal');
+var bgColor=document.getElementById('bgColor');
+var currentFile=null,currentImg=null,resultBlob=null,processing=false;
+var segmenter=null,segLoading=null,aiStage='',currentUrl=null;
+function setEngine(text,cls){
+  enginePill.textContent=text;
+  enginePill.className='engine-pill'+(cls?' '+cls:'');
+}
+function showErr(msg){errBox.style.display='block';errBox.textContent=msg;setStatus(msg,'error');}
+function clearErr(){errBox.style.display='none';}
+function setProgress(pct,text){
+  progressBar.style.width=pct+'%';
+  progressText.textContent=text;
+}
+document.getElementById('modeAI').addEventListener('click',function(){
+  mode='ai';
+  document.getElementById('modeAI').classList.add('active');
+  document.getElementById('modeSimple').classList.remove('active');
+  simpleParams.style.display='none';
+  setEngine(segmenter?t('aiReady','模式：AI 智能抠图（模型已加载）'):t('aiNotLoaded','模式：AI 智能抠图（模型未加载）'));
+});
+document.getElementById('modeSimple').addEventListener('click',function(){
+  mode='simple';
+  document.getElementById('modeSimple').classList.add('active');
+  document.getElementById('modeAI').classList.remove('active');
+  simpleParams.style.display='block';
+  setEngine(t('simpleMode','模式：简易抠图（色度键，无模型下载）'));
+});
+tolRange.addEventListener('input',function(){tolVal.textContent=this.value;});
+featherRange.addEventListener('input',function(){featherVal.textContent=this.value;});
+document.getElementById('pickBgBtn').addEventListener('click',function(){
+  if(!currentImg){setStatus(t('noImage','请先选择图片'),'error');return;}
+  var c=document.createElement('canvas');
+  c.width=1;c.height=1;
+  var ctx=c.getContext('2d');
+  ctx.drawImage(currentImg,0,0,1,1);
+  var d=ctx.getImageData(0,0,1,1).data;
+  var hex='#'+[d[0],d[1],d[2]].map(function(v){return('0'+v.toString(16)).slice(-2);}).join('');
+  bgColor.value=hex;
+  setStatus(t('bgPicked','已取色：'+hex));
+});
+function loadFile(f){
+  if(processing)return;
+  if(!f.type.match(/^image\/(jpeg|png|webp)$/)){
+    showErr(t('badImage','不支持的图片格式，请选择 JPG / PNG / WebP'));
+    return;
+  }
+  if(f.size>MAX_MB*1024*1024){
+    showErr(t('fileTooLarge','文件过大（上限 50MB）'));
+    return;
+  }
+  currentFile=f;
+  fileName.textContent=f.name+'（'+fmtBytes(f.size)+'）';
+  resultBlob=null;
+  resultImg.style.display='none';
+  resultPlaceholder.style.display='block';
+  downloadBtn.style.display='none';
+  resetBtn.style.display='none';
+  processBtn.style.display='';
+  processBtn.disabled=false;
+  clearErr();
+  var url=URL.createObjectURL(f);
+  if(currentUrl)URL.revokeObjectURL(currentUrl);
+  currentUrl=url;
+  var img=new Image();
+  img.onload=function(){
+    currentImg=img;
+    if(img.naturalWidth>16384||img.naturalHeight>16384){
+      showErr(t('imgTooBig','图片尺寸超过浏览器 canvas 上限（16384px），请先缩小图片'));
+      return;
+    }
+    origImg.src=url;
+    workCard.style.display='block';
+    setStatus(t('imgLoaded','图片已载入，点击「去除背景」开始处理'));
+  };
+  img.onerror=function(){showErr(t('imgLoadFail','图片加载失败，文件可能损坏'));};
+  img.src=url;
+}
+function fmtBytes(b){
+  if(b<1024*1024)return Math.round(b/1024)+' KB';
+  return (b/1024/1024).toFixed(1)+' MB';
+}
+dropZone.addEventListener('click',function(){fileInput.click();});
+fileInput.addEventListener('change',function(){
+  if(fileInput.files&&fileInput.files.length>0)loadFile(fileInput.files[0]);
+  fileInput.value='';
+});
+['dragenter','dragover'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add('dragging');});
+});
+['dragleave','drop'].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove('dragging');});
+});
+dropZone.addEventListener('drop',function(e){
+  var files=e.dataTransfer&&e.dataTransfer.files;
+  if(files&&files.length>0)loadFile(files[0]);
+});
+function loadTransformers(){
+  return new Promise(function(resolve,reject){
+    var tf=window.__transformers||window.transformers;
+    if(tf&&tf.AutoModel){resolve();return;}
+    if(segLoading)return segLoading;
+    segLoading=new Promise(function(res,rej){
+      var waited=0;
+      var iv=setInterval(function(){
+        var tf2=window.__transformers||window.transformers;
+        if(tf2&&tf2.AutoModel){
+          clearInterval(iv);
+          res();
+        }else{
+          waited+=1000;
+          if(waited>30000){
+            clearInterval(iv);
+            rej(new Error('transformers.js 加载超时（CDN 不可达）'));
+          }
+        }
+      },1000);
+    }).then(function(){segLoading=null;resolve();},function(e){segLoading=null;reject(e);});
+  });
+}
+function loadModel(progressCb){
+  return loadTransformers().then(function(){
+    var tf=window.__transformers||window.transformers;
+    var env=tf.env;
+    env.allowLocalModels=false;
+    env.useBrowserCache=true;
+    var progressFn=function(p){
+      if(p&&p.status==='progress'&&p.file&&p.total){
+        progressCb(p.loaded||0,p.total||0);
+      }
+    };
+    var needProbe=true;
+    var probeHost=function(){
+      return new Promise(function(res){
+        if(!needProbe){res();return;}
+        needProbe=false;
+        var xhr=new XMLHttpRequest();
+        xhr.open('HEAD','https://huggingface.co/briaai/RMBG-1.4/resolve/main/config.json',true);
+        xhr.timeout=4000;
+        xhr.onload=function(){res();};
+        xhr.onerror=function(){try{env.remoteHost='https://modelscope.cn/models/';}catch(e){}res();};
+        xhr.ontimeout=function(){try{env.remoteHost='https://modelscope.cn/models/';}catch(e){}res();};
+        xhr.send(null);
+      });
+    };
+    return probeHost().then(function(){
+      return Promise.all([
+        tf.AutoModel.from_pretrained(MODEL_ID,{device:'wasm',dtype:'q8',progress_callback:progressFn}),
+        tf.AutoProcessor.from_pretrained(MODEL_ID,{progress_callback:progressFn})
+      ]);
+    }).then(function(arr){
+      segmenter={model:arr[0],processor:arr[1],RawImage:tf.RawImage};
+      return segmenter;
+    });
+  });
+}
+function processAI(){
+  processing=true;
+  processBtn.disabled=true;
+  clearErr();
+  progressTrack.style.display='block';
+  var img=currentImg;
+  var scale=Math.min(1,1024/img.naturalWidth,1024/img.naturalHeight);
+  var w=Math.round(img.naturalWidth*scale),h=Math.round(img.naturalHeight*scale);
+  var step='load';
+  setProgress(0,t('downloadingModel','正在加载 AI 模型（首次约 90MB，请耐心等待）…'));
+  loadModel(function(loaded,total){
+    if(step==='load'){
+      var pct=Math.round((loaded/total)*100);
+      setProgress(pct,t('downloadingModel','正在下载模型 '+fmtBytes(loaded)+' / '+fmtBytes(total)+'…'));
+    }
+  }).then(function(){
+    step='process';
+    setProgress(0,t('processing','AI 正在分析图像…'));
+    aiStage='rawImage';
+    return segmenter.RawImage.fromURL(origImg.src);
+  }).then(function(rawImg){
+    aiStage='processor';
+    return segmenter.processor(rawImg).then(function(inputs){
+      var model=segmenter.model;
+      var sess=model.sessions&&model.sessions['model'];
+      if(sess&&sess.inputNames){
+        var names=sess.inputNames;
+        if(names.indexOf('pixel_values')===-1&&names.length===1){
+          inputs[names[0]]=inputs.pixel_values;
+        }
+      }
+      return {rawImg:rawImg,inputs:inputs};
+    });
+  }).then(function(loaded){
+    aiStage='inference';
+    return segmenter.model(loaded.inputs).then(function(out){
+      return {rawImg:loaded.rawImg,out:out};
+    });
+  }).then(function(res){
+    aiStage='mask';
+    setProgress(60,t('processing','正在生成透明遮罩…'));
+    var model=segmenter.model;
+    var outputName='output';
+    var sess=model.sessions&&model.sessions['model'];
+    if(sess&&sess.outputNames&&sess.outputNames[0])outputName=sess.outputNames[0];
+    var item=res.out[outputName]||res.out[0];
+    var t0=item[0];
+    var data=t0.data;
+    var eps=1e-5,hasNeg=false,hasBig=false,i;
+    for(i=0;i<data.length;i++){
+      if(data[i]<-eps)hasNeg=true;
+      if(data[i]>1+eps)hasBig=true;
+    }
+    if(hasNeg||hasBig){
+      for(i=0;i<data.length;i++)data[i]=1/(1+Math.exp(-data[i]));
+    }
+    var mi=Infinity,ma=-Infinity;
+    for(i=0;i<data.length;i++){
+      if(data[i]<mi)mi=data[i];
+      if(data[i]>ma)ma=data[i];
+    }
+    var range=(ma-mi)||1;
+    for(i=0;i<data.length;i++)data[i]=(data[i]-mi)/range;
+    var maskTensor=t0.mul_(255).to('uint8');
+    var mask=segmenter.RawImage.fromTensor(maskTensor);
+    return mask.resize(res.rawImg.width,res.rawImg.height).then(function(maskResized){
+      var cloned=res.rawImg.clone();
+      cloned.putAlpha(maskResized);
+      var canvas=document.createElement('canvas');
+      canvas.width=cloned.width;
+      canvas.height=cloned.height;
+      var ctx=canvas.getContext('2d');
+      var id=ctx.createImageData(cloned.width,cloned.height);
+      id.data.set(new Uint8ClampedArray(cloned.data));
+      ctx.putImageData(id,0,0);
+      return new Promise(function(resolve,reject){
+        canvas.toBlob(function(b){
+          if(b)resolve(b);else reject(new Error('PNG 编码失败'));
+        },'image/png');
+      });
+    });
+  }).then(function(blob){
+    resultBlob=blob;
+    var url=URL.createObjectURL(blob);
+    resultImg.src=url;
+    resultImg.style.display='block';
+    resultPlaceholder.style.display='none';
+    downloadBtn.style.display='';
+    resetBtn.style.display='';
+    processBtn.style.display='none';
+    progressTrack.style.display='none';
+    setEngine(t('aiReady','模式：AI 智能抠图（模型已加载，下次更快）'),'ok');
+    setStatus(t('done','处理完成，可下载透明 PNG'));
+    processing=false;
+    processBtn.disabled=false;
+  }).catch(function(e){
+    progressTrack.style.display='none';
+    processing=false;
+    processBtn.disabled=false;
+    var msg=e&&e.message?e.message:'未知错误';
+    showErr(t('aiFail','AI 处理失败（['+aiStage+'] '+msg+'）。模型下载或 CDN 不可用时，可切换到「简易抠图」模式使用本地色度键算法。'));
+    setEngine(t('aiFailed','模式：AI 智能抠图（加载失败）'),'bad');
+  });
+}
+function processSimple(){
+  processing=true;
+  processBtn.disabled=true;
+  clearErr();
+  progressTrack.style.display='block';
+  setProgress(0,t('processing','正在按颜色去除背景…'));
+  setTimeout(function(){
+    try{
+      var img=currentImg;
+      var w=img.naturalWidth,h=img.naturalHeight;
+      var canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(img,0,0);
+      var imageData=ctx.getImageData(0,0,w,h);
+      var px=imageData.data;
+      var br=parseInt(bgColor.value.slice(1,3),16);
+      var bg=parseInt(bgColor.value.slice(3,5),16);
+      var bb=parseInt(bgColor.value.slice(5,7),16);
+      var tol=parseInt(tolRange.value,10);
+      var feather=parseInt(featherRange.value,10);
+      var total=px.length/4;
+      var batch=Math.max(1,Math.floor(total/80));
+      var i=0;
+      function stepBatch(){
+        var end=Math.min(total,i+batch);
+        for(;i<end;i++){
+          var idx=i*4;
+          var dr=px[idx]-br,dg=px[idx+1]-bg,db=px[idx+2]-bb;
+          var dist=Math.sqrt(dr*dr+dg*dg+db*db)/Math.sqrt(3);
+          var alpha;
+          if(dist<=tol){
+            alpha=0;
+          }else if(dist>=tol+feather){
+            alpha=255;
+          }else{
+            alpha=Math.round(255*(dist-tol)/feather);
+          }
+          px[idx+3]=alpha;
+        }
+        setProgress(Math.round((i/total)*100),t('processing','按颜色抠图中… '+Math.round(i/total*100)+'%'));
+        if(i<total){
+          setTimeout(stepBatch,0);
+        }else{
+          ctx.putImageData(imageData,0,0);
+          canvas.toBlob(function(b){
+            progressTrack.style.display='none';
+            processing=false;
+            processBtn.disabled=false;
+            if(!b){showErr(t('encodeFail','PNG 编码失败'));return;}
+            resultBlob=b;
+            var url=URL.createObjectURL(b);
+            resultImg.src=url;
+            resultImg.style.display='block';
+            resultPlaceholder.style.display='none';
+            downloadBtn.style.display='';
+            resetBtn.style.display='';
+            processBtn.style.display='none';
+            setStatus(t('doneSimple','处理完成（简易模式：色度键）'));
+          },'image/png');
+        }
+      }
+      stepBatch();
+    }catch(e){
+      progressTrack.style.display='none';
+      processing=false;
+      processBtn.disabled=false;
+      showErr(t('simpleFail','简易抠图失败：'+(e&&e.message?e.message:'未知错误')));
+    }
+  },50);
+}
+processBtn.addEventListener('click',function(){
+  if(!currentImg){setStatus(t('noImage','请先选择图片'),'error');return;}
+  if(mode==='ai')processAI();else processSimple();
+});
+downloadBtn.addEventListener('click',function(){
+  if(!resultBlob)return;
+  var base=(currentFile.name.replace(/\.[^/.]+$/,'')||'image')+'_nobg.png';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(resultBlob);
+  a.download=base;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setStatus(t('downloadStarted','PNG 开始下载'));
+});
+resetBtn.addEventListener('click',function(){
+  workCard.style.display='none';
+  currentImg=null;currentFile=null;resultBlob=null;
+  if(currentUrl){URL.revokeObjectURL(currentUrl);currentUrl=null;}
+  fileName.textContent='';
+  clearErr();
+  setStatus('');
+});
+})();
+</script>
+</body></html>

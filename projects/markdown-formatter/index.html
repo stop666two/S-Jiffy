@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 编辑器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.md-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-2);}
+.md-tabs{display:flex;gap:4px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);}
+.md-tab{background:transparent;border:none;border-radius:var(--radius-sm);color:var(--color-text-secondary);font-size:var(--font-size-xs);padding:8px 14px;cursor:pointer;}
+.md-tab.on{background:var(--color-text-primary);color:#FFFFFF;}
+.md-grid{display:grid;gap:var(--space-2);}
+.md-grid.split{grid-template-columns:1fr 1fr;}
+@media (max-width:640px){.md-grid.split{grid-template-columns:1fr;}}
+.sub-label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.md-preview{min-height:450px;padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);overflow-wrap:break-word;font-size:14px;line-height:1.7;}
+.md-preview h1{font-size:22px;font-weight:600;margin:0 0 12px 0;}
+.md-preview h2{font-size:19px;font-weight:600;margin:16px 0 8px 0;}
+.md-preview h3{font-size:16px;font-weight:600;margin:14px 0 6px 0;}
+.md-preview h4{font-size:14px;font-weight:600;margin:12px 0 6px 0;}
+.md-preview p{margin-bottom:10px;}
+.md-preview ul,.md-preview ol{padding-left:22px;margin-bottom:10px;}
+.md-preview li{margin-bottom:2px;}
+.md-preview code{background:var(--color-bg-soft);padding:2px 5px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;border:1px solid var(--color-border);}
+.md-preview pre{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;overflow:auto;margin-bottom:12px;}
+.md-preview pre code{background:transparent;border:none;padding:0;font-size:12px;line-height:1.6;}
+.md-preview blockquote{border-left:3px solid var(--color-text-primary);padding-left:12px;color:var(--color-text-secondary);margin-bottom:10px;}
+.md-preview a{color:var(--color-accent-hover);}
+.md-preview hr{border:none;border-top:1px solid var(--color-border);margin:14px 0;}
+.md-preview img{max-width:100%;}
+.md-preview table{border-collapse:collapse;margin-bottom:10px;width:100%;}
+.md-preview th,.md-preview td{border:1px solid var(--color-border);padding:6px 10px;font-size:13px;}
+.md-preview th{background:var(--color-bg-soft);}
+.small-btn{background:transparent;border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-text-primary);font-size:var(--font-size-xs);padding:7px 12px;cursor:pointer;}
+.small-btn:hover{background:var(--color-bg-soft);}
+.tool-row{display:flex;gap:8px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">Markdown 编辑器</h1>
+    <p class="tool-desc" data-i18n="desc">实时编写与预览 Markdown，支持标题、粗体、斜体、代码块、列表、链接、图片与表格，可导出 HTML。</p>
+
+    <div class="card">
+      <div class="md-toolbar">
+        <div class="md-tabs">
+          <button class="md-tab on" data-view="split" data-i18n="mdTabSplit">分屏</button>
+          <button class="md-tab" data-view="source" data-i18n="mdTabSource">源码</button>
+          <button class="md-tab" data-view="preview">预览</button>
+        </div>
+        <div class="tool-row">
+          <button class="small-btn" id="copyHtmlBtn">复制 HTML</button>
+          <button class="small-btn" id="exportHtmlBtn" data-i18n="exportHtml">导出HTML</button>
+          <button class="small-btn" id="clearBtn">清空</button>
+        </div>
+      </div>
+      <div class="md-grid split" id="mdGrid">
+        <div id="sourcePane">
+          <label class="sub-label" data-i18n="markdownSource">Markdown源码</label>
+          <textarea id="mdInput" class="input textarea js-focus-input" spellcheck="false" style="min-height:450px;font-family:var(--font-mono);font-size:13px;"># Hello, Markdown!
+
+Write your **markdown** here and see the *preview* update live.
+
+## Features
+- Headings
+- **Bold** and *italic*
+- [Links](https://example.com)
+- `inline code`
+- Lists
+
+```js
+console.log("Hello, World!");
+```</textarea>
+        </div>
+        <div id="previewPane">
+          <label class="sub-label">预览</label>
+          <div class="md-preview" id="previewBox"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var mdInput = document.getElementById('mdInput');
+      var previewBox = document.getElementById('previewBox');
+      var mdGrid = document.getElementById('mdGrid');
+      var sourcePane = document.getElementById('sourcePane');
+      var previewPane = document.getElementById('previewPane');
+      var view = 'split';
+
+      function escapeHtml(s){
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function markdownToHTML(input){
+        var html = String(input);
+        var codeBlocks = [];
+        var placeholderId = 0;
+
+        html = html.replace(/```([\w+-]*)\n?([\s\S]*?)```/g, function (m, lang, code) {
+          var token = '{{CODE' + (placeholderId++) + '}}';
+          codeBlocks.push('<pre><code class="language-' + (lang || '') + '">' + escapeHtml(code.replace(/\s+$/,'')) + '</code></pre>');
+          return token;
+        });
+
+        html = escapeHtml(html);
+
+        html = html.replace(/^(#{1,6})\s+(.+)$/gm, function (m, hashes, text) {
+          return '<h' + hashes.length + '>' + text.trim() + '</h' + hashes.length + '>';
+        });
+
+        html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
+
+        html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+        html = html.replace(/((?:^[-*+]\s+.+\n?)+)/gm, function (match) {
+          var items = match.trim().split('\n').map(function (l) {
+            return '<li>' + l.replace(/^[-*+]\s+/, '') + '</li>';
+          }).join('');
+          return '<ul>' + items + '</ul>';
+        });
+
+        html = html.replace(/((?:^\d+\.\s+.+\n?)+)/gm, function (match) {
+          var items = match.trim().split('\n').map(function (l) {
+            return '<li>' + l.replace(/^\d+\.\s+/, '') + '</li>';
+          }).join('');
+          return '<ol>' + items + '</ol>';
+        });
+
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        html = html.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+        html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+        html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+        html = html.replace(/\n\n+/g, '\n</p>\n<p>');
+        html = '<p>' + html + '</p>';
+        html = html.replace(/<p>\s*<\/p>/g, '');
+        html = html.replace(/<p>(<(h[1-6]|ul|ol|pre|hr|blockquote|table)[^>]*>)/g, '$1');
+        html = html.replace(/(<\/(h[1-6]|ul|ol|pre|hr|blockquote|table)>)<\/p>/g, '$1');
+        html = html.replace(/<p>\s*$/, '');
+
+        html = html.replace(/\n/g, '<br>\n');
+
+        for (var i = 0; i < codeBlocks.length; i++) {
+          html = html.replace('{{CODE' + i + '}}', codeBlocks[i]);
+        }
+        return html;
+      }
+
+      function render(){
+        var html = markdownToHTML(mdInput.value);
+        previewBox.innerHTML = html;
+        var isSplit = view === 'split';
+        mdGrid.className = 'md-grid' + (isSplit ? ' split' : '');
+        sourcePane.style.display = (view === 'source') ? 'block' : (isSplit ? 'block' : 'none');
+        previewPane.style.display = (view === 'preview') ? 'block' : (isSplit ? 'block' : 'none');
+      }
+
+      var tabs = document.querySelectorAll('.md-tab');
+      for (var i = 0; i < tabs.length; i++) {
+        (function (tab) {
+          tab.addEventListener('click', function () {
+            view = tab.getAttribute('data-view');
+            for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('on');
+            tab.classList.add('on');
+            render();
+          });
+        })(tabs[i]);
+      }
+
+      mdInput.addEventListener('input', render);
+
+      document.getElementById('copyHtmlBtn').addEventListener('click', function () {
+        var html = markdownToHTML(mdInput.value);
+        if (html) { copyToClipboard(html, this); setStatus(t('htmlCopied','HTML 已复制')); }
+      });
+
+      document.getElementById('exportHtmlBtn').addEventListener('click', function () {
+        var html = markdownToHTML(mdInput.value);
+        var full = '<!DOCTYPE html>\n<html>\n<head><meta charset="utf-8"><title>Export</title></head>\n<body>\n' + html + '\n</body>\n</html>';
+        var blob = new Blob([full], { type: 'text/html;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'export.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setStatus(t('exported','已导出 HTML'));
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () { mdInput.value = ''; render(); mdInput.focus(); setStatus(''); });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

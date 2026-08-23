@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时间戳转换器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.ts-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--color-bg);}
+.ts-label{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:2px;}
+.ts-value{font-family:var(--font-mono);font-size:13px;word-break:break-all;}
+.ts-copy{background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:var(--font-size-xs);flex-shrink:0;padding:4px 8px;border-radius:var(--radius-sm);}
+.ts-copy:hover{color:var(--color-text-primary);background:rgba(0,0,0,0.03);}
+.error-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin:8px 0;background:rgba(159,47,45,0.08);border:1px solid rgba(159,47,45,0.35);color:var(--color-error);white-space:pre-wrap;}
+.tool-row{display:flex;gap:8px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">时间戳转换器</h1>
+    <p class="tool-desc" data-i18n="desc">将 Unix 时间戳（秒/毫秒）与日期字符串互相转换，自动识别输入格式，实时显示多种输出。</p>
+
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:8px;" data-i18n="enterTimestamp">输入时间戳或日期字符串</label>
+      <div class="tool-row">
+        <input id="tsInput" class="input js-focus-input" placeholder="1700000000, 2024-01-01, now, ..." style="flex:1;min-width:200px;">
+        <button id="nowBtn" class="btn btn-secondary" data-i18n="useNow">使用当前时间</button>
+        <button id="nowMsBtn" class="btn btn-secondary">当前毫秒</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
+      <div id="errorBox" class="error-detail" style="display:none;"></div>
+      <div id="resultList" style="margin-top:var(--space-2);"></div>
+      <div class="tool-status" id="statusBar" style="margin-top:8px;"></div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var inputEl = document.getElementById('tsInput');
+      var resultList = document.getElementById('resultList');
+      var errorBox = document.getElementById('errorBox');
+
+      function parseTs(input){
+        var trimmed = input.trim();
+        if (trimmed === '') return null;
+        var date;
+        if (/^\d+$/.test(trimmed)) {
+          var num = parseInt(trimmed, 10);
+          date = new Date(num < 1e12 ? num * 1000 : num);
+        } else if (trimmed.toLowerCase() === 'now') {
+          date = new Date();
+        } else {
+          date = new Date(trimmed);
+        }
+        if (isNaN(date.getTime())) throw new Error(t('invalidTs','无法识别的日期或时间戳'));
+        return date;
+      }
+
+      function relText(date){
+        var now = Date.now();
+        var diff = date.getTime() - now;
+        var abs = Math.abs(diff);
+        if (abs < 60000) return t('justNow','刚刚');
+        if (abs < 3600000) { var mins = Math.round(abs / 60000); return diff < 0 ? mins + t('minAgo',' 分钟前') : t('inMin','约 ')+mins+t('minLater',' 分钟后'); }
+        if (abs < 86400000) { var hrs = Math.round(abs / 3600000); return diff < 0 ? hrs + t('hrAgo',' 小时前') : t('inHr','约 ')+hrs+t('hrLater',' 小时后'); }
+        var days = Math.round(abs / 86400000);
+        return diff < 0 ? days + t('dayAgo',' 天前') : t('inDay','约 ')+days+t('dayLater',' 天后');
+      }
+
+      function renderRows(date){
+        var rows = [
+          { label: t('unixSeconds','Unix（秒）'), value: String(Math.floor(date.getTime() / 1000)) },
+          { label: t('unixMs','Unix（毫秒）'), value: String(date.getTime()) },
+          { label: 'ISO 8601', value: date.toISOString() },
+          { label: 'UTC / RFC 2822', value: date.toUTCString() },
+          { label: t('localLabel','本地时间'), value: date.toLocaleString() },
+          { label: t('relativeTime','相对时间'), value: relText(date) }
+        ];
+        resultList.innerHTML = '';
+        for (var i = 0; i < rows.length; i++) {
+          (function (row) {
+            var div = document.createElement('div');
+            div.className = 'ts-row';
+            var left = document.createElement('div');
+            left.style.minWidth = '0';
+            var lab = document.createElement('div');
+            lab.className = 'ts-label';
+            lab.textContent = row.label;
+            var val = document.createElement('div');
+            val.className = 'ts-value';
+            val.textContent = row.value;
+            left.appendChild(lab); left.appendChild(val);
+            var btn = document.createElement('button');
+            btn.className = 'ts-copy';
+            btn.textContent = t('common.copy','复制');
+            btn.addEventListener('click', function () { copyToClipboard(row.value, btn); });
+            div.appendChild(left); div.appendChild(btn);
+            resultList.appendChild(div);
+          })(rows[i]);
+        }
+      }
+
+      function run(){
+        var input = inputEl.value;
+        errorBox.style.display = 'none';
+        if (!input.trim()) { resultList.innerHTML = ''; setStatus(t('emptyInput','请输入时间戳或日期'),'error'); return; }
+        try {
+          var date = parseTs(input);
+          renderRows(date);
+          setStatus('');
+        } catch (e) {
+          resultList.innerHTML = '';
+          errorBox.textContent = e.message;
+          errorBox.style.display = 'block';
+          setStatus(t('invalidTs','无法识别的日期或时间戳'),'error');
+        }
+      }
+
+      inputEl.addEventListener('input', run);
+      document.getElementById('nowBtn').addEventListener('click', function () { inputEl.value = String(Math.floor(Date.now() / 1000)); run(); });
+      document.getElementById('nowMsBtn').addEventListener('click', function () { inputEl.value = String(Date.now()); run(); });
+      document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; resultList.innerHTML = ''; errorBox.style.display = 'none'; setStatus(''); inputEl.focus(); });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF合并 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.card-title{font-size:var(--font-size-sm);font-weight:600;}
+.hint{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:8px;}
+.file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:8px;font-size:var(--font-size-sm);}
+.file-row.drag{opacity:.4;}
+.file-row.drop-before{border-left:3px solid var(--color-accent);}
+.row-thumb{width:34px;height:46px;object-fit:contain;border:1px solid var(--color-border);border-radius:4px;flex-shrink:0;background:#fff;}
+.file-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);flex-shrink:0;}
+.handle{cursor:grab;color:var(--color-text-disabled);user-select:none;flex-shrink:0;}
+.remove-btn{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;flex-shrink:0;}
+.remove-btn:hover{color:var(--color-error);}
+.link-btn{background:none;border:none;cursor:pointer;font-size:var(--font-size-xs);color:var(--color-text-secondary);padding:2px 6px;}
+.link-btn:hover{color:var(--color-text-primary);}
+.page-grid{display:flex;flex-wrap:wrap;gap:10px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);min-height:60px;margin-top:8px;}
+.page-item{width:64px;cursor:grab;user-select:none;}
+.page-item.drag{opacity:.35;}
+.page-item.drop-before{border-left:3px solid var(--color-accent);}
+.page-item img{width:100%;border:1px solid var(--color-border);border-radius:4px;background:#fff;display:block;}
+.pg-no{font-size:10px;text-align:center;color:var(--color-text-secondary);margin-top:2px;}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+.loading-note{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:8px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">PDF合并</h1>
+<p class="tool-desc" data-i18n="desc">将多个PDF文件合并为一个文档。安全且私密。</p>
+<div class="card">
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">📄</div>
+<div class="dz-label" data-i18n="dragDropMultiplePdf">拖放 · 多文件 · PDF</div>
+<div class="dz-sub" data-i18n="uploadPdfFiles">上传PDF文件</div>
+</div>
+<input type="file" id="fileInput" accept=".pdf,application/pdf" multiple style="display:none">
+</div>
+<div class="card" id="filesCard" style="display:none">
+<div class="card-head"><span class="card-title" id="fileCount"></span><button class="link-btn" id="clearBtn" data-i18n="removeAll">全部删除</button></div>
+<div id="fileList"></div>
+<p class="hint" data-i18n="dragToReorder">拖拽以重新排序</p>
+<div class="loading-note" id="loadingNote" style="display:none" data-i18n="loadingPreviews">加载页面预览…</div>
+</div>
+<div class="card" id="pagesCard" style="display:none">
+<div class="card-head"><span class="card-title" data-i18n="arrangePages">排列页面 — 拖拽以自定义顺序</span></div>
+<div id="pageGrid" class="page-grid"></div>
+<p class="hint" data-i18n="reorderFilesResets">重新排列上方文件将重置页面顺序</p>
+</div>
+<div class="card">
+<div class="action-row">
+<button class="btn btn-primary" id="mergeBtn" disabled data-i18n="mergePdfsBtn">合并为一个</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var files=[];
+var allPages=[];
+var busy=false;
+var dz=$('dropZone'),fi=$('fileInput'),fl=$('fileList'),mg=$('mergeBtn');
+var filesCard=$('filesCard'),pagesCard=$('pagesCard'),loadingNote=$('loadingNote');
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+
+function closest(el,sel,root){
+  while(el&&el!==root){if(el.matches&&el.matches(sel))return el;el=el.parentNode;}
+  return null;
+}
+function getDropIdx(e,items){
+  var n=items.length,i,r;
+  for(i=0;i<n;i++){
+    r=items[i].getBoundingClientRect();
+    if(e.clientY<r.top+r.height/2||(e.clientY<r.bottom&&e.clientX<r.left+r.width/2))return i;
+  }
+  return n;
+}
+function moveArr(arr,from,to){
+  if(from===to)return;
+  var it=arr.splice(from,1)[0];
+  arr.splice(to>from?to-1:to,0,it);
+}
+function clearMarks(container,sel){
+  var els=container.querySelectorAll(sel),i;
+  for(i=0;i<els.length;i++){els[i].classList.remove('drag');els[i].classList.remove('drop-before');}
+}
+function enableReorder(container,sel,onChange){
+  var dragEl=null,from=-1,to=-1;
+  function idxOf(el){var a=container.querySelectorAll(sel),i;for(i=0;i<a.length;i++){if(a[i]===el)return i;}return -1;}
+  container.addEventListener('pointerdown',function(e){
+    var t=closest(e.target,sel,container);
+    if(!t)return;
+    if(closest(e.target,'.remove-btn,.rm',container))return;
+    e.preventDefault();
+    dragEl=t;from=idxOf(t);
+    try{t.setPointerCapture(e.pointerId);}catch(err){}
+    t.classList.add('drag');
+  });
+  container.addEventListener('pointermove',function(e){
+    if(!dragEl)return;
+    var items=container.querySelectorAll(sel);
+    to=getDropIdx(e,items);
+    clearMarks(container,sel);
+    if(to<items.length)items[to].classList.add('drop-before');
+  });
+  function up(){
+    if(!dragEl)return;
+    if(from!==to&&to>=0)onChange(from,to);
+    dragEl=null;from=-1;to=-1;
+    clearMarks(container,sel);
+  }
+  container.addEventListener('pointerup',up);
+  container.addEventListener('pointercancel',up);
+}
+function fmtSize(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(2)+' MB';
+}
+function download(blob,name){
+  var u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(u);},3000);
+}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function renderFiles(){
+  var html='',i;
+  for(i=0;i<files.length;i++){
+    var f=files[i];
+    html+='<div class="file-row"><span class="handle">⠿</span>'
+      +(f.thumb?'<img class="row-thumb" src="'+f.thumb+'" alt="">':'<span class="row-thumb" style="display:inline-block"></span>')
+      +'<span class="file-name">'+htmlEscape(f.file.name)+'</span>'
+      +'<span class="file-meta">'+fmtSize(f.file.size)+(f.pageCount?' · '+f.pageCount+'p':'')+'</span>'
+      +'<button class="remove-btn rm" data-i="'+i+'" title="×">✕</button></div>';
+  }
+  fl.innerHTML=html;
+  filesCard.style.display=files.length?'block':'none';
+  $('fileCount').textContent=files.length+' '+t('dragDropMultiplePdf','个PDF');
+  var btns=fl.querySelectorAll('.remove-btn'),k;
+  for(k=0;k<btns.length;k++){btns[k].onclick=function(){removeFile(parseInt(this.getAttribute('data-i'),10));};}
+}
+function removeFile(i){
+  files.splice(i,1);
+  rebuildAllPages();
+  renderFiles();
+  renderPages();
+  setBusy(false);
+  setStatus('');
+  updateMergeBtn();
+}
+function renderPages(){
+  var html='',i;
+  for(i=0;i<allPages.length;i++){
+    html+='<div class="page-item" title="'+htmlEscape(files[allPages[i].fileIdx].file.name)+'">'
+      +'<img src="'+allPages[i].thumb+'" alt="p'+(allPages[i].pageIdx+1)+'"><div class="pg-no">'+(allPages[i].pageIdx+1)+'</div></div>';
+  }
+  $('pageGrid').innerHTML=html;
+  pagesCard.style.display=allPages.length?'block':'none';
+}
+function rebuildAllPages(){
+  var next=[],i,p;
+  for(i=0;i<files.length;i++){
+    for(p=0;p<files[i].thumbs.length;p++){
+      next.push({fileIdx:i,pageIdx:p,thumb:files[i].thumbs[p]});
+    }
+  }
+  allPages=next;
+}
+function updateMergeBtn(){
+  mg.disabled=busy||files.length<2;
+  if(files.length>=2&&allPages.length){mg.textContent=t('mergePdfsBtn','合并为一个')+' ('+allPages.length+'p)';}
+  else{mg.textContent=t('mergePdfsBtn','合并为一个');}
+}
+function addFiles(list){
+  if(!list||!list.length)return;
+  var pdfs=[],i;
+  for(i=0;i<list.length;i++){
+    var f=list[i];
+    var isPdf=(f.type==='application/pdf')||(f.name&&f.name.toLowerCase().indexOf('.pdf')!==-1);
+    if(!isPdf){continue;}
+    if(f.size>MAX_MB*1048576){setStatus(htmlEscape(f.name)+' '+t('tooLarge','超过')+' '+MAX_MB+'MB','error');continue;}
+    pdfs.push(f);
+  }
+  if(!pdfs.length)return;
+  setBusy(true);
+  loadingNote.style.display='block';
+  var todo=pdfs.length;
+  function done(){
+    todo--;
+    if(todo===0){setBusy(false);loadingNote.style.display='none';updateMergeBtn();}
+  }
+  pdfs.forEach(function(f){
+    var entry={file:f,pageCount:0,thumb:'',thumbs:[]};
+    files.push(entry);
+    readAB(f,function(buf){
+      PDFLib.PDFDocument.load(new Uint8Array(buf)).then(function(pdf){
+        entry.pageCount=pdf.getPageCount();
+        renderThumbs(entry,f).then(function(){
+          rebuildAllPages();
+          renderFiles();renderPages();
+          done();
+        },function(){done();});
+      }).catch(function(err){
+        var idx=files.indexOf(entry);
+        if(idx>-1)files.splice(idx,1);
+        setStatus(htmlEscape(f.name)+': '+t('badPdf','无法解析的PDF文件'),'error');
+        renderFiles();renderPages();
+        done();
+      });
+    });
+  });
+}
+function renderThumbs(entry,file){
+  return new Promise(function(res,rej){
+    readAB(file,function(buf){
+      pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise.then(function(pdf){
+        var seq=[],i;
+        for(i=1;i<=pdf.numPages;i++)seq.push(i);
+        var chain=Promise.resolve();
+        seq.forEach(function(pn){
+          chain=chain.then(function(){
+            return pdf.getPage(pn).then(function(page){
+              var vp=page.getViewport({scale:0.22});
+              var c=document.createElement('canvas');
+              c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+              return page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise.then(function(){
+                var url=c.toDataURL('image/jpeg',0.78);
+                c.width=0;
+                entry.thumbs.push(url);
+              });
+            });
+          });
+        });
+        chain.then(function(){pdf.destroy();entry.thumb=entry.thumbs[0]||'';res();},function(){res();});
+      },function(){res();});
+    },function(){res();});
+  });
+}
+enableReorder($('fileList'),'.file-row',function(from,to){
+  moveArr(files,from,to);
+  rebuildAllPages();
+  renderFiles();renderPages();
+  setStatus(t('reorderFilesResets','重新排列上方文件将重置页面顺序'));
+});
+enableReorder($('pageGrid'),'.page-item',function(from,to){
+  moveArr(allPages,from,to);
+  renderPages();
+});
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');addFiles(e.dataTransfer.files);});
+fi.addEventListener('change',function(){addFiles(this.files);this.value='';});
+$('clearBtn').addEventListener('click',function(){files=[];allPages=[];renderFiles();renderPages();setBusy(false);updateMergeBtn();});
+mg.addEventListener('click',doMerge);
+function setBusy(v){busy=v;mg.disabled=v||files.length<2;mg.textContent=v?t('merging','合并中…'):t('mergePdfsBtn','合并为一个');}
+function doMerge(){
+  if(files.length<2||busy)return;
+  setBusy(true);
+  setStatus('');
+  var tasks=files.map(function(f){return new Promise(function(res){readAB(f.file,function(buf){res(PDFLib.PDFDocument.load(new Uint8Array(buf)));});});});
+  Promise.all(tasks).then(function(pdfs){
+    return PDFLib.PDFDocument.create().then(function(out){
+      var seq=allPages.map(function(p){return {pdf:pdfs[p.fileIdx],i:p.pageIdx};});
+      var copies=seq.map(function(s){
+        return out.copyPages(s.pdf,[s.i]).then(function(ps){out.addPage(ps[0]);});
+      });
+      return Promise.all(copies).then(function(){
+        return out.save();
+      });
+    });
+  }).then(function(bytes){
+    download(new Blob([bytes.buffer],{type:'application/pdf'}),'merged.pdf');
+    setStatus(t('mergedPdfDownloaded','合并PDF已下载！'));
+    setBusy(false);
+  }).catch(function(err){
+    setBusy(false);
+    setStatus(t('mergeFailed','合并失败：')+err.message,'error');
+  });
+}
+})();
+</script>
+</body>
+</html>

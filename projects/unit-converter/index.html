@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单位换算器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .uc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    .uc-tabs button { flex: 1; min-width: 100px; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .uc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .uc-row { display: flex; gap: var(--space-2); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .uc-row label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .uc-value { flex: 1; min-width: 160px; }
+    .uc-from { min-width: 200px; }
+    .uc-from select { width: 100%; height: 48px; padding: 0 var(--space-2); font-size: var(--font-size-base); border: 1px solid #DDDDDD; border-radius: var(--radius-md); background: var(--color-bg); outline: none; transition: border-color .15s, box-shadow .15s; }
+    .uc-from select:focus { border-color: var(--color-text-primary); box-shadow: var(--shadow-focus); }
+    .uc-result-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-1) 0; border-bottom: 1px solid var(--color-border); }
+    .uc-result-row:last-child { border-bottom: none; }
+    .uc-result-row .lbl { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .uc-result-row .val { font-family: var(--font-mono); font-weight: 600; word-break: break-all; text-align: right; }
+    .uc-result-row.highlight { background: var(--color-bg-soft); border-radius: var(--radius-sm); padding-left: var(--space-1); padding-right: var(--space-1); }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+  </header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">单位换算器</h1>
+    <p class="tool-desc" data-i18n="desc">即时换算长度、重量和温度单位，支持公制和英制，完全在浏览器中运行。</p>
+    <div class="card">
+      <div class="uc-tabs" id="catTabs">
+        <button data-cat="length" class="active" type="button" data-i18n="unitLength">长度</button>
+        <button data-cat="weight" type="button" data-i18n="unitWeight">重量</button>
+        <button data-cat="temperature" type="button" data-i18n="unitTemperature">温度</button>
+      </div>
+      <div class="uc-row">
+        <div class="uc-value">
+          <label data-i18n="unitValue">数值</label>
+          <input id="ucValue" class="input js-focus-input" type="number" value="1" step="any">
+        </div>
+        <div class="uc-from">
+          <label data-i18n="unitFrom">源单位</label>
+          <select id="ucFrom"></select>
+        </div>
+      </div>
+      <p class="tool-desc" style="margin-bottom:var(--space-1);font-size:var(--font-size-sm);" data-i18n="unitConvertAll">全部换算结果</p>
+      <div id="ucResults"></div>
+    </div>
+    <div class="output-box">
+      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script>
+    (function () {
+      var DATA = {
+        length: {
+          units: ['m', 'km', 'cm', 'mm', 'ft', 'in', 'mi', 'yd'],
+          factors: { m: 1, km: 1000, cm: 0.01, mm: 0.001, ft: 0.3048, in: 0.0254, mi: 1609.344, yd: 0.9144 }
+        },
+        weight: {
+          units: ['kg', 'g', 'mg', 'lb', 'oz', 't'],
+          factors: { kg: 1, g: 0.001, mg: 0.000001, lb: 0.453592, oz: 0.0283495, t: 1000 }
+        },
+        temperature: {
+          units: ['C', 'F', 'K'],
+          factors: null
+        }
+      };
+      var UNIT_LABEL_KEY = {
+        m: 'unitM', km: 'unitKm', cm: 'unitCm', mm: 'unitMm',
+        ft: 'unitFt', in: 'unitIn', mi: 'unitMi', yd: 'unitYd',
+        kg: 'unitKg', g: 'unitG', mg: 'unitMg', lb: 'unitLb',
+        oz: 'unitOz', t: 'unitTon',
+        C: 'unitCelsius', F: 'unitFahrenheit', K: 'unitKelvin'
+      };
+      var category = 'length';
+      var valueEl = document.getElementById('ucValue');
+      var fromEl = document.getElementById('ucFrom');
+      var resultsEl = document.getElementById('ucResults');
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      function convertTemp(val, from, to) {
+        var celsius = from === 'C' ? val : from === 'F' ? (val - 32) * 5 / 9 : val - 273.15;
+        return to === 'C' ? celsius : to === 'F' ? celsius * 9 / 5 + 32 : celsius + 273.15;
+      }
+
+      function fmtNum(n) {
+        if (!isFinite(n)) return '—';
+        if (n === 0) return '0';
+        var abs = Math.abs(n);
+        if (abs >= 0.001 && abs < 1e9) return parseFloat(n.toPrecision(6)).toString();
+        return n.toExponential(4);
+      }
+
+      function unitLabel(u) {
+        var key = UNIT_LABEL_KEY[u];
+        return t(key, key);
+      }
+
+      function renderFrom() {
+        fromEl.innerHTML = '';
+        var units = DATA[category].units;
+        var i, opt;
+        for (i = 0; i < units.length; i++) {
+          opt = document.createElement('option');
+          opt.value = units[i];
+          opt.textContent = units[i] + ' — ' + unitLabel(units[i]);
+          fromEl.appendChild(opt);
+        }
+      }
+
+      function convert() {
+        var num = parseFloat(valueEl.value);
+        var valid = !isNaN(num) && String(valueEl.value).trim() !== '';
+        var from = fromEl.value;
+        resultsEl.innerHTML = '';
+        if (!valid) {
+          outputEl.textContent = '';
+          return;
+        }
+        var units = DATA[category].units;
+        var i, row, lbl, val, converted;
+        var lines = [];
+        for (i = 0; i < units.length; i++) {
+          var u = units[i];
+          if (category === 'temperature') {
+            converted = fmtNum(convertTemp(num, from, u));
+          } else {
+            converted = fmtNum(num * DATA[category].factors[from] / DATA[category].factors[u]);
+          }
+          row = document.createElement('div');
+          row.className = 'uc-result-row' + (u === from ? ' highlight' : '');
+          lbl = document.createElement('span');
+          lbl.className = 'lbl';
+          lbl.textContent = u + ' (' + unitLabel(u) + ')';
+          val = document.createElement('span');
+          val.className = 'val';
+          val.textContent = converted;
+          row.appendChild(lbl);
+          row.appendChild(val);
+          resultsEl.appendChild(row);
+          lines.push(u + ': ' + converted);
+        }
+        outputEl.textContent = lines.join('\n');
+      }
+
+      var tabBtns = document.querySelectorAll('#catTabs button');
+      var j;
+      for (j = 0; j < tabBtns.length; j++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            category = btn.getAttribute('data-cat');
+            for (var k = 0; k < tabBtns.length; k++) tabBtns[k].className = '';
+            btn.className = 'active';
+            renderFrom();
+            convert();
+          });
+        })(tabBtns[j]);
+      }
+
+      valueEl.addEventListener('input', convert);
+      fromEl.addEventListener('change', convert);
+
+      copyBtn.addEventListener('click', function () {
+        if (outputEl.textContent) {
+          copyToClipboard(outputEl.textContent, copyBtn);
+          setStatus(t('common.copied', '已复制'));
+        }
+      });
+
+      renderFrom();
+      convert();
+    })();
+  </script>
+</body>
+</html>

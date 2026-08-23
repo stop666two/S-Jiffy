@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>银行卡BIN查询 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.bin-row{display:flex;gap:12px;flex-wrap:wrap;}
+.bin-input{flex:1 1 260px;height:48px;padding:0 var(--space-2);font-size:var(--font-size-base);letter-spacing:2px;font-family:var(--font-mono);border:1px solid #DDDDDD;border-radius:var(--radius-md);outline:none;}
+.bin-input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.info-row{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}
+.info-row:last-child{border-bottom:none;}
+.info-row .k{color:var(--color-text-secondary);flex-shrink:0;}
+.info-row .v{text-align:right;word-break:break-all;}
+.result-card{margin-top:var(--space-2);}
+.note{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-2);line-height:1.7;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">银行卡BIN查询</h1>
+<p class="tool-desc" data-i18n="desc">输入银行卡前6-8位数字，查询发卡行、国家、卡类型和品牌信息。</p>
+<div class="card">
+<div class="bin-row">
+<input id="binInput" class="bin-input js-focus-input" type="text" inputmode="numeric" maxlength="19" placeholder="4111 1111 1111 1111" aria-label="BIN">
+<button id="lookupBtn" class="btn btn-primary" data-i18n="lookUpBtn">查询</button>
+</div>
+<div class="hint" id="digitHint"></div>
+<div class="result-card card" id="resultCard" style="display:none;"></div>
+<div class="note" id="dataNote" style="display:none;">数据来源：内置精简静态表（常见品牌规则 + 主要国内发卡行 BIN），非权威完整数据库，结果仅供参考。</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var BANKS=[
+{b:'622202',name:'中国工商银行',type:'借记卡',level:'牡丹灵通卡'},
+{b:'621226',name:'中国工商银行',type:'借记卡',level:'牡丹卡'},
+{b:'621558',name:'中国工商银行',type:'信用卡',level:'牡丹卡'},
+{b:'622848',name:'中国农业银行',type:'借记卡',level:'金穗卡'},
+{b:'621336',name:'中国农业银行',type:'借记卡',level:'金穗卡'},
+{b:'622700',name:'中国建设银行',type:'借记卡',level:'龙卡'},
+{b:'621700',name:'中国建设银行',type:'借记卡',level:'龙卡通'},
+{b:'622588',name:'招商银行',type:'借记卡',level:'一卡通'},
+{b:'622609',name:'招商银行',type:'借记卡',level:'金葵花卡'},
+{b:'621483',name:'招商银行',type:'借记卡',level:'一卡通'},
+{b:'622262',name:'中国民生银行',type:'借记卡',level:'民生卡'},
+{b:'622600',name:'中国民生银行',type:'信用卡',level:'民生信用卡'},
+{b:'622686',name:'中国光大银行',type:'借记卡',level:'阳光卡'},
+{b:'622688',name:'中国光大银行',type:'信用卡',level:'阳光信用卡'},
+{b:'622689',name:'浦发银行',type:'借记卡',level:'东方卡'},
+{b:'622152',name:'浦发银行',type:'信用卡',level:'浦发信用卡'},
+{b:'622155',name:'兴业银行',type:'信用卡',level:'兴业信用卡'},
+{b:'622156',name:'兴业银行',type:'借记卡',level:'兴业卡'},
+{b:'622633',name:'中信银行',type:'信用卡',level:'中信信用卡'},
+{b:'622690',name:'中信银行',type:'借记卡',level:'中信卡'},
+{b:'622285',name:'交通银行',type:'借记卡',level:'太平洋卡'},
+{b:'622923',name:'交通银行',type:'信用卡',level:'太平洋信用卡'},
+{b:'622525',name:'平安银行',type:'借记卡',level:'平安卡'},
+{b:'622526',name:'平安银行',type:'信用卡',level:'平安信用卡'},
+{b:'621661',name:'中国银行',type:'借记卡',level:'长城卡'},
+{b:'622752',name:'中国银行',type:'信用卡',level:'长城信用卡'},
+{b:'621288',name:'中国银行',type:'借记卡',level:'长城电子借记卡'},
+{b:'622188',name:'中国邮政储蓄银行',type:'信用卡',level:'邮储信用卡'},
+{b:'621456',name:'中国邮政储蓄银行',type:'借记卡',level:'绿卡'},
+{b:'622632',name:'华夏银行',type:'借记卡',level:'华夏卡'},
+{b:'622630',name:'华夏银行',type:'信用卡',level:'华夏信用卡'},
+{b:'622568',name:'广发银行',type:'借记卡',level:'广发卡'},
+{b:'622578',name:'广发银行',type:'信用卡',level:'广发信用卡'}
+];
+var BRANDS=[
+{name:'Visa',test:function(p){return p.charAt(0)==='4';},country:'美国'},
+{name:'Mastercard',test:function(p){return /^5[1-5]/.test(p)||(p.length>=4&&parseInt(p.slice(0,4),10)>=2221&&parseInt(p.slice(0,4),10)<=2720);},country:'美国'},
+{name:'美国运通 (Amex)',test:function(p){return /^3[47]/.test(p);},country:'美国'},
+{name:'银联 (UnionPay)',test:function(p){return /^62/.test(p)||/^9[0-9]/.test(p);},country:'中国'},
+{name:'Discover',test:function(p){return /^(6011|64[4-9]|65)/.test(p);},country:'美国'},
+{name:'JCB',test:function(p){return /^35/.test(p);},country:'日本'},
+{name:'Diners Club',test:function(p){return /^(30[0-5]|36|38|39)/.test(p);},country:'美国'},
+{name:'Maestro',test:function(p){return /^(50|56|57|58|59|6[0-9])/.test(p)&&!/^(62|6011|64[4-9]|65)/.test(p);},country:'国际'}
+];
+var input=document.getElementById('binInput'),lookupBtn=document.getElementById('lookupBtn');
+var digitHint=document.getElementById('digitHint'),resultCard=document.getElementById('resultCard');
+var dataNote=document.getElementById('dataNote');
+function digits(){return input.value.replace(/\D/g,'').slice(0,8);}
+function renderHint(){
+  var d=digits();
+  if(d.length>0&&d.length<6){
+    digitHint.textContent=t('moreDigitsNeeded','还需输入 '+(6-d.length)+' 位数字').replace('{n}',6-d.length);
+  }else{digitHint.textContent='';}
+}
+function findBank(bin){
+  var best=null;
+  for(var i=0;i<BANKS.length;i++){
+    if(bin.indexOf(BANKS[i].b)===0){
+      if(!best||BANKS[i].b.length>best.b.length)best=BANKS[i];
+    }
+  }
+  return best;
+}
+function detectBrand(bin){
+  for(var i=0;i<BRANDS.length;i++){
+    if(BRANDS[i].test(bin))return BRANDS[i];
+  }
+  return null;
+}
+function lookup(){
+  var bin=digits();
+  if(bin.length<6){setStatus(t('moreDigitsNeeded','还需输入 '+(6-bin.length)+' 位数字').replace('{n}',6-bin.length),'error');return;}
+  lookupBtn.disabled=true;
+  lookupBtn.textContent=t('lookingUpLabel','查询中…');
+  setTimeout(function(){
+    var bank=findBank(bin),brand=detectBrand(bin);
+    var country=brand?brand.country:(bank?null:null);
+    var rows=[
+      {k:t('cardBrandLabel','卡品牌'),v:brand?brand.name:'未知'},
+      {k:t('cardTypeLabel','类型'),v:bank?bank.type:'—'},
+      {k:t('bankLabel','银行'),v:bank?bank.name:'未收录（精简表无匹配）'},
+      {k:t('cardLevelLabel','等级'),v:bank?bank.level:'—'},
+      {k:t('prepaidLabel','预付卡'),v:'未知'},
+      {k:t('countryRegionLabel','国家/地区'),v:country?country:'未知'}
+    ];
+    var html='';
+    for(var i=0;i<rows.length;i++){
+      html+='<div class="info-row"><span class="k">'+htmlEscape(rows[i].k)+'</span><span class="v">'+htmlEscape(rows[i].v)+'</span></div>';
+    }
+    resultCard.style.display='block';
+    resultCard.innerHTML=html;
+    dataNote.style.display='block';
+    setStatus(t('lookupDone','查询完成（内置静态表）'));
+    lookupBtn.disabled=false;
+    lookupBtn.textContent=t('lookUpBtn','查询');
+  },300);
+}
+lookupBtn.addEventListener('click',lookup);
+input.addEventListener('input',function(){
+  var v=input.value.replace(/[^\d\s]/g,'').slice(0,19);
+  input.value=v;
+  renderHint();
+});
+input.addEventListener('keydown',function(e){
+  if(e.key==='Enter')lookup();
+});
+})();
+</script>
+</body></html>

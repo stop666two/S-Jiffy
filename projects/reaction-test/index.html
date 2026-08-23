@@ -1,5 +1,249 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>反应速度测试 - S-Jiffy</title>
-  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.row label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}.row .input{width:130px}.game-area{text-align:center;padding:24px 0}.game-btn{width:120px;height:120px;border-radius:50%;border:none;font-size:18px;font-weight:600;cursor:pointer;transition:all .15s}.game-btn.ready{background:#4CAF50;color:#fff}.game-btn.waiting{background:#F44336;color:#fff}.game-btn:active{transform:scale(0.95)}.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.res-item{padding:12px;background:var(--color-bg-soft);border-radius:8px;text-align:center}.res-item .v{font-size:20px;font-weight:600}.res-item .l{font-size:12px;color:var(--color-text-secondary);margin-top:4px}</style></head><body><header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header><main class="tool-workspace"><h1>反应速度测试</h1><p class="tool-desc">测试视觉反应时间。</p><div class="card"><div class="game-area"><button id="reactionBtn" class="game-btn ready" style="background:#4CAF50;color:#fff">点击开始</button></div>
-<div class="res-grid"><div class="res-item"><div class="v" id="lastTime">—</div><div class="l">本次反应 (ms)</div></div><div class="res-item"><div class="v" id="avgTime">—</div><div class="l">平均反应 (ms)</div></div><div class="res-item"><div class="v" id="bestTime">—</div><div class="l">最快反应 (ms)</div></div><div class="res-item"><div class="v" id="totalTests">0</div><div class="l">测试次数</div></div></div></div><div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main><footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer><script src="../../assets/js/global.js"></script><script>(function(){var btn=document.getElementById("reactionBtn"),lt=document.getElementById("lastTime"),at=document.getElementById("avgTime"),bt=document.getElementById("bestTime"),tt=document.getElementById("totalTests"),o=document.getElementById("outputText");var state="waiting",timeout=null,startTime=0,total=0,sum=0,best=Infinity,testCount=0;
-btn.addEventListener("click",function(){if(state==="waiting"){btn.textContent="等待绿色...";btn.style.background="#FF9800";state="ready";var delay=1000+Math.random()*3000;timeout=setTimeout(function(){btn.textContent="点击!";btn.style.background="#4CAF50";startTime=Date.now();state="go"},delay)}else if(state==="go"){var rt=Date.now()-startTime;clearTimeout(timeout);testCount++;total+=rt;if(rt<best)best=rt;lt.textContent=rt;at.textContent=Math.round(total/testCount);bt.textContent=best;tt.textContent=testCount;o.textContent="反应时间: "+rt+" ms | 平均: "+Math.round(total/testCount)+" ms";setStatus(rt+"ms");btn.textContent="点击开始";btn.style.background="#4CAF50";state="waiting"}else if(state==="ready"){clearTimeout(timeout);btn.textContent="点击开始";btn.style.background="#4CAF50";state="waiting";setStatus("提前点击!","error")}});
-document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus("已复制")}});})();</script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反应时间测试 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.rounds-row{display:flex;align-items:center;gap:var(--space-1);margin-bottom:var(--space-2);}
+.rounds-row .lbl{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-right:4px;}
+.rounds-row button{padding:6px 14px;font-size:var(--font-size-sm);font-weight:600;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.rounds-row button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.rounds-row button:not(.active):hover{border-color:var(--color-text-primary);}
+.game-area{min-height:280px;border:2px solid var(--color-border);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-2);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;text-align:center;padding:var(--space-3);transition:all .2s;}
+.game-area.waiting{background:rgba(159,47,45,0.06);border-color:var(--color-error);}
+.game-area.ready{background:rgba(52,101,56,0.12);border-color:var(--color-success);}
+.game-area.between{background:var(--color-bg-soft);}
+.game-area .dot{width:48px;height:48px;border-radius:50%;}
+.game-area .dot.red{background:var(--color-error);}
+.game-area .dot.green{background:var(--color-success);box-shadow:0 0 24px rgba(52,101,56,0.5);}
+.game-area .big{font-size:44px;font-weight:800;}
+.game-area .mid{font-size:var(--font-size-lg);font-weight:600;}
+.game-area .sub{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.game-area .err{font-size:var(--font-size-sm);font-weight:600;color:var(--color-error);}
+.round-dots{display:flex;justify-content:center;gap:6px;margin-top:var(--space-2);}
+.round-dots i{width:10px;height:10px;border-radius:50%;background:var(--color-bg-soft);border:1px solid var(--color-border);}
+.round-dots i.done{background:var(--color-success);border-color:var(--color-success);}
+.round-dots i.cur{background:var(--color-text-primary);border-color:var(--color-text-primary);}
+.round-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:var(--space-3);}
+.round-chip{padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);text-align:center;min-width:64px;font-family:var(--font-mono);}
+.round-chip .n{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.round-chip .v{font-weight:700;font-size:var(--font-size-sm);}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-3);}
+.res-item{padding:var(--space-2);background:var(--color-bg-soft);border-radius:var(--radius-md);text-align:center;}
+.res-item .v{font-size:var(--font-size-lg);font-weight:700;font-family:var(--font-mono);}
+.res-item .l{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);margin-top:var(--space-3);}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">反应时间测试</h1>
+<p class="tool-desc" data-i18n="desc">测量你的反应时间。屏幕变绿时点击，5 轮取平均值。</p>
+<div class="card">
+<div class="rounds-row" id="roundsRow">
+<span class="lbl" id="roundsLbl">轮次</span>
+<button type="button" data-round="1" class="active">1 轮</button>
+<button type="button" data-round="5">5 轮（取平均）</button>
+</div>
+<div id="gameArea" class="game-area">
+<span class="dot red" id="dot"></span>
+<p class="mid" id="areaTitle">点击开始</p>
+<p class="sub" id="areaSub">变绿时点击</p>
+</div>
+<div class="round-dots" id="roundDots" style="display:none;"></div>
+<div class="round-list" id="roundList"></div>
+<div id="summaryGrid" class="summary-grid" style="display:none;">
+<div class="res-item"><div class="v" id="avgVal">—</div><div class="l" id="lblAvg">平均</div></div>
+<div class="res-item"><div class="v" id="bestVal">—</div><div class="l" id="lblBest">最快</div></div>
+<div class="res-item"><div class="v" id="worstVal">—</div><div class="l" id="lblWorst">最慢</div></div>
+</div>
+<div class="res-grid">
+<div class="res-item"><div class="v" id="lastVal">—</div><div class="l" id="lblLast">本次反应</div></div>
+<div class="res-item"><div class="v" id="avgAllVal">—</div><div class="l" id="lblAvgAll">平均反应</div></div>
+<div class="res-item"><div class="v" id="bestAllVal">—</div><div class="l" id="lblBestAll">最快反应</div></div>
+<div class="res-item"><div class="v" id="totalVal">0</div><div class="l" id="lblTotal">测试次数</div></div>
+</div>
+</div>
+<div class="output-box" style="margin-top:var(--space-2);"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var area=document.getElementById('gameArea'),dot=document.getElementById('dot');
+var areaTitle=document.getElementById('areaTitle'),areaSub=document.getElementById('areaSub');
+var roundsRow=document.getElementById('roundsRow'),roundDots=document.getElementById('roundDots');
+var roundList=document.getElementById('roundList'),summaryGrid=document.getElementById('summaryGrid');
+var output=document.getElementById('outputText');
+var roundCount=1,phase='idle',times=[],lastTime=null,tooEarly=false;
+var readyAt=0,timerId=0,betweenTimerId=0,doneRounds=0;
+var testCount=0,sumAll=0,bestAll=Infinity;
+
+function t(key,fb){return (window.I18N&&I18N.dict[key]!=null)?I18N.dict[key]:fb;}
+function fmt(key,fb,vars){var s=t(key,fb);for(var k in vars){if(vars.hasOwnProperty(k))s=s.split('{'+k+'}').join(vars[k]);}return s;}
+
+document.getElementById('roundsLbl').textContent=t('roundsLabel','轮次');
+document.getElementById('lblAvg').textContent=t('avgLabel','平均');
+document.getElementById('lblBest').textContent=t('bestLabel','最快');
+document.getElementById('lblWorst').textContent=t('worstLabel','最慢');
+document.getElementById('lblLast').textContent=t('lastLabel','本次反应');
+document.getElementById('lblAvgAll').textContent=t('avgLabel','平均');
+document.getElementById('lblBestAll').textContent=t('bestLabel','最快');
+document.getElementById('lblTotal').textContent=t('testsLabel','测试次数');
+var rb=roundsRow.querySelectorAll('button');
+for(var ri=0;ri<rb.length;ri++){
+  var isOne=rb[ri].getAttribute('data-round')==='1';
+  rb[ri].textContent=isOne?t('oneRound','1 轮'):t('fiveRoundsAvg','5 轮（取平均）');
+}
+
+function clearTimers(){if(timerId){clearTimeout(timerId);timerId=0;}if(betweenTimerId){clearTimeout(betweenTimerId);betweenTimerId=0;}}
+
+function reactionLabel(ms){
+  if(ms<150)return t('ratingSuperhuman','超人类');
+  if(ms<200)return t('ratingProGamer','职业玩家');
+  if(ms<250)return t('ratingGood','良好');
+  if(ms<350)return t('ratingAverage','平均水平');
+  return t('ratingSlow','偏慢');
+}
+
+function renderArea(){
+  if(phase==='idle'){
+    area.className='game-area';
+    dot.className='dot red';
+    areaTitle.textContent=t('clickToStart','点击开始');
+    areaSub.textContent=(roundCount===1?t('oneRound','1 轮'):t('fiveRoundsAvg','5 轮（取平均）'))+' · '+t('clickWhenGreen','变绿时点击');
+    if(tooEarly){
+      var e=document.createElement('p');e.className='err';e.id='earlyErr';
+      e.textContent=t('tooEarlyMsg','太早了！等绿色出现再点击');
+      areaSub.parentNode.insertBefore(e,areaSub.nextSibling);
+    }
+  }else if(phase==='waiting'){
+    area.className='game-area waiting';
+    dot.className='dot red';
+    areaTitle.textContent=t('waitMsg','等待…');
+    areaSub.textContent=t('dontClickYet','还没好，别点');
+  }else if(phase==='ready'){
+    area.className='game-area ready';
+    dot.className='dot green';
+    areaTitle.textContent='CLICK!';
+    areaSub.textContent='';
+  }else if(phase==='between'){
+    area.className='game-area between';
+    dot.style.display='none';
+    areaTitle.textContent=lastTime+'ms';
+    var rl=document.createElement('p');rl.className='mid';rl.style.fontSize='var(--font-size-base)';
+    rl.textContent=reactionLabel(lastTime);
+    areaSub.textContent=fmt('roundProgress','第 {done}/{total} 轮 · 下一轮即将开始…',{done:doneRounds,total:roundCount});
+    areaTitle.parentNode.insertBefore(rl,areaSub);
+  }else if(phase==='done'){
+    area.className='game-area';
+    dot.className='dot red';
+    areaTitle.textContent=t('doneClickRestart','完成！点击重新开始');
+    areaSub.textContent='';
+  }
+  if(phase!=='between'&&phase!=='ready')dot.style.display='';
+}
+
+function renderDots(){
+  roundDots.style.display=roundCount===5?'flex':'none';
+  if(roundCount!==5)return;
+  var html='';
+  for(var i=0;i<5;i++){
+    var cls=i<doneRounds?'done':(i===doneRounds&&phase!=='idle'&&phase!=='done'?'cur':'');
+    html+='<i class="'+cls+'"></i>';
+  }
+  roundDots.innerHTML=html;
+}
+
+function startWaiting(){
+  clearTimers();
+  tooEarly=false;
+  phase='waiting';
+  renderArea();renderDots();
+  var delay=1500+Math.random()*3500;
+  timerId=setTimeout(function(){
+    readyAt=performance.now();
+    phase='ready';
+    renderArea();
+  },delay);
+}
+
+function handleClick(){
+  if(phase==='idle'||phase==='done'){
+    clearTimers();
+    doneRounds=0;times=[];lastTime=null;
+    roundList.innerHTML='';
+    summaryGrid.style.display='none';
+    startWaiting();
+    return;
+  }
+  if(phase==='between')return;
+  if(phase==='waiting'){
+    clearTimers();
+    tooEarly=true;phase='idle';
+    renderArea();renderDots();
+    setStatus(t('tooEarlyMsg','太早了！等绿色出现再点击'),'error');
+    return;
+  }
+  if(phase==='ready'){
+    var rt=Math.round(performance.now()-readyAt);
+    doneRounds++;lastTime=rt;times.push(rt);
+    testCount++;sumAll+=rt;if(rt<bestAll)bestAll=rt;
+    var chip=document.createElement('div');
+    chip.className='round-chip';
+    chip.innerHTML='<div class="n">#'+doneRounds+'</div><div class="v">'+rt+'ms</div>';
+    roundList.appendChild(chip);
+    document.getElementById('lastVal').textContent=rt;
+    document.getElementById('avgAllVal').textContent=Math.round(sumAll/testCount);
+    document.getElementById('bestAllVal').textContent=bestAll===Infinity?'—':bestAll;
+    document.getElementById('totalVal').textContent=testCount;
+    if(doneRounds>=roundCount){
+      phase='done';
+      var avg=Math.round(times.reduce(function(a,b){return a+b;},0)/times.length);
+      var best=Math.min.apply(null,times);
+      var worst=Math.max.apply(null,times);
+      document.getElementById('avgVal').textContent=avg;
+      document.getElementById('bestVal').textContent=best;
+      document.getElementById('worstVal').textContent=worst;
+      summaryGrid.style.display='grid';
+      output.textContent='反应时间: '+avg+' ms | 平均: '+avg+' ms | 最快: '+best+' ms | 最慢: '+worst+' ms | 轮次: '+roundCount+' | 评级: '+reactionLabel(avg);
+      setStatus(avg+'ms · '+reactionLabel(avg));
+    }else{
+      phase='between';
+      output.textContent='反应时间: '+rt+' ms';
+      setStatus(rt+'ms');
+      renderArea();renderDots();
+      betweenTimerId=setTimeout(function(){startWaiting();},1200);
+      return;
+    }
+    renderArea();renderDots();
+  }
+}
+
+area.addEventListener('pointerdown',function(e){e.preventDefault();handleClick();});
+area.addEventListener('contextmenu',function(e){e.preventDefault();});
+rb[0].addEventListener('click',function(){setRound(1);});
+rb[1].addEventListener('click',function(){setRound(5);});
+function setRound(n){
+  if(phase==='idle'||phase==='done'){
+    roundCount=n;
+    for(var i=0;i<rb.length;i++)rb[i].className=rb[i].getAttribute('data-round')===String(n)?'active':'';
+    times=[];lastTime=null;doneRounds=0;tooEarly=false;
+    roundList.innerHTML='';summaryGrid.style.display='none';
+    renderArea();renderDots();
+  }
+}
+document.getElementById('copyBtn').addEventListener('click',function(){
+  if(output.textContent){copyToClipboard(output.textContent,this);setStatus(t('common.copied','已复制'));}
+});
+renderArea();renderDots();
+})();
+</script>
+</body>
+</html>

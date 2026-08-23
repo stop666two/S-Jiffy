@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水印工具 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.wm-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:720px){.wm-grid{grid-template-columns:1fr;}}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:var(--font-size-xs);padding:4px 8px;flex-shrink:0;}
+.file-bar .x:hover{color:var(--color-text-primary);}
+.tabs{display:flex;gap:8px;margin-bottom:12px;}
+.tab-btn{flex:1;padding:10px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;background:transparent;font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.tab-btn.on{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.opt-box{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;margin-bottom:12px;}
+.opt-group{margin-bottom:12px;}
+.opt-group:last-child{margin-bottom:0;}
+.opt-group label{font-size:var(--font-size-sm);display:block;margin-bottom:6px;color:var(--color-text-secondary);}
+.opt-group input[type=text]{width:100%;height:42px;padding:0 12px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;}
+.opt-group input[type=text]:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus);}
+.opt-group select{width:100%;height:42px;padding:0 10px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;background:var(--color-bg);}
+.opt-group input[type=color]{width:100%;height:40px;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:3px;cursor:pointer;}
+.opt-col2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row input[type=range]{flex:1;accent-color:var(--color-accent);}
+.slider-val{font-size:var(--font-size-xs);color:var(--color-text-secondary);min-width:44px;text-align:right;}
+.upload-btn{display:inline-flex;align-items:center;gap:6px;border:1px dashed var(--color-border);border-radius:var(--radius-md);padding:8px 16px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;background:transparent;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.upload-btn:hover{border-color:var(--color-text-primary);color:var(--color-text-primary);}
+.preview-head{font-size:var(--font-size-xs);color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.canvas-box{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-bg-soft);}
+canvas.preview-canvas{max-width:100%;display:block;cursor:grab;touch-action:none;}
+.canvas-hint{font-size:11px;color:var(--color-text-disabled);text-align:center;margin-top:6px;}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">水印工具</h1>
+<p class="tool-desc" data-i18n="desc">向照片添加文字或图片水印。选择位置、透明度和旋转角度。</p>
+<div class="card">
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">🏷️</div>
+<div class="dz-label" id="dzLabel">将图片拖放至此或点击上传</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<button class="x" id="changeBtn" data-i18n="wmChange">更换</button>
+</div>
+<div class="wm-grid">
+<div>
+<div class="tabs">
+<button class="tab-btn on" data-tab="text" data-i18n="wmTabText">文字水印</button>
+<button class="tab-btn" data-tab="image" data-i18n="wmTabImage">图片水印</button>
+</div>
+<div class="opt-box" id="textBox">
+<div class="opt-group">
+<label>水印文字</label>
+<input type="text" id="wmText" value="© Watermark">
+</div>
+<div class="opt-group">
+<label data-i18n="wmFont">字体</label>
+<select id="wmFont"></select>
+</div>
+<div class="opt-col2">
+<div class="opt-group">
+<label data-i18n="wmColor">颜色</label>
+<input type="color" id="wmColor" value="#ffffff">
+</div>
+<div class="opt-group">
+<label data-i18n="wmSize">大小</label>
+<div class="slider-row"><input type="range" id="wmSize" min="12" max="200" value="48"><span class="slider-val" id="wmSizeVal">48px</span></div>
+</div>
+</div>
+<div class="opt-group">
+<label data-i18n="wmOpacity">透明度</label>
+<div class="slider-row"><input type="range" id="wmOpacity" min="5" max="100" value="70"><span class="slider-val" id="wmOpacityVal">70%</span></div>
+</div>
+</div>
+<div class="opt-box" id="imgBox" style="display:none">
+<div class="opt-group">
+<label data-i18n="wmLogoImage">Logo / 水印图片</label>
+<button class="upload-btn" id="logoBtn"><span id="logoName" data-i18n="wmUploadLogo">上传 Logo</span></button>
+<input type="file" id="logoInput" accept="image/*" style="display:none">
+</div>
+<div class="opt-group">
+<label data-i18n="wmScale">缩放</label>
+<div class="slider-row"><input type="range" id="wmImgScale" min="5" max="80" value="20"><span class="slider-val" id="wmImgScaleVal">20%</span></div>
+</div>
+<div class="opt-group">
+<label data-i18n="wmOpacity">透明度</label>
+<div class="slider-row"><input type="range" id="wmImgOpacity" min="5" max="100" value="50"><span class="slider-val" id="wmImgOpacityVal">50%</span></div>
+</div>
+</div>
+<div class="opt-box">
+<div class="opt-col2">
+<div class="opt-group">
+<label data-i18n="wmPosition">位置</label>
+<select id="wmPos"></select>
+</div>
+<div class="opt-group">
+<label data-i18n="degrees">旋转角度</label>
+<div class="slider-row"><input type="range" id="wmRot" min="-180" max="180" value="0"><span class="slider-val" id="wmRotVal">0°</span></div>
+</div>
+</div>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="dlBtn" disabled data-i18n="wmDownloadBtn">下载水印图片</button>
+</div>
+</div>
+<div>
+<p class="preview-head" data-i18n="wmLivePreview">实时预览</p>
+<div class="canvas-box"><canvas class="preview-canvas" id="preview" width="400" height="300"></canvas></div>
+<div class="canvas-hint" id="loadingHint" data-i18n="wmDragHint">拖动预览区旋转 · 或使用下方滑块</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=50;
+var imgEl=null,file=null,wmImgEl=null,wmFile=null;
+var tab='text',pos='bottom-right',rotation=0,tile=false;
+var FONTS=['Arial','Verdana','Georgia','Times New Roman','Courier New','Impact','Trebuchet MS','sans-serif','serif','monospace'];
+var POSITIONS=[['top-left','wmPosTopLeft'],['top-right','wmPosTopRight'],['bottom-left','wmPosBottomLeft'],['bottom-right','wmPosBottomRight'],['center','wmPosCenter'],['tile','wmPosTile']];
+var dz=$('dropZone'),fi=$('fileInput'),cv=$('preview'),btn=$('dlBtn');
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb){var r=new FileReader();r.onload=function(){cb(r.result);};r.readAsArrayBuffer(f);}
+(function(){
+  var sel=$('wmFont'),i;
+  for(i=0;i<FONTS.length;i++){
+    var o=document.createElement('option');
+    o.value=FONTS[i];o.textContent=FONTS[i];
+    sel.appendChild(o);
+  }
+  sel.value='Arial';
+  var ps=$('wmPos'),j;
+  for(j=0;j<POSITIONS.length;j++){
+    var o2=document.createElement('option');
+    o2.value=POSITIONS[j][0];
+    o2.textContent=t(POSITIONS[j][1],POSITIONS[j][0]);
+    ps.appendChild(o2);
+  }
+})();
+function loadFile(f){
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  var url=URL.createObjectURL(f);
+  var im=new Image();
+  im.onload=function(){
+    imgEl=im;
+    file=f;
+    $('workCard').style.display='block';
+    $('fileName').textContent=f.name;
+    btn.disabled=false;
+    draw();
+    setStatus('');
+  };
+  im.onerror=function(){URL.revokeObjectURL(url);setStatus(t('badImage','无法加载图片'),'error');};
+  im.src=url;
+}
+function loadLogo(f){
+  var url=URL.createObjectURL(f);
+  var im=new Image();
+  im.onload=function(){wmImgEl=im;wmFile=f;$('logoName').textContent=f.name;draw();};
+  im.onerror=function(){URL.revokeObjectURL(url);setStatus(t('badImage','无法加载Logo图片'),'error');};
+  im.src=url;
+}
+function draw(){
+  if(!imgEl||!imgEl.naturalWidth)return;
+  var MAX_W=2400;
+  var scale=imgEl.naturalWidth>MAX_W?MAX_W/imgEl.naturalWidth:1;
+  cv.width=Math.round(imgEl.naturalWidth*scale);
+  cv.height=Math.round(imgEl.naturalHeight*scale);
+  var ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.drawImage(imgEl,0,0,cv.width,cv.height);
+  var text=$('wmText').value.trim();
+  if(tab==='text'&&text){
+    var size=Math.max(8,Math.round(parseInt($('wmSize').value,10)*scale));
+    var fam=$('wmFont').value;
+    ctx.save();
+    ctx.font='bold '+size+'px "'+fam+'", sans-serif';
+    ctx.fillStyle=$('wmColor').value;
+    ctx.globalAlpha=parseInt($('wmOpacity').value,10)/100;
+    ctx.textBaseline='top';
+    var tw=ctx.measureText(text).width;
+    var th=size*1.2;
+    var pad=Math.round(24*scale);
+    var xy=getXY(tw,th,pad);
+    if(tile){
+      var stepX=tw+Math.round(100*scale),stepY=th+Math.round(60*scale),ty,tx;
+      for(ty=-th;ty<cv.height+th;ty+=stepY){
+        for(tx=-tw;tx<cv.width+tw;tx+=stepX){
+          ctx.save();
+          ctx.translate(tx+tw/2,ty+th/2);
+          ctx.rotate(rotation*Math.PI/180);
+          ctx.fillText(text,-tw/2,-th/2);
+          ctx.restore();
+        }
+      }
+    }else{
+      ctx.save();
+      ctx.translate(xy[0]+tw/2,xy[1]+th/2);
+      ctx.rotate(rotation*Math.PI/180);
+      ctx.fillText(text,-tw/2,-th/2);
+      ctx.restore();
+    }
+    ctx.restore();
+  }else if(tab==='image'&&wmImgEl&&wmImgEl.naturalWidth>0){
+    var wmW=cv.width*parseInt($('wmImgScale').value,10)/100;
+    var wmH=(wmImgEl.naturalHeight/wmImgEl.naturalWidth)*wmW;
+    var pad2=Math.round(24*scale);
+    var xy2=getXY(wmW,wmH,pad2);
+    ctx.save();
+    ctx.globalAlpha=parseInt($('wmImgOpacity').value,10)/100;
+    if(tile){
+      var sx=wmW+Math.round(60*scale),sy=wmH+Math.round(40*scale),ty2,tx2;
+      for(ty2=-wmH;ty2<cv.height+wmH;ty2+=sy){
+        for(tx2=-wmW;tx2<cv.width+wmW;tx2+=sx){
+          ctx.save();
+          ctx.translate(tx2+wmW/2,ty2+wmH/2);
+          ctx.rotate(rotation*Math.PI/180);
+          ctx.drawImage(wmImgEl,-wmW/2,-wmH/2,wmW,wmH);
+          ctx.restore();
+        }
+      }
+    }else{
+      ctx.save();
+      ctx.translate(xy2[0]+wmW/2,xy2[1]+wmH/2);
+      ctx.rotate(rotation*Math.PI/180);
+      ctx.drawImage(wmImgEl,-wmW/2,-wmH/2,wmW,wmH);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+}
+function getXY(w,h,pad){
+  if(pos==='top-left')return [pad,pad];
+  if(pos==='top-right')return [cv.width-w-pad,pad];
+  if(pos==='bottom-left')return [pad,cv.height-h-pad];
+  if(pos==='center')return [(cv.width-w)/2,(cv.height-h)/2];
+  return [cv.width-w-pad,cv.height-h-pad];
+}
+function doDownload(){
+  if(!cv||!file)return;
+  btn.disabled=true;
+  btn.textContent=t('wmPreparingDownload','准备下载…');
+  var isPng=file.type.indexOf('png')!==-1;
+  cv.toBlob(function(blob){
+    if(blob){
+      var ext=isPng?'.png':'.jpg';
+      download(blob,file.name.replace(/\.[^/.]+$/,'')+'_watermarked'+ext);
+      setStatus(t('wmDownloaded','水印图片已下载'));
+    }
+    btn.disabled=false;
+    btn.textContent=t('wmDownloadBtn','下载水印图片');
+  },isPng?'image/png':'image/jpeg',0.92);
+}
+(function(){
+  var dragX=0,dragRot=0,grabbing=false;
+  cv.addEventListener('pointerdown',function(e){
+    if(!imgEl)return;
+    e.preventDefault();
+    grabbing=true;
+    dragX=e.clientX;dragRot=rotation;
+    try{cv.setPointerCapture(e.pointerId);}catch(err){}
+    cv.style.cursor='grabbing';
+  });
+  cv.addEventListener('pointermove',function(e){
+    if(!grabbing)return;
+    var delta=(e.clientX-dragX)*0.5;
+    rotation=Math.max(-180,Math.min(180,Math.round(dragRot+delta)));
+    $('wmRot').value=rotation;
+    $('wmRotVal').textContent=rotation+'°';
+    draw();
+  });
+  cv.addEventListener('pointerup',function(){grabbing=false;cv.style.cursor='grab';});
+  cv.addEventListener('pointercancel',function(){grabbing=false;cv.style.cursor='grab';});
+})();
+var tabBtns=document.querySelectorAll('.tab-btn'),i;
+for(i=0;i<tabBtns.length;i++){
+  tabBtns[i].addEventListener('click',function(){
+    tab=this.getAttribute('data-tab');
+    var k;
+    for(k=0;k<tabBtns.length;k++){tabBtns[k].classList.toggle('on',tabBtns[k]===this);}
+    $('textBox').style.display=tab==='text'?'block':'none';
+    $('imgBox').style.display=tab==='image'?'block':'none';
+    draw();
+  });
+}
+$('wmText').addEventListener('input',draw);
+$('wmFont').addEventListener('change',draw);
+$('wmColor').addEventListener('input',draw);
+$('wmSize').addEventListener('input',function(){$('wmSizeVal').textContent=this.value+'px';draw();});
+$('wmOpacity').addEventListener('input',function(){$('wmOpacityVal').textContent=this.value+'%';draw();});
+$('wmImgScale').addEventListener('input',function(){$('wmImgScaleVal').textContent=this.value+'%';draw();});
+$('wmImgOpacity').addEventListener('input',function(){$('wmImgOpacityVal').textContent=this.value+'%';draw();});
+$('wmRot').addEventListener('input',function(){rotation=parseInt(this.value,10);$('wmRotVal').textContent=rotation+'°';draw();});
+$('wmPos').addEventListener('change',function(){
+  if(this.value==='tile'){tile=true;}
+  else{tile=false;pos=this.value;}
+  draw();
+});
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('changeBtn').addEventListener('click',function(){fi.click();});
+$('logoBtn').addEventListener('click',function(){$('logoInput').click();});
+$('logoInput').addEventListener('change',function(){if(this.files.length)loadLogo(this.files[0]);this.value='';});
+btn.addEventListener('click',doDownload);
+$('dzLabel').textContent=t('dropImagesHere','将图片拖放至此或点击上传');
+$('dzSub').textContent='JPG · PNG · WebP · '+t('maxPerFile','每张最大')+' 50MB';
+})();
+</script>
+</body>
+</html>

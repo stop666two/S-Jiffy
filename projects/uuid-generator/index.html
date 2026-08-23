@@ -3,59 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UUID 生成器 - S-Jiffy</title>
+  <title>UUID生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.opt-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.uuid-list{font-family:var(--font-mono);font-size:13px;}
+.uuid-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--color-bg);word-break:break-all;}
+.uuid-row .uuid-copy{background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:var(--font-size-xs);flex-shrink:0;padding:4px 6px;border-radius:var(--radius-sm);}
+.uuid-row .uuid-copy:hover{color:var(--color-text-primary);background:rgba(0,0,0,0.03);}
+.preset-btn{height:36px;min-width:44px;padding:0 12px;font-size:var(--font-size-sm);}
+</style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1>UUID 生成器</h1>
-    <p class="tool-desc">生成 UUID v4，支持单条或批量生成。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+    <h1 data-i18n="h1">UUID 生成器</h1>
+    <p class="tool-desc" data-i18n="desc">生成加密安全的 UUID v4，支持批量生成、大小写与连字符格式切换。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
 
-    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">数量</label>
-      <input id="countInput" class="input" type="number" value="1" min="1" max="100" style="width:110px;">
-      <select id="formatSelect" class="input" style="width:auto; min-width:100px;">
-        <option value="lower">小写</option>
-        <option value="upper">大写</option>
-      </select>
-      <button id="generateBtn" class="btn btn-primary">生成</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+    <div class="card">
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:8px;" data-i18n="numberOfUuids">UUID数量</label>
+      <div class="opt-row">
+        <input id="countInput" class="input" type="number" value="5" min="1" max="100" style="width:110px;">
+        <button class="btn btn-secondary preset-btn" data-preset="1">1</button>
+        <button class="btn btn-secondary preset-btn" data-preset="5">5</button>
+        <button class="btn btn-secondary preset-btn" data-preset="10">10</button>
+        <button class="btn btn-secondary preset-btn" data-preset="20">20</button>
+      </div>
+      <div class="opt-row" style="margin-top:12px;">
+        <select id="formatSelect" class="input" style="width:auto;min-width:100px;">
+          <option value="lower">小写</option>
+          <option value="upper">大写</option>
+        </select>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="hyphenChk" checked> <span>含连字符</span>
+        </label>
+        <select id="versionSelect" class="input" style="width:auto;min-width:120px;">
+          <option value="v4">UUID v4（随机）</option>
+          <option value="v1">UUID v1（时间）</option>
+        </select>
+      </div>
+      <div class="opt-row" style="margin-top:12px;">
+        <button id="generateBtn" class="btn btn-primary">生成</button>
+        <button id="clearBtn" class="btn btn-secondary">清空</button>
+      </div>
     </div>
 
-    <div class="output-box" id="输出Container" style="min-height:200px;">
-      <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+    <div class="output-box" id="outputContainer" style="min-height:120px;">
+      <div id="outputText" class="uuid-list" style="display:block;padding-right:60px;"></div>
+      <button class="copy-btn" id="copyBtn">复制全部</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
+      'use strict';
       var countEl = document.getElementById('countInput'), formatEl = document.getElementById('formatSelect'), o = document.getElementById('outputText');
-      function uuid() {
+
+      function pad2(h){return (h.length<2)?'0'+h:h;}
+
+      function randomUuid(){
         var u;
-        try { u = crypto.randomUUID(); } catch (e) { u = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = crypto.getRandomValues(new Uint8Array(1))[0] % 16; var v = c === 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
+        try { u = crypto.randomUUID(); }
+        catch (e) {
+          var b = new Uint8Array(16);
+          crypto.getRandomValues(b);
+          b[6] = (b[6] & 0x0f) | 0x40;
+          b[8] = (b[8] & 0x3f) | 0x80;
+          var hex = '';
+          for (var i = 0; i < b.length; i++) hex += pad2(b[i].toString(16));
+          u = hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+        }
+        return u;
+      }
+
+      function timeUuid(){
+        var b = new Uint8Array(16);
+        crypto.getRandomValues(b);
+        var now = Date.now();
+        var hi = Math.floor(now / 0x100000000);
+        var lo = now % 0x100000000;
+        b[0] = (lo >>> 24) & 0xff; b[1] = (lo >>> 16) & 0xff; b[2] = (lo >>> 8) & 0xff; b[3] = lo & 0xff;
+        b[4] = (hi >>> 8) & 0xff; b[5] = hi & 0xff;
+        b[6] = ((b[6] & 0x0f) | 0x10) & 0xff;
+        b[7] = (b[7] & 0x3f) | 0x80;
+        var hex = '';
+        for (var i = 0; i < b.length; i++) hex += pad2(b[i].toString(16));
+        return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+      }
+
+      function genUuid(){
+        var u = (document.getElementById('versionSelect').value === 'v1') ? timeUuid() : randomUuid();
+        if (!document.getElementById('hyphenChk').checked) u = u.replace(/-/g, '');
         return formatEl.value === 'upper' ? u.toUpperCase() : u;
       }
+
+      function render(arr){
+        o.innerHTML = '';
+        for (var i = 0; i < arr.length; i++) {
+          (function (val){
+            var row = document.createElement('div');
+            row.className = 'uuid-row';
+            var span = document.createElement('span');
+            span.textContent = val;
+            var btn = document.createElement('button');
+            btn.className = 'uuid-copy';
+            btn.textContent = t('common.copy','复制');
+            btn.addEventListener('click', function(){ copyToClipboard(val, btn); });
+            row.appendChild(span); row.appendChild(btn);
+            o.appendChild(row);
+          })(arr[i]);
+        }
+      }
+
       document.getElementById('generateBtn').addEventListener('click', function () {
-        var n = parseInt(countEl.value) || 1;
+        var n = parseInt(countEl.value, 10) || 5;
         if (n < 1) n = 1;
         if (n > 100) n = 100;
+        countEl.value = n;
         var arr = [];
-        for (var i = 0; i < n; i++) arr.push(uuid());
-        o.textContent = arr.join('\n');
-        setStatus('已生成 ' + n + ' 个 UUID');
+        for (var i = 0; i < n; i++) arr.push(genUuid());
+        render(arr);
+        setStatus(t('generated','已生成 ')+n+t('uuidCount',' 个 UUID'));
       });
-      document.getElementById('clearBtn').addEventListener('click', function () { o.textContent = ''; setStatus(''); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+
+      var presets = document.querySelectorAll('.preset-btn');
+      for (var p = 0; p < presets.length; p++) {
+        (function(btn){
+          btn.addEventListener('click', function(){ countEl.value = btn.getAttribute('data-preset'); });
+        })(presets[p]);
+      }
+
+      document.getElementById('clearBtn').addEventListener('click', function () { o.innerHTML = ''; setStatus(''); });
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var arr = [];
+        var rows = o.querySelectorAll('.uuid-row span');
+        for (var i = 0; i < rows.length; i++) arr.push(rows[i].textContent);
+        if (arr.length) { copyToClipboard(arr.join('\n'), this); setStatus(t('common.copied','已复制')); }
+      });
     })();
-  if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
+  if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}
+  </script>
 </body>
 </html>

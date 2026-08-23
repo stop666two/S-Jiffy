@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word 转 PDF - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.dropzone{border:1.5px dashed var(--color-border);border-radius:var(--radius-md);padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-label{font-size:var(--font-size-sm);font-weight:500;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.note-box{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 16px;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:12px;}
+.file-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:12px;font-size:var(--font-size-sm);}
+.file-bar .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-bar .fm{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:12px;}
+.file-bar .x{background:none;border:none;cursor:pointer;color:var(--color-text-disabled);font-size:16px;padding:4px;}
+.file-bar .x:hover{color:var(--color-error);}
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">Word 转 PDF</h1>
+<p class="tool-desc" data-i18n="desc">在浏览器中将 Word 文档（.docx）转换为 PDF。格式本地保留，无需服务器上传。</p>
+<div class="card">
+<div class="note-box" data-i18n="wordToPdfNote">基于文本的转换 — 文本内容被提取并生成整洁的PDF。复杂样式、图像和表格可能无法传输。</div>
+<div class="dropzone" id="dropZone">
+<div class="dz-icon">📝</div>
+<div class="dz-label" data-i18n="uploadWordDoc">上传Word文档</div>
+<div class="dz-sub" id="dzSub"></div>
+</div>
+<input type="file" id="fileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none">
+</div>
+<div class="card" id="workCard" style="display:none">
+<div class="file-bar">
+<span class="fn" id="fileName"></span>
+<span class="fm" id="fileMeta"></span>
+<button class="x" id="removeBtn" title="×">✕</button>
+</div>
+<div class="action-row">
+<button class="btn btn-primary" id="convertBtn" disabled data-i18n="convertToPdf">转为PDF</button>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+/* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var MAX_MB=20;
+var file=null,busy=false;
+var dz=$('dropZone'),fi=$('fileInput'),btn=$('convertBtn');
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}
+function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
+function loadFile(f){
+  var isD=(f.type==='application/vnd.openxmlformats-officedocument.wordprocessingml.document')||(f.name&&f.name.toLowerCase().indexOf('.docx')!==-1);
+  if(!isD){setStatus(t('notDocx','请选择 .docx Word 文档'),'error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  file=f;
+  $('workCard').style.display='block';
+  $('fileName').textContent=f.name;
+  $('fileMeta').textContent=fmtSize(f.size);
+  setStatus('');
+  updateBtn();
+}
+function updateBtn(){
+  btn.disabled=busy||!file;
+  btn.textContent=busy?t('convertingDots','转换中…'):t('convertToPdf','转为PDF');
+}
+function wrapLines(font,text,fontSize,maxW){
+  var words=text.split(/\s+/).filter(Boolean);
+  var lines=[],current='',i;
+  for(i=0;i<words.length;i++){
+    var w=words[i];
+    var candidate=current?current+' '+w:w;
+    if(font.widthOfTextAtSize(candidate,fontSize)<=maxW){
+      current=candidate;
+    }else{
+      if(current)lines.push(current);
+      current=w;
+    }
+  }
+  if(current)lines.push(current);
+  return lines;
+}
+function doConvert(){
+  if(!file||busy)return;
+  busy=true;updateBtn();setStatus('');
+  readAB(file,function(buf){
+    var hdr=new Uint8Array(buf.slice(0,4));
+    if(hdr[0]!==0x50||hdr[1]!==0x4b||hdr[2]!==0x03||hdr[3]!==0x04){
+      busy=false;updateBtn();
+      setStatus(t('invalidDocx','无效的文件。请上传 .docx Word 文档——不支持 PDF 和图片。'),'error');
+      return;
+    }
+    mammoth.extractRawText({arrayBuffer:buf}).then(function(result){
+      var text=result.value;
+      if(!text.trim()){
+        busy=false;updateBtn();
+        setStatus(t('emptyDoc','文档中没有文本。文档可能为空或仅包含图片。'),'error');
+        return;
+      }
+      return PDFLib.PDFDocument.create().then(function(pdfDoc){
+        return pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica).then(function(font){
+          var fontSize=11,margin=60,lineH=fontSize*1.5;
+          var pageW=595,pageH=842,maxW=pageW-margin*2;
+          var lines=wrapLines(font,text,fontSize,maxW);
+          var linesPerPage=Math.floor((pageH-margin*2)/lineH);
+          var i,j;
+          for(i=0;i<lines.length;i+=linesPerPage){
+            var page=pdfDoc.addPage([pageW,pageH]);
+            var chunk=lines.slice(i,i+linesPerPage);
+            for(j=0;j<chunk.length;j++){
+              page.drawText(chunk[j],{
+                x:margin,
+                y:pageH-margin-j*lineH,
+                size:fontSize,
+                font:font,
+                color:PDFLib.rgb(0.1,0.1,0.1)
+              });
+            }
+          }
+          return pdfDoc.save();
+        });
+      }).then(function(bytes){
+        download(new Blob([bytes.buffer],{type:'application/pdf'}),file.name.replace(/\.docx?$/i,'.pdf'));
+        busy=false;updateBtn();
+        setStatus(t('convertedToPdf','已成功转换为PDF。'));
+      });
+    },function(){
+      busy=false;updateBtn();
+      setStatus(t('readDocxFail','无法读取文档。请确保是有效的 .docx Word 文件。'),'error');
+    });
+  },function(){
+    busy=false;updateBtn();
+    setStatus(t('readFailed','文件读取失败'),'error');
+  });
+}
+dz.addEventListener('click',function(){fi.click();});
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragover');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(){if(this.files.length)loadFile(this.files[0]);this.value='';});
+$('removeBtn').addEventListener('click',function(){file=null;$('workCard').style.display='none';updateBtn();setStatus('');});
+btn.addEventListener('click',doConvert);
+$('dzSub').textContent=t('supportedFormats','支持：{formats}').replace('{formats}','.docx')+' · '+t('maxDocxHint','最大20MB · .docx');
+})();
+</script>
+</body>
+</html>

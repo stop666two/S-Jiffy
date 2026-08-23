@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPS测试 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.game-desc{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
+.click-area{min-height:300px;border:2px solid var(--color-border);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-2);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;text-align:center;padding:var(--space-3);transition:border-color .2s,background .2s;}
+.click-area.running{border-color:var(--color-accent);background:var(--color-bg-soft);cursor:pointer;}
+.click-area.done{border-color:var(--color-success);cursor:default;}
+.click-area .big{font-size:52px;font-weight:800;font-family:var(--font-mono);}
+.click-area .mid{font-size:var(--font-size-lg);font-weight:600;}
+.click-area .sub{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.click-area .cps-live{font-size:32px;font-weight:700;color:var(--color-accent);font-family:var(--font-mono);}
+.progress-row{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-1);}
+.progress{width:160px;height:6px;background:var(--color-bg-soft);border-radius:9999px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--color-accent);transition:width .1s linear;}
+.progress-fill.low{background:var(--color-error);}
+.time-num{font-family:var(--font-mono);font-weight:700;font-size:var(--font-size-sm);}
+.result-panel{margin-top:var(--space-3);}
+.rating-line{text-align:center;font-size:var(--font-size-xl);font-weight:700;margin:var(--space-3) 0;}
+.rating-table{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-1);margin-bottom:var(--space-3);}
+.rt-item{text-align:center;padding:8px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-sm);}
+.rt-item .l{font-weight:700;font-size:var(--font-size-sm);}
+.rt-item .r{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.again-row{text-align:center;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">CPS测试</h1>
+<p class="tool-desc" data-i18n="desc">测试10秒内的点击速度，看看你每秒能点击多少次。</p>
+<div class="card">
+<p class="game-desc" id="gameDesc"></p>
+<div id="clickArea" class="click-area">
+<div class="icon" id="caIcon" style="font-size:36px;">🖱</div>
+<p class="mid" id="caTitle">点击开始</p>
+<p class="sub" id="caSub"></p>
+</div>
+<div id="resultPanel" class="result-panel" style="display:none;">
+<p class="rating-line" id="ratingLine"></p>
+<div class="rating-table">
+<div class="rt-item"><div class="l" id="rtCasual">休闲</div><div class="r">&lt; 5</div></div>
+<div class="rt-item"><div class="l" id="rtGood">良好</div><div class="r">5–7</div></div>
+<div class="rt-item"><div class="l" id="rtPro">专业</div><div class="r">7–10</div></div>
+<div class="rt-item"><div class="l" id="rtElite">精英</div><div class="r">10+</div></div>
+</div>
+<div class="again-row"><button id="restartBtn" class="btn btn-primary">重新测试</button></div>
+</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var DURATION=10;
+var area=document.getElementById('clickArea'),resultPanel=document.getElementById('resultPanel');
+var caIcon=document.getElementById('caIcon'),caTitle=document.getElementById('caTitle'),caSub=document.getElementById('caSub');
+var ratingLine=document.getElementById('ratingLine');
+var phase='idle',clicks=0,cps=0,timeLeft=DURATION,startAt=0,timerId=0;
+
+function t(key,fb){return (window.I18N&&I18N.dict[key]!=null)?I18N.dict[key]:fb;}
+function fmt(key,fb,vars){var s=t(key,fb);for(var k in vars){if(vars.hasOwnProperty(k))s=s.split('{'+k+'}').join(vars[k]);}return s;}
+
+document.getElementById('gameDesc').textContent=fmt('cpsInstruction','在 {duration} 秒内尽可能快地点击。点击下方区域开始。',{duration:DURATION});
+caTitle.textContent=t('clickToStart','点击开始');
+caSub.textContent=fmt('cpsSubtitle','{duration} 秒 CPS 测试',{duration:DURATION});
+document.getElementById('rtCasual').textContent=t('ratingCasual','休闲');
+document.getElementById('rtGood').textContent=t('ratingGood','良好');
+document.getElementById('rtPro').textContent=t('ratingPro','专业');
+document.getElementById('rtElite').textContent=t('ratingElite','精英');
+document.getElementById('restartBtn').textContent=t('cpsRestartTest','重新测试');
+
+function renderIdle(){
+  phase='idle';
+  area.className='click-area';
+  caIcon.style.display='block';
+  caTitle.textContent=t('clickToStart','点击开始');
+  caSub.textContent=fmt('cpsSubtitle','{duration} 秒 CPS 测试',{duration:DURATION});
+}
+function renderRunning(){
+  area.className='click-area running';
+  caIcon.style.display='none';
+  caTitle.innerHTML='<span class="big" id="cntBig">0</span>';
+  var cpsP=document.createElement('div');
+  cpsP.className='cps-live';cpsP.id='cpsLive';cpsP.textContent='0.0 CPS';
+  caTitle.appendChild(cpsP);
+  var pr=document.createElement('div');pr.className='progress-row';
+  pr.innerHTML='<div class="progress"><div class="progress-fill" id="progFill"></div></div><span class="time-num" id="progTime">'+DURATION+'s</span>';
+  caSub.parentNode.insertBefore(pr,caSub);
+  caSub.textContent=t('keepClicking','继续点击！');
+}
+function renderDone(){
+  area.className='click-area done';
+  caTitle.innerHTML='';
+  var big=document.createElement('div');big.className='big';big.textContent=cps.toFixed(2);
+  caTitle.appendChild(big);
+  var cpsL=document.createElement('div');cpsL.className='cps-live';cpsL.textContent='CPS';
+  caTitle.appendChild(cpsL);
+  caSub.textContent=fmt('totalClicksIn','{duration} 秒内共点击 {clicks} 次',{duration:DURATION,clicks:clicks})+' · '+t('cpsTestComplete','测试结束');
+  var rating;
+  if(cps>=14)rating=t('ratingGodlike','神级');
+  else if(cps>=10)rating=t('ratingElite','精英');
+  else if(cps>=7)rating=t('ratingPro','专业');
+  else if(cps>=5)rating=t('ratingGood','良好');
+  else rating=t('ratingCasual','休闲');
+  ratingLine.textContent=rating;
+  resultPanel.style.display='block';
+  setStatus(fmt('totalClicksIn','{duration} 秒内共点击 {clicks} 次',{duration:DURATION,clicks:clicks}));
+}
+
+function start(){
+  clicks=0;cps=0;timeLeft=DURATION;startAt=Date.now();
+  resultPanel.style.display='none';
+  renderRunning();
+  phase='running';
+  document.getElementById('cntBig').textContent=0;
+  document.getElementById('progFill').style.width='0%';
+  document.getElementById('progFill').className='progress-fill';
+  document.getElementById('progTime').textContent=DURATION+'s';
+  timerId=setInterval(function(){
+    var elapsed=(Date.now()-startAt)/1000;
+    var left=Math.max(0,DURATION-elapsed);
+    var cpsP=document.getElementById('cpsLive');
+    if(cpsP)cpsP.textContent=(clicks/Math.max(elapsed,0.01)).toFixed(1)+' CPS';
+    var pf=document.getElementById('progFill'),pt=document.getElementById('progTime');
+    if(pf){pf.style.width=((DURATION-left)/DURATION*100)+'%';if(left<=3)pf.className='progress-fill low';}
+    if(pt)pt.textContent=Math.ceil(left)+'s';
+    if(elapsed>=DURATION){
+      clearInterval(timerId);
+      cps=clicks/DURATION;
+      phase='done';
+      renderDone();
+    }
+  },100);
+}
+
+function handleClick(){
+  if(phase==='idle'){start();return;}
+  if(phase==='running'){clicks++;var cb=document.getElementById('cntBig');if(cb)cb.textContent=clicks;}
+}
+
+area.addEventListener('pointerdown',function(e){e.preventDefault();handleClick();});
+area.addEventListener('contextmenu',function(e){e.preventDefault();});
+document.getElementById('restartBtn').addEventListener('click',function(){renderIdle();resultPanel.style.display='none';setStatus('');});
+})();
+</script>
+</body>
+</html>

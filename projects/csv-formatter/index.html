@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV格式化器 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.csv-input-wrap{border:2px dashed var(--color-border);border-radius:var(--radius-md);transition:border-color 0.15s,background 0.15s;}
+.csv-input-wrap.drag-on{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.csv-input-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 4px;flex-wrap:wrap;gap:8px;}
+.csv-input-head .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.file-chip{font-size:var(--font-size-xs);color:var(--color-accent-hover);background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:9999px;padding:2px 10px;}
+.upload-btn{background:transparent;border:1px solid var(--color-border);color:var(--color-text-secondary);font-size:var(--font-size-xs);padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;}
+.upload-btn:hover{color:var(--color-text-primary);border-color:var(--color-text-primary);}
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:var(--space-2);}
+.opt-cell label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.chk-cell{display:flex;flex-direction:column;gap:8px;justify-content:flex-end;padding-bottom:4px;font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.chk-cell label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--font-size-xs);}
+.act-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:var(--space-2);}
+.small-btn{background:transparent;border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-text-primary);font-size:var(--font-size-xs);padding:6px 12px;cursor:pointer;}
+.small-btn:hover{background:var(--color-bg-soft);}
+.small-btn:disabled{opacity:0.4;pointer-events:none;}
+.stats-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:var(--font-size-xs);color:var(--color-text-secondary);padding:10px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);margin-top:var(--space-2);}
+.stat-sep{color:var(--color-text-disabled);}
+.stat-delim{color:var(--color-accent-hover);}
+.stat-ok{color:var(--color-success);}
+.stat-err{color:var(--color-error);}
+.stat-warn{color:#B26A00;}
+.tab-bar{display:flex;gap:4px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:var(--space-2);background:var(--color-bg);}
+.tab-btn{flex:1;background:transparent;border:none;border-radius:var(--radius-sm);color:var(--color-text-secondary);font-size:var(--font-size-xs);padding:8px 10px;cursor:pointer;}
+.tab-btn.on{background:var(--color-text-primary);color:#FFFFFF;}
+.table-wrap{overflow:auto;max-height:480px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-top:var(--space-2);}
+.csv-table{width:100%;border-collapse:collapse;font-size:12px;}
+.csv-table th{position:sticky;top:0;background:var(--color-bg-soft);text-align:left;padding:8px 10px;font-weight:600;color:var(--color-text-primary);white-space:nowrap;border-bottom:1px solid var(--color-border);z-index:1;}
+.csv-table td{padding:6px 10px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid var(--color-border);}
+.csv-table tr:hover td{background:var(--color-bg-soft);}
+.csv-table tr.issue-row td{background:rgba(159,47,45,0.06);}
+.csv-table .row-num{color:var(--color-text-disabled);width:36px;}
+.cell-empty{color:var(--color-text-disabled);font-style:italic;}
+.muted-italic{color:var(--color-text-disabled);font-style:italic;}
+.empty-row{text-align:center;color:var(--color-text-secondary);padding:24px !important;}
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:var(--space-2);}
+.page-btn{background:transparent;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:6px 12px;font-size:var(--font-size-xs);cursor:pointer;color:var(--color-text-primary);}
+.page-btn:disabled{opacity:0.4;pointer-events:none;}
+.page-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.raw-head{display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-2);font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.raw-out{width:100%;min-height:300px;margin-top:8px;padding:12px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);resize:vertical;background:var(--color-bg-soft);}
+.issue-summary{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px;border-radius:var(--radius-sm);margin-top:var(--space-2);border:1px solid;flex-wrap:wrap;}
+.issue-summary.ok{background:rgba(52,101,56,0.08);border-color:rgba(52,101,56,0.35);}
+.issue-summary.err{background:rgba(159,47,45,0.08);border-color:rgba(159,47,45,0.35);}
+.issue-summary.warn{background:rgba(178,106,0,0.08);border-color:rgba(178,106,0,0.35);}
+.issue-title{font-size:13px;font-weight:600;}
+.issue-summary.ok .issue-title{color:var(--color-success);}
+.issue-summary.err .issue-title{color:var(--color-error);}
+.issue-summary.warn .issue-title{color:#B26A00;}
+.issue-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:2px;}
+.issue-list{margin-top:8px;max-height:360px;overflow-y:auto;}
+.issue-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;font-size:var(--font-size-xs);flex-wrap:wrap;}
+.issue-item.error{border-color:rgba(159,47,45,0.35);background:rgba(159,47,45,0.05);}
+.issue-item.warning{border-color:rgba(178,106,0,0.35);background:rgba(178,106,0,0.05);}
+.issue-sev{font-weight:600;}
+.issue-item.error .issue-sev{color:var(--color-error);}
+.issue-item.warning .issue-sev{color:#B26A00;}
+.issue-col{color:var(--color-text-secondary);}
+.issue-msg{color:var(--color-text-secondary);flex:1;min-width:120px;}
+.go-btn{background:none;border:none;color:var(--color-accent-hover);text-decoration:underline;cursor:pointer;font-size:var(--font-size-xs);}
+.empty-msg{text-align:center;color:var(--color-text-secondary);font-size:var(--font-size-sm);padding:24px;}
+.auto-fix-btn{margin-top:4px;}
+</style>
+</head>
+<body>
+  <header class="global-header">
+    <a href="../../index.html" class="logo">S-Jiffy</a>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <main class="tool-workspace">
+    <h1 data-i18n="h1">CSV 格式化器</h1>
+    <p class="tool-desc" data-i18n="desc">解析、验证、格式化和修复 CSV 数据，自动检测分隔符，支持文件上传与下载。</p>
+
+    <div class="card">
+      <div class="csv-input-wrap" id="dropZone">
+        <div class="csv-input-head">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="lbl" data-i18n="inputCsv">输入CSV</span>
+            <span class="file-chip" id="fileName" style="display:none;"></span>
+            <span id="detectedDelim" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);"></span>
+          </div>
+          <button class="upload-btn" id="uploadBtn">上传文件</button>
+          <input type="file" id="fileInput" accept=".csv,.tsv,.txt" style="display:none;">
+        </div>
+        <textarea id="csvRaw" class="input textarea" spellcheck="false" placeholder="在此粘贴CSV或上传文件..." data-i18n-placeholder="pasteCsvPlaceholder" style="border:none;box-shadow:none;background:transparent;min-height:200px;border-radius:0;"></textarea>
+      </div>
+
+      <div class="opt-grid">
+        <div class="opt-cell">
+          <label data-i18n="inputDelimiter">输入分隔符</label>
+          <select id="inputDelimSel" class="input" style="height:40px;">
+            <option value="auto" data-i18n="delimAuto">自动检测</option>
+            <option value="," data-i18n="delimComma">逗号 (,)</option>
+            <option value=";" data-i18n="delimSemicolon">分号 (;)</option>
+            <option value="&#9;" data-i18n="delimTab">制表符</option>
+            <option value="|" data-i18n="delimPipe">竖线 (|)</option>
+          </select>
+        </div>
+        <div class="opt-cell">
+          <label data-i18n="outputDelimiter">输出分隔符</label>
+          <select id="outputDelimSel" class="input" style="height:40px;">
+            <option value="," data-i18n="delimComma">逗号 (,)</option>
+            <option value=";" data-i18n="delimSemicolon">分号 (;)</option>
+            <option value="&#9;" data-i18n="delimTab">制表符</option>
+            <option value="|" data-i18n="delimPipe">竖线 (|)</option>
+          </select>
+        </div>
+        <div class="chk-cell">
+          <label><input type="checkbox" id="trimChk" checked> <span>去除空格</span></label>
+          <label><input type="checkbox" id="fillChk" checked> <span data-i18n="fillMissingCols">填充缺失列</span></label>
+        </div>
+        <div class="chk-cell">
+          <label><input type="checkbox" id="bomChk"> <span data-i18n="utf8Bom">UTF-8 BOM（Excel兼容）</span></label>
+        </div>
+      </div>
+
+      <div class="act-row">
+        <button id="previewBtn" class="btn btn-primary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;">预览</button>
+        <button id="formatBtn" class="btn btn-primary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;">格式化</button>
+        <button id="validateBtn" class="btn btn-primary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;">验证</button>
+        <button id="copyBtn" class="btn btn-secondary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;display:none;" data-i18n="common.copy">复制</button>
+        <button id="downloadBtn" class="btn btn-secondary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;display:none;">下载CSV</button>
+        <button id="resetBtn" class="btn btn-secondary" style="height:38px;font-size:13px;min-width:auto;padding:0 16px;display:none;margin-left:auto;">重置</button>
+      </div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none;">
+      <div class="stats-bar" id="statsBar"></div>
+      <div class="tab-bar" id="tabBar"></div>
+      <div id="resultBody"></div>
+    </div>
+  </main>
+  <footer class="global-footer">
+    <div class="tool-status" id="statusBar"></div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+  </footer>
+  <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script src="csv-formatter.js"></script>
+</body>
+</html>

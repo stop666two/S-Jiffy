@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线记事本 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.np-wrap{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;}
+.np-wrap.fullscreen{position:fixed;inset:0;z-index:200;background:var(--color-bg);border-radius:0;}
+.np-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border-bottom:1px solid var(--color-border);background:var(--color-bg-soft);align-items:center;}
+.np-toolbar button{width:34px;height:34px;border:1px solid transparent;border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:14px;color:var(--color-text-primary);font-family:var(--font-mono);}
+.np-toolbar button:hover{border-color:var(--color-border);background:var(--color-bg);}
+.np-toolbar button.active{background:var(--color-text-primary);color:#fff;}
+.np-toolbar .sep{width:1px;height:20px;background:var(--color-border);margin:0 4px;}
+.np-toolbar select{height:32px;font-size:12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);font-family:var(--font-mono);}
+.np-editor{min-height:420px;padding:16px 20px;outline:none;font-size:16px;line-height:1.7;overflow-y:auto;flex:1;}
+.np-editor ul{list-style:disc;padding-left:1.5em;}
+.np-editor ol{list-style:decimal;padding-left:1.5em;}
+.np-editor[data-placeholder]:empty::before{content:attr(data-placeholder);color:var(--color-text-disabled);pointer-events:none;}
+.np-status{display:flex;justify-content:space-between;padding:8px 16px;border-top:1px solid var(--color-border);font-size:var(--font-size-xs);color:var(--color-text-secondary);background:var(--color-bg-soft);flex-wrap:wrap;gap:6px;}
+.np-counts{display:flex;gap:14px;}
+.np-theme-dark .np-editor{background:#1a1a1a;color:#eee;caret-color:#fff;}
+.np-theme-dark .np-toolbar,.np-theme-dark .np-status{background:#141414;border-color:#2a2a2a;}
+.np-theme-dark .np-editor{background:#1a1a1a;}
+.np-toolbar input[type=color]{width:24px;height:24px;border:none;background:transparent;cursor:pointer;padding:0;}
+.np-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:var(--space-2);}
+.np-actions .btn{height:38px;min-width:0;padding:0 14px;font-size:13px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">在线记事本</h1>
+<p class="tool-desc" data-i18n="desc">基于浏览器的记事本，自动保存到localStorage，支持Markdown预览和PDF/TXT导出，无需账号。</p>
+<div class="card">
+<div class="np-wrap" id="npWrap">
+<div class="np-toolbar" id="toolbar1">
+<button id="btnNew" title="新建" data-i18n-attr-title="notepadNew">＋</button>
+<button id="btnOpen" title="打开 .txt 文件" data-i18n-attr-title="notepadOpen">📂</button>
+<button id="btnPrint" title="打印" data-i18n-attr-title="notepadPrint">🖨</button>
+<button id="btnUndo" title="撤销" data-i18n-attr-title="notepadUndo">↩</button>
+<button id="btnRedo" title="重做" data-i18n-attr-title="notepadRedo">↪</button>
+<span class="sep"></span>
+<select id="fontSel" title="字体"></select>
+<select id="sizeSel" title="字号"></select>
+<span class="sep"></span>
+<label title="文字颜色" data-i18n-attr-title="notepadTextColor" style="display:flex;align-items:center;cursor:pointer;"><input type="color" id="textColor" value="#111111"></label>
+<label title="高亮颜色" data-i18n-attr-title="notepadHighlight" style="display:flex;align-items:center;cursor:pointer;"><input type="color" id="hlColor" value="#ffe066"></label>
+<span class="sep"></span>
+<button id="btnFullscreen" title="全屏" data-i18n-attr-title="notepadFullscreen">⛶</button>
+</div>
+<div class="np-toolbar" id="toolbar2">
+<button id="btnBold" title="加粗" data-i18n-attr-title="notepadBold"><b>B</b></button>
+<button id="btnItalic" title="斜体" data-i18n-attr-title="notepadItalic"><i>I</i></button>
+<button id="btnUnderline" title="下划线" data-i18n-attr-title="notepadUnderline"><u>U</u></button>
+<button id="btnStrike" title="删除线" data-i18n-attr-title="notepadStrike"><s>S</s></button>
+<span class="sep"></span>
+<button id="btnAlignL" title="左对齐" data-i18n-attr-title="notepadAlignLeft">⇤</button>
+<button id="btnAlignC" title="居中对齐" data-i18n-attr-title="notepadAlignCenter">☰</button>
+<button id="btnAlignR" title="右对齐" data-i18n-attr-title="notepadAlignRight">⇥</button>
+<button id="btnAlignJ" title="两端对齐" data-i18n-attr-title="notepadAlignJustify">≣</button>
+<span class="sep"></span>
+<button id="btnUl" title="无序列表" data-i18n-attr-title="notepadBulletList">•≡</button>
+<button id="btnOl" title="有序列表" data-i18n-attr-title="notepadNumberList">1≡</button>
+<button id="btnIndent" title="增加缩进" data-i18n-attr-title="notepadIndent">→</button>
+<button id="btnOutdent" title="减少缩进" data-i18n-attr-title="notepadOutdent">←</button>
+<span class="sep"></span>
+<button id="btnHr" title="插入分隔线" data-i18n-attr-title="notepadHRule">─</button>
+<button id="btnClearFmt" title="清除格式" data-i18n-attr-title="notepadClearFormat">✕</button>
+</div>
+<div class="np-editor" id="editor" contenteditable="true" data-i18n-placeholder="notepadPlaceholder" data-placeholder="在此开始输入..."></div>
+<div class="np-status">
+<span class="np-counts"><span id="wordCount">0 <span data-i18n="notepadWordCount">词</span></span><span id="charCount">0 <span data-i18n="notepadCharCount">字符</span></span></span>
+<span id="saveState" data-i18n="notepadSaved">已保存</span>
+</div>
+</div>
+<div class="np-actions">
+<button id="btnExportTxt" class="btn btn-secondary" data-i18n="notepadExportTxt">导出 .txt</button>
+<button id="btnExportMd" class="btn btn-secondary">导出 .md</button>
+<button id="btnClear" class="btn btn-secondary" data-i18n="notepadNew">新建文档</button>
+</div>
+<div class="note" style="font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:var(--space-2);line-height:1.7;">内容每 500 毫秒自动保存到浏览器 localStorage（键 s-jiffy:notepad），关闭页面后再次打开仍然保留。所有内容仅存于本机，不会上传。</div>
+</div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function(){
+'use strict';
+var STORAGE_KEY='s-jiffy:notepad';
+var editor=document.getElementById('editor');
+var saveState=document.getElementById('saveState');
+var wordCountEl=document.getElementById('wordCount'),charCountEl=document.getElementById('charCount');
+var FONTS=[{g:'通用',f:[['默认',''],['Arial','Arial'],['Georgia','Georgia'],['Impact','Impact'],['Tahoma','Tahoma'],['Times New Roman','Times New Roman'],['Verdana','Verdana'],['Courier New','Courier New']]},{g:'中文字体',f:[['微软雅黑','Microsoft YaHei'],['宋体','SimSun'],['黑体','SimHei'],['楷体','KaiTi'],['仿宋','FangSong'],['思源黑体','Noto Sans SC']]}];
+var SIZES=['10','12','14','16','18','20','24','28','32','36','48','64'];
+var fontSel=document.getElementById('fontSel'),sizeSel=document.getElementById('sizeSel');
+FONTS.forEach(function(g){
+  var og=document.createElement('optgroup');og.label=g.g;
+  g.f.forEach(function(p){var o=document.createElement('option');o.value=p[1];o.textContent=p[0];og.appendChild(o);});
+  fontSel.appendChild(og);
+});
+SIZES.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s+'px';if(s==='16')o.selected=true;sizeSel.appendChild(o);});
+function countStats(){
+  var text=editor.innerText||'';
+  charCountEl.innerHTML=text.length+' <span data-i18n="notepadCharCount">字符</span>';
+  var trimmed=text.trim();
+  wordCountEl.innerHTML=(trimmed?trimmed.split(/\s+/).length:0)+' <span data-i18n="notepadWordCount">词</span>';
+  if(window.I18N&&I18N.dict){
+    charCountEl.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k=el.getAttribute('data-i18n');
+      if(I18N.dict[k]!=null)el.textContent=I18N.dict[k];
+    });
+    wordCountEl.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k=el.getAttribute('data-i18n');
+      if(I18N.dict[k]!=null)el.textContent=I18N.dict[k];
+    });
+  }
+}
+var saveTimer=null;
+function scheduleSave(){
+  saveState.textContent=t('notepadSaving','保存中...');
+  if(saveTimer)clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){
+    try{localStorage.setItem(STORAGE_KEY,editor.innerHTML);}catch(e){}
+    saveState.textContent=t('notepadSaved','已保存');
+  },500);
+  countStats();
+}
+function exec(cmd,val){
+  editor.focus();
+  document.execCommand(cmd,false,val);
+  editor.dispatchEvent(new Event('input'));
+}
+function restore(){
+  try{
+    var saved=localStorage.getItem(STORAGE_KEY);
+    if(saved){editor.innerHTML=saved;}
+  }catch(e){}
+  countStats();
+}
+var fmtButtons={
+  bold:'btnBold',italic:'btnItalic',underline:'btnUnderline',strikeThrough:'btnStrike',
+  justifyLeft:'btnAlignL',justifyCenter:'btnAlignC',justifyRight:'btnAlignR',justifyFull:'btnAlignJ',
+  insertUnorderedList:'btnUl',insertOrderedList:'btnOl'
+};
+function refreshActive(){
+  Object.keys(fmtButtons).forEach(function(cmd){
+    var el=document.getElementById(fmtButtons[cmd]);
+    var active=false;
+    try{active=document.queryCommandState(cmd);}catch(e){}
+    if(active)el.classList.add('active');else el.classList.remove('active');
+  });
+}
+editor.addEventListener('input',scheduleSave);
+editor.addEventListener('keyup',refreshActive);
+editor.addEventListener('mouseup',refreshActive);
+document.getElementById('btnBold').addEventListener('click',function(){exec('bold');});
+document.getElementById('btnItalic').addEventListener('click',function(){exec('italic');});
+document.getElementById('btnUnderline').addEventListener('click',function(){exec('underline');});
+document.getElementById('btnStrike').addEventListener('click',function(){exec('strikeThrough');});
+document.getElementById('btnAlignL').addEventListener('click',function(){exec('justifyLeft');});
+document.getElementById('btnAlignC').addEventListener('click',function(){exec('justifyCenter');});
+document.getElementById('btnAlignR').addEventListener('click',function(){exec('justifyRight');});
+document.getElementById('btnAlignJ').addEventListener('click',function(){exec('justifyFull');});
+document.getElementById('btnUl').addEventListener('click',function(){exec('insertUnorderedList');});
+document.getElementById('btnOl').addEventListener('click',function(){exec('insertOrderedList');});
+document.getElementById('btnIndent').addEventListener('click',function(){exec('indent');});
+document.getElementById('btnOutdent').addEventListener('click',function(){exec('outdent');});
+document.getElementById('btnHr').addEventListener('click',function(){exec('insertHorizontalRule');});
+document.getElementById('btnClearFmt').addEventListener('click',function(){exec('removeFormat');});
+document.getElementById('btnUndo').addEventListener('click',function(){exec('undo');});
+document.getElementById('btnRedo').addEventListener('click',function(){exec('redo');});
+fontSel.addEventListener('change',function(){exec('fontName',fontSel.value);});
+sizeSel.addEventListener('change',function(){
+  exec('fontSize','7');
+  var f=document.querySelectorAll('font[size="7"]');
+  f.forEach(function(el){
+    el.removeAttribute('size');
+    el.style.fontSize=sizeSel.value+'px';
+  });
+});
+document.getElementById('textColor').addEventListener('change',function(){exec('foreColor',this.value);});
+document.getElementById('hlColor').addEventListener('change',function(){exec('backColor',this.value);});
+var fullscreen=false;
+document.getElementById('btnFullscreen').addEventListener('click',function(){
+  fullscreen=!fullscreen;
+  var wrap=document.getElementById('npWrap');
+  if(fullscreen){
+    wrap.classList.add('fullscreen');
+    document.getElementById('btnFullscreen').title=t('notepadExitFullscreen','退出全屏');
+  }else{
+    wrap.classList.remove('fullscreen');
+    document.getElementById('btnFullscreen').title=t('notepadFullscreen','全屏');
+  }
+});
+document.getElementById('btnNew').addEventListener('click',function(){
+  var text=editor.innerText||'';
+  if(!text.trim()){clearAll();return;}
+  showConfirm(t('notepadConfirmNew','确定丢弃当前内容并新建文档？'),function(ok){
+    if(ok)clearAll();
+  });
+});
+function clearAll(){
+  editor.innerHTML='';
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+  saveState.textContent=t('notepadSaved','已保存');
+  countStats();
+  editor.focus();
+}
+document.getElementById('btnClear').addEventListener('click',function(){
+  document.getElementById('btnNew').click();
+});
+document.getElementById('btnOpen').addEventListener('click',function(){
+  var inp=document.createElement('input');
+  inp.type='file';inp.accept='.txt,text/plain';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0];
+    if(!f)return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      var text=String(reader.result||'');
+      var html='';
+      text.split('\n').forEach(function(line){
+        var esc=line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html+='<div>'+(esc||'<br>')+'</div>';
+      });
+      editor.innerHTML=html;
+      scheduleSave();
+      setStatus(t('fileLoaded','文件已载入'));
+    };
+    reader.readAsText(f,'utf-8');
+  };
+  inp.click();
+});
+document.getElementById('btnExportTxt').addEventListener('click',function(){
+  exportFile('note.txt','text/plain;charset=utf-8',(editor.innerText||''));
+});
+document.getElementById('btnExportMd').addEventListener('click',function(){
+  exportFile('note.md','text/markdown;charset=utf-8',(editor.innerText||''));
+});
+function exportFile(name,mime,text){
+  var blob=new Blob([text],{type:mime});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  setStatus(t('exportDone','文件已导出'));
+}
+document.getElementById('btnPrint').addEventListener('click',function(){
+  var html=editor.innerHTML;
+  var w=window.open('','_blank');
+  if(!w){setStatus(t('popupBlocked','弹窗被拦截，请允许弹窗后重试'),'error');return;}
+  w.document.write('<html><head><title>print</title><style>body{font-size:12pt;line-height:1.6;margin:2cm;}ul{padding-left:2em}ol{padding-left:2em}</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+});
+restore();
+})();
+</script>
+</body></html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片压缩器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-formats{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:10px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.file-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.file-name{font-size:var(--font-size-sm);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.file-remove{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;margin-left:auto;}
+.opt-block{margin-bottom:var(--space-2);}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.quality-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.quality-row input[type=range]{flex:1;min-width:160px;}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.fmt-row{display:flex;gap:8px;flex-wrap:wrap;}
+.fmt-btn{height:34px;min-width:auto;padding:0 16px;font-size:var(--font-size-xs);border-color:var(--color-border);background:transparent;color:var(--color-text-primary);}
+.fmt-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.note{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.cmp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.cmp-title{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);}
+.cmp-title .updating{color:var(--color-accent);font-weight:400;}
+.cmp-toggle{display:flex;gap:4px;}
+.cmp-toggle button{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);border-radius:9999px;cursor:pointer;}
+.cmp-toggle button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.cmp-frame{position:relative;overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-soft);user-select:none;cursor:col-resize;}
+.cmp-frame img{display:block;width:100%;max-height:460px;object-fit:contain;}
+.cmp-frame img.top{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.cmp-divider{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.45);pointer-events:none;}
+.cmp-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#334155;font-size:14px;font-weight:700;}
+.cmp-tag{position:absolute;bottom:10px;left:10px;font-size:var(--font-size-xs);font-weight:600;background:rgba(0,0,0,.72);color:#fff;padding:3px 10px;border-radius:9999px;}
+.cmp-tag.right{left:auto;right:10px;}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);}
+@media (max-width:640px){.cmp-grid{grid-template-columns:1fr;}}
+.cmp-col p{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:6px;}
+.cmp-col img{width:100%;border:1px solid var(--color-border);border-radius:var(--radius-md);display:block;background:var(--color-bg-soft);}
+.savings{color:var(--color-success);font-weight:600;}
+.warn{font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;}
+.error-box{font-size:var(--font-size-xs);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid rgba(159,47,45,.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-2);}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;}
+.tool-row .btn{flex:1;min-width:200px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">图片压缩器</h1>
+<p class="tool-desc" data-i18n="desc">压缩图片以减小文件大小，同时保持质量。免费且隐私。</p>
+
+<div class="card" id="uploadCard">
+  <div id="dropZone" class="drop-zone">
+    <div class="dz-icon">🗜️</div>
+    <p class="dz-title" data-i18n="dropImageHere">将图片拖放到此处</p>
+    <p class="dz-sub" data-i18n="formatAutoDetected">格式自动检测 — 无需手动选择</p>
+    <p class="dz-formats">JPEG · PNG · WebP · AVIF</p>
+    <p class="dz-hint">最大 50MB · 本地处理，文件不会上传</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif" style="display:none">
+</div>
+
+<div class="card" id="workCard" style="display:none">
+  <div class="file-bar">
+    <span class="file-name" id="fileName"></span>
+    <span class="file-meta" id="fileMeta"></span>
+    <button type="button" class="btn btn-secondary file-remove" id="removeBtn"></button>
+  </div>
+
+  <div class="opt-block quality-row">
+    <label class="opt-label" data-i18n="quality">质量</label>
+    <input type="range" id="qualityRange" min="10" max="100" value="80">
+    <span class="opt-value" id="qualityVal">80%</span>
+  </div>
+
+  <div class="opt-block">
+    <label class="opt-label">输出格式</label>
+    <div class="fmt-row" id="fmtRow">
+      <button type="button" class="btn fmt-btn" data-fmt="auto">自动</button>
+      <button type="button" class="btn fmt-btn" data-fmt="png">PNG</button>
+      <button type="button" class="btn fmt-btn" data-fmt="jpg">JPG</button>
+      <button type="button" class="btn fmt-btn" data-fmt="webp">WebP</button>
+      <button type="button" class="btn fmt-btn" data-fmt="avif">AVIF</button>
+    </div>
+    <p class="note" id="pngNote" style="display:none">PNG 为无损格式，质量滑块不适用。</p>
+  </div>
+
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <div class="cmp-head">
+    <p class="cmp-title" id="cmpTitle"></p>
+    <div class="cmp-toggle">
+      <button type="button" id="modeSplit" class="active">分割视图</button>
+      <button type="button" id="modeSide">并排对比</button>
+    </div>
+  </div>
+
+  <div id="splitView" class="cmp-frame" style="display:none">
+    <img id="origImgSplit" alt="">
+    <img id="compImgSplit" class="top" alt="" style="display:none">
+    <div class="cmp-divider" id="cmpDivider" style="left:50%"></div>
+    <div class="cmp-handle" id="cmpHandle">⇔</div>
+    <span class="cmp-tag" id="tagOrig"></span>
+    <span class="cmp-tag right" id="tagComp"></span>
+  </div>
+
+  <div id="sideView" class="cmp-grid" style="display:none">
+    <div class="cmp-col"><p id="sideOrigLabel"></p><img id="origImgSide" alt=""></div>
+    <div class="cmp-col"><p id="sideCompLabel"></p><img id="compImgSide" alt="" style="display:none"><p id="sideCompEmpty" style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">…</p></div>
+  </div>
+
+  <div class="tool-row" style="margin-top:var(--space-2);">
+    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none"></button>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var file = null, imgEl = null, origUrl = null, compUrl = null;
+  var quality = 80, fmt = 'auto';
+  var compBlob = null, compName = '', compSize = 0, liveBusy = false, timer = null;
+  var splitX = 50, compareMode = 'split';
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function setErr(msg) { setStatus(msg, 'error'); var b = $('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+  function clearErr() { $('errorBox').textContent = ''; $('errorBox').style.display = 'none'; }
+
+  function detectAlpha(img) {
+    var sw = Math.min(img.naturalWidth, 64), sh = Math.min(img.naturalHeight, 64);
+    var c = document.createElement('canvas');
+    c.width = sw; c.height = sh;
+    var cx = c.getContext('2d');
+    cx.drawImage(img, 0, 0, sw, sh);
+    var d = cx.getImageData(0, 0, sw, sh).data;
+    for (var i = 3; i < d.length; i += 4) { if (d[i] < 255) return true; }
+    return false;
+  }
+
+  function encode(mime, q, whiteBg, cb) {
+    var w = imgEl.naturalWidth, h = imgEl.naturalHeight;
+    var c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    var cx = c.getContext('2d');
+    if (whiteBg) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h); }
+    cx.drawImage(imgEl, 0, 0);
+    var aq = mime === 'image/avif' ? Math.min(q, 75) : q / 100;
+    c.toBlob(function (b) { cb(b); }, mime, aq);
+  }
+
+  function compressNow() {
+    if (!file || !imgEl) return;
+    if (timer) { clearTimeout(timer); timer = null; }
+    liveBusy = true;
+    $('cmpTitle').innerHTML = t('compareImages', '对比') + ' <span class="updating">· ' + t('updating', '更新中…') + '</span>';
+
+    var alpha = file.type === 'image/png' && detectAlpha(imgEl);
+
+    function done(blob, ext) {
+      if (!blob) {
+        liveBusy = false;
+        $('cmpTitle').innerHTML = t('compareImages', '对比');
+        setErr(t('conversionFailed', '压缩失败，请重试。'));
+        return;
+      }
+      if (compUrl) URL.revokeObjectURL(compUrl);
+      compBlob = blob;
+      compName = baseName(file.name) + '_compressed.' + ext;
+      compSize = blob.size;
+      compUrl = URL.createObjectURL(blob);
+      var show = function () {
+        $('compImgSplit').src = compUrl;
+        $('compImgSplit').style.display = 'block';
+        $('compImgSide').src = compUrl;
+        $('compImgSide').style.display = 'block';
+        $('sideCompEmpty').style.display = 'none';
+        $('tagOrig').textContent = t('original', '原图') + ' · ' + fmtBytes(file.size);
+        $('tagComp').textContent = t('compressedLabel', '压缩后') + ' · ' + fmtBytes(compSize);
+        $('sideOrigLabel').textContent = t('original', '原图') + ' · ' + fmtBytes(file.size);
+        var savings = Math.round((1 - compSize / file.size) * 100);
+        $('sideCompLabel').innerHTML = t('compressedLabel', '压缩后') + ' · ' + fmtBytes(compSize) +
+          (savings > 0 ? ' <span class="savings">(' + t('xPercentSmaller', '小 {pct}%').replace('{pct}', String(savings)) + ')</span>' : '');
+        var btn = $('downloadBtn');
+        btn.style.display = 'inline-flex';
+        btn.textContent = t('downloadCompressed', '下载压缩图（{size}）').replace('{size}', fmtBytes(compSize)) +
+          (compSize < file.size ? ' · ' + t('xPercentSmaller', '小 {pct}%').replace('{pct}', String(savings)) : '');
+      };
+      show();
+      liveBusy = false;
+      $('cmpTitle').innerHTML = t('compareImages', '对比');
+      setStatus(t('ready', '就绪'));
+    }
+
+    function autoBest(cb) {
+      encode('image/webp', quality, false, function (webp) {
+        if (!webp) { cb(null); return; }
+        var best = webp, ext = 'webp';
+        function maybeDown() {
+          if (best.size < file.size) { cb(best, ext); return; }
+          var qs = [70, 60, 50, 40, 30], i = 0;
+          (function step() {
+            if (i >= qs.length) { cb(best, ext); return; }
+            var qq = qs[i++];
+            encode('image/webp', qq, false, function (w2) {
+              if (!w2) { cb(best, ext); return; }
+              if (w2.size < file.size) { cb(w2, 'webp'); } else { step(); }
+            });
+          })();
+        }
+        if (!alpha) {
+          encode('image/jpeg', quality, true, function (jpg) {
+            if (jpg && jpg.size < webp.size) { best = jpg; ext = 'jpg'; }
+            maybeDown();
+          });
+        } else {
+          maybeDown();
+        }
+      });
+    }
+
+    if (fmt === 'png') encode('image/png', 100, false, function (b) { done(b, 'png'); });
+    else if (fmt === 'jpg') encode('image/jpeg', quality, true, function (b) { done(b, 'jpg'); });
+    else if (fmt === 'avif') encode('image/avif', quality, false, function (b) { done(b, 'avif'); });
+    else if (fmt === 'webp') encode('image/webp', quality, false, function (b) { done(b, 'webp'); });
+    else autoBest(done);
+  }
+
+  function debouncedCompress() {
+    if (timer) { clearTimeout(timer); }
+    timer = setTimeout(compressNow, 700);
+  }
+
+  function renderFmtButtons() {
+    var btns = document.querySelectorAll('.fmt-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].className = 'btn fmt-btn' + (btns[i].getAttribute('data-fmt') === fmt ? ' active' : '');
+    }
+    $('pngNote').style.display = fmt === 'png' ? 'block' : 'none';
+  }
+
+  function renderCompareMode() {
+    $('splitView').style.display = compareMode === 'split' ? 'block' : 'none';
+    $('sideView').style.display = compareMode === 'side' ? 'grid' : 'none';
+    $('modeSplit').className = compareMode === 'split' ? 'active' : '';
+    $('modeSide').className = compareMode === 'side' ? 'active' : '';
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > MAX_MB * 1024 * 1024) {
+      setErr(t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)));
+      $('fileInput').value = '';
+      return;
+    }
+    var mime = f.type;
+    if (mime === 'image/png') fmt = 'png';
+    else if (mime === 'image/webp') fmt = 'webp';
+    else if (mime === 'image/avif') fmt = 'avif';
+    else fmt = 'jpg';
+    renderFmtButtons();
+    file = f;
+    clearErr();
+    if (origUrl) URL.revokeObjectURL(origUrl);
+    if (compUrl) URL.revokeObjectURL(compUrl);
+    origUrl = URL.createObjectURL(f);
+    $('uploadCard').style.display = 'none';
+    $('workCard').style.display = 'block';
+    $('fileName').textContent = f.name;
+    $('fileMeta').textContent = fmtBytes(f.size);
+    $('origImgSplit').src = origUrl;
+    $('origImgSide').src = origUrl;
+    $('compImgSplit').style.display = 'none';
+    $('compImgSide').style.display = 'none';
+    $('sideCompEmpty').style.display = 'block';
+    $('downloadBtn').style.display = 'none';
+    $('tagOrig').textContent = t('original', '原图') + ' · ' + fmtBytes(f.size);
+    $('sideOrigLabel').textContent = t('original', '原图') + ' · ' + fmtBytes(f.size);
+    renderCompareMode();
+    var img = new Image();
+    img.onload = function () { imgEl = img; compressNow(); };
+    img.onerror = function () { setErr(t('conversionFailed', '图片解码失败，请重试。')); };
+    img.src = origUrl;
+  }
+
+  function resetAll() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    file = null; imgEl = null; compBlob = null; compName = ''; compSize = 0;
+    if (origUrl) { URL.revokeObjectURL(origUrl); origUrl = null; }
+    if (compUrl) { URL.revokeObjectURL(compUrl); compUrl = null; }
+    $('fileInput').value = '';
+    $('uploadCard').style.display = 'block';
+    $('workCard').style.display = 'none';
+    clearErr();
+    setStatus('');
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('dragover');
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f) handleFile(f);
+  });
+  $('removeBtn').addEventListener('click', resetAll);
+
+  var fmtBtns = document.querySelectorAll('.fmt-btn');
+  for (var i = 0; i < fmtBtns.length; i++) {
+    fmtBtns[i].addEventListener('click', function () {
+      fmt = this.getAttribute('data-fmt');
+      renderFmtButtons();
+      if (file && imgEl) debouncedCompress();
+    });
+  }
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 10;
+    $('qualityVal').textContent = quality + '%';
+    if (file && imgEl) debouncedCompress();
+  });
+  $('modeSplit').addEventListener('click', function () { compareMode = 'split'; renderCompareMode(); });
+  $('modeSide').addEventListener('click', function () { compareMode = 'side'; renderCompareMode(); });
+
+  var drag = null;
+  $('splitView').addEventListener('pointerdown', function (e) {
+    drag = { id: e.pointerId };
+    try { $('splitView').setPointerCapture(e.pointerId); } catch (err) {}
+    updateSplit(e);
+    e.preventDefault();
+  });
+  $('splitView').addEventListener('pointermove', function (e) {
+    if (drag) updateSplit(e);
+  });
+  $('splitView').addEventListener('pointerup', function () { drag = null; });
+  $('splitView').addEventListener('pointercancel', function () { drag = null; });
+  function updateSplit(e) {
+    var r = $('splitView').getBoundingClientRect();
+    if (r.width <= 0) return;
+    splitX = Math.max(5, Math.min(95, (e.clientX - r.left) / r.width * 100));
+    $('cmpDivider').style.left = splitX + '%';
+    $('cmpHandle').style.left = splitX + '%';
+    $('compImgSplit').style.clipPath = 'inset(0 0 0 ' + splitX + '%)';
+  }
+
+  $('downloadBtn').addEventListener('click', function () {
+    if (compBlob && compName) {
+      download(compBlob, compName);
+      setStatus(t('downloaded', '已开始下载'));
+    }
+  });
+})();
+</script>
+</body>
+</html>

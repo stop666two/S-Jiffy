@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片裁剪器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.file-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.file-name{font-size:var(--font-size-sm);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.file-remove{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;margin-left:auto;}
+.editor-wrap{position:relative;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-bg-soft);user-select:none;touch-action:none;}
+.editor-wrap img{display:block;width:100%;}
+.overlay{position:absolute;background:rgba(0,0,0,.55);pointer-events:none;}
+.crop-box{position:absolute;border:2px solid #fff;cursor:move;box-sizing:border-box;}
+.rule-v,.rule-h{position:absolute;background:rgba(255,255,255,.28);pointer-events:none;}
+.handle{position:absolute;width:22px;height:22px;z-index:5;}
+.handle span{position:absolute;left:50%;top:50%;width:12px;height:12px;background:#fff;border:2px solid var(--color-text-secondary);border-radius:2px;transform:translate(-50%,-50%);pointer-events:none;}
+.crop-info{display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:8px;font-family:var(--font-mono);flex-wrap:wrap;}
+.crop-info .reset-btn{margin-left:auto;background:none;border:1px solid var(--color-border);border-radius:9999px;padding:3px 12px;font-size:var(--font-size-xs);cursor:pointer;color:var(--color-text-primary);font-family:var(--font-mono);}
+.crop-info .reset-btn:hover{border-color:var(--color-text-primary);}
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);align-items:start;margin-top:var(--space-2);}
+@media (max-width:760px){.editor-grid{grid-template-columns:1fr;}}
+.pv-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.pv-frame{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;min-height:120px;display:flex;align-items:center;justify-content:center;}
+.pv-frame img,.pv-frame canvas{max-width:100%;max-height:380px;display:block;}
+.pv-size{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.diff-down{color:var(--color-success);font-weight:600;}
+.diff-up{color:var(--color-error);font-weight:600;}
+.quality-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.quality-row input[type=range]{flex:1;min-width:160px;}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.warn{font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;}
+.error-box{font-size:var(--font-size-xs);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid rgba(159,47,45,.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-2);}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.tool-row .btn{flex:1;min-width:180px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">图片裁剪器</h1>
+<p class="tool-desc" data-i18n="desc">将图片裁剪到所需的精确大小。快速、免费、隐私保护。</p>
+
+<div class="card" id="uploadCard">
+  <div id="dropZone" class="drop-zone">
+    <div class="dz-icon">✂️</div>
+    <p class="dz-title">将图片拖放到此处</p>
+    <p class="dz-sub" data-i18n="cropEditorWillOpen">可视裁剪编辑器将打开</p>
+    <p class="dz-hint">JPG · PNG · WebP · 最大 50MB · 本地处理</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none">
+</div>
+
+<div class="card" id="workCard" style="display:none">
+  <div class="file-bar">
+    <span class="file-name" id="fileName"></span>
+    <span class="file-meta" id="fileMeta"></span>
+    <button type="button" class="btn btn-secondary file-remove" id="removeBtn"></button>
+  </div>
+
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <p class="pv-label" data-i18n="dragCornersToCrop">拖动角点或区域进行裁剪</p>
+  <div class="editor-wrap" id="editorWrap">
+    <img id="editorImg" alt="" draggable="false">
+    <div class="overlay" id="ovTop"></div>
+    <div class="overlay" id="ovBottom"></div>
+    <div class="overlay" id="ovLeft"></div>
+    <div class="overlay" id="ovRight"></div>
+    <div class="crop-box" id="cropBox">
+      <div class="rule-v" id="ruleV1"></div>
+      <div class="rule-v" id="ruleV2"></div>
+      <div class="rule-h" id="ruleH1"></div>
+      <div class="rule-h" id="ruleH2"></div>
+    </div>
+    <div class="handle" id="hNW" style="cursor:nw-resize;"><span></span></div>
+    <div class="handle" id="hNE" style="cursor:ne-resize;"><span></span></div>
+    <div class="handle" id="hSW" style="cursor:sw-resize;"><span></span></div>
+    <div class="handle" id="hSE" style="cursor:se-resize;"><span></span></div>
+  </div>
+  <div class="crop-info">
+    <span id="cropDims"></span>
+    <button type="button" class="reset-btn" id="cropReset" data-i18n="resetLabel">重置</button>
+  </div>
+
+  <div class="editor-grid">
+    <div class="left-col">
+      <div class="opt-block quality-row">
+        <label class="opt-label">质量</label>
+        <input type="range" id="qualityRange" min="10" max="100" value="92">
+        <span class="opt-value" id="qualityVal">92%</span>
+      </div>
+      <p class="warn" id="jpegWarn" style="display:none">JPEG 高质量重编码可能导致文件变大。</p>
+    </div>
+    <div class="right-col">
+      <p class="pv-label"><span data-i18n="livePreview">实时预览</span> <span id="pvDims" class="pv-size"></span></p>
+      <div class="pv-frame"><canvas id="previewCanvas"></canvas></div>
+      <p class="pv-size" id="resultSize"></p>
+    </div>
+  </div>
+
+  <div class="tool-row">
+    <button type="button" class="btn btn-primary" id="applyBtn">裁剪</button>
+    <button type="button" class="btn btn-secondary" id="resetResultBtn" style="display:none">重新裁剪</button>
+    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none">下载</button>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var MIN_PX = 20;
+  var file = null, imgEl = null, origUrl = null;
+  var naturalW = 0, naturalH = 0, quality = 92;
+  var crop = { x: 0, y: 0, w: 0, h: 0 };
+  var dispW = 0, dispH = 0;
+  var result = null, processing = false, drag = null;
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function setErr(msg) { setStatus(msg, 'error'); var b = $('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+  function clearErr() { $('errorBox').textContent = ''; $('errorBox').style.display = 'none'; }
+
+  function scaleX() { return dispW > 0 ? dispW / naturalW : 1; }
+  function scaleY() { return dispH > 0 ? dispH / naturalH : 1; }
+
+  function syncDisplaySize() {
+    var el = $('editorImg');
+    if (el && el.getBoundingClientRect().width > 0) {
+      dispW = el.getBoundingClientRect().width;
+      dispH = el.getBoundingClientRect().height;
+    }
+  }
+
+  function renderCrop() {
+    var sx = scaleX(), sy = scaleY();
+    var cx = crop.x * sx, cy = crop.y * sy, cw = crop.w * sx, ch = crop.h * sy;
+    $('ovTop').style.cssText = 'left:0;right:0;top:0;height:' + cy + 'px;';
+    $('ovBottom').style.cssText = 'left:0;right:0;bottom:0;height:' + (dispH - cy - ch) + 'px;';
+    $('ovLeft').style.cssText = 'top:' + cy + 'px;left:0;width:' + cx + 'px;height:' + ch + 'px;';
+    $('ovRight').style.cssText = 'top:' + cy + 'px;right:0;width:' + (dispW - cx - cw) + 'px;height:' + ch + 'px;';
+    $('cropBox').style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;width:' + cw + 'px;height:' + ch + 'px;cursor:move;';
+    var p1 = Math.round(cw / 3), p2 = Math.round(cw * 2 / 3);
+    $('ruleV1').style.cssText = 'left:' + p1 + 'px;top:0;bottom:0;width:1px;';
+    $('ruleV2').style.cssText = 'left:' + p2 + 'px;top:0;bottom:0;width:1px;';
+    var q1 = Math.round(ch / 3), q2 = Math.round(ch * 2 / 3);
+    $('ruleH1').style.cssText = 'top:' + q1 + 'px;left:0;right:0;height:1px;';
+    $('ruleH2').style.cssText = 'top:' + q2 + 'px;left:0;right:0;height:1px;';
+    var hw = 11;
+    $('hNW').style.cssText = 'left:' + (cx - hw) + 'px;top:' + (cy - hw) + 'px;cursor:nw-resize;';
+    $('hNE').style.cssText = 'left:' + (cx + cw - hw) + 'px;top:' + (cy - hw) + 'px;cursor:ne-resize;';
+    $('hSW').style.cssText = 'left:' + (cx - hw) + 'px;top:' + (cy + ch - hw) + 'px;cursor:sw-resize;';
+    $('hSE').style.cssText = 'left:' + (cx + cw - hw) + 'px;top:' + (cy + ch - hw) + 'px;cursor:se-resize;';
+    $('cropDims').textContent = crop.w + ' × ' + crop.h + ' px · offset (' + crop.x + ', ' + crop.y + ')';
+    drawPreview();
+  }
+
+  function drawPreview() {
+    var canvas = $('previewCanvas');
+    if (!imgEl || crop.w < 1 || crop.h < 1) return;
+    canvas.width = crop.w;
+    canvas.height = crop.h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+    $('pvDims').textContent = crop.w + ' × ' + crop.h + ' px';
+  }
+
+  function clampCrop() {
+    crop.x = Math.max(0, Math.min(naturalW - crop.w, crop.x));
+    crop.y = Math.max(0, Math.min(naturalH - crop.h, crop.y));
+    crop.w = Math.max(MIN_PX, Math.min(naturalW - crop.x, crop.w));
+    crop.h = Math.max(MIN_PX, Math.min(naturalH - crop.y, crop.h));
+  }
+
+  function startDrag(e, type) {
+    e.preventDefault();
+    syncDisplaySize();
+    var startX = e.clientX, startY = e.clientY;
+    var sr = { x: crop.x, y: crop.y, w: crop.w, h: crop.h };
+    drag = { type: type, startX: startX, startY: startY, sr: sr };
+    document.body.style.cursor = type === 'move' ? 'move' : 'crosshair';
+  }
+
+  function onDragMove(e) {
+    if (!drag) return;
+    var dx = (e.clientX - drag.startX) / scaleX();
+    var dy = (e.clientY - drag.startY) / scaleY();
+    var sr = drag.sr;
+    var c = { x: sr.x, y: sr.y, w: sr.w, h: sr.h };
+    if (drag.type === 'move') {
+      c.x = Math.max(0, Math.min(naturalW - sr.w, sr.x + dx));
+      c.y = Math.max(0, Math.min(naturalH - sr.h, sr.y + dy));
+    } else {
+      if (drag.type === 'nw' || drag.type === 'sw') {
+        var nx = Math.max(0, Math.min(sr.x + sr.w - MIN_PX, sr.x + dx));
+        c.w = Math.max(MIN_PX, sr.w - (nx - sr.x));
+        c.x = nx;
+      }
+      if (drag.type === 'ne' || drag.type === 'se') {
+        c.w = Math.max(MIN_PX, Math.min(naturalW - sr.x, sr.w + dx));
+      }
+      if (drag.type === 'nw' || drag.type === 'ne') {
+        var ny = Math.max(0, Math.min(sr.y + sr.h - MIN_PX, sr.y + dy));
+        c.h = Math.max(MIN_PX, sr.h - (ny - sr.y));
+        c.y = ny;
+      }
+      if (drag.type === 'sw' || drag.type === 'se') {
+        c.h = Math.max(MIN_PX, Math.min(naturalH - sr.y, sr.h + dy));
+      }
+    }
+    crop = { x: Math.round(c.x), y: Math.round(c.y), w: Math.round(c.w), h: Math.round(c.h) };
+    renderCrop();
+  }
+
+  function onDragEnd() {
+    drag = null;
+    document.body.style.cursor = '';
+  }
+
+  function process() {
+    if (!file || !imgEl || processing) return;
+    if (crop.w < MIN_PX || crop.h < MIN_PX) { setErr(t('cropTooSmall', '裁剪区域过小')); return; }
+    processing = true;
+    clearErr();
+    $('applyBtn').disabled = true;
+    $('applyBtn').textContent = t('processing', '处理中…');
+    var canvas = document.createElement('canvas');
+    canvas.width = crop.w;
+    canvas.height = crop.h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+    var mime = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+    var ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    var q = quality / 100;
+    canvas.toBlob(function (blob) {
+      processing = false;
+      $('applyBtn').disabled = false;
+      if (!blob) { setErr(t('conversionFailed', '处理失败，请重试。')); return; }
+      if (result && result.url) URL.revokeObjectURL(result.url);
+      result = { blob: blob, url: URL.createObjectURL(blob), name: baseName(file.name) + '_cropped.' + ext };
+      $('previewCanvas').style.display = 'none';
+      $('editorImg').src = result.url;
+      var diff = (blob.size - file.size) / file.size * 100;
+      var sign = diff > 0 ? '+' : '';
+      $('resultSize').innerHTML = fmtBytes(blob.size) + ' <span class="' + (diff <= 0 ? 'diff-down' : 'diff-up') + '">' + sign + diff.toFixed(0) + '%</span>';
+      $('applyBtn').style.display = 'none';
+      $('downloadBtn').style.display = 'inline-flex';
+      $('resetResultBtn').style.display = 'inline-flex';
+      setStatus(t('ready', '就绪'));
+    }, mime, q);
+  }
+
+  function clearResult() {
+    if (result && result.url) { URL.revokeObjectURL(result.url); result = null; }
+    $('downloadBtn').style.display = 'none';
+    $('resetResultBtn').style.display = 'none';
+    $('applyBtn').style.display = 'inline-flex';
+    $('resultSize').textContent = '';
+    $('previewCanvas').style.display = 'block';
+    $('editorImg').src = origUrl;
+    renderCrop();
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > MAX_MB * 1024 * 1024) {
+      setErr(t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)));
+      $('fileInput').value = '';
+      return;
+    }
+    file = f;
+    clearErr();
+    if (origUrl) URL.revokeObjectURL(origUrl);
+    origUrl = URL.createObjectURL(f);
+    $('uploadCard').style.display = 'none';
+    $('workCard').style.display = 'block';
+    $('fileName').textContent = f.name;
+    $('fileMeta').textContent = fmtBytes(f.size);
+    $('editorImg').src = origUrl;
+    var img = new Image();
+    img.onload = function () {
+      imgEl = img;
+      naturalW = img.naturalWidth;
+      naturalH = img.naturalHeight;
+      crop = { x: 0, y: 0, w: naturalW, h: naturalH };
+      syncDisplaySize();
+      renderCrop();
+    };
+    img.onerror = function () { setErr(t('conversionFailed', '图片解码失败，请重试。')); };
+    img.src = origUrl;
+  }
+
+  function resetAll() {
+    file = null; imgEl = null; naturalW = 0; naturalH = 0; result = null; drag = null;
+    if (origUrl) { URL.revokeObjectURL(origUrl); origUrl = null; }
+    $('fileInput').value = '';
+    $('uploadCard').style.display = 'block';
+    $('workCard').style.display = 'none';
+    clearErr();
+    setStatus('');
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('dragover');
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f) handleFile(f);
+  });
+  $('removeBtn').addEventListener('click', resetAll);
+
+  var ids = { move: 'cropBox', nw: 'hNW', ne: 'hNE', sw: 'hSW', se: 'hSE' };
+  for (var k in ids) {
+    if (ids.hasOwnProperty(k)) {
+      (function (type) {
+        $(ids[type]).addEventListener('pointerdown', function (e) { startDrag(e, type); });
+      })(k);
+    }
+  }
+  window.addEventListener('pointermove', onDragMove);
+  window.addEventListener('pointerup', onDragEnd);
+  window.addEventListener('resize', function () { syncDisplaySize(); renderCrop(); });
+
+  $('cropReset').addEventListener('click', function () {
+    if (!imgEl) return;
+    crop = { x: 0, y: 0, w: naturalW, h: naturalH };
+    renderCrop();
+  });
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 10;
+    $('qualityVal').textContent = quality + '%';
+    $('jpegWarn').style.display = (file && file.type.indexOf('jpeg') !== -1 && quality > 85) ? 'block' : 'none';
+  });
+  $('applyBtn').addEventListener('click', process);
+  $('resetResultBtn').addEventListener('click', clearResult);
+  $('downloadBtn').addEventListener('click', function () {
+    if (result) { download(result.blob, result.name); setStatus(t('downloaded', '已开始下载')); }
+  });
+})();
+</script>
+</body>
+</html>

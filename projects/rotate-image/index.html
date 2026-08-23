@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片旋转器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.file-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.file-name{font-size:var(--font-size-sm);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.file-remove{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;margin-left:auto;}
+.opt-block{margin-bottom:var(--space-2);}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;display:block;}
+.deg-row{display:flex;gap:8px;flex-wrap:wrap;}
+.deg-btn{height:36px;min-width:auto;padding:0 20px;font-size:var(--font-size-sm);border:1px solid var(--color-border);background:transparent;color:var(--color-text-primary);}
+.deg-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.flip-row{display:flex;gap:8px;flex-wrap:wrap;}
+.flip-btn{height:32px;min-width:auto;padding:0 14px;font-size:var(--font-size-xs);border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);}
+.flip-btn.on{background:var(--color-bg-soft);color:var(--color-text-primary);border-color:var(--color-text-primary);}
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);align-items:start;margin-top:var(--space-2);}
+@media (max-width:760px){.editor-grid{grid-template-columns:1fr;}}
+.pv-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.pv-frame{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;min-height:120px;display:flex;align-items:center;justify-content:center;}
+.pv-frame img,.pv-frame canvas{max-width:100%;max-height:380px;display:block;}
+.pv-size{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.diff-down{color:var(--color-success);font-weight:600;}
+.diff-up{color:var(--color-error);font-weight:600;}
+.quality-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.quality-row input[type=range]{flex:1;min-width:160px;}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.warn{font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;}
+.error-box{font-size:var(--font-size-xs);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid rgba(159,47,45,.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-2);}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.tool-row .btn{flex:1;min-width:180px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">图片旋转器</h1>
+<p class="tool-desc" data-i18n="desc">即时旋转图片90°、180°或270°。无需上传，无需注册。</p>
+
+<div class="card" id="uploadCard">
+  <div id="dropZone" class="drop-zone">
+    <div class="dz-icon">🔄</div>
+    <p class="dz-title">将图片拖放到此处</p>
+    <p class="dz-sub">格式自动检测 — 无需手动选择</p>
+    <p class="dz-hint">JPG · PNG · WebP · 最大 50MB · 本地处理</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none">
+</div>
+
+<div class="card" id="workCard" style="display:none">
+  <div class="file-bar">
+    <span class="file-name" id="fileName"></span>
+    <span class="file-meta" id="fileMeta"></span>
+    <button type="button" class="btn btn-secondary file-remove" id="removeBtn"></button>
+  </div>
+
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <div class="opt-block">
+    <label class="opt-label" data-i18n="degrees">旋转角度</label>
+    <div class="deg-row">
+      <button type="button" class="btn deg-btn" data-deg="90">90°</button>
+      <button type="button" class="btn deg-btn" data-deg="180">180°</button>
+      <button type="button" class="btn deg-btn" data-deg="270">270°</button>
+    </div>
+  </div>
+
+  <div class="opt-block">
+    <label class="opt-label">翻转</label>
+    <div class="flip-row">
+      <button type="button" class="btn flip-btn" id="flipHBtn">水平翻转</button>
+      <button type="button" class="btn flip-btn" id="flipVBtn">垂直翻转</button>
+    </div>
+  </div>
+
+  <div class="editor-grid">
+    <div class="left-col">
+      <div class="opt-block quality-row">
+        <label class="opt-label" style="margin:0;">质量</label>
+        <input type="range" id="qualityRange" min="10" max="100" value="85">
+        <span class="opt-value" id="qualityVal">85%</span>
+      </div>
+      <p class="warn" id="jpegWarn" style="display:none">JPEG 高质量重编码可能导致文件变大。</p>
+      <p class="pv-size" id="resultSize" style="margin-top:10px;"></p>
+    </div>
+    <div class="right-col">
+      <p class="pv-label" id="pvLabel">实时预览</p>
+      <div class="pv-frame"><canvas id="previewCanvas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tool-row">
+    <button type="button" class="btn btn-primary" id="applyBtn">应用旋转</button>
+    <button type="button" class="btn btn-secondary" id="resetResultBtn" style="display:none">重新调整</button>
+    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none">下载</button>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var file = null, imgEl = null, origUrl = null;
+  var naturalW = 0, naturalH = 0, quality = 85;
+  var degrees = 90, flipH = false, flipV = false;
+  var result = null, processing = false;
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function setErr(msg) { setStatus(msg, 'error'); var b = $('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+  function clearErr() { $('errorBox').textContent = ''; $('errorBox').style.display = 'none'; }
+
+  function outExt() {
+    if (file.type === 'image/png') return 'png';
+    if (file.type === 'image/webp') return 'webp';
+    return 'jpg';
+  }
+
+  function drawPreview() {
+    var canvas = $('previewCanvas');
+    if (!imgEl) return;
+    var swapped = degrees === 90 || degrees === 270;
+    canvas.width = swapped ? naturalH : naturalW;
+    canvas.height = swapped ? naturalW : naturalH;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(degrees * Math.PI / 180);
+    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    ctx.drawImage(imgEl, -naturalW / 2, -naturalH / 2);
+    ctx.restore();
+    $('pvLabel').textContent = t('livePreviewRotation', '实时预览 — {degrees}° 旋转').replace('{degrees}', String(degrees));
+  }
+
+  function renderBtns() {
+    var btns = document.querySelectorAll('.deg-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].className = 'btn deg-btn' + (parseInt(btns[i].getAttribute('data-deg'), 10) === degrees ? ' active' : '');
+    }
+    $('flipHBtn').className = 'btn flip-btn' + (flipH ? ' on' : '');
+    $('flipVBtn').className = 'btn flip-btn' + (flipV ? ' on' : '');
+  }
+
+  function process() {
+    if (!file || !imgEl || processing) return;
+    processing = true;
+    clearErr();
+    $('applyBtn').disabled = true;
+    $('applyBtn').textContent = t('processing', '处理中…');
+    var swapped = degrees === 90 || degrees === 270;
+    var w = swapped ? naturalH : naturalW;
+    var h = swapped ? naturalW : naturalH;
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(degrees * Math.PI / 180);
+    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    ctx.drawImage(imgEl, -naturalW / 2, -naturalH / 2);
+    var mime = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+    var ext = outExt();
+    var q = quality / 100;
+    var suffix = flipH || flipV ? (flipH ? 'fliph' : 'flipv') : 'rotated' + degrees;
+    canvas.toBlob(function (blob) {
+      processing = false;
+      $('applyBtn').disabled = false;
+      if (!blob) { setErr(t('conversionFailed', '处理失败，请重试。')); return; }
+      if (result && result.url) URL.revokeObjectURL(result.url);
+      result = { blob: blob, url: URL.createObjectURL(blob), name: baseName(file.name) + '_' + suffix + '.' + ext };
+      var diff = (blob.size - file.size) / file.size * 100;
+      var sign = diff > 0 ? '+' : '';
+      $('resultSize').innerHTML = fmtBytes(blob.size) + ' <span class="' + (diff <= 0 ? 'diff-down' : 'diff-up') + '">' + sign + diff.toFixed(0) + '%</span>';
+      $('applyBtn').style.display = 'none';
+      $('downloadBtn').style.display = 'inline-flex';
+      $('resetResultBtn').style.display = 'inline-flex';
+      $('pvLabel').textContent = t('ready', '就绪');
+      setStatus(t('ready', '就绪'));
+    }, mime, q);
+  }
+
+  function clearResult() {
+    if (result && result.url) { URL.revokeObjectURL(result.url); result = null; }
+    $('downloadBtn').style.display = 'none';
+    $('resetResultBtn').style.display = 'none';
+    $('applyBtn').style.display = 'inline-flex';
+    $('resultSize').textContent = '';
+    $('applyBtn').textContent = t('applyRotate', '应用旋转');
+    drawPreview();
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > MAX_MB * 1024 * 1024) {
+      setErr(t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)));
+      $('fileInput').value = '';
+      return;
+    }
+    file = f;
+    clearErr();
+    if (origUrl) URL.revokeObjectURL(origUrl);
+    origUrl = URL.createObjectURL(f);
+    $('uploadCard').style.display = 'none';
+    $('workCard').style.display = 'block';
+    $('fileName').textContent = f.name;
+    $('fileMeta').textContent = fmtBytes(f.size);
+    var img = new Image();
+    img.onload = function () {
+      imgEl = img;
+      naturalW = img.naturalWidth;
+      naturalH = img.naturalHeight;
+      drawPreview();
+    };
+    img.onerror = function () { setErr(t('conversionFailed', '图片解码失败，请重试。')); };
+    img.src = origUrl;
+  }
+
+  function resetAll() {
+    file = null; imgEl = null; naturalW = 0; naturalH = 0; result = null;
+    degrees = 90; flipH = false; flipV = false;
+    renderBtns();
+    if (origUrl) { URL.revokeObjectURL(origUrl); origUrl = null; }
+    $('fileInput').value = '';
+    $('uploadCard').style.display = 'block';
+    $('workCard').style.display = 'none';
+    clearErr();
+    setStatus('');
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('dragover');
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f) handleFile(f);
+  });
+  $('removeBtn').addEventListener('click', resetAll);
+
+  var degBtns = document.querySelectorAll('.deg-btn');
+  for (var i = 0; i < degBtns.length; i++) {
+    degBtns[i].addEventListener('click', function () {
+      degrees = parseInt(this.getAttribute('data-deg'), 10);
+      renderBtns();
+      if (imgEl) clearResult();
+    });
+  }
+  $('flipHBtn').addEventListener('click', function () { flipH = !flipH; renderBtns(); if (imgEl) clearResult(); });
+  $('flipVBtn').addEventListener('click', function () { flipV = !flipV; renderBtns(); if (imgEl) clearResult(); });
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 10;
+    $('qualityVal').textContent = quality + '%';
+    $('jpegWarn').style.display = (file && file.type.indexOf('jpeg') !== -1 && quality > 85) ? 'block' : 'none';
+  });
+  $('applyBtn').addEventListener('click', process);
+  $('resetResultBtn').addEventListener('click', clearResult);
+  $('downloadBtn').addEventListener('click', function () {
+    if (result) { download(result.blob, result.name); setStatus(t('downloaded', '已开始下载')); }
+  });
+})();
+</script>
+</body>
+</html>

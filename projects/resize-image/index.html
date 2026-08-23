@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片调整大小 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.file-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.file-name{font-size:var(--font-size-sm);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.file-remove{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;margin-left:auto;}
+.preset-group{margin-bottom:10px;}
+.preset-group-title{font-size:var(--font-size-xs);color:var(--color-text-disabled);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;}
+.preset-row{display:flex;flex-wrap:wrap;gap:6px;}
+.preset-btn{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:transparent;color:var(--color-text-primary);font-family:var(--font-mono);font-size:var(--font-size-xs);cursor:pointer;text-align:left;line-height:1.4;transition:all .15s;}
+.preset-btn:hover{border-color:var(--color-text-primary);}
+.preset-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.preset-btn small{opacity:.65;font-size:10px;}
+.opt-block{margin-bottom:var(--space-2);}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;display:block;}
+.size-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.size-grid .input{height:38px;font-size:var(--font-size-sm);}
+.chk-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:var(--font-size-sm);cursor:pointer;}
+.chk-row input{width:16px;height:16px;accent-color:var(--color-text-primary);cursor:pointer;}
+.quality-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.quality-row input[type=range]{flex:1;min-width:160px;}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.warn{font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;}
+.orig-info{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:8px;font-family:var(--font-mono);}
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);align-items:start;}
+@media (max-width:760px){.editor-grid{grid-template-columns:1fr;}}
+.pv-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);margin-bottom:6px;}
+.pv-frame{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;min-height:120px;display:flex;align-items:center;justify-content:center;}
+.pv-frame img,.pv-frame canvas{max-width:100%;max-height:380px;display:block;}
+.pv-size{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.diff-down{color:var(--color-success);font-weight:600;}
+.diff-up{color:var(--color-error);font-weight:600;}
+.error-box{font-size:var(--font-size-xs);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid rgba(159,47,45,.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:var(--space-2);}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--space-2);}
+.tool-row .btn{flex:1;min-width:180px;}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">图片调整大小</h1>
+<p class="tool-desc" data-i18n="desc">即时调整图片大小到任意尺寸。支持所有主要图片格式。</p>
+
+<div class="card" id="uploadCard">
+  <div id="dropZone" class="drop-zone">
+    <div class="dz-icon">🖼️</div>
+    <p class="dz-title">将图片拖放到此处</p>
+    <p class="dz-sub" data-i18n="setCustomDimensions">设置自定义尺寸</p>
+    <p class="dz-hint">JPG · PNG · WebP · 最大 50MB · 本地处理</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none">
+  <div id="presetsPre" style="margin-top:var(--space-2);display:none;"></div>
+</div>
+
+<div class="card" id="workCard" style="display:none">
+  <div class="file-bar">
+    <span class="file-name" id="fileName"></span>
+    <span class="file-meta" id="fileMeta"></span>
+    <button type="button" class="btn btn-secondary file-remove" id="removeBtn"></button>
+  </div>
+
+  <div id="errorBox" class="error-box" style="display:none"></div>
+
+  <div class="editor-grid">
+    <div class="left-col">
+      <p class="pv-label">原图</p>
+      <div class="pv-frame"><img id="origImg" alt=""></div>
+      <p class="orig-info" id="origInfo"></p>
+
+      <div id="presetsPost" style="margin-top:var(--space-2);"></div>
+
+      <div class="opt-block size-grid" style="margin-top:10px;">
+        <div>
+          <label class="opt-label" data-i18n="width">宽度（像素）</label>
+          <input type="number" id="widthInput" class="input" min="1" placeholder="宽度（像素）">
+        </div>
+        <div>
+          <label class="opt-label" data-i18n="height">高度（像素）</label>
+          <input type="number" id="heightInput" class="input" min="1" placeholder="高度（像素）">
+        </div>
+      </div>
+
+      <label class="chk-row">
+        <input type="checkbox" id="keepAr" checked>
+        <span data-i18n="maintainAspectRatio">保持宽高比</span>
+      </label>
+
+      <div class="opt-block quality-row">
+        <label class="opt-label" style="margin:0;">质量</label>
+        <input type="range" id="qualityRange" min="10" max="100" value="92">
+        <span class="opt-value" id="qualityVal">92%</span>
+      </div>
+      <p class="warn" id="jpegWarn" style="display:none">JPEG 高质量重编码可能导致文件变大。</p>
+    </div>
+
+    <div class="right-col">
+      <p class="pv-label"><span id="pvLabel">实时预览</span> <span class="orig-info" id="pvDims"></span></p>
+      <div class="pv-frame"><canvas id="previewCanvas"></canvas></div>
+      <p class="pv-size" id="resultSize"></p>
+    </div>
+  </div>
+
+  <div class="tool-row">
+    <button type="button" class="btn btn-primary" id="applyBtn">调整尺寸</button>
+    <button type="button" class="btn btn-secondary" id="resetResultBtn" style="display:none">重新调整</button>
+    <button type="button" class="btn btn-primary" id="downloadBtn" style="display:none">下载</button>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var PRESETS = [
+    { group: '短视频 & 竖版', items: [
+      { key: 'presetTiktok', label: 'TikTok · 抖音 · IG Story', w: 1080, h: 1920 },
+      { key: 'presetXhsPortraitCover', label: '小红书 竖版图文封面', w: 1242, h: 1660 },
+      { key: 'presetXhsVideoPortrait', label: '小红书 视频竖版封面', w: 1080, h: 1440 },
+      { key: 'presetInstagramPortrait', label: 'Instagram Portrait', w: 1080, h: 1350 }
+    ] },
+    { group: '横版封面', items: [
+      { key: 'presetYtBilibili', label: 'YouTube · B站 视频封面', w: 1280, h: 720 },
+      { key: 'presetBilibiliFullHd', label: 'Full HD · B站个人空间头图', w: 1920, h: 1080 },
+      { key: 'presetBilibiliUpload', label: 'B站 投稿封面', w: 1146, h: 717 },
+      { key: 'presetBilibiliHome', label: 'B站 首页推荐封面', w: 960, h: 720 },
+      { key: 'presetXhsLandscape', label: '小红书 横版封面', w: 1200, h: 900 }
+    ] },
+    { group: '方形 & 其他平台', items: [
+      { key: 'presetXhsSquare', label: '小红书 · Instagram 方形', w: 1080, h: 1080 },
+      { key: 'presetWechatOa', label: '微信公众号首图', w: 900, h: 500 },
+      { key: 'presetTwitterShare', label: 'Twitter · X 分享图', w: 1200, h: 675 },
+      { key: 'presetWallpaper4k', label: '4K 壁纸', w: 3840, h: 2160 }
+    ] },
+    { group: '证件照 (300 dpi)', items: [
+      { key: 'presetIdPhoto1', label: '1寸证件照', w: 295, h: 413 },
+      { key: 'presetIdPhoto2', label: '2寸证件照', w: 413, h: 579 },
+      { key: 'presetPassport', label: '护照照片', w: 390, h: 567 },
+      { key: 'presetDriverLicense', label: '驾照照片', w: 260, h: 378 }
+    ] }
+  ];
+
+  var file = null, imgEl = null, origUrl = null;
+  var naturalW = 0, naturalH = 0, quality = 92;
+  var result = null, processing = false;
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function setErr(msg) { setStatus(msg, 'error'); var b = $('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+  function clearErr() { $('errorBox').textContent = ''; $('errorBox').style.display = 'none'; }
+
+  function outExt() {
+    if (file.type === 'image/png') return 'png';
+    if (file.type === 'image/webp') return 'webp';
+    return 'jpg';
+  }
+
+  function targetDims() {
+    var w = parseInt($('widthInput').value, 10);
+    var h = parseInt($('heightInput').value, 10);
+    if (!w || w < 1) w = naturalW;
+    if (!h || h < 1) h = naturalH;
+    return { w: w, h: h };
+  }
+
+  function renderPresets(container) {
+    var html = '';
+    for (var g = 0; g < PRESETS.length; g++) {
+      html += '<div class="preset-group"><p class="preset-group-title">' + htmlEscape(PRESETS[g].group) + '</p><div class="preset-row">';
+      for (var i = 0; i < PRESETS[g].items.length; i++) {
+        var it = PRESETS[g].items[i];
+        var label = t(it.key, it.label);
+        html += '<button type="button" class="preset-btn" data-w="' + it.w + '" data-h="' + it.h + '">' +
+          htmlEscape(label) + '<small>' + it.w + '×' + it.h + '</small></button>';
+      }
+      html += '</div></div>';
+    }
+    container.innerHTML = html;
+    var btns = container.querySelectorAll('.preset-btn');
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].addEventListener('click', function () {
+        $('widthInput').value = this.getAttribute('data-w');
+        $('heightInput').value = this.getAttribute('data-h');
+        $('keepAr').checked = false;
+        markActivePreset();
+        clearResult();
+        drawPreview();
+      });
+    }
+  }
+
+  function markActivePreset() {
+    var w = $('widthInput').value, h = $('heightInput').value;
+    var containers = [$('presetsPre'), $('presetsPost')];
+    for (var c = 0; c < containers.length; c++) {
+      var btns = containers[c].querySelectorAll('.preset-btn');
+      for (var i = 0; i < btns.length; i++) {
+        var active = btns[i].getAttribute('data-w') === w && btns[i].getAttribute('data-h') === h;
+        btns[i].className = 'preset-btn' + (active ? ' active' : '');
+      }
+    }
+  }
+
+  function drawPreview() {
+    var canvas = $('previewCanvas');
+    if (!imgEl || naturalW === 0) return;
+    var d = targetDims();
+    canvas.width = d.w;
+    canvas.height = d.h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0, d.w, d.h);
+    $('pvDims').textContent = d.w + ' × ' + d.h + ' px';
+    $('pvLabel').textContent = t('livePreview', '实时预览');
+  }
+
+  function process() {
+    if (!file || !imgEl || processing) return;
+    var d = targetDims();
+    if (d.w < 1 || d.h < 1 || d.w > 16384 || d.h > 16384) {
+      setErr(t('invalidSize', '请输入有效的目标尺寸（1-16384 像素）'));
+      return;
+    }
+    processing = true;
+    clearErr();
+    $('applyBtn').disabled = true;
+    $('applyBtn').textContent = t('processing', '处理中…');
+    var canvas = document.createElement('canvas');
+    canvas.width = d.w; canvas.height = d.h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0, d.w, d.h);
+    var mime = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+    var q = quality / 100;
+    var self = this;
+    canvas.toBlob(function (blob) {
+      processing = false;
+      $('applyBtn').disabled = false;
+      if (!blob) { setErr(t('conversionFailed', '处理失败，请重试。')); return; }
+      if (result && result.url) URL.revokeObjectURL(result.url);
+      result = { blob: blob, url: URL.createObjectURL(blob) };
+      $('previewCanvas').style.display = 'none';
+      $('origImg').style.display = 'block';
+      var ext = outExt();
+      var name = baseName(file.name) + '_' + d.w + 'x' + d.h + '.' + ext;
+      result.name = name;
+      var img = $('origImg');
+      img.src = result.url;
+      var diff = (blob.size - file.size) / file.size * 100;
+      var sign = diff > 0 ? '+' : '';
+      $('resultSize').innerHTML = fmtBytes(blob.size) + ' <span class="' + (diff <= 0 ? 'diff-down' : 'diff-up') + '">' + sign + diff.toFixed(0) + '%</span>';
+      $('applyBtn').style.display = 'none';
+      $('downloadBtn').style.display = 'inline-flex';
+      $('resetResultBtn').style.display = 'inline-flex';
+      setStatus(t('ready', '就绪'));
+    }, mime, q);
+  }
+
+  function clearResult() {
+    if (result && result.url) { URL.revokeObjectURL(result.url); result = null; }
+    $('downloadBtn').style.display = 'none';
+    $('resetResultBtn').style.display = 'none';
+    $('applyBtn').style.display = 'inline-flex';
+    $('resultSize').textContent = '';
+    $('previewCanvas').style.display = 'block';
+    $('origImg').removeAttribute('src');
+    $('pvLabel').textContent = t('livePreview', '实时预览');
+    drawPreview();
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > MAX_MB * 1024 * 1024) {
+      setErr(t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)));
+      $('fileInput').value = '';
+      return;
+    }
+    file = f;
+    clearErr();
+    if (origUrl) URL.revokeObjectURL(origUrl);
+    origUrl = URL.createObjectURL(f);
+    $('uploadCard').style.display = 'none';
+    $('workCard').style.display = 'block';
+    $('fileName').textContent = f.name;
+    $('fileMeta').textContent = fmtBytes(f.size);
+    $('presetsPre').style.display = 'block';
+    var img = new Image();
+    img.onload = function () {
+      imgEl = img;
+      naturalW = img.naturalWidth;
+      naturalH = img.naturalHeight;
+      $('widthInput').value = String(naturalW);
+      $('heightInput').value = String(naturalH);
+      $('origInfo').textContent = t('original', '原图') + ': ' + naturalW + ' × ' + naturalH + ' px · ' + fmtBytes(f.size);
+      drawPreview();
+    };
+    img.onerror = function () { setErr(t('conversionFailed', '图片解码失败，请重试。')); };
+    img.src = origUrl;
+  }
+
+  function resetAll() {
+    file = null; imgEl = null; naturalW = 0; naturalH = 0;
+    result = null;
+    if (origUrl) { URL.revokeObjectURL(origUrl); origUrl = null; }
+    $('fileInput').value = '';
+    $('uploadCard').style.display = 'block';
+    $('workCard').style.display = 'none';
+    $('presetsPre').style.display = 'none';
+    clearErr();
+    setStatus('');
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('dragover');
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f) handleFile(f);
+  });
+  $('removeBtn').addEventListener('click', resetAll);
+
+  $('widthInput').addEventListener('input', function () {
+    if ($('keepAr').checked && naturalH > 0) {
+      var w = parseInt(this.value, 10);
+      if (w && w > 0) $('heightInput').value = String(Math.round(w * naturalH / naturalW));
+    }
+    markActivePreset();
+    clearResult();
+  });
+  $('heightInput').addEventListener('input', function () {
+    if ($('keepAr').checked && naturalW > 0) {
+      var h = parseInt(this.value, 10);
+      if (h && h > 0) $('widthInput').value = String(Math.round(h * naturalW / naturalH));
+    }
+    markActivePreset();
+    clearResult();
+  });
+  $('keepAr').addEventListener('change', function () { clearResult(); });
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 10;
+    $('qualityVal').textContent = quality + '%';
+    $('jpegWarn').style.display = (file && file.type.indexOf('jpeg') !== -1 && quality > 85) ? 'block' : 'none';
+  });
+  $('applyBtn').addEventListener('click', process);
+  $('resetResultBtn').addEventListener('click', clearResult);
+  $('downloadBtn').addEventListener('click', function () {
+    if (result) { download(result.blob, result.name); setStatus(t('downloaded', '已开始下载')); }
+  });
+
+  renderPresets($('presetsPre'));
+  renderPresets($('presetsPost'));
+})();
+</script>
+</body>
+</html>

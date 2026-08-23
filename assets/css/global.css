@@ -41,7 +41,7 @@
 }
 
 body {
-  font-family: var(--font-mono);
+  font-family: var(--font-family);
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--color-text-primary);
@@ -110,9 +110,10 @@ body {
 .card {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-3);
   margin-bottom: var(--space-3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .input {
@@ -148,7 +149,7 @@ body {
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
   text-decoration: none;
   min-width: 80px;
 }
@@ -160,10 +161,13 @@ body {
 
 .btn-primary:hover {
   background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:active {
   transform: scale(0.98);
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -174,6 +178,13 @@ body {
 
 .btn-secondary:hover {
   background: #F5F5F5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 .btn:disabled {
@@ -221,7 +232,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: 9999px;
   transition: all 0.15s;
-  font-family: var(--font-mono);
+  font-family: var(--font-family);
 }
 .back-btn:hover {
   border-color: var(--color-text-primary);
@@ -234,12 +245,18 @@ body {
   margin-bottom: var(--space-3);
 }
 
-/* 语言切换器（下拉）：紧凑胶囊样式，与 .back-btn 视觉协调 */
-.lang-switch {
+/* 语言切换器（自定义下拉面板）：触发按钮 + 弹出菜单 */
+.lang-switcher {
+  position: relative;
+}
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   height: 32px;
   padding: 0 12px;
   font-size: var(--font-size-xs);
-  font-family: var(--font-mono);
+  font-family: var(--font-family);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   border-radius: 9999px;
@@ -247,11 +264,80 @@ body {
   cursor: pointer;
   outline: none;
   transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
 }
-
-.lang-switch:hover {
+.lang-trigger:hover {
   border-color: var(--color-text-primary);
   color: var(--color-text-primary);
+}
+.lang-trigger:focus-visible {
+  border-color: var(--color-text-primary);
+  box-shadow: var(--shadow-focus);
+}
+.lang-trigger svg {
+  flex-shrink: 0;
+}
+.lang-trigger-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lang-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 210px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 5px;
+  z-index: 1000;
+}
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  transition: background-color 0.12s;
+}
+.lang-option:hover {
+  background: var(--color-bg-soft);
+}
+.lang-option.sel {
+  background: var(--color-bg-soft);
+}
+.lang-option .lang-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+.lang-option .lang-sub {
+  font-size: 11px;
+  color: var(--color-text-disabled);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lang-option .lang-check {
+  display: none;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.lang-option.sel .lang-check {
+  display: block;
+}
+.lang-option:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
 }
 
 /* ---- Modal / Dialog ---- */
@@ -337,16 +423,5 @@ body {
 /* i18n.js 迁移返回按钮前，先隐藏 header 内旧返回按钮（消除刷新闪烁） */
 .global-header .back-btn {
   display: none;
-}
-
-/* 语言切换器：隐藏原生箭头，改用 SVG 下拉箭头 */
-.lang-switch {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding-right: 26px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 9px center;
 }
 

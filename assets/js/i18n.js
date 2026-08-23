@@ -5,7 +5,7 @@
  *  1. 语言检测：localStorage 记忆 -> 浏览器语言（navigator.languages）-> 默认 zh-CN
  *  2. 词典加载：同步 XHR 加载 assets/i18n/<lang>/common.json 与 <页面slug>.json（同步保证页内脚本可立即使用 I18N.t）
  *  3. 文案替换：data-i18n（文本）/ data-i18n-placeholder（占位符）/ data-i18n-attr-title（title 属性）
- *  4. 语言切换器：注入 <select class="lang-switch">——工具页替换 header 中旧返回按钮位置，主页追加到 header 右侧
+ *  4. 语言切换器：自定义下拉面板（按钮 + 弹出菜单）——工具页替换 header 中旧返回按钮位置，主页追加到 header 右侧；页面静态 HTML 中已有的 <select id="langSwitch"> 会被自动替换
  *  5. 返回按钮迁移：工具页从 header 移除旧返回按钮，注入到 .tool-workspace 左上角（.back-btn-workspace）
  *  6. 元数据：<html lang>、document.title、meta[name=description] 按词典更新
  *
@@ -21,16 +21,16 @@
  */
 (function () {
   /**
-   * 支持的语言清单。code 为 BCP 47 语言代码；label 为各语言自称（切换器下拉显示）。
-   * 注意：label 不做本地化——切换器始终以各语言母语自称显示（惯例做法）。
+   * 支持的语言清单。code 为 BCP 47 语言代码；label 为各语言自称（切换器主行显示）；
+   * enName 为英文名（切换器副行显示，便于非母语用户识别）。
    */
   var LANGS = [
-    { code: 'en',    label: 'English' },
-    { code: 'zh-CN', label: '简体中文' },
-    { code: 'zh-TW', label: '繁體中文（台灣）' },
-    { code: 'zh-HK', label: '繁體中文（香港）' },
-    { code: 'es',    label: 'Español' },
-    { code: 'ja',    label: '日本語' }
+    { code: 'en',    label: 'English',                   enName: 'English' },
+    { code: 'zh-CN', label: '简体中文',                   enName: 'Simplified Chinese' },
+    { code: 'zh-TW', label: '繁體中文（台灣）',             enName: 'Traditional Chinese (Taiwan)' },
+    { code: 'zh-HK', label: '繁體中文（香港）',             enName: 'Traditional Chinese (Hong Kong)' },
+    { code: 'es',    label: 'Español',                   enName: 'Spanish' },
+    { code: 'ja',    label: '日本語',                     enName: 'Japanese' }
   ];
 
   /** localStorage 记忆键名（与 global.js 的 s-jiffy: 前缀约定一致） */
@@ -145,44 +145,166 @@
   }
 
   /**
-   * 向 header 注入语言切换器（<select id="langSwitch" class="lang-switch">）。
-   * 位置规则：
-   *  - 工具页：替换 header 中旧返回按钮（.back-btn）——即用户指定的「原返回按钮位置」
-   *  - 主页：header 无返回按钮，追加到 header 末尾（右侧）
-   * 交互：change 时写入 localStorage 并 location.reload()（重载保证页内 JS 生成的文案全部按新语言重新渲染）。
-   * 边界：header 不存在时直接返回（不注入）。
+   * 语言切换器（自定义下拉面板，替代原生 <select>，提供一致的跨浏览器外观）：
+   *  结构：.lang-switcher > button.lang-trigger（地球图标 + 当前语言母语名 + 箭头）+ div.lang-menu（6 个语言项）
+   *  语言项：母语名主行 + 英文名副行，当前语言高亮并显示对勾
+   *  交互：点击项切换（写入 localStorage 并 reload，保证页内 JS 文案全部重渲染）；
+   *        ESC 或点击外部关闭；↑/↓ 在选项中移动焦点，Enter/Space 选中
+   *  位置：工具页替换 header 中旧返回按钮（.back-btn）；主页 header 无返回按钮时追加到末尾（右侧）
+   *  兼容：页面静态 HTML 中已有的 <select id="langSwitch"> 会被整体替换为自定义组件（幂等）
+   *  边界：header 不存在时直接返回；localStorage 异常时静默跳过
    */
   function renderSwitcher() {
     var header = document.querySelector('.global-header');
     if (!header) return;
-    var select = header.querySelector('#langSwitch');
-    if (!select) {
-      select = document.createElement('select');
-      select.id = 'langSwitch';
-      select.className = 'lang-switch';
-      select.setAttribute('aria-label', 'Language');
-      var i;
-      for (i = 0; i < LANGS.length; i++) {
-        var opt = document.createElement('option');
-        opt.value = LANGS[i].code;
-        opt.textContent = LANGS[i].label;
-        select.appendChild(opt);
-      }
+
+    var existing = header.querySelector('#langSwitch');
+    var select = (existing && existing.tagName === 'SELECT') ? existing : null;
+
+    var wrap = document.createElement('div');
+    wrap.id = 'langSwitch';
+    wrap.className = 'lang-switcher';
+
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'lang-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.appendChild(svgIcon('globe'));
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'lang-trigger-name';
+    var curLabel = lang;
+    for (var k = 0; k < LANGS.length; k++) {
+      if (LANGS[k].code === lang) { curLabel = LANGS[k].label; break; }
+    }
+    nameSpan.textContent = curLabel;
+    trigger.appendChild(nameSpan);
+    trigger.appendChild(svgIcon('chevron'));
+    wrap.appendChild(trigger);
+
+    var menu = document.createElement('div');
+    menu.className = 'lang-menu';
+    menu.setAttribute('role', 'listbox');
+    menu.hidden = true;
+    var items = [];
+    var j;
+    for (j = 0; j < LANGS.length; j++) {
+      (function (lg) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'lang-option' + (lg.code === lang ? ' sel' : '');
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', lg.code === lang ? 'true' : 'false');
+        var nm = document.createElement('span');
+        nm.className = 'lang-name';
+        nm.textContent = lg.label;
+        item.appendChild(nm);
+        var sub = document.createElement('span');
+        sub.className = 'lang-sub';
+        sub.textContent = lg.enName;
+        item.appendChild(sub);
+        item.appendChild(svgIcon('check', 'lang-check'));
+        item.addEventListener('click', function () { setLang(lg.code); });
+        item.addEventListener('keydown', function (e) {
+          var idx = items.indexOf(e.target);
+          if (idx === -1) return;
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            items[(idx + 1) % items.length].focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            items[(idx - 1 + items.length) % items.length].focus();
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            items[idx].click();
+          }
+        });
+        items.push(item);
+        menu.appendChild(item);
+      })(LANGS[j]);
+    }
+    wrap.appendChild(menu);
+
+    function openMenu() {
+      menu.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+    function closeMenu() {
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+    trigger.addEventListener('click', function () {
+      if (menu.hidden) { openMenu(); } else { closeMenu(); }
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeMenu();
+    });
+
+    if (select) {
+      select.parentNode.replaceChild(wrap, select);
+    } else {
       var backBtn = header.querySelector('.back-btn');
       if (backBtn) {
-        backBtn.parentNode.replaceChild(select, backBtn);
+        backBtn.parentNode.replaceChild(wrap, backBtn);
       } else {
-        header.appendChild(select);
+        header.appendChild(wrap);
       }
     }
-    select.addEventListener('change', function () {
-      try { localStorage.setItem(STORAGE_KEY, select.value); } catch (e) {}
-      window.location.reload();
-    });
-    var opts = select.options;
-    for (var j = 0; j < opts.length; j++) {
-      if (opts[j].value === lang) { opts[j].selected = true; break; }
+  }
+
+  /**
+   * 切换语言：写入 localStorage 记忆后重载页面（页内 JS 生成的文案需按新语言重新渲染）。
+   * 边界：localStorage 写入失败（隐私模式等）时仍重载，本次生效但无法记忆。
+   */
+  function setLang(code) {
+    try { localStorage.setItem(STORAGE_KEY, code); } catch (e) {}
+    window.location.reload();
+  }
+
+  /**
+   * 生成内联 SVG 图标（currentColor 着色，随文字颜色变化）：
+   *  - globe：地球（语言标识）
+   *  - chevron：下拉箭头（展开指示）
+   *  - check：对勾（当前语言标记）
+   */
+  function svgIcon(name, cls) {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    if (cls) svg.setAttribute('class', cls);
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    if (name === 'globe') {
+      svg.setAttribute('viewBox', '0 0 24 24');
+      var circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', '12'); circle.setAttribute('cy', '12'); circle.setAttribute('r', '9');
+      svg.appendChild(circle);
+      var ellipse = document.createElementNS(ns, 'ellipse');
+      ellipse.setAttribute('cx', '12'); ellipse.setAttribute('cy', '12'); ellipse.setAttribute('rx', '4'); ellipse.setAttribute('ry', '9');
+      svg.appendChild(ellipse);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', '3'); line.setAttribute('y1', '12'); line.setAttribute('x2', '21'); line.setAttribute('y2', '12');
+      svg.appendChild(line);
+    } else if (name === 'chevron') {
+      svg.setAttribute('viewBox', '0 0 10 6');
+      svg.setAttribute('stroke-width', '1.5');
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', 'M1 1l4 4 4-4');
+      svg.appendChild(path);
+    } else if (name === 'check') {
+      svg.setAttribute('viewBox', '0 0 16 16');
+      var path2 = document.createElementNS(ns, 'path');
+      path2.setAttribute('d', 'M2.5 8.5l3.5 3.5 7.5-8');
+      svg.appendChild(path2);
     }
+    return svg;
   }
 
   /**

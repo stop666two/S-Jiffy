@@ -44,24 +44,27 @@
     .tool-card {
       background: var(--color-bg);
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       padding: var(--space-3);
       text-decoration: none;
       color: inherit;
-      transition: border-color 0.15s, background-color 0.2s;
+      transition: border-color 0.15s, background-color 0.2s, transform 0.15s, box-shadow 0.15s;
       display: flex;
       flex-direction: column;
       height: 168px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
     .tool-card:hover {
       border-color: var(--color-text-primary);
       background: var(--color-bg-soft);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
     .tool-card h2 {
       font-size: var(--font-size-base);
       font-weight: 600;
       margin-bottom: 4px;
-      font-family: var(--font-mono);
+      font-family: var(--font-family);
       flex-shrink: 0;
     }
     .tool-card p {
@@ -85,15 +88,35 @@
     .tool-card .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 6px;
       margin-top: auto;
       flex-shrink: 0;
     }
     .tool-card .tags span {
-      font-size: 10px;
-      font-family: var(--font-mono);
-      color: var(--color-text-disabled);
+      font-size: 11px;
+      font-family: var(--font-family);
+      color: var(--color-text-secondary);
       letter-spacing: 0.02em;
+      background: var(--color-bg-soft);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .tool-card .usage-badge {
+      font-size: 11px;
+      font-family: var(--font-family);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-soft);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      margin-left: auto;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .tool-card mark {
+      background: var(--color-bg-soft);
+      color: var(--color-text-primary);
+      font-weight: 600;
+      border-radius: 2px;
     }
     .tool-card.hidden {
       display: none;
@@ -890,6 +913,15 @@
         var tb = document.getElementById('historyToolbar');
         if (tb) tb.style.display = isHistory && list.length > 0 ? 'flex' : 'none';
 
+        function highlight(text, q) {
+          if (!q) return text;
+          var str = String(text);
+          var qs = String(q);
+          var i = str.toLowerCase().indexOf(qs.toLowerCase());
+          if (i < 0) return str;
+          return htmlEscape(str.slice(0, i)) + '<mark>' + htmlEscape(str.slice(i, i + qs.length)) + '</mark>' + htmlEscape(str.slice(i + qs.length));
+        }
+
         list.forEach(function (tool) {
           if (!tool) return;
           var card = document.createElement('div');
@@ -916,9 +948,9 @@
           var usage = getUsage();
           var slug = tool.link.slice('projects/'.length, -1);
           var info = usage[slug] || usage[tool.name];
-          var usageHtml = info ? '<span style="font-size:10px;color:var(--color-text-disabled);">' + renderTpl('home.usedCount', { n: info.count }, '使用 ' + info.count + ' 次') + '</span>' : '';
+          var usageHtml = info ? '<span class="usage-badge">' + renderTpl('home.usedCount', { n: info.count }, '使用 ' + info.count + ' 次') + '</span>' : '';
           var tagsHtml = tool.cats.map(function (c) { return '<span>#' + localName('home.cat.' + c, c) + '</span>'; }).join('');
-          link.innerHTML = '<h2>' + localName('home.tool.' + tool.link + '.name', tool.name) + '</h2><p>' + localName('home.tool.' + tool.link + '.desc', tool.desc) + '</p><div class="tags" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">' + tagsHtml + usageHtml + '</div>';
+          link.innerHTML = '<h2>' + highlight(localName('home.tool.' + tool.link + '.name', tool.name), searchQuery) + '</h2><p>' + highlight(localName('home.tool.' + tool.link + '.desc', tool.desc), searchQuery) + '</p><div class="tags" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">' + tagsHtml + usageHtml + '</div>';
           card.appendChild(link);
           grid.appendChild(card);
         });

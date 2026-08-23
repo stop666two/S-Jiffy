@@ -51,7 +51,7 @@
       transition: border-color 0.15s, background-color 0.2s, transform 0.15s, box-shadow 0.15s;
       display: flex;
       flex-direction: column;
-      height: 168px;
+      min-height: 168px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
     .tool-card:hover {
@@ -74,16 +74,10 @@
       margin-bottom: 8px;
       flex: 1;
       min-height: 44px;
-      max-height: 66px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-    .tool-card p::-webkit-scrollbar {
-      width: 4px;
-    }
-    .tool-card p::-webkit-scrollbar-thumb {
-      background: var(--color-border);
-      border-radius: 2px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .tool-card .tags {
       display: flex;

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IP 地址查询 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.ip-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-2); }
+.ip-row .input { flex:1; min-width:220px; }
+.ip-info { border:1px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; margin-top:var(--space-2); }
+.ip-info .row { display:flex; justify-content:space-between; gap:12px; padding:9px 14px; border-bottom:1px solid var(--color-border); font-size:var(--font-size-sm); }
+.ip-info .row:last-child { border-bottom:none; }
+.ip-info .row .k { color:var(--color-text-secondary); flex-shrink:0; }
+.ip-info .row .v { font-family:var(--font-mono); text-align:right; word-break:break-all; }
+.ip-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:var(--space-2); }
+.loading { display:flex; align-items:center; gap:10px; padding:var(--space-3); justify-content:center; font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+.spinner { width:16px; height:16px; border:2px solid var(--color-border); border-top-color:var(--color-accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<header class="global-header">
+  <a href="../../index.html" class="logo">S-Jiffy</a>
+  <a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+  <h1>IP 地址查询</h1>
+  <p class="tool-desc">查询任意 IP 的国家、城市、运营商与坐标，页面加载时自动检测本机 IP。</p>
+  <div class="card">
+    <div class="ip-row">
+      <input id="ipInput" type="text" class="input js-focus-input" data-i18n-placeholder="ipEnterAddress" placeholder="输入IP地址（留空查询本机IP）">
+      <button id="lookupBtn" class="btn btn-primary" data-i18n="ipLookupBtn">查询</button>
+      <button id="myIpBtn" class="btn btn-secondary" data-i18n="ipLookupMy">我的IP</button>
+    </div>
+    <div id="statusArea"></div>
+    <div id="resultBox" style="display:none;">
+      <div class="ip-info" id="infoRows"></div>
+      <div class="ip-actions">
+        <button id="mapBtn" class="btn btn-secondary" data-i18n="ipViewMap">在Google地图查看</button>
+        <button id="copyIpBtn" class="btn btn-secondary" data-i18n="common.copy">复制</button>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var ipInput = document.getElementById('ipInput');
+  var statusArea = document.getElementById('statusArea');
+  var resultBox = document.getElementById('resultBox');
+  var infoRows = document.getElementById('infoRows');
+  var lookupBtn = document.getElementById('lookupBtn');
+  var myIpBtn = document.getElementById('myIpBtn');
+  var mapBtn = document.getElementById('mapBtn');
+  var copyIpBtn = document.getElementById('copyIpBtn');
+  var lastData = null;
+  var loading = false;
+
+  function setLoading(on) {
+    loading = on;
+    lookupBtn.disabled = on;
+    myIpBtn.disabled = on;
+    statusArea.innerHTML = on
+      ? '<div class="loading"><span class="spinner"></span>' + t('ipDetecting', '检测中...') + '</div>'
+      : '';
+  }
+
+  function dash(v) { return (v === undefined || v === null || v === '') ? '—' : String(v); }
+
+  function row(k, v, mono) {
+    var div = document.createElement('div');
+    div.className = 'row';
+    var kEl = document.createElement('span');
+    kEl.className = 'k';
+    kEl.textContent = k;
+    var vEl = document.createElement('span');
+    vEl.className = 'v' + (mono ? '' : '');
+    vEl.textContent = v;
+    div.appendChild(kEl);
+    div.appendChild(vEl);
+    infoRows.appendChild(div);
+  }
+
+  function ipVersion(ip) { return ip.indexOf(':') !== -1 ? 'IPv6' : 'IPv4'; }
+
+  function render(data) {
+    lastData = data;
+    infoRows.innerHTML = '';
+    row('IP', data.ip || '—', true);
+    row(t('ipType', '类型'), ipVersion(data.ip || ''), true);
+    row(t('ipCountry', '国家/地区'), dash(data.country_name || data.country_code));
+    row(t('ipRegion', '地区/省份'), dash(data.region));
+    row(t('ipCity', '城市'), dash(data.city));
+    row(t('ipContinent', '大洲'), dash(data.continent_code));
+    row(t('ipTimezone', '时区'), dash(data.timezone), true);
+    row(t('ipUTCOffset', 'UTC偏移'), dash(data.utc_offset), true);
+    row(t('ipCallingCode', '国际区号'), data.calling_code ? '+' + data.calling_code : '—', true);
+    row(t('ipCurrency', '货币'), dash(data.currency), true);
+    row(t('ipASN', 'ASN'), dash(data.asn), true);
+    row(t('ipISP', '运营商'), dash(data.org), true);
+    row(t('ipLanguages', '语言'), dash(data.languages), true);
+    row(t('ipCoords', '坐标'), data.latitude !== undefined && data.longitude !== undefined ? data.latitude + ', ' + data.longitude : '—', true);
+    resultBox.style.display = 'block';
+  }
+
+  function fmtOffset(sec) {
+    if (sec === undefined || sec === null || sec === '' || isNaN(sec)) return '';
+    var sign = sec < 0 ? '-' : '+';
+    var abs = Math.abs(sec);
+    var h = Math.floor(abs / 3600);
+    var m = Math.floor((abs % 3600) / 60);
+    var mm = m < 10 ? '0' + m : '' + m;
+    return sign + h + ':' + mm;
+  }
+
+  function normalize(j) {
+    if (j.query !== undefined) {
+      return {
+        ip: j.query,
+        city: j.city,
+        region: j.regionName,
+        country_name: j.country,
+        country_code: j.countryCode,
+        continent_code: j.continentCode,
+        latitude: j.lat,
+        longitude: j.lon,
+        timezone: j.timezone,
+        utc_offset: fmtOffset(j.offset),
+        calling_code: j.callingCode,
+        currency: j.currency,
+        asn: j.as,
+        org: j.isp || j.org,
+        languages: ''
+      };
+    }
+    if (j.latitude !== undefined || j.latitude === 0) {
+      return j;
+    }
+    return null;
+  }
+
+  function lookup(ip) {
+    if (loading) return;
+    setLoading(true);
+    resultBox.style.display = 'none';
+    var url = 'http://ip-api.com/json/' + (ip ? encodeURIComponent(ip) : '') +
+      '?fields=status,message,query,country,countryCode,regionName,city,timezone,isp,org,as,lat,lon,continentCode,offset,callingCode,currency';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      if (xhr.status !== 200) { lookupIpapi(ip); return; }
+      try {
+        var j = JSON.parse(xhr.responseText);
+        if (j.status !== 'success') { lookupIpapi(ip); return; }
+        var data = normalize(j);
+        if (!data) { lookupIpapi(ip); return; }
+        render(data);
+        setStatus(ip ? t('ipDone', '查询完成') : t('ipDoneMy', '已获取本机 IP'));
+        setLoading(false);
+      } catch (e) { lookupIpapi(ip); }
+    };
+    xhr.onerror = function () { lookupIpapi(ip); };
+    xhr.ontimeout = function () { lookupIpapi(ip); };
+    xhr.send(null);
+  }
+
+  function lookupIpapi(ip) {
+    var url = 'https://ipapi.co' + (ip ? '/' + encodeURIComponent(ip) : '') + '/json/';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      if (xhr.status !== 200) { lookupIpinfo(ip); return; }
+      try {
+        var data = JSON.parse(xhr.responseText);
+        if (data.error) { lookupIpinfo(ip); return; }
+        render(data);
+        setStatus(ip ? t('ipDone', '查询完成') : t('ipDoneMy', '已获取本机 IP'));
+        setLoading(false);
+      } catch (e) { lookupIpinfo(ip); }
+    };
+    xhr.onerror = function () { lookupIpinfo(ip); };
+    xhr.ontimeout = function () { lookupIpinfo(ip); };
+    xhr.send(null);
+  }
+
+  function lookupIpinfo(ip) {
+    var url = ip ? 'https://ipinfo.io/' + encodeURIComponent(ip) + '/json' : 'https://ipinfo.io/json';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      setLoading(false);
+      if (xhr.status !== 200) {
+        setStatus(t('ipLookupFailed', '查询失败（HTTP ' + xhr.status + '）'), 'error');
+        return;
+      }
+      try {
+        var j = JSON.parse(xhr.responseText);
+        if (j.error) {
+          setStatus(t('ipLookupFailed', '查询失败：' + (j.error.message || '未知错误')), 'error');
+          return;
+        }
+        var loc = (j.loc || '0,0').split(',');
+        var data = {
+          ip: j.ip || '',
+          city: j.city || '',
+          region: j.region || '',
+          country_name: j.country || '',
+          country_code: j.country || '',
+          continent_code: '',
+          latitude: parseFloat(loc[0]),
+          longitude: parseFloat(loc[1]),
+          timezone: j.timezone || '',
+          utc_offset: '',
+          calling_code: '',
+          currency: '',
+          asn: '',
+          org: j.org || '',
+          languages: ''
+        };
+        render(data);
+        setStatus(ip ? t('ipDone', '查询完成') : t('ipDoneMy', '已获取本机 IP'));
+      } catch (e) {
+        setStatus(t('ipLookupFailed', '查询结果解析失败'), 'error');
+      }
+    };
+    xhr.onerror = function () {
+      setLoading(false);
+      setStatus(t('ipNetworkError', '网络错误：无法连接定位服务，请稍后重试'), 'error');
+    };
+    xhr.ontimeout = function () {
+      setLoading(false);
+      setStatus(t('ipTimeout', '查询超时，请稍后重试'), 'error');
+    };
+    xhr.send(null);
+  }
+
+  function isValidIp(v) {
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v)) {
+      var parts = v.split('.');
+      for (var i = 0; i < parts.length; i++) {
+        if (parseInt(parts[i], 10) > 255) return false;
+      }
+      return true;
+    }
+    if (v.indexOf(':') !== -1) {
+      return /^[0-9a-fA-F:.]+$/.test(v) && v.indexOf('::') !== -1 ? true : /^([0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(v);
+    }
+    return false;
+  }
+
+  lookupBtn.addEventListener('click', function () {
+    var v = ipInput.value.trim();
+    if (v && !isValidIp(v)) {
+      setStatus(t('ipInvalidFormat', 'IP地址格式无效'), 'error');
+      return;
+    }
+    lookup(v);
+  });
+  myIpBtn.addEventListener('click', function () {
+    ipInput.value = '';
+    lookup('');
+  });
+  ipInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') lookupBtn.click(); });
+  mapBtn.addEventListener('click', function () {
+    if (lastData && lastData.latitude !== undefined && lastData.longitude !== undefined) {
+      window.open('https://www.google.com/maps?q=' + lastData.latitude + ',' + lastData.longitude, '_blank');
+    } else {
+      setStatus(t('ipNoCoords', '该 IP 无坐标信息'), 'error');
+    }
+  });
+  copyIpBtn.addEventListener('click', function () {
+    if (lastData && lastData.ip) {
+      copyToClipboard(lastData.ip, copyIpBtn);
+      setStatus(t('common.copied', '已复制'));
+    }
+  });
+
+  lookup('');
+})();
+</script>
+</body>
+</html>

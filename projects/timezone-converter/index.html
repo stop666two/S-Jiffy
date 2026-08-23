@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>时区转换 - S-Jiffy</title>
+  <title>时区转换器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
@@ -13,6 +13,25 @@
     .tz-result td { padding:8px 12px; border-bottom:1px solid var(--color-border); }
     .tz-result td:first-child { color:var(--color-text-secondary); width:40%; }
     .tz-result td:last-child { font-family:var(--font-mono); }
+    .clock-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
+    .clock-card { position:relative; background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); }
+    .clock-card .city { font-size:var(--font-size-sm); font-weight:500; margin-bottom:4px; padding-right:20px; }
+    .clock-card .offset { font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:6px; }
+    .clock-card .time { font-size:var(--font-size-lg); font-weight:600; font-family:var(--font-mono); letter-spacing:1px; }
+    .clock-card .date { font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-top:2px; }
+    .clock-card .rm { position:absolute; top:6px; right:6px; background:transparent; border:none; color:var(--color-text-disabled); cursor:pointer; font-size:14px; line-height:1; padding:2px 6px; border-radius:var(--radius-sm); }
+    .clock-card .rm:hover { color:var(--color-error); background:rgba(0,0,0,0.04); }
+    .tz-search { width:100%; margin-bottom:var(--space-2); }
+    .tz-list { border:1px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; max-height:224px; overflow-y:auto; }
+    .tz-list button { display:flex; width:100%; align-items:center; justify-content:space-between; padding:8px 12px; font-size:var(--font-size-sm); background:transparent; border:none; border-bottom:1px solid var(--color-border); cursor:pointer; text-align:left; }
+    .tz-list button:last-child { border-bottom:none; }
+    .tz-list button:hover:not(:disabled) { background:var(--color-bg-soft); }
+    .tz-list button:disabled { opacity:0.4; cursor:not-allowed; }
+    .tz-list .zh { color:var(--color-text-secondary); font-size:var(--font-size-xs); margin-left:6px; }
+    .tz-list .off { color:var(--color-text-secondary); font-size:var(--font-size-xs); }
+    .switch-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:var(--font-size-sm); color:var(--color-text-secondary); user-select:none; }
+    .switch input { accent-color:var(--color-accent); width:16px; height:16px; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -21,9 +40,22 @@
   <a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1>时区转换器</h1>
-    <p class="tool-desc">全球时区时间转换。</p>
+    <p class="tool-desc">全球城市实时时钟与时区换算，内置 Intl API 自动处理夏令时。</p>
 
     <div class="card">
+      <h2 style="font-size:var(--font-size-base);margin-bottom:var(--space-2);">世界时钟</h2>
+      <div class="switch-row">
+        <label class="switch"><input type="checkbox" id="useCustom"> <span data-i18n="tzDateTimePicker">使用自定义日期/时间</span></label>
+        <input id="customDate" type="datetime-local" class="input" style="width:auto;height:36px;display:none;">
+      </div>
+      <div class="clock-grid" id="clockGrid"></div>
+      <label class="input-label" data-i18n="tzAddCity" style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">添加城市</label>
+      <input id="tzSearch" type="text" class="input tz-search" data-i18n-placeholder="tzSearchTimezone" placeholder="搜索城市或时区...">
+      <div class="tz-list" id="tzList"></div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:var(--font-size-base);margin-bottom:var(--space-2);">时区换算</h2>
       <div class="tz-grid">
         <div>
           <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">源时区</label>
@@ -90,19 +122,178 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+  <script src="timezones.js"></script>
   <script>
     (function () {
+      'use strict';
+      var isZh = window.I18N && I18N.lang && I18N.lang.indexOf('zh') === 0;
+      var DEFAULT_CITIES = ['New York', 'London', 'Shanghai', 'Tokyo'];
+      var selected = DEFAULT_CITIES.slice();
+      var clockGrid = document.getElementById('clockGrid');
+      var tzList = document.getElementById('tzList');
+      var tzSearch = document.getElementById('tzSearch');
+      var useCustom = document.getElementById('useCustom');
+      var customDate = document.getElementById('customDate');
+      var timerId = null;
+
+      function cityName(entry) { return isZh ? entry.zh : entry.city; }
+
+      function getOffset(tz, date) {
+        try {
+          var parts = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(date);
+          for (var i = 0; i < parts.length; i++) { if (parts[i].type === 'timeZoneName') return parts[i].value; }
+        } catch (e) {}
+        return '';
+      }
+
+      function fmtTime(date, tz) {
+        try {
+          return new Intl.DateTimeFormat('en', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(date);
+        } catch (e) { return '--'; }
+      }
+
+      function fmtDate(date, tz) {
+        try {
+          return new Intl.DateTimeFormat(isZh ? 'zh-CN' : 'en', { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' }).format(date);
+        } catch (e) { return ''; }
+      }
+
+      function displayDate() {
+        if (useCustom.checked && customDate.value) {
+          var d = new Date(customDate.value);
+          return isNaN(d.getTime()) ? new Date() : d;
+        }
+        return new Date();
+      }
+
+      function renderClocks() {
+        var date = displayDate();
+        clockGrid.innerHTML = '';
+        for (var i = 0; i < selected.length; i++) {
+          (function (city) {
+            var entry = null;
+            for (var j = 0; j < TZ_CITIES.length; j++) { if (TZ_CITIES[j].city === city) { entry = TZ_CITIES[j]; break; } }
+            if (!entry) return;
+            var card = document.createElement('div');
+            card.className = 'clock-card';
+            var rm = document.createElement('button');
+            rm.className = 'rm';
+            rm.setAttribute('aria-label', 'Remove ' + entry.city);
+            rm.textContent = '✕';
+            rm.addEventListener('click', function () {
+              selected = selected.filter(function (c) { return c !== city; });
+              renderClocks();
+              renderList();
+            });
+            var cityEl = document.createElement('div');
+            cityEl.className = 'city';
+            cityEl.textContent = cityName(entry);
+            var offEl = document.createElement('div');
+            offEl.className = 'offset';
+            offEl.textContent = getOffset(entry.tz, date);
+            var timeEl = document.createElement('div');
+            timeEl.className = 'time';
+            timeEl.textContent = fmtTime(date, entry.tz);
+            var dateEl = document.createElement('div');
+            dateEl.className = 'date';
+            dateEl.textContent = fmtDate(date, entry.tz);
+            card.appendChild(rm);
+            card.appendChild(cityEl);
+            card.appendChild(offEl);
+            card.appendChild(timeEl);
+            card.appendChild(dateEl);
+            clockGrid.appendChild(card);
+          })(selected[i]);
+        }
+      }
+
+      function renderList() {
+        var q = tzSearch.value.toLowerCase();
+        var filtered = [];
+        for (var i = 0; i < TZ_CITIES.length; i++) {
+          var e = TZ_CITIES[i];
+          if (e.city.toLowerCase().indexOf(q) !== -1 || e.tz.toLowerCase().indexOf(q) !== -1 || e.zh.indexOf(tzSearch.value) !== -1) {
+            filtered.push(e);
+          }
+        }
+        tzList.innerHTML = '';
+        if (filtered.length === 0) {
+          var none = document.createElement('div');
+          none.style.padding = '12px';
+          none.style.fontSize = 'var(--font-size-sm)';
+          none.style.color = 'var(--color-text-secondary)';
+          none.textContent = t('tzNoResults', '未找到匹配的时区');
+          tzList.appendChild(none);
+          return;
+        }
+        for (var j = 0; j < filtered.length; j++) {
+          (function (entry) {
+            var btn = document.createElement('button');
+            var left = document.createElement('span');
+            left.textContent = cityName(entry);
+            if (isZh) {
+              var en = document.createElement('span');
+              en.className = 'zh';
+              en.textContent = entry.city;
+              left.appendChild(en);
+            }
+            var off = document.createElement('span');
+            off.className = 'off';
+            off.textContent = getOffset(entry.tz, new Date());
+            btn.appendChild(left);
+            btn.appendChild(off);
+            var already = selected.indexOf(entry.city) !== -1;
+            btn.disabled = already;
+            if (!already) {
+              btn.addEventListener('click', function () {
+                selected.push(entry.city);
+                tzSearch.value = '';
+                renderClocks();
+                renderList();
+              });
+            }
+            tzList.appendChild(btn);
+          })(filtered[j]);
+        }
+      }
+
+      useCustom.addEventListener('change', function () {
+        customDate.style.display = this.checked ? '' : 'none';
+        if (this.checked) {
+          var d = new Date();
+          var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+          customDate.value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+        renderClocks();
+      });
+      customDate.addEventListener('input', renderClocks);
+      tzSearch.addEventListener('input', renderList);
+
+      /* ---- 时区换算（保留原功能） ---- */
       var src = document.getElementById('sourceTz'), tgt = document.getElementById('targetTz');
       var timeInput = document.getElementById('sourceTime');
       var o = document.getElementById('resultBox');
 
       function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-      function toLocalISO(d) {
-        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      function getOffsetMin(tz, d) {
+        try {
+          var dtf = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'shortOffset' });
+          var parts = dtf.formatToParts(d);
+          for (var i = 0; i < parts.length; i++) {
+            if (parts[i].type === 'timeZoneName') {
+              var v = parts[i].value.replace('GMT', 'UTC');
+              var m = v.match(/([+-])(\d{1,2})(?::?(\d{2}))?/);
+              if (m) return parseInt(m[1] + '1', 10) * (parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0));
+              return 0;
+            }
+          }
+        } catch (e) {}
+        return 0;
       }
 
       function convert() {
@@ -110,13 +301,12 @@
         var timeVal = timeInput.value;
         var d;
         if (timeVal) {
-          d = new Date(timeVal);
-          if (isNaN(d.getTime())) { setStatus('无效时间', 'error'); return; }
           var parts = timeVal.split('T');
           var dateParts = parts[0].split('-');
           var timeParts = parts[1].split(':');
-          d = new Date(Date.UTC(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]), parseInt(timeParts[0]), parseInt(timeParts[1])));
-          var offsetSrc = getOffset(srcTz, d);
+          d = new Date(Date.UTC(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10), parseInt(timeParts[0], 10), parseInt(timeParts[1], 10)));
+          if (isNaN(d.getTime())) { setStatus(t('tzInvalidTime', '无效时间'), 'error'); return; }
+          var offsetSrc = getOffsetMin(srcTz, d);
           var offsetUtc = d.getTimezoneOffset();
           d = new Date(d.getTime() + (offsetSrc + offsetUtc) * 60000);
         } else {
@@ -126,8 +316,8 @@
         var srcTime = d.toLocaleString('zh-CN', { timeZone: srcTz, hour12: false });
         var tgtTime = d.toLocaleString('zh-CN', { timeZone: tgtTz, hour12: false });
         var utcTime = d.toLocaleString('zh-CN', { timeZone: 'UTC', hour12: false });
-        var srcOff = getOffsetStr(srcTz, d);
-        var tgtOff = getOffsetStr(tgtTz, d);
+        var srcOff = getOffset(srcTz, d).replace(/^GMT/, '');
+        var tgtOff = getOffset(tgtTz, d).replace(/^GMT/, '');
 
         var html = '<table>';
         html += '<tr><td>源时区 (' + srcTz + ')</td><td>' + srcTime + ' (UTC' + srcOff + ')</td></tr>';
@@ -139,27 +329,16 @@
         setStatus('');
       }
 
-      function getOffset(tz, d) {
-        var parts = d.toLocaleString('zh-CN', { timeZone: tz, timeZoneName: 'short' }).split(' ');
-        var name = parts[parts.length - 1];
-        var offset = 0;
-        if (name.indexOf('UTC') !== -1 || name.indexOf('GMT') !== -1) {
-          var m = name.match(/[+-]\d+/);
-          if (m) offset = parseInt(m[0]);
-        }
-        return offset;
-      }
-
-      function getOffsetStr(tz, d) {
-        var parts = d.toLocaleString('zh-CN', { timeZone: tz, timeZoneName: 'short' }).split(' ');
-        return parts[parts.length - 1].replace('GMT', 'UTC');
-      }
-
       document.getElementById('convertBtn').addEventListener('click', convert);
       document.getElementById('nowBtn').addEventListener('click', function () {
         timeInput.value = '';
         convert();
       });
+
+      renderList();
+      renderClocks();
+      timerId = setInterval(renderClocks, 1000);
+      window.addEventListener('pagehide', function () { if (timerId) clearInterval(timerId); });
     })();
   </script>
 </body>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二维码生成器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.qr-opts { display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:flex-end; margin:var(--space-2) 0; }
+.qr-opts .opt { display:flex; flex-direction:column; gap:6px; font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+.qr-opts select, .qr-opts input[type=number] { height:36px; padding:0 8px; border:1px solid #DDDDDD; border-radius:var(--radius-md); font-family:var(--font-mono); font-size:13px; background:var(--color-bg); }
+.qr-opts input[type=color] { width:48px; height:36px; padding:2px; border:1px solid #DDDDDD; border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; }
+.qr-preview { display:flex; flex-direction:column; align-items:center; gap:var(--space-2); padding:var(--space-3); }
+.qr-preview img { image-rendering:pixelated; }
+.qr-preview .content { font-size:var(--font-size-sm); color:var(--color-text-secondary); word-break:break-all; max-width:100%; text-align:center; }
+</style>
+</head>
+<body>
+<header class="global-header">
+  <a href="../../index.html" class="logo">S-Jiffy</a>
+  <a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+  <h1>二维码生成器</h1>
+  <p class="tool-desc">为 URL 或任意文本生成二维码，可自定义尺寸、颜色与纠错等级。</p>
+  <div class="card">
+    <label class="input-label">内容（URL 或文本）</label>
+    <input id="qrInput" type="text" class="input js-focus-input" placeholder="https://example.com 或任意文本...">
+    <div class="qr-opts">
+      <div class="opt">
+        <label>尺寸</label>
+        <div style="display:flex;gap:8px;">
+          <button id="size128" class="btn btn-secondary size-btn" style="height:36px;min-width:auto;padding:0 14px;font-size:13px;">128px</button>
+          <button id="size256" class="btn btn-secondary size-btn" style="height:36px;min-width:auto;padding:0 14px;font-size:13px;">256px</button>
+          <button id="size512" class="btn btn-secondary size-btn" style="height:36px;min-width:auto;padding:0 14px;font-size:13px;">512px</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>纠错等级</label>
+        <select id="qrLevel">
+          <option value="L">L（约7%）</option>
+          <option value="M" selected>M（约15%）</option>
+          <option value="Q">Q（约25%）</option>
+          <option value="H">H（约30%）</option>
+        </select>
+      </div>
+      <div class="opt">
+        <label>前景色</label>
+        <input type="color" id="qrDark" value="#000000">
+      </div>
+      <div class="opt">
+        <label>背景色</label>
+        <input type="color" id="qrLight" value="#ffffff">
+      </div>
+      <div class="opt">
+        <label>边距（模块）</label>
+        <input type="number" id="qrMargin" value="2" min="0" max="8">
+      </div>
+    </div>
+    <button id="generateBtn" class="btn btn-primary" style="margin-top:var(--space-1);">生成二维码</button>
+  </div>
+  <div class="card qr-preview" id="previewBox" style="display:none;">
+    <img id="qrImage" alt="QR Code" width="256" height="256">
+    <div class="content" id="qrContent"></div>
+    <button id="downloadBtn" class="btn btn-primary">下载 PNG</button>
+  </div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('qrInput');
+  var previewBox = document.getElementById('previewBox');
+  var qrImage = document.getElementById('qrImage');
+  var qrContent = document.getElementById('qrContent');
+  var downloadBtn = document.getElementById('downloadBtn');
+  var sizeBtns = document.querySelectorAll('.size-btn');
+  var levelSel = document.getElementById('qrLevel');
+  var darkInput = document.getElementById('qrDark');
+  var lightInput = document.getElementById('qrLight');
+  var marginInput = document.getElementById('qrMargin');
+  var size = 256;
+  var lastUrl = '';
+
+  for (var i = 0; i < sizeBtns.length; i++) {
+    sizeBtns[i].addEventListener('click', function () {
+      size = parseInt(this.textContent, 10);
+      for (var j = 0; j < sizeBtns.length; j++) {
+        sizeBtns[j].className = 'btn btn-secondary size-btn';
+      }
+      this.className = 'btn btn-primary size-btn';
+      if (input.value.trim()) generate();
+    });
+  }
+  sizeBtns[1].className = 'btn btn-primary size-btn';
+
+  function generate() {
+    var text = input.value.trim();
+    if (!text) { setStatus(t('qrEmptyInput', '请输入内容'), 'error'); return; }
+    if (typeof qrcode === 'undefined') {
+      setStatus(t('qrLibError', '二维码库加载失败，请检查网络后刷新'), 'error');
+      return;
+    }
+    try {
+      var qr = qrcode(0, levelSel.value);
+      qr.addData(text, 'Byte');
+      qr.make();
+      var count = qr.getModuleCount();
+      var margin = parseInt(marginInput.value, 10);
+      if (isNaN(margin) || margin < 0) margin = 0;
+      if (margin > 8) margin = 8;
+      var cell = Math.max(1, Math.floor(size / (count + margin * 2)));
+      var url = qr.createDataURL(cell, margin, darkInput.value, lightInput.value);
+      lastUrl = url;
+      qrImage.src = url;
+      qrImage.width = size;
+      qrImage.height = size;
+      qrContent.textContent = text;
+      previewBox.style.display = 'flex';
+      setStatus(t('qrDone', '二维码已生成'));
+    } catch (e) {
+      setStatus(t('qrFailed', '生成失败：') + e.message, 'error');
+    }
+  }
+
+  function download() {
+    if (!lastUrl) return;
+    var a = document.createElement('a');
+    a.href = lastUrl;
+    a.download = 'qrcode.png';
+    a.click();
+    setStatus(t('qrDownloaded', '已开始下载'));
+  }
+
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
+  document.getElementById('generateBtn').addEventListener('click', generate);
+  downloadBtn.addEventListener('click', download);
+  levelSel.addEventListener('change', function () { if (input.value.trim()) generate(); });
+  darkInput.addEventListener('change', function () { if (input.value.trim()) generate(); });
+  lightInput.addEventListener('change', function () { if (input.value.trim()) generate(); });
+  marginInput.addEventListener('change', function () { if (input.value.trim()) generate(); });
+})();
+</script>
+</body>
+</html>

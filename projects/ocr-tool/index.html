@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片文字识别 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.ocr-lang { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:var(--space-2); }
+.ocr-lang button { height:36px; padding:0 16px; font-size:var(--font-size-sm); border-radius:var(--radius-md); border:1px solid #DDDDDD; background:transparent; color:var(--color-text-primary); cursor:pointer; }
+.ocr-lang button.active { background:var(--color-text-primary); color:#FFFFFF; border-color:var(--color-text-primary); }
+.drop-zone { border:2px dashed var(--color-border); border-radius:var(--radius-lg); padding:var(--space-4) var(--space-3); text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; margin-bottom:var(--space-2); }
+.drop-zone:hover, .drop-zone.dragover { border-color:var(--color-text-primary); background:var(--color-bg-soft); }
+.drop-zone img { max-height:200px; max-width:100%; object-fit:contain; border-radius:var(--radius-md); }
+.drop-zone .hint { font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-top:6px; }
+.drop-zone .sub { font-size:var(--font-size-xs); color:var(--color-text-disabled); margin-top:2px; }
+.ocr-progress { display:flex; align-items:center; gap:10px; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-2); }
+.progress-track { flex:1; height:6px; background:var(--color-border); border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--color-accent); width:0; transition:width 0.2s; }
+.ocr-actions { display:flex; gap:12px; flex-wrap:wrap; margin:var(--space-2) 0; }
+.ocr-note { font-size:var(--font-size-xs); color:var(--color-text-secondary); background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:10px 14px; margin-bottom:var(--space-2); }
+</style>
+</head>
+<body>
+<header class="global-header">
+  <a href="../../index.html" class="logo">S-Jiffy</a>
+  <a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+  <h1>图片文字识别</h1>
+  <p class="tool-desc">本地 OCR 识别图片中的文字，支持英文与简繁体中文，图片不离开设备。</p>
+  <div class="card">
+    <div class="ocr-note">
+      <span data-i18n="ocrSupportedLangs">支持英文 · 简体中文 · 繁体中文 — 自动识别混合语言</span>
+    </div>
+    <label class="input-label" data-i18n="ocrLanguage">识别语言</label>
+    <div class="ocr-lang">
+      <button type="button" data-lang="eng" data-i18n="ocrLangEn">英文</button>
+      <button type="button" data-lang="chi_sim" class="active" data-i18n="ocrLangZhCn">简体中文</button>
+      <button type="button" data-lang="chi_tra" data-i18n="ocrLangZhTw">繁体中文</button>
+    </div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;">
+      <img id="preview" alt="预览" style="display:none;">
+      <div class="hint">点击选择或拖放图片到此处</div>
+      <div class="sub">JPG, PNG, WebP · 最大 50MB</div>
+    </div>
+    <div class="ocr-actions">
+      <button id="processBtn" class="btn btn-primary" data-i18n="ocrProcess">提取文字</button>
+    </div>
+    <div class="ocr-progress" id="progressBox" style="display:none;">
+      <span data-i18n="ocrProgress">进度</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+  <div class="card" id="resultCard" style="display:none;">
+    <div class="ocr-actions" style="justify-content:space-between;align-items:center;margin:0 0 var(--space-2);">
+      <label class="input-label" data-i18n="ocrExtractedText">识别结果</label>
+      <div style="display:flex;gap:8px;">
+        <button id="copyBtn" class="btn btn-secondary" style="height:36px;min-width:auto;font-size:13px;" data-i18n="common.copy">复制</button>
+        <button id="downloadBtn" class="btn btn-secondary" style="height:36px;min-width:auto;font-size:13px;" data-i18n="ocrDownloadTxt">下载 .txt</button>
+      </div>
+    </div>
+    <textarea id="resultText" class="input textarea" style="min-height:200px;font-family:var(--font-mono);font-size:13px;"></textarea>
+  </div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50;
+  var ALLOWED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  var fileInput = document.getElementById('fileInput');
+  var dropZone = document.getElementById('dropZone');
+  var preview = document.getElementById('preview');
+  var processBtn = document.getElementById('processBtn');
+  var progressBox = document.getElementById('progressBox');
+  var progressFill = document.getElementById('progressFill');
+  var progressPct = document.getElementById('progressPct');
+  var resultCard = document.getElementById('resultCard');
+  var resultText = document.getElementById('resultText');
+  var copyBtn = document.getElementById('copyBtn');
+  var downloadBtn = document.getElementById('downloadBtn');
+  var langBtns = document.querySelectorAll('.ocr-lang button');
+  var currentLang = 'chi_sim';
+  var currentFile = null;
+  var previewUrl = null;
+  var busy = false;
+  var worker = null;
+
+  function setLang(lang, btn) {
+    currentLang = lang;
+    for (var i = 0; i < langBtns.length; i++) langBtns[i].classList.remove('active');
+    btn.classList.add('active');
+  }
+  for (var b = 0; b < langBtns.length; b++) {
+    (function (btn) {
+      btn.addEventListener('click', function () { setLang(btn.getAttribute('data-lang'), btn); });
+    })(langBtns[b]);
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    if (ALLOWED.indexOf(file.type) === -1) {
+      setStatus(t('ocrBadType', '不支持的文件类型，请使用 JPG、PNG 或 WebP'), 'error');
+      return;
+    }
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setStatus(t('ocrTooLarge', '文件过大（最大 50MB）'), 'error');
+      return;
+    }
+    currentFile = file;
+    resultCard.style.display = 'none';
+    resultText.value = '';
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(file);
+    preview.src = previewUrl;
+    preview.style.display = 'block';
+    dropZone.querySelector('.hint').style.display = 'none';
+    setStatus(t('ocrFileReady', '文件已就绪：') + file.name);
+  }
+
+  fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+  dropZone.addEventListener('dragover', function (e) { e.preventDefault(); this.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function () { this.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  });
+
+  var LANGS = {
+    eng: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int',
+    chi_sim: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_sim@1.0.0/4.0.0_best_int',
+    chi_tra: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_tra@1.0.0/4.0.0_best_int'
+  };
+  var worker = null;
+
+  function getWorker() {
+    if (typeof Tesseract === 'undefined') return null;
+    return Tesseract.createWorker(currentLang, 1, {
+      langPath: LANGS[currentLang],
+      logger: function (m) {
+        if (m && typeof m.progress === 'number') setProgress(m.progress);
+      }
+    });
+  }
+
+  function setProgress(p) {
+    var pct = Math.round(p * 100);
+    progressFill.style.width = pct + '%';
+    progressPct.textContent = pct + '%';
+  }
+
+  processBtn.addEventListener('click', function () {
+    if (busy) return;
+    if (!currentFile) { setStatus(t('ocrNoFile', '请先选择图片'), 'error'); return; }
+    if (typeof Tesseract === 'undefined') {
+      setStatus(t('ocrLibError', 'OCR 引擎加载失败，请检查网络后刷新重试'), 'error');
+      return;
+    }
+    busy = true;
+    processBtn.disabled = true;
+    progressBox.style.display = 'flex';
+    setProgress(0);
+    setStatus(t('ocrProcessing', '识别中...'));
+    var cleanup = function () {
+      busy = false;
+      processBtn.disabled = false;
+    };
+    var langKey = currentLang;
+    var wp = getWorker();
+    if (!wp) { cleanup(); setStatus(t('ocrLibError', 'OCR 引擎加载失败，请检查网络后刷新重试'), 'error'); return; }
+    wp.then(function (w) {
+      worker = w;
+      return worker.recognize(currentFile);
+    })
+      .then(function (res) {
+        var text = (res && res.data && res.data.text) ? res.data.text.trim() : '';
+        if (!text) { throw new Error('empty'); }
+        resultText.value = text;
+        resultCard.style.display = 'block';
+        setStatus(t('ocrDone', '识别完成'));
+      })
+      .catch(function (e) {
+        setStatus(t('ocrFailed', '识别失败：') + (e && e.message === 'empty' ? t('ocrNoText', '未在图片中检测到文字') : (e && e.message ? e.message : t('ocrUnknown', '未知错误'))), 'error');
+      })
+      .then(function () {
+        progressBox.style.display = 'none';
+        setProgress(0);
+        cleanup();
+      });
+  });
+
+  copyBtn.addEventListener('click', function () {
+    var text = resultText.value.trim();
+    if (!text) { setStatus(t('ocrNoText', '没有可复制的文字'), 'error'); return; }
+    copyToClipboard(text, copyBtn);
+    setStatus(t('common.copied', '已复制'));
+  });
+  downloadBtn.addEventListener('click', function () {
+    var text = resultText.value;
+    if (!text.trim()) { setStatus(t('ocrNoText', '没有可下载的文字'), 'error'); return; }
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'ocr-result.txt';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    setStatus(t('ocrDownloaded', '已开始下载'));
+  });
+})();
+</script>
+</body>
+</html>

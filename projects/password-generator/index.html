@@ -10,17 +10,21 @@
 .meter-wrap{flex:1;min-width:120px;}
 .range-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .gen-mode label{display:flex;align-items:center;gap:6px;font-size:var(--font-size-sm);cursor:pointer;margin-bottom:4px;}
+.pw-list{display:flex;flex-direction:column;gap:8px;margin-top:var(--space-2);}
+.pw-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 12px;}
+.pw-item .val{font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;margin-right:8px;}
+.pw-item button{flex-shrink:0;height:32px;padding:0 14px;font-size:var(--font-size-xs);}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1>密码生成器</h1>
-<p class="tool-desc">生成强密码，支持多种模式与强度检测。</p>
+<p class="tool-desc">生成强密码，支持多种模式、强度检测与熵值估算。</p>
 <div class="card">
 <div class="pw-row" style="margin-bottom:12px;">
 <label>密码</label><div style="flex:1;font-family:var(--font-mono);font-size:var(--font-size-lg);letter-spacing:2px;word-break:break-all;" id="pwDisplay"></div>
           <div><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">数量</label><input id="countVal" type="number" value="5" min="1" max="100" class="input" style="width:110px;height:36px;font-size:13px"></div>
-          <button id="generateBtn" class="btn btn-primary">生成</button></div>
+          <button id="generateBtn" class="btn btn-primary" data-i18n="generatePasswords">生成密码</button></div>
 <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
 <div style="display:flex;justify-content:space-between;"><span id="strengthLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">—</span><span id="entropyLabel" style="font-size:var(--font-size-xs);font-family:var(--font-mono);">0 bit</span></div>
 </div>
@@ -30,64 +34,152 @@
 <label><input type="radio" name="genMode" value="pronounceable"> 可读音（辅音+元音组合）</label>
 <label><input type="radio" name="genMode" value="pattern"> 模式组合（@=字母 #=数字 %=符号）</label>
 </div>
-<div class="range-wrap"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">长度 <span id="lenValue">16</span></label><input id="lengthSlider" type="range" min="4" max="128" value="16" style="flex:1;"></div>
+<div class="range-wrap"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="pwLength">长度 <span id="lenValue">16</span></label><input id="lengthSlider" type="range" min="4" max="128" value="16" style="flex:1;"></div>
 <div class="pw-row">
-<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkUpper" checked> A-Z</label>
-<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkLower" checked> a-z</label>
-<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkDigit" checked> 0-9</label>
-<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkSym"> !@#$%</label>
-<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkExclude"> 排除相似字符</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkUpper" checked> <span data-i18n="pwUppercase">大写字母（A–Z）</span></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkLower" checked> <span data-i18n="pwLowercase">小写字母（a–z）</span></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkDigit" checked> <span data-i18n="pwNumbers">数字（0–9）</span></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkSym"> <span data-i18n="pwSymbols">符号（!@#...）</span></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkExclude"> <span data-i18n="pwExcludeAmbiguous">排除歧义字符（0, O, l, 1）</span></label>
 </div>
 <div id="patternRow" style="display:none;" class="pw-row">
-<label style="font-size:var(--font-size-sm);">模式</label><input id="patternInput" class="input" value="@@##@@##@@##" placeholder="@=%E5%AD%97%E6%AF%8D #=%E6%95%B0%E5%AD%97 %%=%E7%AC%A6%E5%8F%B7" style="width:200px;">
+<label style="font-size:var(--font-size-sm);">模式</label><input id="patternInput" class="input" value="@@##@@##@@##" placeholder="@=字母 #=数字 %=符号" style="width:200px;">
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="pw-list" id="pwList"></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
 <script>
-(function(){
-  var upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ',lower='abcdefghijklmnopqrstuvwxyz',digits='0123456789',sym='!@#$%^&*()-_=+[]{}|;:,.<>?',similar='0O1lI2Z5S8B';
-  var vowel='aeiou',consonant='bcdfghjklmnpqrstvwxyz';
-  var pwDisplay=document.getElementById('pwDisplay'),slider=document.getElementById('lengthSlider'),lenValue=document.getElementById('lenValue');
-  var chkU=document.getElementById('chkUpper'),chkL=document.getElementById('chkLower'),chkD=document.getElementById('chkDigit'),chkS=document.getElementById('chkSym'),chkE=document.getElementById('chkExclude');
-  var fill=document.getElementById('strengthFill'),sLabel=document.getElementById('strengthLabel'),eLabel=document.getElementById('entropyLabel'),pi=document.getElementById('patternInput');
-  var o=document.getElementById('outputText'),countEl=document.getElementById('countVal'),currentPassword='';
+(function () {
+  'use strict';
+  var upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lower = 'abcdefghijklmnopqrstuvwxyz', digits = '0123456789';
+  var sym = '!@#$%^&*()-_=+[]{}|;:,.<>?', similar = '0O1lI2Z5S8B';
+  var vowel = 'aeiou', consonant = 'bcdfghjklmnpqrstvwxyz';
+  var pwDisplay = document.getElementById('pwDisplay'), slider = document.getElementById('lengthSlider'), lenValue = document.getElementById('lenValue');
+  var chkU = document.getElementById('chkUpper'), chkL = document.getElementById('chkLower'), chkD = document.getElementById('chkDigit');
+  var chkS = document.getElementById('chkSym'), chkE = document.getElementById('chkExclude');
+  var fill = document.getElementById('strengthFill'), sLabel = document.getElementById('strengthLabel'), eLabel = document.getElementById('entropyLabel');
+  var pi = document.getElementById('patternInput');
+  var o = document.getElementById('outputText'), countEl = document.getElementById('countVal'), pwList = document.getElementById('pwList');
+  var currentPassword = '';
 
-  function genRandom(len,chars){var r='',a=new Uint32Array(len);crypto.getRandomValues(a);for(var i=0;i<len;i++)r+=chars[a[i]%chars.length];return r;}
-  function genPronounceable(len){var pw='';for(var i=0;i<len;i++)pw+=i%2===0?consonant[Math.floor(Math.random()*consonant.length)]:vowel[Math.floor(Math.random()*vowel.length)];return pw.substr(0,len);}
-  function genPattern(pat){var r='',a=new Uint32Array(pat.length);crypto.getRandomValues(a);for(var i=0;i<pat.length;i++){var c=pat[i];if(c==='@')r+=upper[a[i]%26];else if(c==='#')r+=digits[a[i]%10];else if(c==='%')r+=sym[a[i]%sym.length];else r+=c;}return r;}
-  function calcEntropy(cl,pl){return pl*Math.log2(cl);}
-  function getStrength(e){if(e<30)return{label:'非常弱',pct:10,color:'#D54941'};if(e<50)return{label:'弱',pct:25,color:'#E68A2E'};if(e<70)return{label:'中',pct:45,color:'#F0C040'};if(e<100)return{label:'强',pct:70,color:'#2BA471'};return{label:'非常强',pct:100,color:'#1E6DF2'};}
-
-  function generate(){
-    var len=parseInt(slider.value),mode=document.querySelector('input[name="genMode"]:checked').value,count=parseInt(countEl.value)||1;
-    if(count<1)count=1;if(count>100)count=100;
-    var passwords=[];
-    for(var n=0;n<count;n++){
-      var pw='';
-      if(mode==='pronounceable'){pw=genPronounceable(len);}
-      else if(mode==='pattern'){var pat=pi.value.trim()||'@@##@@##';pw=genPattern(pat);}
-      else{var chars='';if(chkU.checked)chars+=upper;if(chkL.checked)chars+=lower;if(chkD.checked)chars+=digits;if(chkS.checked)chars+=sym;
-      if(chkE.checked){var fl='';for(var i=0;i<chars.length;i++){if(similar.indexOf(chars[i])===-1)fl+=chars[i];}chars=fl;}
-      if(!chars){setStatus('请至少选择一种字符类型','error');return;}pw=genRandom(len,chars);}
-      passwords.push(pw);
-      if(n===0)currentPassword=pw;
+  function genRandom(len, chars) {
+    var r = '', a = new Uint32Array(len);
+    crypto.getRandomValues(a);
+    for (var i = 0; i < len; i++) r += chars[a[i] % chars.length];
+    return r;
+  }
+  function genPronounceable(len) {
+    var pw = '';
+    for (var i = 0; i < len; i++) pw += i % 2 === 0 ? consonant[Math.floor(Math.random() * consonant.length)] : vowel[Math.floor(Math.random() * vowel.length)];
+    return pw.substr(0, len);
+  }
+  function genPattern(pat) {
+    var r = '', a = new Uint32Array(pat.length);
+    crypto.getRandomValues(a);
+    for (var i = 0; i < pat.length; i++) {
+      var c = pat[i];
+      if (c === '@') r += upper[a[i] % 26];
+      else if (c === '#') r += digits[a[i] % 10];
+      else if (c === '%') r += sym[a[i] % sym.length];
+      else r += c;
     }
-    pwDisplay.textContent=currentPassword;
-    var cs=mode==='pronounceable'?52:mode==='pattern'?36:0;
-    if(mode==='random'){if(chkU.checked)cs+=26;if(chkL.checked)cs+=26;if(chkD.checked)cs+=10;if(chkS.checked)cs+=sym.length;}
-    var entropy=calcEntropy(Math.max(cs,1),len);var s=getStrength(entropy);
-    fill.style.width=s.pct+'%';fill.style.background=s.color;sLabel.textContent=s.label;eLabel.textContent=entropy.toFixed(1)+' bit';
-    o.textContent=passwords.join('\n');setStatus('已生成 '+count+' 个密码');
+    return r;
+  }
+  function calcEntropy(cl, pl) { return pl * Math.log2(cl); }
+  function getStrength(e) {
+    if (e < 30) return { label: t('pwVeryWeak', '非常弱'), pct: 10, color: '#D54941' };
+    if (e < 50) return { label: t('pwWeak', '弱'), pct: 25, color: '#E68A2E' };
+    if (e < 70) return { label: t('pwFair', '一般'), pct: 45, color: '#F0C040' };
+    if (e < 100) return { label: t('pwGood', '良好'), pct: 70, color: '#2BA471' };
+    return { label: t('pwStrong', '强'), pct: 100, color: '#1E6DF2' };
   }
 
-  slider.addEventListener('input',function(){lenValue.textContent=this.value;});
-  var radios=document.querySelectorAll('input[name="genMode"]');
-  for(var i=0;i<radios.length;i++){radios[i].addEventListener('change',function(){document.getElementById('patternRow').style.display=this.value==='pattern'?'flex':'none';});}
-  document.getElementById('generateBtn').addEventListener('click',generate);
-  document.getElementById('copyBtn').addEventListener('click',function(){if(currentPassword){copyToClipboard(currentPassword,this);setStatus('已复制');}});
+  function renderList(passwords) {
+    pwList.innerHTML = '';
+    for (var i = 0; i < passwords.length; i++) {
+      (function (idx, pwd) {
+        var row = document.createElement('div');
+        row.className = 'pw-item';
+        var val = document.createElement('span');
+        val.className = 'val';
+        val.textContent = pwd;
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.textContent = t('common.copy', '复制');
+        btn.addEventListener('click', function () {
+          copyToClipboard(pwd, btn);
+          setStatus(t('common.copied', '已复制'));
+        });
+        row.appendChild(val);
+        row.appendChild(btn);
+        pwList.appendChild(row);
+      })(i, passwords[i]);
+    }
+  }
+
+  function generate() {
+    var len = parseInt(slider.value, 10);
+    var mode = document.querySelector('input[name="genMode"]:checked').value;
+    var count = parseInt(countEl.value, 10) || 1;
+    if (count < 1) count = 1;
+    if (count > 100) count = 100;
+    var passwords = [];
+    var cs = 0;
+    for (var n = 0; n < count; n++) {
+      var pw = '';
+      if (mode === 'pronounceable') { pw = genPronounceable(len); cs = 52; }
+      else if (mode === 'pattern') {
+        var pat = pi.value.trim() || '@@##@@##';
+        pw = genPattern(pat);
+        cs = 36;
+      } else {
+        var chars = '';
+        if (chkU.checked) chars += upper;
+        if (chkL.checked) chars += lower;
+        if (chkD.checked) chars += digits;
+        if (chkS.checked) chars += sym;
+        if (chkE.checked) {
+          var fl = '';
+          for (var i = 0; i < chars.length; i++) { if (similar.indexOf(chars[i]) === -1) fl += chars[i]; }
+          chars = fl;
+        }
+        if (!chars) { setStatus(t('pwNeedChar', '请至少选择一种字符类型'), 'error'); return; }
+        pw = genRandom(len, chars);
+        if (chkU.checked) cs += 26;
+        if (chkL.checked) cs += 26;
+        if (chkD.checked) cs += 10;
+        if (chkS.checked) cs += sym.length;
+      }
+      passwords.push(pw);
+      if (n === 0) currentPassword = pw;
+    }
+    pwDisplay.textContent = currentPassword;
+    var entropy = calcEntropy(Math.max(cs, 1), mode === 'pattern' ? pi.value.trim().length || 8 : len);
+    var s = getStrength(entropy);
+    fill.style.width = s.pct + '%';
+    fill.style.background = s.color;
+    sLabel.textContent = s.label;
+    eLabel.textContent = entropy.toFixed(1) + ' bit';
+    renderList(passwords);
+    o.textContent = passwords.join('\n');
+    setStatus(t('pwGenerated', '已生成') + ' ' + count + ' ' + t('pwCount', '个密码'));
+  }
+
+  slider.addEventListener('input', function () { lenValue.textContent = this.value; });
+  var radios = document.querySelectorAll('input[name="genMode"]');
+  for (var i = 0; i < radios.length; i++) {
+    radios[i].addEventListener('change', function () {
+      document.getElementById('patternRow').style.display = this.value === 'pattern' ? 'flex' : 'none';
+    });
+  }
+  document.getElementById('generateBtn').addEventListener('click', generate);
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    if (currentPassword) { copyToClipboard(currentPassword, this); setStatus(t('common.copied', '已复制')); }
+  });
   generate();
 })();
 </script></body></html>

@@ -1,112 +1,157 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>单词统计器 - S-Jiffy</title>
-  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-  <link rel="stylesheet" href="../../assets/css/global.css">
-  <style>
-    .wc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
-    .wc-stat { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); text-align:center; }
-    .wc-stat .num { font-size:var(--font-size-xl); font-weight:600; }
-    .wc-stat .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单词统计器 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.wc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:var(--space-2); margin-bottom:var(--space-3); }
+.wc-stat { background:var(--color-bg-soft); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-2); text-align:center; }
+.wc-stat .num { font-size:var(--font-size-xl); font-weight:600; word-break:break-all; }
+.wc-stat .label { font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-top:4px; }
+.wc-toolbar { display:flex; gap:12px; flex-wrap:wrap; margin-top:var(--space-2); }
+</style>
 </head>
 <body>
-  <header class="global-header">
-    <a href="../../index.html" class="logo">S-Jiffy</a>
-  <a href="../../index.html" class="back-btn">← 返回</a></header>
-  <main class="tool-workspace">
-    <h1>单词统计器</h1>
-    <p class="tool-desc">统计单词数、唯一单词数、平均词长、最长/最短单词。</p>
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..."></textarea>
+<header class="global-header">
+  <a href="../../index.html" class="logo">S-Jiffy</a>
+  <a href="../../index.html" class="back-btn">← 返回</a>
+</header>
+<main class="tool-workspace">
+  <h1>单词统计器</h1>
+  <p class="tool-desc">统计单词数、字符数、句子与段落，并估算阅读时间。</p>
+  <div class="card">
+    <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="wordCounterPlaceholder" placeholder="在此粘贴或输入文字..."></textarea>
+    <div class="wc-toolbar">
+      <button id="clearBtn" class="btn btn-secondary" style="height:36px;min-width:auto;font-size:13px;" data-i18n="clearText">清除文字</button>
     </div>
-    <div class="wc-grid">
-      <div class="wc-stat"><div class="num" id="wordCount">0</div><div class="label">总单词</div></div>
-      <div class="wc-stat"><div class="num" id="uniqueCount">0</div><div class="label">唯一单词</div></div>
-      <div class="wc-stat"><div class="num" id="avgLength">0</div><div class="label">平均词长</div></div>
-      <div class="wc-stat"><div class="num" id="longestWord">-</div><div class="label">最长单词</div></div>
-      <div class="wc-stat"><div class="num" id="shortestWord">-</div><div class="label">最短单词</div></div>
-      <div class="wc-stat"><div class="num" id="charCount">0</div><div class="label">总字符</div></div>
-    </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
-    </div>
-  </main>
-  <footer class="global-footer">
-    <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
-  </footer>
-  <script src="../../assets/js/global.js"></script>
-  <script>
-    (function() {
-      var inputEl = document.getElementById('inputText');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
+  </div>
+  <div class="wc-grid">
+    <div class="wc-stat"><div class="num" id="statWords">0</div><div class="label" data-i18n="statWords">单词数</div></div>
+    <div class="wc-stat"><div class="num" id="statUnique">0</div><div class="label">唯一单词</div></div>
+    <div class="wc-stat"><div class="num" id="statChars">0</div><div class="label" data-i18n="statCharacters">字符数</div></div>
+    <div class="wc-stat"><div class="num" id="statNoSpaces">0</div><div class="label" data-i18n="statNoSpaces">不含空格</div></div>
+    <div class="wc-stat"><div class="num" id="statSentences">0</div><div class="label" data-i18n="statSentences">句子数</div></div>
+    <div class="wc-stat"><div class="num" id="statParagraphs">0</div><div class="label" data-i18n="statParagraphs">段落数</div></div>
+    <div class="wc-stat"><div class="num" id="statAvgLen">0</div><div class="label">平均词长</div></div>
+    <div class="wc-stat"><div class="num" id="statLongest">-</div><div class="label">最长单词</div></div>
+    <div class="wc-stat"><div class="num" id="statShortest">-</div><div class="label">最短单词</div></div>
+    <div class="wc-stat"><div class="num" id="statReadTime">0s</div><div class="label" data-i18n="statReadingTime">阅读时间</div></div>
+  </div>
+  <div class="output-box">
+    <span id="outputText" style="display:block;padding-right:60px;"></span>
+    <button class="copy-btn" id="copyBtn" data-i18n="common.copy">复制</button>
+  </div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var inputEl = document.getElementById('inputText');
+  var outputEl = document.getElementById('outputText');
+  var copyBtn = document.getElementById('copyBtn');
+  var clearBtn = document.getElementById('clearBtn');
+  var els = {
+    words: document.getElementById('statWords'),
+    unique: document.getElementById('statUnique'),
+    chars: document.getElementById('statChars'),
+    noSpaces: document.getElementById('statNoSpaces'),
+    sentences: document.getElementById('statSentences'),
+    paragraphs: document.getElementById('statParagraphs'),
+    avgLen: document.getElementById('statAvgLen'),
+    longest: document.getElementById('statLongest'),
+    shortest: document.getElementById('statShortest'),
+    readTime: document.getElementById('statReadTime')
+  };
 
-      function count() {
-        var text = inputEl.value;
-        var wordCountEl = document.getElementById('wordCount');
-        var uniqueCountEl = document.getElementById('uniqueCount');
-        var avgLengthEl = document.getElementById('avgLength');
-        var longestEl = document.getElementById('longestWord');
-        var shortestEl = document.getElementById('shortestWord');
-        var charCountEl = document.getElementById('charCount');
+  function count() {
+    var text = inputEl.value;
+    var charCount = text.length;
+    var noSpaces = text.replace(/\s/g, '').length;
+    var words = text.split(/[\s,;:!?.\n]+/).filter(function (w) { return w.length > 0; });
+    var sentences = (text.match(/[.!?。！？]+(?:\s|$)/g) || []).length;
+    var paragraphs = text.split(/\n\s*\n/).filter(function (p) { return p.trim(); }).length;
+    if (text.trim() && paragraphs === 0) paragraphs = 1;
 
-        var charCount = text.length;
-        charCountEl.textContent = charCount;
+    els.chars.textContent = charCount;
+    els.noSpaces.textContent = noSpaces;
+    els.sentences.textContent = sentences;
+    els.paragraphs.textContent = paragraphs;
 
-        var words = text.match(/[a-zA-Z0-9\u00C0-\u024F]+(?:[''][a-zA-Z]+)?/g) || text.match(/[\u4e00-\u9fff]+/g) ? text.split(/[\s,;:!?.\n]+/).filter(function(w) { return w.length > 0; }) : [];
-        words = text.split(/[\s,;:!?.\n]+/).filter(function(w) { return w.length > 0; });
+    if (words.length === 0) {
+      els.words.textContent = '0';
+      els.unique.textContent = '0';
+      els.avgLen.textContent = '0';
+      els.longest.textContent = '-';
+      els.shortest.textContent = '-';
+      els.readTime.textContent = '0s';
+      outputEl.textContent = t('wordCounterEmpty', '无单词');
+      return;
+    }
 
-        if (words.length === 0) {
-          wordCountEl.textContent = '0';
-          uniqueCountEl.textContent = '0';
-          avgLengthEl.textContent = '0';
-          longestEl.textContent = '-';
-          shortestEl.textContent = '-';
-          outputEl.textContent = '无单词';
-          return;
-        }
+    var unique = {};
+    var totalLen = 0;
+    var longest = words[0];
+    var shortest = words[0];
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      unique[w] = true;
+      totalLen += w.length;
+      if (w.length > longest.length) longest = w;
+      if (w.length < shortest.length) shortest = w;
+    }
+    var uniqueCount = Object.keys(unique).length;
 
-        wordCountEl.textContent = words.length;
+    var totalSeconds = Math.round((words.length / 200) * 60);
+    var readMin = Math.floor(totalSeconds / 60);
+    var readSec = totalSeconds % 60;
+    var readText = readMin > 0 ? readMin + 'm ' + readSec + 's' : readSec + 's';
 
-        var unique = {};
-        var totalLen = 0;
-        var longest = words[0];
-        var shortest = words[0];
-        for (var i = 0; i < words.length; i++) {
-          var w = words[i];
-          unique[w] = true;
-          totalLen += w.length;
-          if (w.length > longest.length) longest = w;
-          if (w.length < shortest.length) shortest = w;
-        }
+    els.words.textContent = words.length;
+    els.unique.textContent = uniqueCount;
+    els.avgLen.textContent = (totalLen / words.length).toFixed(1);
+    els.longest.textContent = longest;
+    els.shortest.textContent = shortest;
+    els.readTime.textContent = readText;
 
-        uniqueCountEl.textContent = Object.keys(unique).length;
-        avgLengthEl.textContent = (totalLen / words.length).toFixed(1);
-        longestEl.textContent = longest;
-        shortestEl.textContent = shortest;
+    outputEl.textContent =
+      t('statWords', '单词数') + ': ' + words.length +
+      ' | ' + t('statUnique', '唯一单词') + ': ' + uniqueCount +
+      ' | ' + t('statCharacters', '字符数') + ': ' + charCount +
+      ' | ' + t('statNoSpaces', '不含空格') + ': ' + noSpaces +
+      ' | ' + t('statSentences', '句子数') + ': ' + sentences +
+      ' | ' + t('statParagraphs', '段落数') + ': ' + paragraphs +
+      ' | ' + t('statAvgLen', '平均词长') + ': ' + (totalLen / words.length).toFixed(1) +
+      ' | ' + t('statLongest', '最长单词') + ': ' + longest +
+      ' | ' + t('statShortest', '最短单词') + ': ' + shortest +
+      ' | ' + t('statReadingTime', '阅读时间') + ': ' + readText;
+  }
 
-        outputEl.textContent = '总单词: ' + words.length + ' | 唯一: ' + Object.keys(unique).length + ' | 平均词长: ' + (totalLen / words.length).toFixed(1) + ' | 最长: ' + longest + ' | 最短: ' + shortest;
-        setStatus('统计完成');
-      }
+  inputEl.addEventListener('input', count);
+  copyBtn.addEventListener('click', function () {
+    var text = outputEl.textContent;
+    if (text) {
+      copyToClipboard(text, copyBtn);
+      setStatus(t('common.copied', '已复制'));
+    }
+  });
+  clearBtn.addEventListener('click', function () {
+    inputEl.value = '';
+    outputEl.textContent = '';
+    count();
+    inputEl.focus();
+    setStatus(t('clearDone', '已清空'));
+  });
 
-      inputEl.addEventListener('input', count);
-
-      copyBtn.addEventListener('click', function() {
-        var text = outputEl.textContent;
-        if (text) {
-          copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
-        }
-      });
-
-      count();
-    })();
-  </script>
+  count();
+})();
+</script>
 </body>
 </html>

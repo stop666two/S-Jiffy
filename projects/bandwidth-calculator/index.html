@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">带宽计算器</h1>
     <p class="tool-desc" data-i18n="desc">计算文件传输时间与带宽。</p>
@@ -59,7 +59,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var fileSize = document.getElementById('fileSize'), sizeUnit = document.getElementById('sizeUnit');
@@ -96,12 +96,12 @@
         }
 
         var html = '<div class="calc-grid">';
-        html += '<div class="calc-item"><label>传输时间</label><span>' + formatTime(seconds) + '</span></div>';
-        html += '<div class="calc-item"><label>文件大小（位）</label><span>' + bits.toLocaleString() + ' bit</span></div>';
-        html += '<div class="calc-item"><label>有效带宽</label><span>' + bps.toLocaleString() + ' bps</span></div>';
-        html += '<div class="calc-item"><label>下载速度</label><span>' + (bps / 8).toLocaleString() + ' B/s</span></div>';
-        html += '<div class="calc-item"><label>实际速率</label><span>' + (bytes / seconds / 1048576).toFixed(2) + ' MB/s</span></div>';
-        html += '<div class="calc-item"><label>理论效率</label><span>' + (bytes / seconds / (bps / 8) * 100).toFixed(1) + '%</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.transferTime','传输时间') + '</label><span>' + formatTime(seconds) + '</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.fileSizeBits','文件大小（位）') + '</label><span>' + bits.toLocaleString() + ' bit</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.effectiveBandwidth','有效带宽') + '</label><span>' + bps.toLocaleString() + ' bps</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.downloadSpeed','下载速度') + '</label><span>' + (bps / 8).toLocaleString() + ' B/s</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.actualRate','实际速率') + '</label><span>' + (bytes / seconds / 1048576).toFixed(2) + ' MB/s</span></div>';
+        html += '<div class="calc-item"><label>' + t('ui.theoreticalEfficiency','理论效率') + '</label><span>' + (bytes / seconds / (bps / 8) * 100).toFixed(1) + '%</span></div>';
         html += '</div>';
         o.innerHTML = html;
         setStatus('');

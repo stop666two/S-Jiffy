@@ -49,7 +49,7 @@
 <body>
 <header class="global-header">
 <a href="../../index.html" class="logo">S-Jiffy</a>
-<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
 </header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">音频合并器</h1>
@@ -180,7 +180,7 @@
       nm2.textContent = en.file.name;
       var mt = document.createElement('div');
       mt.className = 'mt';
-      mt.textContent = en.duration ? AK.formatDuration(en.duration) + ' · ' + AK.formatBytes(en.file.size) : '加载失败';
+      mt.textContent = en.duration ? AK.formatDuration(en.duration) + ' · ' + AK.formatBytes(en.file.size) : t('loadFailed', '加载失败');
       info.appendChild(nm2);
       info.appendChild(mt);
       var ops = document.createElement('div');
@@ -188,18 +188,18 @@
       var up = document.createElement('button');
       up.type = 'button';
       up.textContent = '↑';
-      up.title = '上移';
+      up.title = t('moveUp', '上移');
       up.addEventListener('click', function (idx) { return function () { move(idx, -1); }; }(i));
       var down = document.createElement('button');
       down.type = 'button';
       down.textContent = '↓';
-      down.title = '下移';
+      down.title = t('moveDown', '下移');
       down.addEventListener('click', function (idx) { return function () { move(idx, 1); }; }(i));
       var del = document.createElement('button');
       del.type = 'button';
       del.className = 'del';
       del.textContent = '✕';
-      del.title = '移除';
+      del.title = t('removeItem', '移除');
       del.addEventListener('click', function (idx) { return function () { remove(idx); }; }(i));
       ops.appendChild(up);
       ops.appendChild(down);
@@ -319,13 +319,13 @@
       }, function () {
         if (failed) return;
         failed = true;
-        finishError('部分文件解码失败，请重新添加');
+        finishError(t('decodeFail', '部分文件解码失败，请重新添加'));
       });
     });
     function runMerge() {
       var ok = true;
       for (var k = 0; k < buffers.length; k++) if (!buffers[k]) { ok = false; break; }
-      if (!ok) { finishError('部分文件解码失败，请重新添加'); return; }
+      if (!ok) { finishError(t('decodeFail', '部分文件解码失败，请重新添加')); return; }
       AK.mergeBuffers(buffers, { fadeIn: Number(fadeIn.value), fadeOut: Number(fadeOut.value) }, function (merged) {
         try {
           var blob = AK.audioBufferToWav(merged);
@@ -340,10 +340,10 @@
           render();
           setStatus(t('ui.101','合并完成'));
         } catch (e) {
-          finishError('合并失败');
+          finishError(t('mergeFailed', '合并失败'));
         }
       }, function (err) {
-        finishError(err && err.message ? err.message : '合并失败');
+        finishError(err && err.message ? err.message : t('mergeFailed', '合并失败'));
       });
     }
     function finishError(msg) {

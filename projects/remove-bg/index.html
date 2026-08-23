@@ -41,14 +41,14 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">背景去除器</h1>
 <p class="tool-desc" data-i18n="desc">AI 智能去除图片背景，完全在浏览器中运行。无需上传服务器。</p>
 <div class="card" id="modeCard">
 <div class="mode-row">
-<button id="modeAI" class="active"><b data-i18n="ui.108">AI 智能抠图（推荐）</b>基于 RMBG-1.4 分割模型，边缘精准；首次使用需下载模型（约 90MB+），之后浏览器会缓存</button>
-<button id="modeSimple"><b data-i18n="ui.107">简易抠图（免下载）</b>基于背景色差异（色度键）算法，适合纯色背景图片；无模型下载，立即处理</button>
+<button id="modeAI" class="active"><b data-i18n="ui.108">AI 智能抠图（推荐）</b><span data-i18n="aiModeDesc">基于 RMBG-1.4 分割模型，边缘精准；首次使用需下载模型（约 90MB+），之后浏览器会缓存</span></button>
+<button id="modeSimple"><b data-i18n="ui.107">简易抠图（免下载）</b><span data-i18n="simpleModeDesc">基于背景色差异（色度键）算法，适合纯色背景图片；无模型下载，立即处理</span></button>
 </div>
 <div class="param-block" id="simpleParams" style="display:none;">
 <label><span data-i18n="ui.106">容差（颜色差异阈值）</span><b id="tolVal">60</b></label>
@@ -56,8 +56,8 @@
 <label style="margin-top:10px;"><span data-i18n="ui.105">羽化（边缘过渡宽度）</span><b id="featherVal">5</b></label>
 <input type="range" id="featherRange" min="0" max="50" step="1" value="5">
 <div class="color-row" style="margin-top:12px;">
-<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);">背景色 <input type="color" id="bgColor" value="#ffffff"></label>
-<button id="pickBgBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;">从图片左上角取色</button>
+<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"><span data-i18n="bgColorLabel">背景色</span> <input type="color" id="bgColor" value="#ffffff"></label>
+<button id="pickBgBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;" data-i18n="pickBgColor">从图片左上角取色</button>
 </div>
 </div>
 <span class="engine-pill" id="enginePill" data-i18n="ui.104">模式：AI 智能抠图（模型未加载）</span>
@@ -88,9 +88,9 @@
 <div class="progress-text" id="progressText"></div>
 <div class="err-box" id="errBox" style="display:none;"></div>
 <div class="btn-row">
-<button id="processBtn" class="btn btn-primary">去除背景</button>
-<button id="downloadBtn" class="btn btn-primary" style="display:none;">下载透明 PNG</button>
-<button id="resetBtn" class="btn btn-secondary" style="display:none;">重新选择</button>
+<button id="processBtn" class="btn btn-primary" data-i18n="removeBg">去除背景</button>
+<button id="downloadBtn" class="btn btn-primary" style="display:none;" data-i18n="downloadPng">下载透明 PNG</button>
+<button id="resetBtn" class="btn btn-secondary" style="display:none;" data-i18n="resetSelect">重新选择</button>
 </div>
 <div class="note" data-i18n="ui.100">两种模式的差异：AI 模式用分割模型识别主体（适合人像、物体、复杂背景），需要下载约 90MB 的模型文件且首次处理较慢；简易模式按颜色距离去除背景（适合白底/纯色底），无需下载任何文件。所有处理均在本地浏览器完成，图片不会上传。</div>
 </div>
@@ -232,7 +232,7 @@ function loadTransformers(){
           waited+=1000;
           if(waited>30000){
             clearInterval(iv);
-            rej(new Error('transformers.js 加载超时（CDN 不可达）'));
+            rej(new Error(t('tfTimeout','transformers.js 加载超时（CDN 不可达）')));
           }
         }
       },1000);
@@ -352,7 +352,7 @@ function processAI(){
       ctx.putImageData(id,0,0);
       return new Promise(function(resolve,reject){
         canvas.toBlob(function(b){
-          if(b)resolve(b);else reject(new Error('PNG 编码失败'));
+          if(b)resolve(b);else reject(new Error(t('encodeFail','PNG 编码失败')));
         },'image/png');
       });
     });
@@ -374,7 +374,7 @@ function processAI(){
     progressTrack.style.display='none';
     processing=false;
     processBtn.disabled=false;
-    var msg=e&&e.message?e.message:'未知错误';
+    var msg=e&&e.message?e.message:t('unknownError','未知错误');
     showErr(t('aiFail','AI 处理失败（['+aiStage+'] '+msg+'）。模型下载或 CDN 不可用时，可切换到「简易抠图」模式使用本地色度键算法。'));
     setEngine(t('aiFailed','模式：AI 智能抠图（加载失败）'),'bad');
   });

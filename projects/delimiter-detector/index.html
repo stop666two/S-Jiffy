@@ -21,7 +21,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">分隔符检测器</h1>
@@ -39,7 +39,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -172,10 +172,10 @@
         lastRows = rows;
         lastDelim = delim.ch;
         var html = [];
-        html.push('<div class="det-winner">检测结果：' + htmlEscape(delim.name) + '</div>');
-        html.push('<div class="det-summary">一致性评分 <b>' + Math.round(delim.consistency * 100) + '%</b> · 平均列数 <b>' + delim.avgCols.toFixed(1) + '</b> · 最大列数 <b>' + maxCols + '</b> · 数据行 <b>' + nonEmpty.length + '</b></div>');
-        html.push('<div class="det-quote">引号规则：' + (quoted ? '检测到双引号包裹字段，解析时已去除引号并支持 "" 转义' : '未检测到引号包裹字段') + '</div>');
-        html.push('<div class="det-cands">候选评分：' + htmlEscape(cands.map(function (c) { return c.name + ' ' + Math.round(c.consistency * 100) + '%'; }).join('，')) + '</div>');
+        html.push('<div class="det-winner">' + t('resultLabel','检测结果：') + htmlEscape(delim.name) + '</div>');
+        html.push('<div class="det-summary">' + t('consistencyLabel','一致性评分') + ' <b>' + Math.round(delim.consistency * 100) + '%</b> · ' + t('avgColsLabel','平均列数') + ' <b>' + delim.avgCols.toFixed(1) + '</b> · ' + t('maxColsLabel','最大列数') + ' <b>' + maxCols + '</b> · ' + t('dataRowsLabel','数据行') + ' <b>' + nonEmpty.length + '</b></div>');
+        html.push('<div class="det-quote">' + t('quoteLabel','引号规则：') + (quoted ? t('quoteDetected','检测到双引号包裹字段，解析时已去除引号并支持 "" 转义') : t('quoteNone','未检测到引号包裹字段')) + '</div>');
+        html.push('<div class="det-cands">' + t('candsLabel','候选评分：') + htmlEscape(cands.map(function (c) { return c.name + ' ' + Math.round(c.consistency * 100) + '%'; }).join(t('commaSep','，'))) + '</div>');
         html.push('<div style="overflow-x:auto;"><table class="det-tbl">');
         for (var t = 0; t < rows.length; t++) {
           html.push('<tr>');

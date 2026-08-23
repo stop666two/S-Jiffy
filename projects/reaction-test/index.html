@@ -39,15 +39,15 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">反应时间测试</h1>
 <p class="tool-desc" data-i18n="desc">测量你的反应时间。屏幕变绿时点击，5 轮取平均值。</p>
 <div class="card">
 <div class="rounds-row" id="roundsRow">
 <span class="lbl" id="roundsLbl" data-i18n="ui.109">轮次</span>
-<button type="button" data-round="1" class="active">1 轮</button>
-<button type="button" data-round="5">5 轮（取平均）</button>
+<button type="button" data-round="1" class="active" data-i18n="oneRound">1 轮</button>
+<button type="button" data-round="5" data-i18n="fiveRoundsAvg">5 轮（取平均）</button>
 </div>
 <div id="gameArea" class="game-area">
 <span class="dot red" id="dot"></span>
@@ -212,11 +212,11 @@ function handleClick(){
       document.getElementById('bestVal').textContent=best;
       document.getElementById('worstVal').textContent=worst;
       summaryGrid.style.display='grid';
-      output.textContent='反应时间: '+avg+' ms | 平均: '+avg+' ms | 最快: '+best+' ms | 最慢: '+worst+' ms | 轮次: '+roundCount+' | 评级: '+reactionLabel(avg);
+      output.textContent=t('rtTime','反应时间: ')+avg+' ms | '+t('rtAvg','平均: ')+avg+' ms | '+t('rtBest','最快: ')+best+' ms | '+t('rtWorst','最慢: ')+worst+' ms | '+t('rtRounds','轮次: ')+roundCount+' | '+t('rtRating','评级: ')+reactionLabel(avg);
       setStatus(avg+'ms · '+reactionLabel(avg));
     }else{
       phase='between';
-      output.textContent='反应时间: '+rt+' ms';
+      output.textContent=t('rtTime','反应时间: ')+rt+' ms';
       setStatus(rt+'ms');
       renderArea();renderDots();
       betweenTimerId=setTimeout(function(){startWaiting();},1200);

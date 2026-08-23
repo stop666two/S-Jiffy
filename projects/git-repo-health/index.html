@@ -13,7 +13,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Git 仓库健康检查</h1>
@@ -32,7 +32,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var inputEl = document.getElementById('logInput');
@@ -130,8 +130,8 @@
         lines.push('');
         lines.push(t('ui.27','总提交数：') + total);
         lines.push(t('ui.26','活跃作者：') + authors.length + t('ui.25',' 位'));
-        lines.push(t('ui.24','时间跨度：') + (minDate ? fmtDate(minDate) : '未知') + ' ~ ' + (maxDate ? fmtDate(maxDate) : '未知') + '（' + (spanDays > 0 ? spanDays : '未知') + t('ui.23',' 天）'));
-        lines.push(t('ui.22','每日平均提交：') + (spanDays > 0 ? avg.toFixed(2) : '无法计算（时间跨度未知）'));
+        lines.push(t('ui.24','时间跨度：') + (minDate ? fmtDate(minDate) : t('unknown','未知')) + ' ~ ' + (maxDate ? fmtDate(maxDate) : t('unknown','未知')) + '（' + (spanDays > 0 ? spanDays : t('unknown','未知')) + t('ui.23',' 天）'));
+        lines.push(t('ui.22','每日平均提交：') + (spanDays > 0 ? avg.toFixed(2) : t('cannotCompute','无法计算（时间跨度未知）')));
         lines.push(t('ui.21','最近 30 天提交：') + last30 + t('ui.20',' 条'));
         lines.push('');
         lines.push(t('ui.19','作者提交分布：'));
@@ -141,10 +141,10 @@
         }
         lines.push('');
         lines.push(t('ui.18','提交消息长度分布（共 ') + total + t('ui.17',' 条，平均 ') + avgLen.toFixed(1) + t('ui.16',' 字）：'));
-        lines.push('  <20 字：' + msgBuckets.short + t('ui.13',' 条（') + Math.round(msgBuckets.short * 100 / total) + '%）' + (shortRatio > 0.3 ? ' ← 偏短' : ''));
+        lines.push('  <20 字：' + msgBuckets.short + t('ui.13',' 条（') + Math.round(msgBuckets.short * 100 / total) + '%）' + (shortRatio > 0.3 ? t('markShort',' ← 偏短') : ''));
         lines.push(t('ui.15','  20-49 字：') + msgBuckets.mid + t('ui.13',' 条（') + Math.round(msgBuckets.mid * 100 / total) + '%）');
         lines.push(t('ui.14','  50-99 字：') + msgBuckets.long + t('ui.13',' 条（') + Math.round(msgBuckets.long * 100 / total) + '%）');
-        lines.push('  >=100 字：' + msgBuckets.xlong + t('ui.13',' 条（') + Math.round(msgBuckets.xlong * 100 / total) + '%）');
+        lines.push(t('bucketXlong','  >=100 字：') + msgBuckets.xlong + t('ui.13',' 条（') + Math.round(msgBuckets.xlong * 100 / total) + '%）');
         if (invalidDate > 0) {
           lines.push('');
           lines.push(t('ui.11','提示：') + invalidDate + t('ui.12',' 条记录日期无法识别（应使用 --date=short 输出 YYYY-MM-DD）'));
@@ -153,13 +153,13 @@
           lines.push(t('ui.11','提示：') + malformed + t('ui.10',' 行未按 哈希|作者|日期|消息 格式解析，已忽略'));
         }
         lines.push('');
-        var label = score >= 90 ? '优秀' : score >= 80 ? '良好' : score >= 70 ? '一般' : '需改进';
+        var label = score >= 90 ? t('scoreExcellent','优秀') : score >= 80 ? t('scoreGood','良好') : score >= 70 ? t('scoreFair','一般') : t('scorePoor','需改进');
         lines.push(t('ui.9','健康评分：') + score + ' / 100（' + label + '）');
         lines.push('');
         lines.push(t('ui.8','改进建议：'));
         var advice = [];
         if (shortRatio > 0.3) {
-          advice.push(t('ui.7','提交消息偏短（') + msgBuckets.short + ' 条小于 20 字），建议遵循 Conventional Commits 规范（type(scope): subject）');
+          advice.push(t('ui.7','提交消息偏短（') + msgBuckets.short + t('adviceShortTail',' 条小于 20 字），建议遵循 Conventional Commits 规范（type(scope): subject）'));
         }
         if (authors.length === 1) {
           advice.push(t('ui.6','仓库仅 1 位活跃作者，建议引入代码审查与多人协作，降低单点风险'));

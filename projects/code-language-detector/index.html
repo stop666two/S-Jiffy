@@ -19,7 +19,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">代码语言检测器</h1>
@@ -37,7 +37,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -97,22 +97,22 @@
         var html = [];
         var plainLines = [];
         if (scores[best] === 0) {
-          html.push('<div class="det-none">未识别出任何语言特征，请粘贴更完整的代码片段。</div>');
+          html.push('<div class="det-none">' + t('ui.102','未识别出任何语言特征，请粘贴更完整的代码片段。') + '</div>');
           outputEl.innerHTML = html.join('');
-          lastPlain = '未识别';
+          lastPlain = t('ui.103','未识别');
           setStatus(t('ui.100','未识别出语言特征'), 'error');
           return;
         }
         var conf = Math.round(scores[best] / (scores[best] + second + 0.5) * 100);
         if (conf < 50) conf = 50;
-        html.push('<div class="det-result"><span class="lang">' + htmlEscape(langs[best].name) + '</span><span class="conf">置信度 ' + conf + '%</span></div>');
-        html.push('<div class="det-feat"><span style="color:var(--color-text-secondary)">命中特征：</span>');
+        html.push('<div class="det-result"><span class="lang">' + htmlEscape(langs[best].name) + '</span><span class="conf">' + t('ui.104','置信度 ') + conf + '%</span></div>');
+        html.push('<div class="det-feat"><span style="color:var(--color-text-secondary)">' + t('ui.2','命中特征：') + '</span>');
         var hits = featMap[langs[best].name];
         for (var n = 0; n < hits.length; n++) {
           html.push('<span class="tag">' + htmlEscape(hits[n]) + '</span>');
         }
         html.push('</div>');
-        html.push('<div class="det-other">特征总数 ' + total + t('ui.4',' 个候选语言，共命中 ') + scores[best] + ' 个特征。</div>');
+        html.push('<div class="det-other">' + t('ui.105','特征总数 ') + total + t('ui.4',' 个候选语言，共命中 ') + scores[best] + t('ui.106',' 个特征。') + '</div>');
         var others = [];
         for (var o = 0; o < scores.length; o++) {
           if (o !== best && scores[o] > 0) {
@@ -120,7 +120,7 @@
           }
         }
         if (others.length) {
-          html.push('<div class="det-other">备选：' + htmlEscape(others.join('，')) + '</div>');
+          html.push('<div class="det-other">' + t('ui.107','备选：') + htmlEscape(others.join('，')) + '</div>');
         }
         outputEl.innerHTML = html.join('');
         plainLines.push(langs[best].name + t('ui.3','，置信度 ') + conf + '%');

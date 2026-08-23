@@ -27,7 +27,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">日志分析器</h1>
@@ -53,7 +53,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var LINE_RE = /^(\S+) - (\S+) \[(.*?)\] "(\S+) (\S+) (\S+)" (\d{3}) (\d+)/;
@@ -155,35 +155,35 @@
         var statusClass = [];
         var errClass = ['', '', 'err-4xx', ''];
         tablesEl.innerHTML = '<div class="stat-grid">'
-          + '<div class="stat-card"><div class="v">' + total + '</div><div class="l">总请求数</div></div>'
-          + '<div class="stat-card"><div class="v">' + ipCount + '</div><div class="l">独立 IP</div></div>'
-          + '<div class="stat-card"><div class="v">' + statusKeys.length + '</div><div class="l">状态码种类</div></div>'
-          + '<div class="stat-card"><div class="v">' + errors.length + '</div><div class="l">4xx / 5xx 错误</div></div>'
+          + '<div class="stat-card"><div class="v">' + total + '</div><div class="l">'+t('statTotal','总请求数')+'</div></div>'
+          + '<div class="stat-card"><div class="v">' + ipCount + '</div><div class="l">'+t('statIps','独立 IP')+'</div></div>'
+          + '<div class="stat-card"><div class="v">' + statusKeys.length + '</div><div class="l">'+t('statStatusTypes','状态码种类')+'</div></div>'
+          + '<div class="stat-card"><div class="v">' + errors.length + '</div><div class="l">'+t('statErrors','4xx / 5xx 错误')+'</div></div>'
           + '</div>'
-          + '<div class="tbl-title">状态码分布</div>' + tableHtml([ t('ui.18','状态码'), t('ui.14','次数'), t('ui.17','占比')], statusRows, statusClass)
+          + '<div class="tbl-title">'+t('tblStatus','状态码分布')+'</div>' + tableHtml([ t('ui.18','状态码'), t('ui.14','次数'), t('ui.17','占比')], statusRows, statusClass)
           + '<div class="tbl-title">TOP 10 IP</div>' + tableHtml([ t('ui.16','排名'), 'IP', t('ui.14','次数'), t('ui.17','占比')], ipRows, statusClass)
-          + '<div class="tbl-title">TOP 10 路径</div>' + tableHtml([ t('ui.16','排名'), t('ui.15','路径'), t('ui.14','次数')], pathRows, statusClass)
-          + '<div class="tbl-title">错误列表（4xx / 5xx，最多 200 条）</div>' + tableHtml([ t('ui.13','时间'), 'IP', t('ui.12','状态'), t('ui.11','请求')], errorRows, errClass);
+          + '<div class="tbl-title">'+t('tblTopPaths','TOP 10 路径')+'</div>' + tableHtml([ t('ui.16','排名'), t('ui.15','路径'), t('ui.14','次数')], pathRows, statusClass)
+          + '<div class="tbl-title">'+t('tblErrors','错误列表（4xx / 5xx，最多 200 条）')+'</div>' + tableHtml([ t('ui.13','时间'), 'IP', t('ui.12','状态'), t('ui.11','请求')], errorRows, errClass);
 
-        var report = '日志分析报告\n';
+        var report = t('reportTitle','日志分析报告\n');
         report += t('ui.10','总请求数：') + total + '\n';
         report += t('ui.9','独立 IP：') + ipCount + '\n';
         report += t('ui.8','4xx / 5xx 错误：') + errors.length + '\n';
         if (unparsed > 0) report += t('ui.7','无法解析的行：') + unparsed + '\n';
-        report += '\n状态码分布：\n';
+        report += t('statusDistTitle','\n状态码分布：\n');
         for (var s2 = 0; s2 < statusKeys.length; s2++) {
           report += statusKeys[s2] + ': ' + statusMap[statusKeys[s2]] + '\n';
         }
         report += '\nTOP 10 IP：\n';
         for (var t3 = 0; t3 < ipTop.length; t3++) {
-          report += (t3 + 1) + '. ' + ipTop[t3].k + '（' + ipTop[t3].v + ' 次）\n';
+          report += (t3 + 1) + '. ' + ipTop[t3].k + t('parenOpen','（') + ipTop[t3].v + t('timesClose',' 次）\n');
         }
-        report += '\nTOP 10 路径：\n';
+        report += t('topPathsTitle','\nTOP 10 路径：\n');
         for (var t4 = 0; t4 < pathTop.length; t4++) {
-          report += (t4 + 1) + '. ' + pathTop[t4].k + '（' + pathTop[t4].v + ' 次）\n';
+          report += (t4 + 1) + '. ' + pathTop[t4].k + t('parenOpen','（') + pathTop[t4].v + t('timesClose',' 次）\n');
         }
         if (errors.length) {
-          report += '\n错误列表：\n';
+          report += t('errorsTitle','\n错误列表：\n');
           for (var e2 = 0; e2 < errors.length; e2++) {
             var er2 = errors[e2];
             report += '[' + er2.time + '] ' + er2.ip + ' ' + er2.status + ' ' + er2.method + ' ' + er2.path + '\n';

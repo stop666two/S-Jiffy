@@ -20,7 +20,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">配置格式互转</h1>
@@ -48,7 +48,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
   (function () {
     var FORMATS = [
@@ -89,21 +89,21 @@
       var inputK = document.createElement('input');
       inputK.className = 'input';
       inputK.type = 'text';
-      inputK.placeholder = '键名，如 port';
+      inputK.placeholder = t('phKeyName','键名，如 port');
       inputK.value = k || '';
       tdK.appendChild(inputK);
       var tdV = document.createElement('td');
       var inputV = document.createElement('input');
       inputV.className = 'input';
       inputV.type = 'text';
-      inputV.placeholder = '值，数字 / 布尔不加引号';
+      inputV.placeholder = t('phValue','值，数字 / 布尔不加引号');
       inputV.value = v || '';
       tdV.appendChild(inputV);
       var tdC = document.createElement('td');
       var inputC = document.createElement('input');
       inputC.className = 'input';
       inputC.type = 'text';
-      inputC.placeholder = '注释，如 服务端口';
+      inputC.placeholder = t('phComment','注释，如 服务端口');
       inputC.value = c || '';
       tdC.appendChild(inputC);
       var tdDel = document.createElement('td');
@@ -136,10 +136,10 @@
         var val = inputs[1].value;
         var comment = inputs[2].value.trim();
         if (!key) {
-          return { error: '第 ' + (i + 1) + ' 行的键为空，请填写或删除该行。' };
+          return { error: t('errRowKeyPrefix','第 ') + (i + 1) + t('errRowKeyEmpty',' 行的键为空，请填写或删除该行。') };
         }
         if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key)) {
-          return { error: '键 "' + key + '" 不合法：只能包含字母、数字、下划线、点与连字符，且不能以数字开头。' };
+          return { error: t('errKeyInvalidPrefix','键 "') + key + t('errKeyInvalid','" 不合法：只能包含字母、数字、下划线、点与连字符，且不能以数字开头。') };
         }
         out.push({ key: key, value: val, comment: comment });
       }
@@ -265,9 +265,9 @@
       }
       copyToClipboard(outputs[currentId], copyBtn);
     };
-    addRow('app_name', 'S-Jiffy', '应用名称');
-    addRow('port', '8080', '服务端口');
-    addRow('debug', 'true', '调试开关');
+    addRow('app_name', 'S-Jiffy', t('sampleAppName','应用名称'));
+    addRow('port', '8080', t('samplePort','服务端口'));
+    addRow('debug', 'true', t('sampleDebug','调试开关'));
     renderTabs();
     generate();
   })();

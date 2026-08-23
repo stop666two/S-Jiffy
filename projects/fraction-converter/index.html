@@ -13,7 +13,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">分数转换器</h1>
     <p class="tool-desc" data-i18n="desc">小数与分数互转，支持化简、带分数显示和计算步骤。</p>
@@ -22,8 +22,8 @@
         <div class="field"><label for="inputVal" data-i18n="ui.number">数值</label><input id="inputVal" class="input" type="text" value="0.75" data-i18n-placeholder="ui.103" placeholder="输入小数或分数如 3/4"></div>
       </div>
       <div class="fc-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="mixedChk" type="checkbox" checked> 允许带分数</label>
-        <label style="display:flex;align-items:center;gap:8px;"><input id="showStepsChk" type="checkbox" checked> 显示步骤</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="mixedChk" type="checkbox" checked> <span data-i18n="ui.6">允许带分数</span></label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="showStepsChk" type="checkbox" checked> <span data-i18n="ui.7">显示步骤</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button></div>
     </div>
@@ -31,7 +31,7 @@
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var mixedChk = document.getElementById('mixedChk');
@@ -101,7 +101,7 @@
         if (showMixed && fr.whole > 0) {
           var rem = parseInt(input.split('/')[0]) % parseInt(input.split('/')[1]);
           var den = parseInt(input.split('/')[1]);
-          result += '\n带分数: ' + fr.whole + ' ' + rem + '/' + den;
+          result += '\n' + t('ui.4','带分数: ') + fr.whole + ' ' + rem + '/' + den;
         }
       } else {
         var val = parseFloat(input);
@@ -110,12 +110,12 @@
         var fr = decimalToFraction(val, steps);
         result = t('ui.1','小数: ') + val;
         if (showMixed && fr.whole > 0 && fr.num > 0) {
-          result += '\n带分数: ' + fr.whole + ' ' + fr.num + '/' + fr.den;
-          result += '\n假分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+          result += '\n' + t('ui.4','带分数: ') + fr.whole + ' ' + fr.num + '/' + fr.den;
+          result += '\n' + t('ui.8','假分数: ') + (fr.whole * fr.den + fr.num) + '/' + fr.den;
         } else {
-          result += '\n分数: ' + (fr.whole * fr.den + fr.num) + '/' + fr.den;
+          result += '\n' + t('ui.9','分数: ') + (fr.whole * fr.den + fr.num) + '/' + fr.den;
         }
-        if (fr.den === 1) result += '\n（整数）';
+        if (fr.den === 1) result += '\n' + t('ui.10','（整数）');
       }
 
       if (showSteps) {

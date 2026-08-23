@@ -3,7 +3,7 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .code-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:300px}@media(max-width:700px){.code-pair{grid-template-columns:1fr}}.code-pair textarea{height:300px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.code-pair textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.stats{display:flex;gap:16px;font-size:12px;color:var(--color-text-secondary);margin-top:8px;flex-wrap:wrap}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">JS 压缩</h1><p class="tool-desc" data-i18n="desc">压缩 JavaScript 代码：移除注释、多余空白和换行。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -27,9 +27,9 @@ function hello(name) {
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
+  <script src="../../assets/js/i18n.js"></script><script>(function(){
 var jsInput=document.getElementById('jsInput');
-var js输出=document.getElementById(t('ui.3','js输出'));
+var js输出=document.getElementById('js输出');
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -74,7 +74,7 @@ var inputSize=code.length;
 var outputSize=result.length;
 var saved=inputSize-outputSize;
 var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
-stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
+stats.innerHTML='<span>'+t('statOriginal','原始: ')+inputSize+t('statBytes',' 字节')+'</span><span>'+t('statMinified','压缩: ')+outputSize+t('statBytes',' 字节')+'</span><span>'+t('statSaved','节省: ')+saved+t('statBytesPct',' 字节 (')+pct+'%)</span>';
 outputEl.textContent = t('ui.2','压缩完成');
 setStatus('');
 }

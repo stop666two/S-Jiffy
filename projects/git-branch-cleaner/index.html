@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Git 分支清理器</h1>
@@ -40,7 +40,7 @@
       </div>
       <div class="form-row">
         <label style="display:flex;align-items:center;gap:6px;font-size:var(--font-size-sm);">
-          <input type="checkbox" id="remoteDel"> 同时生成远端删除命令（git push origin --delete）
+          <input type="checkbox" id="remoteDel"> <span data-i18n="remoteDelLabel">同时生成远端删除命令（git push origin --delete）</span>
         </label>
       </div>
       <div id="branchList"></div>
@@ -55,7 +55,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var branchEl = document.getElementById('branchInput');
@@ -84,7 +84,7 @@
         var branches = parseNames(branchEl.value);
         var merged = parseNames(mergedEl.value);
         if (!branches.names.length) {
-          listEl.innerHTML = '<div class="branch-empty">请粘贴 git branch 输出</div>';
+          listEl.innerHTML = '<div class="branch-empty">'+t('branchEmptyPaste','请粘贴 git branch 输出')+'</div>';
           outputEl.textContent = '';
           setStatus('');
           return;
@@ -106,7 +106,7 @@
         }
         var html = '';
         if (current) {
-          html += '<div class="branch-group"><h3>当前分支（不可删除）</h3><div class="branch-item current"><input type="checkbox" disabled><code>' + htmlEscape(current) + '</code><span class="branch-tag">当前所在分支，跳过</span></div></div>';
+          html += '<div class="branch-group"><h3>'+t('currentBranchHeader','当前分支（不可删除）')+'</h3><div class="branch-item current"><input type="checkbox" disabled><code>' + htmlEscape(current) + '</code><span class="branch-tag">'+t('currentBranchTag','当前所在分支，跳过')+'</span></div></div>';
         }
         var mergedList = [];
         var unmergedList = [];
@@ -120,19 +120,19 @@
           }
         }
         if (mergedList.length) {
-          html += '<div class="branch-group"><h3>已合并分支（可安全删除）</h3>';
+          html += '<div class="branch-group"><h3>'+t('mergedBranchHeader','已合并分支（可安全删除）')+'</h3>';
           for (var m = 0; m < mergedList.length; m++) {
-            html += '<div class="branch-item merged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(mergedList[m]) + '" checked><code>' + htmlEscape(mergedList[m]) + '</code><span class="branch-tag">已合并，使用 -d</span></div>';
+            html += '<div class="branch-item merged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(mergedList[m]) + '" checked><code>' + htmlEscape(mergedList[m]) + '</code><span class="branch-tag">'+t('mergedUseD','已合并，使用 -d')+'</span></div>';
           }
           html += '</div>';
         }
-        html += '<div class="branch-group"><h3>未合并分支（需谨慎）</h3>';
+        html += '<div class="branch-group"><h3>'+t('unmergedBranchHeader','未合并分支（需谨慎）')+'</h3>';
         if (unmergedList.length) {
           for (var n = 0; n < unmergedList.length; n++) {
-            html += '<div class="branch-item unmerged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(unmergedList[n]) + '"><code>' + htmlEscape(unmergedList[n]) + '</code><span class="branch-tag">未合并，使用 -D</span></div>';
+            html += '<div class="branch-item unmerged"><input type="checkbox" class="del-box" data-name="' + htmlEscape(unmergedList[n]) + '"><code>' + htmlEscape(unmergedList[n]) + '</code><span class="branch-tag">'+t('unmergedUseD','未合并，使用 -D')+'</span></div>';
           }
         } else {
-          html += '<div class="branch-empty">没有未合并分支</div>';
+          html += '<div class="branch-empty">'+t('noUnmerged','没有未合并分支')+'</div>';
         }
         html += '</div>';
         listEl.innerHTML = html;

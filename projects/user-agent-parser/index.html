@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">User-Agent 解析器</h1>
     <p class="tool-desc" data-i18n="desc">解析 User-Agent 字符串，提取浏览器、操作系统、引擎和设备信息。</p>
@@ -31,14 +31,14 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('uaInput');
     var gridEl = document.getElementById('uaGrid');
-    function match(ua, pattern) { var m = ua.match(pattern); return m ? m[1] || m[0] : '未知'; }
+    function match(ua, pattern) { var m = ua.match(pattern); return m ? m[1] || m[0] : t('unknown','未知'); }
     function parseUA(ua) {
       if (!ua) return null;
-      var browser = '未知', os = '未知', engine = '未知', device = '桌面';
+      var browser = t('unknown','未知'), os = t('unknown','未知'), engine = t('unknown','未知'), device = t('deviceDesktop','桌面');
       if (/Edg\//i.test(ua)) { browser = 'Edge ' + match(ua, /Edg\/([\d.]+)/); }
       else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) { browser = 'Opera ' + match(ua, /(?:OPR|Opera)\/([\d.]+)/); }
       else if (/Chrome\//i.test(ua)) { browser = 'Chrome ' + match(ua, /Chrome\/([\d.]+)/); }
@@ -52,11 +52,11 @@
       if (/AppleWebKit/i.test(ua)) { engine = 'WebKit ' + match(ua, /AppleWebKit\/([\d.]+)/); }
       if (/Gecko\//i.test(ua)) { engine = 'Gecko'; }
       if (/Trident\//i.test(ua)) { engine = 'Trident'; }
-      if (/Mobile|Android|iPhone|iPad/i.test(ua)) { device = /iPad/i.test(ua) ? '平板' : '移动端'; }
+      if (/Mobile|Android|iPhone|iPad/i.test(ua)) { device = /iPad/i.test(ua) ? t('deviceTablet','平板') : t('deviceMobile','移动端'); }
       return { browser: browser, os: os, engine: engine, device: device, raw: ua };
     }
     function render(d) {
-      if (!d) { gridEl.innerHTML = '<div style="color:var(--color-text-secondary);padding:var(--space-3);">请输入 User-Agent 字符串</div>'; return; }
+      if (!d) { gridEl.innerHTML = '<div style="color:var(--color-text-secondary);padding:var(--space-3);">'+t('uaPlaceholder','请输入 User-Agent 字符串')+'</div>'; return; }
       var items = [
         { label: t('ui.5','浏览器'), val: d.browser },
         { label: t('ui.4','操作系统'), val: d.os },

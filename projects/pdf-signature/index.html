@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">数字签名解析</h1>
     <p class="tool-desc" data-i18n="desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
@@ -38,7 +38,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function() {
       var pemEl = document.getElementById('pemInput');
@@ -123,10 +123,10 @@
         if (!pem) { setStatus(t('ui.100','请粘贴 PEM 内容'), 'error'); return; }
         try {
           var label = '';
-          if (pem.indexOf('PUBLIC KEY') !== -1) label = '公钥';
-          else if (pem.indexOf('PRIVATE KEY') !== -1) label = '私钥';
-          else if (pem.indexOf('CERTIFICATE') !== -1) label = '证书 (X.509)';
-          else label = '未知 PEM 类型';
+          if (pem.indexOf('PUBLIC KEY') !== -1) label = t('pemPublic','公钥');
+          else if (pem.indexOf('PRIVATE KEY') !== -1) label = t('pemPrivate','私钥');
+          else if (pem.indexOf('CERTIFICATE') !== -1) label = t('pemCert','证书 (X.509)');
+          else label = t('pemUnknown','未知 PEM 类型');
 
           var formatted = formatPem(pem);
           var ab = pemToArrayBuffer(pem);
@@ -165,8 +165,8 @@
                   + t('ui.12','密钥长度: ') + (size * 8) + ' bits (' + size + ' bytes)\n'
                   + (key.algorithm.modulusLength ? t('ui.11','模数长度: ') + key.algorithm.modulusLength + ' bits\n' : '')
                   + (key.algorithm.namedCurve ? t('ui.10','曲线: ') + key.algorithm.namedCurve + '\n' : '')
-                  + '\n--- 格式化 PEM ---\n' + (formatted || '') + '\n'
-                  + '\n--- 原始数据 ---\n'
+                  + t('fmtPem','\n--- 格式化 PEM ---\n') + (formatted || '') + '\n'
+                  + t('rawData','\n--- 原始数据 ---\n')
                   + 'Hex: ' + Array.from(view.slice(0, 32)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '...\n'
                   + t('ui.9','Base64 长度: ') + btoa(String.fromCharCode.apply(null, view)).length + ' chars';
                 setStatus(t('ui.8','解析成功：') + label);
@@ -177,15 +177,15 @@
               outputEl.textContent = t('ui.5','类型: ') + label + '\n'
                 + t('ui.4','原始字节数: ') + raw.length + '\n'
                 + t('ui.7','前 16 字节 Hex: ') + Array.from(raw.slice(0, 16)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '\n'
-                + '算法: 无法自动识别（可能不是 RSA/EC 密钥）\n'
-                + '\n--- 格式化 PEM ---\n' + (formatted || pem);
+                + t('algUnknown','算法: 无法自动识别（可能不是 RSA/EC 密钥）\n')
+                + t('fmtPem','\n--- 格式化 PEM ---\n') + (formatted || pem);
               setStatus(t('ui.6','已解析（部分信息）'));
             }
           }).catch(function(err) {
             outputEl.textContent = t('ui.5','类型: ') + label + '\n'
               + t('ui.4','原始字节数: ') + (new Uint8Array(ab)).length + '\n'
               + t('ui.3','解析失败: ') + err.message + '\n'
-              + '\n--- 格式化 PEM ---\n' + (formatted || pem);
+              + t('fmtPem','\n--- 格式化 PEM ---\n') + (formatted || pem);
             setStatus(t('ui.101','解析出错'), 'error');
           });
         } catch (e) {

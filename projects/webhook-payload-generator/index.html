@@ -15,7 +15,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Webhook 负载生成器</h1>
@@ -45,7 +45,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var NAMES = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'grace', 'henry', 'irene', 'jack', 'kate', 'liam'];
@@ -117,7 +117,7 @@
       function commit(sha) {
         return {
           id: sha,
-          message: pick(['fix: 修复登录 bug', 'feat: 新增导出功能', 'docs: 更新 README', 'refactor: 重构缓存逻辑']),
+          message: pick([t('sampleCommitFix','fix: 修复登录 bug'), t('sampleCommitFeat','feat: 新增导出功能'), t('sampleCommitDocs','docs: 更新 README'), t('sampleCommitRefactor','refactor: 重构缓存逻辑')]),
           timestamp: nowIso(),
           author: { name: 'octocat', email: email() }
         };
@@ -145,7 +145,7 @@
           pull_request: {
             id: rand(900000000) + 100000000,
             number: rand(500) + 1,
-            title: 'feat: 添加新功能',
+            title: t('samplePrTitle','feat: 添加新功能'),
             state: 'open',
             merged: false,
             created_at: nowIso(),
@@ -234,7 +234,7 @@
           create_time: nowIso(),
           resource_type: 'encrypt-resource',
           event_type: 'TRANSACTION.SUCCESS',
-          summary: '支付成功',
+          summary: t('samplePaySuccess','支付成功'),
           resource: {
             original_type: 'transaction',
             algorithm: 'AEAD_AES_256_GCM',
@@ -279,7 +279,7 @@
         current = JSON.stringify(payload, null, 2);
         output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
         var label = document.getElementById('eventSel').options[document.getElementById('eventSel').selectedIndex].text;
-        setStatus('已生成：' + label);
+        setStatus(t('generated','已生成：') + label);
       }
 
       document.getElementById('eventSel').addEventListener('change', build);

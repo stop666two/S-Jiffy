@@ -18,7 +18,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">密码强度分析</h1>
     <p class="tool-desc" data-i18n="desc">实时分析密码强度：字符集、熵值、破解时间、综合评分。</p>
@@ -43,7 +43,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>(function(){
     var inputEl = document.getElementById('passwordInput');
     var fillEl = document.getElementById('strengthFill');
@@ -72,13 +72,13 @@
       if (entropy > 0) {
         var guessesPerSec = 10000000000;
         var seconds = Math.pow(2, entropy) / guessesPerSec;
-        if (seconds < 1) { crackTime = '瞬间'; }
+        if (seconds < 1) { crackTime = t('ui.instant','瞬间'); }
         else if (seconds < 60) { crackTime = Math.ceil(seconds) + t('ui.second',' 秒'); }
         else if (seconds < 3600) { crackTime = Math.ceil(seconds / 60) + t('ui.minute',' 分钟'); }
         else if (seconds < 86400) { crackTime = Math.ceil(seconds / 3600) + t('ui.hour',' 小时'); }
         else if (seconds < 31536000) { crackTime = Math.ceil(seconds / 86400) + t('ui.day',' 天'); }
         else if (seconds < 315360000) { crackTime = Math.ceil(seconds / 31536000) + t('ui.year',' 年'); }
-        else { crackTime = '∞ (极强)'; }
+        else { crackTime = '∞ (' + t('ui.extreme','极强') + ')'; }
       } else { crackTime = '-'; }
       var score = 0;
       if (len >= 8) score += 20;
@@ -99,10 +99,10 @@
       infoCharset.textContent = r.charsetSize;
       infoEntropy.textContent = r.entropy.toFixed(1);
       infoCrackTime.textContent = r.crackTime;
-      infoLower.textContent = r.hasLower ? '是' : '否';
-      infoUpper.textContent = r.hasUpper ? '是' : '否';
-      infoDigit.textContent = r.hasDigit ? '是' : '否';
-      infoSymbol.textContent = r.hasSymbol ? '是' : '否';
+      infoLower.textContent = r.hasLower ? t('ui.yes','是') : t('ui.no','否');
+      infoUpper.textContent = r.hasUpper ? t('ui.yes','是') : t('ui.no','否');
+      infoDigit.textContent = r.hasDigit ? t('ui.yes','是') : t('ui.no','否');
+      infoSymbol.textContent = r.hasSymbol ? t('ui.yes','是') : t('ui.no','否');
       fillEl.style.width = r.score + '%';
       if (r.score < 30) { fillEl.style.background = '#9F2F2D'; scoreEl.textContent = t('ui.13','弱 - ') + r.score + '/100'; }
       else if (r.score < 60) { fillEl.style.background = '#B8860B'; scoreEl.textContent = t('ui.12','中等 - ') + r.score + '/100'; }

@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">IPv4 子网计算</h1>
     <p class="tool-desc" data-i18n="desc">输入 CIDR 地址（如 192.168.1.0/24），计算网络详情。</p>
@@ -42,7 +42,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function() {
       var cidrInput = document.getElementById('cidrInput');
@@ -105,14 +105,14 @@
         }
 
         subnetGrid.innerHTML = '';
-        subnetGrid.appendChild(fillItem('IP 地址', ipStr));
-        subnetGrid.appendChild(fillItem('子网掩码', numToIp(mask)));
-        subnetGrid.appendChild(fillItem('网络地址', numToIp(network)));
-        subnetGrid.appendChild(fillItem('广播地址', numToIp(broadcast)));
-        subnetGrid.appendChild(fillItem('通配符掩码', numToIp(wildcard)));
-        subnetGrid.appendChild(fillItem('前缀长度', '/' + prefix));
-        subnetGrid.appendChild(fillItem('可用主机数', hosts.toLocaleString()));
-        subnetGrid.appendChild(fillItem('主机范围', (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
+        subnetGrid.appendChild(fillItem(t('labelIp','IP 地址'), ipStr));
+        subnetGrid.appendChild(fillItem(t('labelMask','子网掩码'), numToIp(mask)));
+        subnetGrid.appendChild(fillItem(t('labelNetwork','网络地址'), numToIp(network)));
+        subnetGrid.appendChild(fillItem(t('labelBroadcast','广播地址'), numToIp(broadcast)));
+        subnetGrid.appendChild(fillItem(t('labelWildcard','通配符掩码'), numToIp(wildcard)));
+        subnetGrid.appendChild(fillItem(t('labelPrefix','前缀长度'), '/' + prefix));
+        subnetGrid.appendChild(fillItem(t('labelHosts','可用主机数'), hosts.toLocaleString()));
+        subnetGrid.appendChild(fillItem(t('labelRange','主机范围'), (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
 
         outputEl.textContent = input + t('ui.5',' → 掩码: ') + numToIp(mask) + t('ui.4',' | 网络: ') + numToIp(network) + t('ui.3',' | 广播: ') + numToIp(broadcast) + t('ui.2',' | 主机: ') + hosts;
         setStatus('');

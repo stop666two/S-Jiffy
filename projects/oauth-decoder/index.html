@@ -12,7 +12,7 @@
 .part-header.signature-part { color:#9333ea; }
 pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-size:12px; line-height:1.4; }
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">OAuth Token 解码</h1><p class="tool-desc" data-i18n="desc">解码 OAuth 2.0 JWT Token 查看载荷</p>
 <div class="card"><textarea id="tokenInput" class="input textarea js-focus-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" style="min-height:120px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="decodeBtn" class="btn btn-primary" data-i18n="ui.decode">解码</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
@@ -21,7 +21,7 @@ pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-si
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
 <script>
 (function () {
   var tokenInput = document.getElementById('tokenInput');
@@ -61,10 +61,10 @@ pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-si
 
       var html = '';
       html += '<div class="section-label">HEADER</div>';
-      html += '<div class="token-part"><div class="part-header header-part">算法: ' + htmlEscape(header.alg || 'unknown') + t('ui.5',' · 类型: ') + htmlEscape(header.typ || 'JWT') + '</div><pre class="json-display">' + htmlEscape(JSON.stringify(header, null, 2)) + '</pre></div>';
+      html += '<div class="token-part"><div class="part-header header-part">' + t('algorithmLabel','算法: ') + htmlEscape(header.alg || 'unknown') + t('ui.5',' · 类型: ') + htmlEscape(header.typ || 'JWT') + '</div><pre class="json-display">' + htmlEscape(JSON.stringify(header, null, 2)) + '</pre></div>';
 
       html += '<div class="section-label">PAYLOAD</div>';
-      html += '<div class="token-part"><div class="part-header payload-part">载荷内容</div>';
+      html += '<div class="token-part"><div class="part-header payload-part">' + t('payloadLabel','载荷内容') + '</div>';
 
       var knownFields = ['sub','iss','aud','exp','nbf','iat','jti','name','email','roles','scope','client_id','user_id'];
       var claims = [];
@@ -88,11 +88,11 @@ pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-si
       html += '<pre class="json-display">' + htmlEscape(JSON.stringify(payload, null, 2)) + '</pre></div>';
 
       html += '<div class="section-label">SIGNATURE</div>';
-      html += '<div class="token-part"><div class="part-header signature-part">签名 (Base64)</div><pre class="json-display">' + htmlEscape(parts[2].substring(0, 40) + '...') + '</pre></div>';
+      html += '<div class="token-part"><div class="part-header signature-part">' + t('signatureLabel','签名 (Base64)') + '</div><pre class="json-display">' + htmlEscape(parts[2].substring(0, 40) + '...') + '</pre></div>';
 
-      html += '<div class="section-label">元信息</div>';
+      html += '<div class="section-label">' + t('metaLabel','元信息') + '</div>';
       var metaHtml = '<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;">';
-      metaHtml += 'Token length: ' + token.length + ' 字符<br>';
+      metaHtml += t('tokenLengthLabel','Token length: {n} 字符').replace('{n}', token.length) + '<br>';
       var payloadSize = new Blob([payloadRaw]).size;
       metaHtml += t('ui.4','Payload 大小: 约 ') + payloadSize + ' 字节<br>';
       if (payload.exp) {
@@ -101,7 +101,7 @@ pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-si
         if (expDate.getTime() > now) {
           metaHtml += t('ui.3','过期时间: ') + expDate.toLocaleString() + ' (有效)';
         } else {
-          metaHtml += t('ui.3','过期时间: ') + expDate.toLocaleString() + ' <span style="color:var(--color-error)">(已过期)</span>';
+          metaHtml += t('ui.3','过期时间: ') + expDate.toLocaleString() + ' <span style="color:var(--color-error)">' + t('expiredLabel','(已过期)') + '</span>';
         }
       }
       metaHtml += '</div>';

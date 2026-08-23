@@ -20,7 +20,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">文件名重命名器</h1>
@@ -50,7 +50,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -183,7 +183,7 @@
         }
         var conflicts = 0;
         var html = [];
-        html.push('<div style="overflow-x:auto;"><table class="ren-table"><thead><tr><th>原名</th><th></th><th>新名</th></tr></thead><tbody>');
+        html.push('<div style="overflow-x:auto;"><table class="ren-table"><thead><tr><th>' + t('ui.17','原名') + '</th><th></th><th>' + t('ui.18','新名') + '</th></tr></thead><tbody>');
         for (var m = 0; m < rows.length; m++) {
           var row = rows[m];
           var dup = countMap[row.newName] > 1;
@@ -191,12 +191,12 @@
           var flag = '';
           if (dup || clash) {
             conflicts++;
-            flag = ' <span class="ren-conflict">重名</span>';
+            flag = ' <span class="ren-conflict">' + t('ui.19','重名') + '</span>';
           }
           html.push('<tr><td>' + htmlEscape(row.oldName) + '</td><td class="arrow">→</td><td>' + htmlEscape(row.newName) + flag + '</td></tr>');
         }
         html.push('</tbody></table></div>');
-        html.push('<div class="ren-note">共处理 ' + rows.length + t('ui.8',' 个文件') + (skipped ? t('ui.7','，跳过空行 ') + skipped + ' 个' : '') + (conflicts ? '，发现 <span class="ren-conflict">' + conflicts + ' 处重名冲突</span>' : '，无重名冲突') + '</div>');
+        html.push('<div class="ren-note">共处理 ' + rows.length + t('ui.8',' 个文件') + (skipped ? t('ui.7','，跳过空行 ') + skipped + ' 个' : '') + (conflicts ? t('ui.20','，发现 ') + '<span class="ren-conflict">' + conflicts + t('ui.21',' 处重名冲突') + '</span>' : t('ui.22','，无重名冲突')) + '</div>');
         outputEl.innerHTML = html.join('');
         lastPlain = newNames.join('\n');
         setStatus(t('ui.generated','已生成 ') + rows.length + t('ui.6',' 个新文件名'));

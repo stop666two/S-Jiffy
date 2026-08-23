@@ -20,18 +20,18 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Protobuf JSON 互转</h1>
     <p class="tool-desc" data-i18n="desc">在 proto3 JSON（camelCase）与数据库风格（snake_case）之间递归转换字段名，并支持 int64 大整数字符串化。</p>
     <div class="card">
       <div class="opt-row">
-        <label><input type="radio" name="dir" value="to-snake" checked> proto3 JSON (camelCase) → 数据库风格 (snake_case)</label>
-        <label><input type="radio" name="dir" value="to-camel"> 数据库风格 (snake_case) → proto3 JSON (camelCase)</label>
+        <label><input type="radio" name="dir" value="to-snake" checked> <span data-i18n="ui.8">proto3 JSON (camelCase) → 数据库风格 (snake_case)</span></label>
+        <label><input type="radio" name="dir" value="to-camel"> <span data-i18n="ui.9">数据库风格 (snake_case) → proto3 JSON (camelCase)</span></label>
       </div>
       <div class="opt-row">
-        <label><input type="checkbox" id="int64Opt" checked> int64 转字符串（超出安全范围的整数自动加引号输出）</label>
+        <label><input type="checkbox" id="int64Opt" checked> <span data-i18n="ui.10">int64 转字符串（超出安全范围的整数自动加引号输出）</span></label>
       </div>
       <textarea id="jsonInput" class="input textarea js-focus-input" rows="10" placeholder='{"userId": 1, "userName": "alice", "createdAt": "2024-01-01", "bigId": 9223372036854775807}'></textarea>
       <div class="section-title" data-i18n="ui.1">字段对照表</div>
@@ -47,7 +47,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
   (function () {
     var jsonInput = document.getElementById('jsonInput');
@@ -106,7 +106,7 @@
       var raw = jsonInput.value;
       if (!raw || !raw.trim()) {
         outputText.textContent = '';
-        pairWrap.innerHTML = '<p class="empty-tip">输入 JSON 后自动生成对照表。</p>';
+        pairWrap.innerHTML = '<p class="empty-tip">' + t('ui.2','输入 JSON 后自动生成对照表。') + '</p>';
         setStatus('');
         return;
       }
@@ -119,13 +119,13 @@
         parsed = JSON.parse(text);
       } catch (e) {
         outputText.textContent = t('ui.7','JSON 解析失败：') + e.message + t('ui.6','。请检查括号、引号与逗号是否完整。');
-        pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
+        pairWrap.innerHTML = '<p class="empty-tip">' + t('ui.11','无法解析，暂无对照表。') + '</p>';
         setStatus(t('ui.100','JSON 解析失败'), 'error');
         return;
       }
       if (!parsed || (typeof parsed !== 'object')) {
         outputText.textContent = t('ui.5','请输入 JSON 对象或数组，不能是裸字符串 / 数字 / null。');
-        pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
+        pairWrap.innerHTML = '<p class="empty-tip">' + t('ui.11','无法解析，暂无对照表。') + '</p>';
         setStatus(t('ui.101','输入格式错误'), 'error');
         return;
       }
@@ -136,9 +136,9 @@
       outputText.textContent = JSON.stringify(result, null, 2);
       var tableHtml = '';
       if (pairs.length === 0) {
-        tableHtml = '<p class="empty-tip">未发现需要转换的字段（可能均为单段小写命名）。</p>';
+        tableHtml = '<p class="empty-tip">' + t('ui.12','未发现需要转换的字段（可能均为单段小写命名）。') + '</p>';
       } else {
-        tableHtml = '<table class="pair-table"><thead><tr><th>原字段</th><th>转换后</th></tr></thead><tbody>';
+        tableHtml = '<table class="pair-table"><thead><tr><th>' + t('ui.13','原字段') + '</th><th>' + t('ui.14','转换后') + '</th></tr></thead><tbody>';
         for (var i = 0; i < pairs.length; i++) {
           tableHtml += '<tr><td>' + htmlEscape(pairs[i].from) + '</td><td>' + htmlEscape(pairs[i].to) + '</td></tr>';
         }

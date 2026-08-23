@@ -51,7 +51,7 @@
 <body>
 <header class="global-header">
 <a href="../../index.html" class="logo">S-Jiffy</a>
-<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+<select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
 </header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">音频降噪器</h1>
@@ -70,8 +70,8 @@
 <div id="waveWrap" class="hidden">
 <div class="ab-row">
 <span class="lbl" data-i18n="compareLabel">对比</span>
-<button class="ab-btn active" id="abBefore" type="button">原始</button>
-<button class="ab-btn" id="abAfter" type="button">处理后</button>
+<button class="ab-btn active" id="abBefore" type="button" data-i18n="original">原始</button>
+<button class="ab-btn" id="abAfter" type="button" data-i18n="processed">处理后</button>
 <span class="ab-tag" id="abTag"></span>
 </div>
 <div class="wave-box"><canvas id="waveCanvas"></canvas></div>
@@ -180,7 +180,7 @@
     abAfter.disabled = !afterReady;
     abBefore.classList.toggle('active', abMode === 'before');
     abAfter.classList.toggle('active', abMode === 'after');
-    abTag.textContent = abMode === 'before' ? '原始音频' : (outBuffer ? t('gateApplied', '已应用降噪门') : '');
+    abTag.textContent = abMode === 'before' ? t('originalAudio', '原始音频') : (outBuffer ? t('gateApplied', '已应用降噪门') : '');
     draw();
   }
 
@@ -313,7 +313,7 @@
           doneWith(out, blob);
         });
       } catch (e) {
-        fail('噪声门处理失败');
+        fail(t('gateFail', '噪声门处理失败'));
       }
     }, 50);
   });
@@ -357,7 +357,7 @@
       }
     }, function (err) {
       setProgress(1);
-      fail('AI 降噪模型加载失败。已改用基础噪声门方案，请使用上方「噪声门（基础版）」。原因：' + (err && err.message ? err.message : '网络错误'));
+      fail(t('rnnoiseLoadFail', 'AI 降噪模型加载失败。已改用基础噪声门方案，请使用上方「噪声门（基础版）」。原因：') + (err && err.message ? err.message : t('networkError', '网络错误')));
     });
   });
 

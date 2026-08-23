@@ -37,7 +37,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">时区转换器</h1>
     <p class="tool-desc" data-i18n="desc">全球城市实时时钟与时区换算，内置 Intl API 自动处理夏令时。</p>
@@ -114,8 +114,8 @@
       <div style="display:flex; gap:12px; align-items:center;">
         <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.101">时间</label>
         <input id="sourceTime" class="input js-focus-input" type="datetime-local" style="width:auto;">
-        <button id="convertBtn" class="btn btn-primary">转换</button>
-        <button id="nowBtn" class="btn btn-secondary">当前时间</button>
+        <button id="convertBtn" class="btn btn-primary" data-i18n="convert">转换</button>
+        <button id="nowBtn" class="btn btn-secondary" data-i18n="now">当前时间</button>
       </div>
       <div id="resultBox" class="tz-result"></div>
     </div>
@@ -320,10 +320,10 @@
         var tgtOff = getOffset(tgtTz, d).replace(/^GMT/, '');
 
         var html = '<table>';
-        html += '<tr><td>源时区 (' + srcTz + ')</td><td>' + srcTime + ' (UTC' + srcOff + ')</td></tr>';
-        html += '<tr><td>目标时区 (' + tgtTz + ')</td><td>' + tgtTime + ' (UTC' + tgtOff + ')</td></tr>';
+        html += '<tr><td>'+t('srcTz','源时区 (') + srcTz + ')</td><td>' + srcTime + ' (UTC' + srcOff + ')</td></tr>';
+        html += '<tr><td>'+t('tgtTz','目标时区 (') + tgtTz + ')</td><td>' + tgtTime + ' (UTC' + tgtOff + ')</td></tr>';
         html += '<tr><td>UTC</td><td>' + utcTime + '</td></tr>';
-        html += '<tr><td>时差</td><td>UTC' + srcOff + ' → UTC' + tgtOff + '</td></tr>';
+        html += '<tr><td>'+t('tzDiff','时差')+'</td><td>UTC' + srcOff + ' → UTC' + tgtOff + '</td></tr>';
         html += '</table>';
         o.innerHTML = html;
         setStatus('');

@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">ETA 计算器</h1>
     <p class="tool-desc" data-i18n="desc">基于总量和速率计算预计完成时间（amount / rate × time）。</p>
@@ -47,7 +47,7 @@
     <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
-  <script src="../../assets/js/i18n.js"></script></script>
+  <script src="../../assets/js/i18n.js"></script>
   <script>
     (function() {
       var etaAmount = document.getElementById('etaAmount');
@@ -70,21 +70,21 @@
         var unitLabel = '';
         var display = raw;
 
-        if (unit === 'seconds') unitLabel = '秒';
-        else if (unit === 'minutes') unitLabel = '分钟';
-        else if (unit === 'hours') unitLabel = '小时';
-        else if (unit === 'days') unitLabel = '天';
+        if (unit === 'seconds') unitLabel = t('ui.second','秒');
+        else if (unit === 'minutes') unitLabel = t('ui.minute','分钟');
+        else if (unit === 'hours') unitLabel = t('ui.hour','小时');
+        else if (unit === 'days') unitLabel = t('ui.day','天');
 
         if (display >= 60 && unit === 'seconds') {
           display = display / 60;
-          unitLabel = '分钟';
+          unitLabel = t('ui.minute','分钟');
         }
         if (display >= 60 && (unit === 'seconds' || unit === 'minutes')) {
           display = display / 60;
-          unitLabel = '小时';
+          unitLabel = t('ui.hour','小时');
         }
         if (display >= 24 && (unit === 'seconds' || unit === 'minutes' || unit === 'hours')) {
-          unitLabel = '天';
+          unitLabel = t('ui.day','天');
         }
 
         var result = (raw).toFixed(2);

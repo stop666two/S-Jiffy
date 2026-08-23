@@ -8,4 +8,10 @@
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     Referrer-Policy = "no-referrer"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.ipify.org https://ip-api.com https://haveibeenpwned.com; img-src 'self' data: https://www.gravatar.com; upgrade-insecure-requests"
+    Cache-Control = "no-cache"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://api.ipify.org https://ip-api.com https://ipinfo.io https://ipapi.co https://dns.google https://huggingface.co https://modelscope.cn https://cdn.jsdelivr.net https://open.er-api.com https://frankfurter.app; img-src 'self' data: https://www.gravatar.com; upgrade-insecure-requests"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

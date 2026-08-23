@@ -61,7 +61,7 @@ function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'no-referrer'
   };
-  var etag = '"' + crypto.createHash('md5').update(String(stats.size) + ':' + stats.mtimeMs).digest('hex') + '"';
+  var etag = '"' + crypto.createHash('md5').update(data).digest('hex') + '"';
   headers['ETag'] = etag;
   if (clientETag === etag) {
     res.writeHead(304, headers);
@@ -69,14 +69,15 @@ function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
     return;
   }
   var isAsset = filePath.indexOf(path.sep + 'assets' + path.sep) !== -1;
+  var isI18n = filePath.indexOf(path.sep + 'assets' + path.sep + 'i18n' + path.sep) !== -1;
   var isCompressible = ['.html', '.css', '.js', '.mjs', '.json', '.svg', '.xml', '.txt', '.md', '.webmanifest'].indexOf(ext) !== -1;
-  if (isAsset) {
+  if (isAsset && !isI18n) {
     headers['Cache-Control'] = 'public, max-age=86400';
   } else {
     headers['Cache-Control'] = 'no-cache';
   }
   if (isCompressible && clientGzip) {
-    var key = filePath + ':' + stats.mtimeMs;
+    var key = filePath + ':' + etag;
     var gz = gzipCache[key];
     if (!gz) {
       gz = zlib.gzipSync(data);

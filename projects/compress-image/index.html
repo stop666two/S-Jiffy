@@ -85,7 +85,7 @@
   <div class="opt-block">
     <label class="opt-label" data-i18n="ui.101">输出格式</label>
     <div class="fmt-row" id="fmtRow">
-      <button type="button" class="btn fmt-btn" data-fmt="auto">自动</button>
+      <button type="button" class="btn fmt-btn" data-fmt="auto" data-i18n="auto">自动</button>
       <button type="button" class="btn fmt-btn" data-fmt="png">PNG</button>
       <button type="button" class="btn fmt-btn" data-fmt="jpg">JPG</button>
       <button type="button" class="btn fmt-btn" data-fmt="webp">WebP</button>
@@ -99,8 +99,8 @@
   <div class="cmp-head">
     <p class="cmp-title" id="cmpTitle"></p>
     <div class="cmp-toggle">
-      <button type="button" id="modeSplit" class="active">分割视图</button>
-      <button type="button" id="modeSide">并排对比</button>
+      <button type="button" id="modeSplit" class="active" data-i18n="splitView">分割视图</button>
+      <button type="button" id="modeSide" data-i18n="sideBySide">并排对比</button>
     </div>
   </div>
 
@@ -184,7 +184,7 @@
     if (!file || !imgEl) return;
     if (timer) { clearTimeout(timer); timer = null; }
     liveBusy = true;
-    $('cmpTitle').innerHTML = t('compareImages', '对比') + ' <span class="updating">· ' + t('updating', '更新中…') + '</span>';
+    $('cmpTitle').innerHTML = t('compareImages', '对比') + ' <span class="updating" data-i18n="updating">· ' + t('updating', '更新中…') + '</span>';
 
     var alpha = file.type === 'image/png' && detectAlpha(imgEl);
 
@@ -211,7 +211,7 @@
         $('sideOrigLabel').textContent = t('original', '原图') + ' · ' + fmtBytes(file.size);
         var savings = Math.round((1 - compSize / file.size) * 100);
         $('sideCompLabel').innerHTML = t('compressedLabel', '压缩后') + ' · ' + fmtBytes(compSize) +
-          (savings > 0 ? ' <span class="savings">(' + t('xPercentSmaller', '小 {pct}%').replace('{pct}', String(savings)) + ')</span>' : '');
+          (savings > 0 ? ' <span class="savings" data-i18n="xPercentSmaller">(' + t('xPercentSmaller', '小 {pct}%').replace('{pct}', String(savings)) + ')</span>' : '');
         var btn = $('downloadBtn');
         btn.style.display = 'inline-flex';
         btn.textContent = t('downloadCompressed', '下载压缩图（{size}）').replace('{size}', fmtBytes(compSize)) +

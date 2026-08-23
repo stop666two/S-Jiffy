@@ -69,11 +69,12 @@
       if(type==='encode'){
         var encoded=btoa(unescape(encodeURIComponent(text)));
         result=mode==='urlsafe'?toUrlSafe(encoded):encoded;
-        if(validate){vr.innerHTML='<span class="valid-msg ok">'+t('b64.validEncode','编码结果已就绪')+'</span>';}
+        if(validate){var validMsg=t('b64.validEncode','编码结果已就绪');vr.innerHTML='<span class="valid-msg ok">'+validMsg+'</span>';}
       }else{
         var processed=mode==='urlsafe'?toStandard(text):text;
         if(validate&&!isValidBase64(processed)){
-          vr.innerHTML='<span class="valid-msg fail">'+t('b64.invalidInput','输入不是有效的 Base64')+'</span>';
+          var invalidMsg=t('b64.invalidInput','输入不是有效的 Base64');
+          vr.innerHTML='<span class="valid-msg fail">'+invalidMsg+'</span>';
           outputEl.textContent='';
           setStatus(t('b64.invalidInput','输入不是有效的 Base64'),'error');
           return;
@@ -95,7 +96,11 @@
       setStatus('');
     }catch(e){
       outputEl.textContent='';previewArea.style.display='none';
-      setStatus(t(type==='decode'?'b64.invalidInput':'b64.invalidFormat', type==='decode'?'输入不是有效的 Base64':'当前输出不是有效的图片数据'),'error');
+      if(type==='decode'){
+        setStatus(t('b64.invalidInput','输入不是有效的 Base64'),'error');
+      }else{
+        setStatus(t('b64.invalidFormat','当前输出不是有效的图片数据'),'error');
+      }
     }
   }
 

@@ -371,7 +371,7 @@
             exifTable.style.display = 'none';
             exifBody.innerHTML = '';
             outputEl.textContent = format + t('ui.21',' 图片通常不含 EXIF 信息（JPEG 才有），无法解析。');
-            fileInfo.textContent = t('ui.5','已选择：') + file.name + '（' + format + '）';
+            fileInfo.textContent = t('ui.5','已选择：') + file.name + t('ui.lparen','（') + format + t('ui.rparen','）');
             setStatus(t('ui.100','该格式不含 EXIF 信息'), 'error');
             return;
           }
@@ -393,8 +393,8 @@
           if (err) {
             exifTable.style.display = 'none';
             exifBody.innerHTML = '';
-            outputEl.textContent = err + '。';
-            fileInfo.textContent = t('ui.5','已选择：') + file.name + '（JPEG）';
+            outputEl.textContent = err + t('ui.period','。');
+            fileInfo.textContent = t('ui.5','已选择：') + file.name + t('ui.jpegOnly','（JPEG）');
             setStatus(err, 'error');
             return;
           }
@@ -416,8 +416,8 @@
           ];
           exifTable.style.display = 'table';
           exifBody.innerHTML = renderRows(rows);
-          outputEl.textContent = t('ui.7','已解析 ') + file.name + '：' + (dims ? dims.width + '×' + dims.height : t('ui.25','尺寸未知')) + t('ui.6','，共 14 个字段。');
-          fileInfo.textContent = t('ui.5','已选择：') + file.name + '（JPEG，' + Math.round(file.size / 1024) + ' KB）';
+          outputEl.textContent = t('ui.7','已解析 ') + file.name + t('ui.colon','：') + (dims ? dims.width + '×' + dims.height : t('ui.25','尺寸未知')) + t('ui.6','，共 14 个字段。');
+          fileInfo.textContent = t('ui.5','已选择：') + file.name + t('ui.jpeg','（JPEG，') + Math.round(file.size / 1024) + t('ui.kbSuffix',' KB）');
           setStatus(t('ui.4','EXIF 解析完成'));
         };
         reader.onerror = function () {

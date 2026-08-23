@@ -116,15 +116,15 @@
         var others = [];
         for (var o = 0; o < scores.length; o++) {
           if (o !== best && scores[o] > 0) {
-            others.push(langs[o].name + '（' + scores[o] + '）');
+            others.push(langs[o].name + t('ui.108','（') + scores[o] + t('ui.109','）'));
           }
         }
         if (others.length) {
-          html.push('<div class="det-other">' + t('ui.107','备选：') + htmlEscape(others.join('，')) + '</div>');
+          html.push('<div class="det-other">' + t('ui.107','备选：') + htmlEscape(others.join(t('ui.110','，'))) + '</div>');
         }
         outputEl.innerHTML = html.join('');
         plainLines.push(langs[best].name + t('ui.3','，置信度 ') + conf + '%');
-        plainLines.push(t('ui.2','命中特征：') + hits.join('、'));
+        plainLines.push(t('ui.2','命中特征：') + hits.join(t('ui.111','、')));
         lastPlain = plainLines.join('\n');
         setStatus(t('ui.1','已识别为 ') + langs[best].name);
       }

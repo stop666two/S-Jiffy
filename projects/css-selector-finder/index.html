@@ -162,12 +162,12 @@
         }
         var MAX = 50;
         var shown = matches.length > MAX ? matches.slice(0, MAX) : matches;
-        var htmlOut = '<div style="font-size:var(--font-size-base);margin-bottom:var(--space-1);">共命中 <b>' + matches.length +
-          '</b> 个元素' + (matches.length > MAX ? t('ui.6','，仅显示前 ') + MAX + ' 个' : '') + '</div>';
+        var htmlOut = '<div style="font-size:var(--font-size-base);margin-bottom:var(--space-1);">' + t('ui.9','共命中 ') + '<b>' + matches.length +
+          '</b> ' + t('ui.10','个元素') + (matches.length > MAX ? t('ui.11','，仅显示前 ') + MAX + t('ui.12',' 个') : '') + '</div>';
         for (var m = 0; m < shown.length; m++) {
           var res = uniqueSelector(shown[m]);
           htmlOut += '<div class="finder-row">' +
-            '<span style="color:var(--color-text-disabled);">' + (m + 1) + '. ' + htmlEscape(shown[m].tagName.toLowerCase()) + '：</span>' +
+            '<span style="color:var(--color-text-disabled);">' + (m + 1) + '. ' + htmlEscape(shown[m].tagName.toLowerCase()) + t('ui.13','：') + '</span>' +
             '<span style="color:var(--color-success);">' + htmlEscape(res.sel) + '</span>' +
             ' <span style="color:var(--color-text-secondary);">命中 ' + res.count + '</span>' +
             '</div>';

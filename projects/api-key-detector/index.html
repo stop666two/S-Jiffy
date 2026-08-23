@@ -157,11 +157,12 @@
           total += count;
           if (count > 0) hitPlatforms++;
           var sample = matches ? maskSample(matches[0]) : '';
+          var noMatchLabel = t('ui.12','未发现');
           var cls = count > 0 ? 'det-count det-count-hit' : 'det-count';
           rows += '<tr>' +
             '<td>' + htmlEscape(p.name) + '</td>' +
             '<td><span class="' + cls + '">' + count + '</span></td>' +
-            '<td class="mono">' + (sample ? htmlEscape(sample) : '<span style="color:var(--color-text-disabled)">未发现</span>') + '</td>' +
+            '<td class="mono">' + (sample ? htmlEscape(sample) : '<span style="color:var(--color-text-disabled)">' + noMatchLabel + '</span>') + '</td>' +
             '</tr>';
         }
         detBody.innerHTML = rows;

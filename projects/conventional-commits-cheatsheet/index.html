@@ -80,17 +80,17 @@ Reduce average latency by 30%.</pre>
   <script>
     (function () {
       var TYPES = [
-        { type: 'feat', meaning: '新功能', example: 'feat: add user profile page' },
-        { type: 'fix', meaning: '修复 bug', example: 'fix: correct timezone offset in reports' },
-        { type: 'docs', meaning: '仅文档变更', example: 'docs: update installation guide' },
-        { type: 'style', meaning: '格式调整（不影响逻辑）', example: 'style: format code with prettier' },
-        { type: 'refactor', meaning: '重构（非新增功能也非修 bug）', example: 'refactor: extract api client module' },
-        { type: 'perf', meaning: '性能优化', example: 'perf: memoize expensive computation' },
-        { type: 'test', meaning: '新增或修改测试', example: 'test: add cases for empty input' },
-        { type: 'build', meaning: '构建系统或外部依赖变更', example: 'build: bump typescript to 5.4' },
-        { type: 'ci', meaning: 'CI 配置与脚本变更', example: 'ci: cache npm dependencies' },
-        { type: 'chore', meaning: '杂项维护（工具、配置等）', example: 'chore: update lint rules' },
-        { type: 'revert', meaning: '回滚某次提交', example: 'revert: feat: add user profile page' }
+        { type: 'feat', meaning: t('t.feat','新功能'), labelKey: 't.feat', example: 'feat: add user profile page' },
+        { type: 'fix', meaning: t('t.fix','修复 bug'), labelKey: 't.fix', example: 'fix: correct timezone offset in reports' },
+        { type: 'docs', meaning: t('t.docs','仅文档变更'), labelKey: 't.docs', example: 'docs: update installation guide' },
+        { type: 'style', meaning: t('t.style','格式调整（不影响逻辑）'), labelKey: 't.style', example: 'style: format code with prettier' },
+        { type: 'refactor', meaning: t('t.refactor','重构（非新增功能也非修 bug）'), labelKey: 't.refactor', example: 'refactor: extract api client module' },
+        { type: 'perf', meaning: t('t.perf','性能优化'), labelKey: 't.perf', example: 'perf: memoize expensive computation' },
+        { type: 'test', meaning: t('t.test','新增或修改测试'), labelKey: 't.test', example: 'test: add cases for empty input' },
+        { type: 'build', meaning: t('t.build','构建系统或外部依赖变更'), labelKey: 't.build', example: 'build: bump typescript to 5.4' },
+        { type: 'ci', meaning: t('t.ci','CI 配置与脚本变更'), labelKey: 't.ci', example: 'ci: cache npm dependencies' },
+        { type: 'chore', meaning: t('t.chore','杂项维护（工具、配置等）'), labelKey: 't.chore', example: 'chore: update lint rules' },
+        { type: 'revert', meaning: t('t.revert','回滚某次提交'), labelKey: 't.revert', example: 'revert: feat: add user profile page' }
       ];
       var searchEl = document.getElementById('searchInput');
       var bodyEl = document.getElementById('ccBody');
@@ -103,11 +103,12 @@ Reduce average latency by 30%.</pre>
         var matched = 0;
         for (var i = 0; i < TYPES.length; i++) {
           var t = TYPES[i];
-          if (filter && t.type.indexOf(filter) === -1 && t.meaning.indexOf(filter) === -1 && t.example.indexOf(filter) === -1) {
+          var disp = t.labelKey ? t(t.labelKey, t.meaning) : t.meaning;
+          if (filter && t.type.indexOf(filter) === -1 && disp.indexOf(filter) === -1 && t.example.indexOf(filter) === -1) {
             continue;
           }
           matched++;
-          html += '<tr><td class="cc-type">' + htmlEscape(t.type) + '</td><td>' + htmlEscape(t.meaning) + '</td><td><button class="ex-btn" data-ex="' + htmlEscape(t.example) + '">' + htmlEscape(t.example) + '</button></td></tr>';
+          html += '<tr><td class="cc-type">' + htmlEscape(t.type) + '</td><td>' + htmlEscape(disp) + '</td><td><button class="ex-btn" data-ex="' + htmlEscape(t.example) + '">' + htmlEscape(t.example) + '</button></td></tr>';
         }
         bodyEl.innerHTML = html;
         countEl.textContent = t('ui.total','共 ') + TYPES.length + t('ui.11',' 种类型，当前匹配 ') + matched + t('ui.items',' 项');

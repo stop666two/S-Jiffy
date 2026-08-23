@@ -48,14 +48,14 @@ function renderDetail(){var hex=cp.value;var rgb=hexToRgb(hex);var hsl=rgbToHsl(
 cd.innerHTML='<div class="detail-row"><span class="key">HEX</span><span>'+hex+'</span></div><div class="detail-row"><span class="key">RGB</span><span>'+rgb.r+', '+rgb.g+', '+rgb.b+'</span></div><div class="detail-row"><span class="key">HSL</span><span>'+hsl[0]+'°, '+hsl[1]+'%, '+hsl[2]+'%</span></div><div class="detail-row"><span class="key">CMYK</span><span>'+cmyk[0]+'%, '+cmyk[1]+'%, '+cmyk[2]+'%, '+cmyk[3]+'%</span></div>';
 o.textContent=hex;}
 
-function renderHistory(){if(saved.length===0){hg.innerHTML='<span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">暂无已保存颜色</span>';return;}
+function renderHistory(){if(saved.length===0){hg.innerHTML='<span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">'+t('ui.6','暂无已保存颜色')+'</span>';return;}
 var html='';for(var i=0;i<saved.length;i++){          html+='<div class="hist-swatch" style="background:'+htmlEscape(saved[i])+'" data-color="'+htmlEscape(saved[i])+'"></div>';}
 hg.innerHTML=html;var sw=hg.querySelectorAll('.hist-swatch');for(var j=0;j<sw.length;j++){sw[j].addEventListener('click',function(){cp.value=this.dataset.color;renderDetail();});}}
 
-function save(){var hex=cp.value;if(saved.indexOf(hex)===-1){saved.unshift(hex);if(saved.length>20)saved.pop();localStorage.setItem('s-jiffy:colors',JSON.stringify(saved));renderHistory();setStatus('已保存 '+hex);}}
+function save(){var hex=cp.value;if(saved.indexOf(hex)===-1){saved.unshift(hex);if(saved.length>20)saved.pop();localStorage.setItem('s-jiffy:colors',JSON.stringify(saved));renderHistory();setStatus(t('ui.103','已保存 ')+hex);}}
 
 function exportPalette(){if(saved.length===0){setStatus(t('ui.100','暂无已保存颜色'),'error');return;}
-var text=saved.join('\n');o.textContent=text;copyToClipboard(text,document.getElementById('copyBtn'));setStatus('已导出 '+saved.length+' 个颜色');}
+var text=saved.join('\n');o.textContent=text;copyToClipboard(text,document.getElementById('copyBtn'));setStatus(t('ui.104','已导出 ')+saved.length+t('ui.105',' 个颜色'));}
 
 function randomHex(){var h='#';for(var i=0;i<6;i++)h+=Math.floor(Math.random()*16).toString(16);cp.value=h;renderDetail();}
 

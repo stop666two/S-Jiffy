@@ -54,7 +54,7 @@ negBtn.addEventListener('click',function(){
   var html='';var served=results.length>0?results[0]:null;
   for(var i=0;i<results.length;i++){
     var r=results[i];var isServed=served&&r.type===served.type&&r.q>0;
-    html+='<div class="result-row'+(isServed?' matched':'')+'"><span>'+htmlEscape(r.type)+(isServed?' <span class="served-tag">已选</span>':'')+'</span><span class="q-val">q='+r.q.toFixed(3)+'</span></div>';
+    html+='<div class="result-row'+(isServed?' matched':'')+'"><span>'+htmlEscape(r.type)+(isServed?' <span class="served-tag">'+t('ui.9','已选')+'</span>':'')+'</span><span class="q-val">q='+r.q.toFixed(3)+'</span></div>';
   }
   negotiationResult.innerHTML=html;resultCard.style.display='block';
   if(served&&served.q>0){servedInfo.textContent = t('ui.8','✅ 将提供: ')+served.type+' (q='+served.q.toFixed(3)+')';outputText.textContent = t('ui.7','选择: ')+served.type;}

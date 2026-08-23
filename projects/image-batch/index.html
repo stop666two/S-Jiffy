@@ -409,7 +409,7 @@ function processNext(){
     item.resultSize=r.blob.size;
     var pct=Math.round(((fileIdx+1)/files.length)*100);
     progressBar.style.width=pct+'%';
-    progressText.textContent=t('batchProgress','处理中 '+(fileIdx+1)+' / '+files.length+'（'+pct+'%）');
+    progressText.textContent=t('batchProgress','处理中 '+(fileIdx+1)+' / '+files.length+t('ui.lparen','（')+pct+t('ui.pctRparen','%）'));
     fileIdx++;
     processNext();
   }).catch(function(e){

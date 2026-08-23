@@ -143,7 +143,7 @@
     volPct.textContent = volume + '%';
     dbDisplay.textContent = volume === 0 ? '−∞ dB' : (20 * Math.log10(volume / 100)).toFixed(1) + ' dB';
     var cls = 'safe';
-    var label = '正常';
+    var label = t('ui.108', '正常');
     if (volume > 150) { cls = 'distorted'; label = t('distortedLabel', '失真'); }
     else if (volume > 100) { cls = 'loud'; label = t('loudLabel', '增强'); }
     volBadge.className = 'badge ' + cls;
@@ -282,14 +282,14 @@
           setProgress(1);
           processing = false;
           btnExport.disabled = false;
-          showErr('音量调整失败');
+          showErr(t('ui.104', '音量调整失败'));
           setStatus(t('ui.104','音量调整失败'), 'error');
         });
       } catch (e) {
         setProgress(1);
         processing = false;
         btnExport.disabled = false;
-        showErr('音量调整失败');
+        showErr(t('ui.105', '音量调整失败'));
         setStatus(t('ui.105','音量调整失败'), 'error');
       }
     }, 50);

@@ -193,8 +193,8 @@
         var local = renderTable('localStorage', window.localStorage, filter, false);
         var session = renderTable('sessionStorage', window.sessionStorage, filter, true);
         listEl.innerHTML = local.html + session.html;
-        outputEl.textContent = 'localStorage：' + local.count + t('ui.13',' 项 / ') + fmtBytes(local.total)
-          + '　|　sessionStorage：' + session.count + t('ui.13',' 项 / ') + fmtBytes(session.total);
+        outputEl.textContent = t('storageLocalPrefix','localStorage：') + local.count + t('ui.13',' 项 / ') + fmtBytes(local.total)
+          + t('storageSessionPrefix','　|　sessionStorage：') + session.count + t('ui.13',' 项 / ') + fmtBytes(session.total);
       }
 
       function refresh() {

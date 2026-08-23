@@ -48,7 +48,7 @@
           <input id="remotePort" class="input" value="22" data-i18n-placeholder="ui.106" placeholder="SSH 端口">
         </div>
       </div>
-      <label class="toggle-row"><input type="checkbox" id="become" checked> become（提权执行）</label>
+      <label class="toggle-row"><input type="checkbox" id="become" checked><span data-i18n="ui.become">become（提权执行）</span></label>
       <div class="tasks-title">
         <span data-i18n="ui.109">任务列表（模块：apt/yum/copy/service/command/shell/user/systemd）</span>
         <button id="addTaskBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px" data-i18n="ui.5">+ 添加任务</button>
@@ -87,10 +87,11 @@
         var id = ++rowSeq;
         var div = document.createElement('div');
         div.className = 'task-row';
-        div.innerHTML = '<input class="task-name input" data-i18n-placeholder="ui.107" placeholder="任务名，如 安装 nginx">'
+        var delLabel = t('ui.del','删');
+        div.innerHTML = '<input class="task-name input" placeholder="' + t('ui.107','任务名，如 安装 nginx') + '">'
           + '<select class="task-module input">' + MODULES.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select>'
-          + '<textarea class="task-params input textarea" data-i18n-placeholder="ui.108" placeholder="每行一个参数，如 name=nginx&#10;state=present"></textarea>'
-          + '<button class="btn btn-secondary task-del" type="button">删</button>';
+          + '<textarea class="task-params input textarea" placeholder="' + t('ui.108','每行一个参数，如 name=nginx&#10;state=present') + '"></textarea>'
+          + '<button class="btn btn-secondary task-del" type="button">' + delLabel + '</button>';
         div.querySelector('.task-del').addEventListener('click', function () {
           div.parentNode.removeChild(div);
         });
@@ -151,7 +152,7 @@
           yaml += '    - name: ' + yamlQuote(t.name) + '\n';
           yaml += '      ' + t.module + ':\n';
           if (t.params.length === 0) {
-            yaml += '        # 请填写该模块的参数\n';
+            yaml += '        # ' + t('ui.111','请填写该模块的参数') + '\n';
           }
           for (var j = 0; j < t.params.length; j++) {
             yaml += '        ' + t.params[j].key + ': ' + yamlQuote(t.params[j].value) + '\n';

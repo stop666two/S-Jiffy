@@ -13,7 +13,7 @@
 .hint-line{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">车牌号归属地查询</h1><p class="tool-desc" data-i18n="desc">输入车牌号或前缀，查询对应发牌地区的归属地信息。</p>
 <div class="card">
 <div class="lookup-row">
@@ -86,13 +86,13 @@ if(raw.indexOf(DATA[i].p)!==-1)hits.push(DATA[i]);
 }
 if(hits.length===0){
 resultBox.style.display='block';
-resultBox.innerHTML='<p style="color:var(--color-error);font-size:14px;">未查询到「'+htmlEscape(raw)+'」对应的归属地，请检查车牌号前缀是否正确。</p>';
+resultBox.innerHTML='<p style="color:var(--color-error);font-size:14px;">'+t('ui.102','未查询到「')+htmlEscape(raw)+t('ui.103','」对应的归属地，请检查车牌号前缀是否正确。')+'</p>';
 setStatus(t('ui.101','未匹配到结果'),'error');
 return;
 }
 hits.sort(function(x,y){return y.p.length-x.p.length;});
 var best=hits[0];
-var html='<table class="result-table"><thead><tr><th>车牌号</th><th>归属地</th></tr></thead><tbody>';
+var html='<table class="result-table"><thead><tr><th>'+t('ui.104','车牌号')+'</th><th>'+t('ui.105','归属地')+'</th></tr></thead><tbody>';
 html+='<tr><td>'+htmlEscape(best.p)+'</td><td>'+htmlEscape(best.a)+'</td></tr>';
 html+='</tbody></table>';
 resultBox.style.display='block';

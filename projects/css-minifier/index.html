@@ -25,7 +25,7 @@ body {
   margin-right: auto;
 }
 </textarea>
-<textarea id="css输出" readonly data-i18n-placeholder="ui.102" placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="cssOutput" readonly data-i18n-placeholder="ui.102" placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 <div class="stats" id="stats"></div>
 </div>
@@ -35,7 +35,7 @@ body {
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script><script>(function(){
 var cssInput=document.getElementById('cssInput');
-var css输出=document.getElementById(t('ui.3','css输出'));
+var cssOutput=document.getElementById('cssOutput');
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -44,7 +44,7 @@ var stats=document.getElementById('stats');
 
 function minify(){
 var css=cssInput.value;
-if(!css.trim()){css输出.value='';stats.textContent='';outputEl.textContent='';setStatus(t('ui.100','请输入 CSS'),'error');return;}
+if(!css.trim()){cssOutput.value='';stats.textContent='';outputEl.textContent='';setStatus(t('ui.100','请输入 CSS'),'error');return;}
 var result=css;
 result=result.replace(/\/\*[\s\S]*?\*\//g,'');
 result=result.replace(/\s+/g,' ');
@@ -62,18 +62,18 @@ result=result.replace(/  +/g,' ');
 result=result.replace(/^\s+|\s+$/g,'');
 result=result.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3/gi,'#$1$2$3');
 result=result.replace(/#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3([0-9a-f])\4/gi,'#$1$2$3$4');
-css输出.value=result;
+cssOutput.value=result;
 var inputSize=css.length;
 var outputSize=result.length;
 var saved=inputSize-outputSize;
 var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
-stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
+stats.innerHTML='<span>'+t('ui.4','原始: ')+inputSize+t('ui.5',' 字节')+'</span><span>'+t('ui.6','压缩: ')+outputSize+t('ui.5',' 字节')+'</span><span>'+t('ui.7','节省: ')+saved+t('ui.5',' 字节')+' ('+pct+'%)</span>';
 outputEl.textContent = t('ui.2','压缩完成');
 setStatus('');
 }
 
-clearBtn.addEventListener('click',function(){cssInput.value='';css输出.value='';stats.textContent='';outputEl.textContent='';setStatus('');cssInput.focus();});
+clearBtn.addEventListener('click',function(){cssInput.value='';cssOutput.value='';stats.textContent='';outputEl.textContent='';setStatus('');cssInput.focus();});
 minifyBtn.addEventListener('click',minify);
-copyBtn.addEventListener('click',function(){if(css输出.value){copyToClipboard(css输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
+copyBtn.addEventListener('click',function(){if(cssOutput.value){copyToClipboard(cssOutput.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 cssInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minify();});
 })();</script></body></html>

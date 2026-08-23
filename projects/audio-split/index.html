@@ -91,7 +91,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 <span id="zoomWrap"><span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-right:6px" data-i18n="zoomLabel">缩放</span></span>
 </div>
 <div class="split-list hidden" id="splitListWrap">
-<h3><span data-i18n="splitPointsLabel">分割点（0）</span><button class="clear" id="btnClearSplits" type="button">清除全部</button></h3>
+<h3><span data-i18n="splitPointsLabel">分割点（0）</span><button class="clear" id="btnClearSplits" type="button" data-i18n="clearAll">清除全部</button></h3>
 <div id="splitList"></div>
 </div>
 <div class="seg-count"><span data-i18n="segmentsLabel">片段数</span><b id="segCount">1</b></div>
@@ -222,7 +222,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
         var del = document.createElement('button');
         del.type = 'button';
         del.textContent = '✕';
-        del.title = '删除分割点';
+        del.title = t('delSplitPoint', '删除分割点');
         del.addEventListener('click', function () {
           splits = splits.filter(function (x) { return x !== sp; });
           renderSplits();
@@ -477,7 +477,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
       setProgress(1);
       processing = false;
       btnExport.disabled = false;
-      showErr(err && err.message ? err.message : '导出失败');
+      showErr(err && err.message ? err.message : t('ui.103', '导出失败'));
       setStatus(t('ui.103','导出失败'), 'error');
     }
     next();
@@ -498,7 +498,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
         dl.textContent = t('download', '下载');
         dl.addEventListener('click', function () {
           AK.downloadBlob(blob, AK.getOutputName(file.name, 'part' + (n + 1), ext));
-          setStatus('已开始下载片段 ' + (n + 1));
+          setStatus(t('downloadStarted', '已开始下载片段 ') + (n + 1));
         });
         item.appendChild(meta);
         item.appendChild(dl);

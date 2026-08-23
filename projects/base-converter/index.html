@@ -34,7 +34,7 @@
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
 
-    <div class="output-box" id="输出Container" style="min-height:60px;">
+    <div class="output-box" id="outContainer" style="min-height:60px;">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
@@ -48,7 +48,7 @@
   <script>
     (function () {
       var v = document.getElementById('inputValue'), f = document.getElementById('fromBase'), t = document.getElementById('toBase'), o = document.getElementById('outputText');
-      var baseNames = { 2: '二进制', 8: '八进制', 10: '十进制', 16: '十六进制' };
+      var baseNames = { 2: t('ui.binary','二进制'), 8: t('ui.1','八进制'), 10: t('ui.2','十进制'), 16: t('ui.hex','十六进制') };
       document.getElementById('convertBtn').addEventListener('click', function () {
         var str = v.value.trim();
         if (!str) { setStatus(t('ui.100','请输入数值'), 'error'); return; }

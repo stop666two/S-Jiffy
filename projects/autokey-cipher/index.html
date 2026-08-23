@@ -17,7 +17,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-sm);"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
-<div class="card" id="stepsCard" style="display:none;margin-top:var(--space-2);"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);" data-i18n="ui.2">加密步骤</h3><pre id="steps输出" style="font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;max-height:200px;overflow-y:auto;"></pre></div>
+<div class="card" id="stepsCard" style="display:none;margin-top:var(--space-2);"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);" data-i18n="ui.2">加密步骤</h3><pre id="stepsOut" style="font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;max-height:200px;overflow-y:auto;"></pre></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -31,7 +31,7 @@ var decryptBtn=document.getElementById('decryptBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
 var stepsCard=document.getElementById('stepsCard');
-var steps输出=document.getElementById(t('ui.6','steps输出'));
+var stepsOut=document.getElementById('stepsOut');
 function clean(text){return text.toUpperCase().replace(/[^A-Z]/g,'');}
 function encrypt(text,key){
 var t=clean(text);
@@ -49,7 +49,7 @@ r+=ch;
 steps+=t('ui.3','步骤 ') +(i+1)+': '+t[i]+'('+p+') + '+stream[i]+'('+s+') = '+ch+'('+c+')\n';
 }
 stepsCard.style.display='block';
-steps输出.textContent=steps;
+stepsOut.textContent=steps;
 return r;
 }
 function decrypt(text,key){
@@ -69,7 +69,7 @@ stream+=ch;
 steps+=t('ui.3','步骤 ') +(i+1)+': '+t[i]+'('+c+') - '+stream[i]+'('+s+') = '+ch+'('+p+')\n';
 }
 stepsCard.style.display='block';
-steps输出.textContent=steps;
+stepsOut.textContent=steps;
 return r;
 }
 encryptBtn.addEventListener('click',function(){
@@ -84,7 +84,7 @@ if(!t||!k){setStatus(t('ui.103','请输入密文和关键词'),'error');return;}
 var r=decrypt(t,k);
 if(r){outputEl.textContent=r;setStatus('');}
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';stepsCard.style.display='none';steps输出.textContent='';setStatus('');inputEl.focus();});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';stepsCard.style.display='none';stepsOut.textContent='';setStatus('');inputEl.focus();});
 copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

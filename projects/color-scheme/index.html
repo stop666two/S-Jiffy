@@ -124,9 +124,9 @@ var fgHex=rgbToHex(fgRgb.r,fgRgb.g,fgRgb.b);
 var passAA=levelAA==='AA'||levelAA==='AAA';
 var passAAA=levelAAA==='AAA';
 html+='<div class="scheme-card" data-fg="'+fgHex+'" data-bg="'+bg+'" data-ratio="'+ratio.toFixed(2)+'">';
-html+='<div class="preview" style="background:'+bg+';color:'+fgHex+';">AaBb 示例文本<div class="sm">小字 12px · 标准文本</div></div>';
-html+='<div class="meta"><span>'+fgHex+' <span class="badge" style="background:'+fgHex+';color:'+bg+';">前景</span></span><span>'+bg+' <span class="badge" style="background:'+bg+';color:"#000";">背景</span></span></div>';
-html+='<div class="meta" style="border-top:1px solid var(--color-border);"><span>对比度: '+ratio.toFixed(2)+':1</span><span class="'+(passAA?'pass':'fail')+'">AA: '+(levelAA==='FAIL'?'✘':levelAA)+'</span><span class="'+(passAAA?'pass':'fail')+'">AAA: '+(levelAAA==='AAA'?'✔ '+levelAAA:'✘')+'</span></div>';
+html+='<div class="preview" style="background:'+bg+';color:'+fgHex+';">AaBb '+t('ui.15','示例文本')+'<div class="sm">'+t('ui.16','小字 12px · 标准文本')+'</div></div>';
+html+='<div class="meta"><span>'+fgHex+' <span class="badge" style="background:'+fgHex+';color:'+bg+';">'+t('ui.13','前景')+'</span></span><span>'+bg+' <span class="badge" style="background:'+bg+';color:"#000";">'+t('ui.14','背景')+'</span></span></div>';
+html+='<div class="meta" style="border-top:1px solid var(--color-border);"><span>'+t('ui.6','对比度: ')+ratio.toFixed(2)+':1</span><span class="'+(passAA?'pass':'fail')+'">AA: '+(levelAA==='FAIL'?'✘':levelAA)+'</span><span class="'+(passAAA?'pass':'fail')+'">AAA: '+(levelAAA==='AAA'?'✔ '+levelAAA:'✘')+'</span></div>';
 html+='</div>';
 }
 schemeGrid.innerHTML=html;

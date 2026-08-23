@@ -19,7 +19,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">字节格式化</h1>
     <p class="tool-desc" data-i18n="desc">将字节数转换为人类可读格式（1024 B → 1 KB）。支持 SI (1000) 和 IEC (1024) 标准。</p>
@@ -35,9 +35,9 @@
         </div>
       </div>
       <div class="bf-results">
-        <div class="bf-item"><span class="key" data-i18n="ui.2">IEC 格式 (1024)</span><span class="val" id="iec结果">-</span></div>
-        <div class="bf-item"><span class="key" data-i18n="ui.3">SI 格式 (1000)</span><span class="val" id="si结果">-</span></div>
-        <div class="bf-item"><span class="key" data-i18n="ui.4">二进制 (bits)</span><span class="val" id="bit结果">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.2">IEC 格式 (1024)</span><span class="val" id="iecResult">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.3">SI 格式 (1000)</span><span class="val" id="siResult">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.4">二进制 (bits)</span><span class="val" id="bitResult">-</span></div>
       </div>
     </div>
     <div class="output-box">
@@ -56,9 +56,9 @@
       var bytesInput = document.getElementById('bytesInput');
       var formatIecBtn = document.getElementById('formatIecBtn');
       var formatSiBtn = document.getElementById('formatSiBtn');
-      var iec结果 = document.getElementById(t('ui.8','iec结果'));
-      var si结果 = document.getElementById(t('ui.7','si结果'));
-      var bit结果 = document.getElementById(t('ui.6','bit结果'));
+      var iecResult = document.getElementById('iecResult');
+      var siResult = document.getElementById('siResult');
+      var bitResult = document.getElementById('bitResult');
       var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
@@ -77,10 +77,10 @@
       function formatAll() {
         var bytes = parseInt(bytesInput.value, 10);
         if (isNaN(bytes) || bytes < 0) { setStatus(t('ui.100','请输入非负整数'), 'error'); return; }
-        iec结果.textContent = formatBytes(bytes, false);
-        si结果.textContent = formatBytes(bytes, true);
-        bit结果.textContent = (bytes * 8).toLocaleString() + ' bits';
-        outputEl.textContent = bytes + ' B = ' + iec结果.textContent + ' = ' + si结果.textContent;
+        iecResult.textContent = formatBytes(bytes, false);
+        siResult.textContent = formatBytes(bytes, true);
+        bitResult.textContent = (bytes * 8).toLocaleString() + ' bits';
+        outputEl.textContent = bytes + ' B = ' + iecResult.textContent + ' = ' + siResult.textContent;
         setStatus(t('ui.5','格式化完成'));
       }
 

@@ -165,7 +165,8 @@
         })
         .catch(function (err) {
           respBody.textContent = t('ui.4','请求失败: ') + err.message;
-          responseHeader.innerHTML = '<span style="color:var(--color-error);">错误</span>';
+          var errLabel = t('ui.err','错误');
+          responseHeader.innerHTML = '<span style="color:var(--color-error);">' + errLabel + '</span>';
           setStatus(t('ui.101','请求失败'), 'error');
         });
       });

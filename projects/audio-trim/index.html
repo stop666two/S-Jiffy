@@ -377,7 +377,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
     for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
     b.classList.add('active');
     bitrateGroup.classList.toggle('hidden', fmt !== 'mp3');
-    btnExport.querySelector('span').textContent = fmt === 'mp3' ? '导出 MP3' : t('exportWav', '导出 WAV');
+    btnExport.querySelector('span').textContent = fmt === 'mp3' ? t('exportMp3', '导出 MP3') : t('exportWav', '导出 WAV');
   });
   bitrateBtns.addEventListener('click', function (e) {
     var b = e.target;
@@ -416,7 +416,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
     }, function (err) {
       processing = false;
       btnExport.disabled = false;
-      showErr('裁剪失败');
+      showErr(t('ui.104', '裁剪失败'));
       setStatus(t('ui.104','裁剪失败'), 'error');
     });
   });

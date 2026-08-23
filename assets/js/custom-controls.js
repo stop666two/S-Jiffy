@@ -40,7 +40,7 @@
     var swatch = document.createElement('button');
     swatch.type = 'button';
     swatch.className = 'cp-swatch';
-    swatch.setAttribute('aria-label', '选择颜色');
+    swatch.setAttribute('aria-label', t('common.chooseColor', '选择颜色'));
 
     var panel = document.createElement('div');
     panel.className = 'cp-panel';
@@ -64,7 +64,7 @@
     var hexRow = document.createElement('div');
     hexRow.className = 'cp-hex-row';
     var label = document.createElement('label');
-    label.textContent = '自定义';
+    label.textContent = t('common.custom', '自定义');
     var hexInput = document.createElement('input');
     hexInput.className = 'cp-hex';
     hexInput.maxLength = 7;
@@ -121,7 +121,7 @@
     hexInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         var v = hexInput.value.trim();
-        if (isValidHex(v)) { applyColor(v); } else { setStatus('颜色格式应为 #RRGGBB', 'error'); }
+        if (isValidHex(v)) { applyColor(v); } else {       setStatus(t('common.invalidColor', '颜色格式应为 #RRGGBB'), 'error'); }
       }
       if (e.key === 'Escape') { closePanel(); }
     });

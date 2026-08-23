@@ -19,7 +19,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
-<div class="ac-all" id="all结果s" style="display:none;"></div>
+<div class="ac-all" id="allRes" style="display:none;"></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -34,7 +34,7 @@ var decryptBtn=document.getElementById('decryptBtn');
 var tryAllBtn=document.getElementById('tryAllBtn');
 var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
-var all结果s=document.getElementById(t('ui.6','all结果s'));
+var allRes=document.getElementById('allRes');
 var coPrimes=[1,3,5,7,9,11,15,17,19,21,23,25];
 function modInverse(a,m){
 for(var x=1;x<m;x++){if((a*x)%m===1)return x;}
@@ -82,12 +82,12 @@ var a=coPrimes[i];
 var r=affine(t,a,b,'decrypt');
 if(r)lines+='a='+a+', b='+b+': '+r+'\n';
 }
-all结果s.style.display='block';
-all结果s.textContent=lines;
+allRes.style.display='block';
+allRes.textContent=lines;
 outputEl.textContent = t('ui.5','已尝试 ')+coPrimes.length+ t('ui.4',' 种 a 值组合');
 setStatus('');
 });
-clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';all结果s.style.display='none';all结果s.textContent='';setStatus('');inputEl.focus();});
+clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';allRes.style.display='none';allRes.textContent='';setStatus('');inputEl.focus();});
 copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

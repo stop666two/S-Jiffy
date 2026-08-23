@@ -22,7 +22,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">中国节假日速查</h1>
@@ -104,24 +104,24 @@
       var copyText = '';
       if (view === 'holiday') {
         if (!list.length) {
-          html = '<div class="holiday-none">暂无 ' + y + ' 年节假日数据</div>';
+          html = '<div class="holiday-none">' + t('ui.16','暂无 ') + y + t('ui.17',' 年节假日数据') + '</div>';
         } else {
-          html = '<table class="holiday-table"><thead><tr><th>节日</th><th>日期</th><th>天数</th><th>调休上班日</th></tr></thead><tbody>';
+          html = '<table class="holiday-table"><thead><tr><th>' + t('ui.18','节日') + '</th><th>' + t('ui.19','日期') + '</th><th>' + t('ui.20','天数') + '</th><th>' + t('ui.21','调休上班日') + '</th></tr></thead><tbody>';
           for (var i = 0; i < list.length; i++) {
             var h = list[i];
             var days = daysBetween(h.start, h.end);
-            var workTxt = h.work.length ? htmlEscape(h.work.join('、')) : '无';
-            html += '<tr data-copy="' + htmlEscape(h.start + t('ui.7',' 至 ') + h.end) + '" title="点击复制日期">';
+            var workTxt = h.work.length ? htmlEscape(h.work.join(t('ui.32','、'))) : t('ui.33','无');
+            html += '<tr data-copy="' + htmlEscape(h.start + t('ui.7',' 至 ') + h.end) + '" title="' + t('ui.31','点击复制日期') + '">';
             html += '<td class="holiday-name">' + htmlEscape(h.name) + '</td>';
             html += '<td>' + htmlEscape(h.start + t('ui.7',' 至 ') + h.end) + '</td>';
-            html += '<td>' + htmlEscape('' + days) + ' 天</td>';
+            html += '<td>' + htmlEscape('' + days) + t('ui.22',' 天') + '</td>';
             html += '<td>' + workTxt + '</td>';
             html += '</tr>';
           }
           html += '</tbody></table>';
-          copyText = y + ' 年法定节假日：\n';
+          copyText = y + t('ui.23',' 年法定节假日：\n');
           for (var j = 0; j < list.length; j++) {
-            copyText += list[j].name + '：' + list[j].start + t('ui.7',' 至 ') + list[j].end + '（' + daysBetween(list[j].start, list[j].end) + ' 天）\n';
+            copyText += list[j].name + t('ui.24','：') + list[j].start + t('ui.7',' 至 ') + list[j].end + t('ui.25','（') + daysBetween(list[j].start, list[j].end) + t('ui.26',' 天）\n');
           }
         }
       } else {
@@ -132,19 +132,19 @@
           }
         }
         if (!items.length) {
-          html = '<div class="holiday-none">' + (list.length ? y + ' 年暂无已公布的调休上班日' : t('ui.6','暂无 ') + y + t('ui.5',' 年数据')) + '</div>';
+          html = '<div class="holiday-none">' + (list.length ? y + t('ui.27',' 年暂无已公布的调休上班日') : t('ui.6','暂无 ') + y + t('ui.5',' 年数据')) + '</div>';
         } else {
-          html = '<table class="holiday-table"><thead><tr><th>调休上班日</th><th>为哪个节日调休</th></tr></thead><tbody>';
+          html = '<table class="holiday-table"><thead><tr><th>' + t('ui.21','调休上班日') + '</th><th>' + t('ui.28','为哪个节日调休') + '</th></tr></thead><tbody>';
           for (var m = 0; m < items.length; m++) {
-            html += '<tr data-copy="' + htmlEscape(items[m].date) + '" title="点击复制日期">';
+            html += '<tr data-copy="' + htmlEscape(items[m].date) + '" title="' + t('ui.31','点击复制日期') + '">';
             html += '<td>' + htmlEscape(items[m].date) + '</td>';
             html += '<td>' + htmlEscape(items[m].name) + '</td>';
             html += '</tr>';
           }
           html += '</tbody></table>';
-          copyText = y + ' 年调休上班日：\n';
+          copyText = y + t('ui.29',' 年调休上班日：\n');
           for (var n = 0; n < items.length; n++) {
-            copyText += items[n].date + '（' + items[n].name + '）\n';
+            copyText += items[n].date + t('ui.25','（') + items[n].name + t('ui.30','）\n');
           }
         }
       }

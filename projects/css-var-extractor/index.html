@@ -90,7 +90,7 @@
         }
         var used = 0;
         var unusedList = [];
-        var html = '<div style="margin-bottom:var(--space-1);font-size:var(--font-size-base);">共定义 <b>' + vars.length + '</b> 个变量</div>';
+        var html = '<div style="margin-bottom:var(--space-1);font-size:var(--font-size-base);">' + t('ui.7','共定义 ') + '<b>' + vars.length + '</b> ' + t('ui.8','个变量') + '</div>';
         for (var i = 0; i < vars.length; i++) {
           var v = vars[i];
           var count = countOccurrences(text, 'var(' + v.name + ')');
@@ -102,11 +102,11 @@
           html += '<div class="var-row">' +
             '<span style="color:var(--color-success);">' + htmlEscape(v.name) + '</span>' +
             ' <span style="color:var(--color-text-secondary);">= ' + htmlEscape(v.value) + '</span>' +
-            ' <span style="color:var(--color-text-disabled);">行 ' + v.line + t('ui.4',' · 引用 ') + count + ' 次</span>' +
+            ' <span style="color:var(--color-text-disabled);">' + t('ui.9','行 ') + v.line + t('ui.4',' · 引用 ') + count + t('ui.10',' 次') + '</span>' +
             '</div>';
         }
         if (unusedList.length) {
-          html += '<div style="margin-top:var(--space-2);font-size:var(--font-size-sm);">未使用变量（' + unusedList.length + ' 个）：</div>';
+          html += '<div style="margin-top:var(--space-2);font-size:var(--font-size-sm);">' + t('ui.11','未使用变量（') + unusedList.length + t('ui.count',' 个') + '）：</div>';
           for (var k = 0; k < unusedList.length; k++) {
             html += '<div class="unused-item">' + htmlEscape(unusedList[k]) + '</div>';
           }

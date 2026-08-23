@@ -119,12 +119,12 @@ function lookup(){
     var bank=findBank(bin),brand=detectBrand(bin);
     var country=brand?brand.country:(bank?null:null);
     var rows=[
-      {k:t('cardBrandLabel','卡品牌'),v:brand?brand.name:'未知'},
+      {k:t('cardBrandLabel','卡品牌'),v:brand?brand.name:t('unknownValue','未知')},
       {k:t('cardTypeLabel','类型'),v:bank?bank.type:'—'},
-      {k:t('bankLabel','银行'),v:bank?bank.name:'未收录（精简表无匹配）'},
+      {k:t('bankLabel','银行'),v:bank?bank.name:t('notInTable','未收录（精简表无匹配）')},
       {k:t('cardLevelLabel','等级'),v:bank?bank.level:'—'},
-      {k:t('prepaidLabel','预付卡'),v:'未知'},
-      {k:t('countryRegionLabel','国家/地区'),v:country?country:'未知'}
+      {k:t('prepaidLabel','预付卡'),v:t('unknownValue','未知')},
+      {k:t('countryRegionLabel','国家/地区'),v:country?country:t('unknownValue','未知')}
     ];
     var html='';
     for(var i=0;i<rows.length;i++){

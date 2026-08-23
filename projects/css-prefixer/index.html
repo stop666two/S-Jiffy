@@ -111,13 +111,13 @@ transform: rotate(45deg);" style="min-height:160px;"></textarea></div>
     for (var i = 0; i < checks.length; i++) {
       var c = checks[i];
       if (c.prefixes) {
-        html += '<div class="result-item"><span class="badge badge-warn">需前缀</span><code>' + htmlEscape(c.property) + '</code><span style="color:var(--color-text-secondary);font-size:12px;">' + c.prefixes.join(' ') + '</span></div>';
+        html += '<div class="result-item"><span class="badge badge-warn">' + t('ui.3','需前缀') + '</span><code>' + htmlEscape(c.property) + '</code><span style="color:var(--color-text-secondary);font-size:12px;">' + c.prefixes.join(' ') + '</span></div>';
         for (var j = 0; j < c.prefixes.length; j++) {
           prefixedOutput += c.prefixes[j] + c.property + ': ' + c.value + ';\n';
         }
         prefixedOutput += c.property + ': ' + c.value + ';\n';
       } else {
-        html += '<div class="result-item"><span class="badge badge-ok">无需前缀</span><code>' + htmlEscape(c.property) + '</code></div>';
+        html += '<div class="result-item"><span class="badge badge-ok">' + t('ui.4','无需前缀') + '</span><code>' + htmlEscape(c.property) + '</code></div>';
         prefixedOutput += c.property + ': ' + c.value + ';\n';
       }
     }

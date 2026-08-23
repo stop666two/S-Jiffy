@@ -196,7 +196,7 @@
               continue;
             }
             html += '<div class="scan-type-row"><span class="scan-type-name">' + htmlEscape(grp.name) + '</span><span class="scan-count">' + grp.items.length + '</span></div>';
-            report += '\n' + grp.name + '：' + grp.items.length + t('ui.4',' 处');
+            report += '\n' + grp.name + t('reportColon','：') + grp.items.length + t('ui.4',' 处');
             var limit = grp.items.length > MAX_DETAIL ? MAX_DETAIL : grp.items.length;
             for (var k = 0; k < limit; k++) {
               html += '<div class="scan-line"><span class="scan-line-no">'+t('linePrefix','第 ') + grp.items[k].line + t('lineSuffix',' 行')+'</span><span class="scan-mask">' + htmlEscape(grp.items[k].display) + '</span></div>';

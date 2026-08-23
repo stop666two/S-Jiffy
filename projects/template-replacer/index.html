@@ -30,24 +30,25 @@
       <textarea id="templateInput" class="input textarea js-focus-input" placeholder="输入模板，支持 ${var} 或 {{var}} 占位符..." style="min-height:120px;"></textarea>
       <table class="var-tbl">
         <thead>
-          <tr><th style="width:38%">变量名</th><th style="width:47%">值</th><th></th></tr>
+          <tr><th style="width:38%" data-i18n="ui.1">变量名</th><th style="width:47%" data-i18n="ui.2">值</th><th></th></tr>
         </thead>
         <tbody id="varBody"></tbody>
       </table>
       <div class="var-actions">
-        <button id="addBtn" class="btn btn-secondary">添加变量</button>
+        <button id="addBtn" class="btn btn-secondary" data-i18n="ui.3">添加变量</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var templateEl = document.getElementById('templateInput');
@@ -116,7 +117,7 @@
         }
         outputEl.innerHTML = html.join('');
         lastPlain = result;
-        setStatus('已替换 ' + (Object.keys(unmatched).length ? '部分' : '全部') + ' 占位符');
+        setStatus(t('ui.5','已替换 ') + (Object.keys(unmatched).length ? '部分' : '全部') + t('ui.4',' 占位符'));
       }
 
       addBtn.addEventListener('click', function () {

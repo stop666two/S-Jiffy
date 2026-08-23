@@ -16,17 +16,18 @@
 <main class="tool-workspace"><h1 data-i18n="h1">日出日落时间</h1><p class="tool-desc" data-i18n="desc">根据纬度、经度和日期计算近似的日出日落时间。</p>
 <div class="card">
 <div class="loc-row">
-<div class="field"><label>纬度</label><input id="latInput" class="input" type="number" value="40.7128" step="0.01" style="width:120px;"></div>
-<div class="field"><label>经度</label><input id="lngInput" class="input" type="number" value="-74.0060" step="0.01" style="width:120px;"></div>
-<div class="field"><label>日期</label><input id="dateInput" class="input" type="date"></div>
-<button id="calcBtn" class="btn btn-primary">计算</button>
+<div class="field"><label data-i18n="ui.1">纬度</label><input id="latInput" class="input" type="number" value="40.7128" step="0.01" style="width:120px;"></div>
+<div class="field"><label data-i18n="ui.2">经度</label><input id="lngInput" class="input" type="number" value="-74.0060" step="0.01" style="width:120px;"></div>
+<div class="field"><label data-i18n="ui.date">日期</label><input id="dateInput" class="input" type="date"></div>
+<button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button>
 </div>
 </div>
-<div class="card"><div class="ss-grid"><div class="ss-card"><div class="lbl">日出</div><div id="sunrise" class="big">—</div></div><div class="ss-card"><div class="lbl">日落</div><div id="sunset" class="big">—</div></div><div class="ss-card"><div class="lbl">昼长</div><div id="dayLength" class="big">—</div></div><div class="ss-card"><div class="lbl">正午</div><div id="solarNoon" class="big">—</div></div><div class="ss-card"><div class="lbl">民用晨光开始</div><div id="civilStart" class="big">—</div></div><div class="ss-card"><div class="lbl">民用暮光结束</div><div id="civilEnd" class="big">—</div></div></div></div>
+<div class="card"><div class="ss-grid"><div class="ss-card"><div class="lbl" data-i18n="ui.3">日出</div><div id="sunrise" class="big">—</div></div><div class="ss-card"><div class="lbl" data-i18n="ui.4">日落</div><div id="sunset" class="big">—</div></div><div class="ss-card"><div class="lbl" data-i18n="ui.5">昼长</div><div id="dayLength" class="big">—</div></div><div class="ss-card"><div class="lbl" data-i18n="ui.6">正午</div><div id="solarNoon" class="big">—</div></div><div class="ss-card"><div class="lbl" data-i18n="ui.7">民用晨光开始</div><div id="civilStart" class="big">—</div></div><div class="ss-card"><div class="lbl" data-i18n="ui.8">民用暮光结束</div><div id="civilEnd" class="big">—</div></div></div></div>
 <div class="day-visual" id="dayVisual" style="height:24px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:var(--space-3);display:flex;"></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var la=document.getElementById('latInput'),ln=document.getElementById('lngInput'),da=document.getElementById('dateInput');
 var o=document.getElementById('outputText');
@@ -78,9 +79,9 @@ document.getElementById('civilEnd').textContent=fmtH(r.civilEnd)+' UTC';
 
 var dv=document.getElementById('dayVisual');var total=24;var dayFrac=r.dayLength/total;var nightFrac=1-dayFrac;
 dv.innerHTML='<div style="background:#1a1a2e;height:100%;width:'+(r.sunrise/total*100)+'%"></div><div style="background:#fdb813;height:100%;width:'+(dayFrac*100)+'%"></div><div style="background:#1a1a2e;height:100%;width:'+((total-r.sunset)/total*100)+'%"></div>';
-setStatus('已计算：纬度='+lat+'，经度='+lng);}
+setStatus(t('ui.10','已计算：纬度=') +lat+ t('ui.9','，经度=')+lng);}
 
 document.getElementById('calcBtn').addEventListener('click',calc);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 calc();})();
 </script></body></html>

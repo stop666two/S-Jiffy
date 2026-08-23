@@ -25,23 +25,23 @@
     <div class="card">
       <table class="chmod-table">
         <thead>
-          <tr><th></th><th>读 (r)</th><th>写 (w)</th><th>执行 (x)</th></tr>
+          <tr><th></th><th data-i18n="ui.1">读 (r)</th><th data-i18n="ui.2">写 (w)</th><th data-i18n="ui.3">执行 (x)</th></tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>所有者</strong></td>
+            <td><strong data-i18n="ui.4">所有者</strong></td>
             <td><label><input type="checkbox" id="ur" checked> 4</label></td>
             <td><label><input type="checkbox" id="uw" checked> 2</label></td>
             <td><label><input type="checkbox" id="ux" checked> 1</label></td>
           </tr>
           <tr>
-            <td><strong>组</strong></td>
+            <td><strong data-i18n="ui.5">组</strong></td>
             <td><label><input type="checkbox" id="gr" checked> 4</label></td>
             <td><label><input type="checkbox" id="gw"> 2</label></td>
             <td><label><input type="checkbox" id="gx"> 1</label></td>
           </tr>
           <tr>
-            <td><strong>公共</strong></td>
+            <td><strong data-i18n="ui.6">公共</strong></td>
             <td><label><input type="checkbox" id="or" checked> 4</label></td>
             <td><label><input type="checkbox" id="ow"> 2</label></td>
             <td><label><input type="checkbox" id="ox"> 1</label></td>
@@ -51,14 +51,15 @@
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var checkboxes = {
@@ -103,7 +104,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       update();

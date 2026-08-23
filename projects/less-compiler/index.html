@@ -7,8 +7,8 @@
 <main class="tool-workspace"><h1 data-i18n="h1">LESS 编译器</h1><p class="tool-desc" data-i18n="desc">基础 LESS 变量替换：识别 @variable: value; 定义，在 CSS 中替换变量引用。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<button id="compileBtn" class="btn btn-primary">编译</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="compileBtn" class="btn btn-primary" data-i18n="ui.1">编译</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="split-pane">
 <textarea id="lessInput" class="js-focus-input" placeholder="输入 LESS 代码（变量定义 + CSS）...">@primary-color: #3498db;
@@ -31,12 +31,13 @@ body {
 <textarea id="css输出" readonly placeholder="编译结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var lessInput=document.getElementById('lessInput');
-var css输出=document.getElementById('css输出');
+var css输出=document.getElementById(t('ui.4','css输出'));
 var compileBtn=document.getElementById('compileBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -63,12 +64,12 @@ var re=new RegExp('@'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
 result=result.replace(re,vars[name]);
 }
 css输出.value=result;
-outputEl.textContent='已替换 '+(Object.keys(vars).length)+' 个变量';
+outputEl.textContent = t('ui.3','已替换 ')+(Object.keys(vars).length)+ t('ui.2',' 个变量');
 setStatus('');
 }
 
 compileBtn.addEventListener('click',compile);
 clearBtn.addEventListener('click',function(){lessInput.value='';css输出.value='';outputEl.textContent='';setStatus('');lessInput.focus();});
-copyBtn.addEventListener('click',function(){if(css输出.value){copyToClipboard(css输出.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(css输出.value){copyToClipboard(css输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 lessInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')compile();});
 })();</script></body></html>

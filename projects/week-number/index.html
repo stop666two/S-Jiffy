@@ -6,7 +6,7 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">周数计算器</h1><p class="tool-desc" data-i18n="desc">计算任意日期的 ISO 8601 周数、年份和星期几。</p>
 <div class="card"><input id="dateInput" type="date" class="input" style="width:200px;">
-<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary">计算</button><button id="todayBtn" class="btn btn-secondary">今天</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button><button id="todayBtn" class="btn btn-secondary" data-i18n="ui.1">今天</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 </div>
 <div class="card" id="resultCard" style="display:none;">
 <p style="font-size:var(--font-size-lg);margin-bottom:var(--space-1);">ISO 周数: <strong id="isoWeek" style="color:var(--color-primary);"></strong></p>
@@ -14,10 +14,11 @@
 <p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">星期: <span id="dayOfWeek"></span></p>
 <p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">季度: <span id="quarter"></span></p>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var dateInput=document.getElementById('dateInput');
 var calcBtn=document.getElementById('calcBtn');
@@ -30,7 +31,7 @@ var isoYear=document.getElementById('isoYear');
 var dayOfWeek=document.getElementById('dayOfWeek');
 var quarter=document.getElementById('quarter');
 var outputEl=document.getElementById('outputText');
-var dayNames=['日','一','二','三','四','五','六'];
+var dayNames=[ t('ui.5','日'), t('ui.one','一'), t('ui.two','二'), t('ui.three','三'), t('ui.four','四'), t('ui.five','五'), t('ui.six','六')];
 function getISOWeek(d){
 var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
 dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));
@@ -46,9 +47,9 @@ var iso=getISOWeek(d);
 resultCard.style.display='block';
 isoWeek.textContent=iso.week;
 isoYear.textContent=iso.year;
-dayOfWeek.textContent='星期'+dayNames[d.getDay()];
+dayOfWeek.textContent = t('ui.4','星期')+dayNames[d.getDay()];
 quarter.textContent='Q'+Math.ceil((d.getMonth()+1)/3);
-outputEl.textContent=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+' 是 ISO '+iso.year+' 年第 '+iso.week+' 周';
+outputEl.textContent=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+ t('ui.3',' 是 ISO ')+iso.year+ t('ui.2',' 年第 ')+iso.week+ t('ui.week',' 周');
 setStatus('');
 }
 function setToday(){
@@ -62,6 +63,6 @@ dateInput.addEventListener('keydown',function(e){if(e.key==='Enter')calc(dateInp
 calcBtn.addEventListener('click',function(){calc(dateInput.value);});
 todayBtn.addEventListener('click',setToday);
 clearBtn.addEventListener('click',function(){dateInput.value='';resultCard.style.display='none';outputEl.textContent='';setStatus('');dateInput.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

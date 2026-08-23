@@ -62,36 +62,37 @@
       <div class="filter-row">
         <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索设备或分辨率，如 iPhone、3840…">
         <select id="ratioSelect" class="input" style="width:auto;">
-          <option value="">全部比例</option>
+          <option value="" data-i18n="ui.1">全部比例</option>
           <option value="16:9">16:9</option>
           <option value="4:3">4:3</option>
           <option value="16:10">16:10</option>
           <option value="21:9">21:9</option>
           <option value="19.5:9">19.5:9</option>
           <option value="3:2">3:2</option>
-          <option value="其他">其他</option>
+          <option value="其他" data-i18n="ui.2">其他</option>
         </select>
-        <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">点击行即可复制「宽×高」</span>
+        <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);" data-i18n="ui.3">点击行即可复制「宽×高」</span>
       </div>
     </div>
     <div style="margin-top:var(--space-2);">
       <table class="res-table">
         <thead>
-          <tr><th style="width:36%;">设备</th><th style="width:30%;">分辨率</th><th>宽高比</th></tr>
+          <tr><th style="width:36%;" data-i18n="ui.4">设备</th><th style="width:30%;" data-i18n="ui.5">分辨率</th><th data-i18n="ui.6">宽高比</th></tr>
         </thead>
         <tbody id="resBody"></tbody>
       </table>
     </div>
     <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var searchEl = document.getElementById('searchInput');
@@ -104,39 +105,39 @@
         { name: 'iPhone 15 Pro Max', w: 1290, h: 2796 },
         { name: 'iPhone 15 Pro / 15', w: 1170, h: 2532 },
         { name: 'iPhone 15 Plus', w: 1290, h: 2796 },
-        { name: 'iPhone SE（第 3 代）', w: 750, h: 1334 },
+        { name: t('ui.25','iPhone SE（第 3 代）'), w: 750, h: 1334 },
         { name: 'iPhone 14', w: 1170, h: 2532 },
         { name: 'iPhone 13 mini', w: 1080, h: 2340 },
         { name: 'iPhone 12 / 12 Pro', w: 1170, h: 2532 },
-        { name: 'iPad Pro 12.9 英寸', w: 2048, h: 2732 },
-        { name: 'iPad Pro 11 英寸', w: 1668, h: 2388 },
-        { name: 'iPad Air（10.9 英寸）', w: 1640, h: 2360 },
-        { name: 'iPad（10 代）', w: 1620, h: 2160 },
-        { name: 'iPad mini（6 代）', w: 1488, h: 2266 },
-        { name: 'MacBook Air 13 英寸', w: 2560, h: 1664 },
-        { name: 'MacBook Air 15 英寸', w: 2880, h: 1864 },
-        { name: 'MacBook Pro 14 英寸', w: 3024, h: 1964 },
-        { name: 'MacBook Pro 16 英寸', w: 3456, h: 2234 },
-        { name: 'MacBook Pro 13 英寸', w: 2560, h: 1600 },
+        { name: t('ui.24','iPad Pro 12.9 英寸'), w: 2048, h: 2732 },
+        { name: t('ui.23','iPad Pro 11 英寸'), w: 1668, h: 2388 },
+        { name: t('ui.22','iPad Air（10.9 英寸）'), w: 1640, h: 2360 },
+        { name: t('ui.21','iPad（10 代）'), w: 1620, h: 2160 },
+        { name: t('ui.20','iPad mini（6 代）'), w: 1488, h: 2266 },
+        { name: t('ui.19','MacBook Air 13 英寸'), w: 2560, h: 1664 },
+        { name: t('ui.18','MacBook Air 15 英寸'), w: 2880, h: 1864 },
+        { name: t('ui.17','MacBook Pro 14 英寸'), w: 3024, h: 1964 },
+        { name: t('ui.16','MacBook Pro 16 英寸'), w: 3456, h: 2234 },
+        { name: t('ui.15','MacBook Pro 13 英寸'), w: 2560, h: 1600 },
         { name: 'MacBook', w: 1440, h: 900 },
         { name: 'MacBook Pro', w: 1512, h: 982 },
-        { name: 'iMac 24 英寸', w: 4480, h: 2520 },
+        { name: t('ui.14','iMac 24 英寸'), w: 4480, h: 2520 },
         { name: 'Studio Display 5K', w: 5120, h: 2880 },
         { name: '8K UHD', w: 7680, h: 4320 },
         { name: '4K UHD（2160p）', w: 3840, h: 2160 },
         { name: '1440p（QHD）', w: 2560, h: 1440 },
         { name: '1080p（Full HD）', w: 1920, h: 1080 },
         { name: '720p（HD）', w: 1280, h: 720 },
-        { name: '旧款笔记本常见', w: 1366, h: 768 },
-        { name: '旧款笔记本常见', w: 1280, h: 800 },
-        { name: '旧款笔记本常见', w: 1024, h: 768 },
-        { name: '旧款笔记本常见', w: 1440, h: 900 },
-        { name: '旧款笔记本常见', w: 1680, h: 1050 },
-        { name: '旧款笔记本常见', w: 1920, h: 1200 },
-        { name: '旧款笔记本常见', w: 1600, h: 900 },
-        { name: '超宽屏 21:9', w: 3440, h: 1440 },
-        { name: '超宽屏 21:9', w: 2560, h: 1080 },
-        { name: '超宽屏 24:10', w: 3840, h: 1600 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1366, h: 768 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1280, h: 800 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1024, h: 768 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1440, h: 900 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1680, h: 1050 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1920, h: 1200 },
+        { name: t('ui.13','旧款笔记本常见'), w: 1600, h: 900 },
+        { name: t('ui.12','超宽屏 21:9'), w: 3440, h: 1440 },
+        { name: t('ui.12','超宽屏 21:9'), w: 2560, h: 1080 },
+        { name: t('ui.11','超宽屏 24:10'), w: 3840, h: 1600 },
         { name: 'Samsung Galaxy S23', w: 1080, h: 2340 },
         { name: 'Samsung Galaxy S23 Ultra', w: 1440, h: 3088 },
         { name: 'Google Pixel 8', w: 1080, h: 2400 },
@@ -144,7 +145,7 @@
         { name: 'Surface Pro 9', w: 2736, h: 1824 },
         { name: 'Nintendo Switch', w: 1280, h: 720 },
         { name: 'Steam Deck', w: 1280, h: 800 },
-        { name: '旧款 5:4 显示器', w: 1280, h: 1024 }
+        { name: t('ui.10','旧款 5:4 显示器'), w: 1280, h: 1024 }
       ];
 
       function gcd(a, b) {
@@ -207,7 +208,7 @@
             + '</tr>';
         }
         resBody.innerHTML = rows || '<tr><td colspan="3" style="color:var(--color-text-disabled);">没有匹配的分辨率记录</td></tr>';
-        outputEl.textContent = '共 ' + data.length + ' 条记录，当前筛选出 ' + count + ' 条。';
+        outputEl.textContent = t('ui.total','共 ') + data.length + t('ui.9',' 条记录，当前筛选出 ') + count + t('ui.8',' 条。');
       }
 
       resBody.addEventListener('click', function (e) {
@@ -218,7 +219,7 @@
         if (!tr || !tr.getAttribute('data-w')) return;
         var text = tr.getAttribute('data-w') + '×' + tr.getAttribute('data-h');
         copyToClipboard(text, copyBtn);
-        setStatus('已复制分辨率 ' + text);
+        setStatus(t('ui.7','已复制分辨率 ') + text);
       });
 
       searchEl.addEventListener('input', filter);
@@ -227,7 +228,7 @@
       copyBtn.addEventListener('click', function () {
         if (outputEl.textContent) {
           copyToClipboard(outputEl.textContent, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

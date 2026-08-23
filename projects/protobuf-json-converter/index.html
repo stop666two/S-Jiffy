@@ -34,19 +34,20 @@
         <label><input type="checkbox" id="int64Opt" checked> int64 转字符串（超出安全范围的整数自动加引号输出）</label>
       </div>
       <textarea id="jsonInput" class="input textarea js-focus-input" rows="10" placeholder='{"userId": 1, "userName": "alice", "createdAt": "2024-01-01", "bigId": 9223372036854775807}'></textarea>
-      <div class="section-title">字段对照表</div>
-      <div id="pairWrap"><p class="empty-tip">输入 JSON 后自动生成对照表。</p></div>
+      <div class="section-title" data-i18n="ui.1">字段对照表</div>
+      <div id="pairWrap"><p class="empty-tip" data-i18n="ui.2">输入 JSON 后自动生成对照表。</p></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var jsonInput = document.getElementById('jsonInput');
@@ -117,13 +118,13 @@
       try {
         parsed = JSON.parse(text);
       } catch (e) {
-        outputText.textContent = 'JSON 解析失败：' + e.message + '。请检查括号、引号与逗号是否完整。';
+        outputText.textContent = t('ui.7','JSON 解析失败：') + e.message + t('ui.6','。请检查括号、引号与逗号是否完整。');
         pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
         setStatus('JSON 解析失败', 'error');
         return;
       }
       if (!parsed || (typeof parsed !== 'object')) {
-        outputText.textContent = '请输入 JSON 对象或数组，不能是裸字符串 / 数字 / null。';
+        outputText.textContent = t('ui.5','请输入 JSON 对象或数组，不能是裸字符串 / 数字 / null。');
         pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
         setStatus('输入格式错误', 'error');
         return;
@@ -144,7 +145,7 @@
         tableHtml += '</tbody></table>';
       }
       pairWrap.innerHTML = tableHtml;
-      setStatus('转换成功，共 ' + pairs.length + ' 个字段发生变更');
+      setStatus(t('ui.4','转换成功，共 ') + pairs.length + t('ui.3',' 个字段发生变更'));
     }
 
     jsonInput.oninput = update;

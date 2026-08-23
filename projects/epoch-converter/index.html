@@ -19,34 +19,35 @@
 <h1 data-i18n="h1">时间戳转换</h1>
 <p class="tool-desc" data-i18n="desc">Unix 时间戳与日期互转，实时时钟、年周、季度、年日。</p>
 <div class="card">
-<h2>⏱ 实时 Epoch 时钟</h2>
+<h2 data-i18n="ui.1">⏱ 实时 Epoch 时钟</h2>
 <div class="epoch-clock"><div id="currentEpoch">0</div><div class="sub" id="currentMs">ms: 0</div></div>
 <div class="tz-grid" id="tzGrid"></div>
 </div>
 <div class="card conv-section">
-<h2>时间戳 → 日期</h2>
+<h2 data-i18n="ui.2">时间戳 → 日期</h2>
 <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
 <input id="tsInput" class="input js-focus-input" placeholder="输入时间戳，例如 1712345678" style="width:260px;">
-<select id="tsUnit" class="input" style="width:auto;"><option value="auto">自动检测</option><option value="seconds">秒</option><option value="milliseconds">毫秒</option></select>
-<button id="tsToDateBtn" class="btn btn-primary">转换</button></div>
+<select id="tsUnit" class="input" style="width:auto;"><option value="auto" data-i18n="ui.3">自动检测</option><option value="seconds" data-i18n="ui.second">秒</option><option value="milliseconds" data-i18n="ui.4">毫秒</option></select>
+<button id="tsToDateBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button></div>
 <div id="ts结果" class="result-line"></div>
 <div id="extraDateInfo" style="display:none;margin-top:var(--space-2);">
-<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name">年周</span><div id="weekOfYear" style="font-weight:600;">—</div></div>
-<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name">季度</span><div id="quarter" style="font-weight:600;">—</div></div>
-<div class="tz-card" style="display:inline-block;"><span class="tz-name">年日</span><div id="dayOfYear" style="font-weight:600;">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name" data-i18n="ui.5">年周</span><div id="weekOfYear" style="font-weight:600;">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name" data-i18n="ui.6">季度</span><div id="quarter" style="font-weight:600;">—</div></div>
+<div class="tz-card" style="display:inline-block;"><span class="tz-name" data-i18n="ui.7">年日</span><div id="dayOfYear" style="font-weight:600;">—</div></div>
 </div>
 </div>
 <div class="card conv-section">
-<h2>日期 → 时间戳</h2>
+<h2 data-i18n="ui.8">日期 → 时间戳</h2>
 <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-<input id="dateInput" type="datetime-local" class="input" style="width:260px;"><button id="dateToTsBtn" class="btn btn-primary">转换</button></div>
+<input id="dateInput" type="datetime-local" class="input" style="width:260px;"><button id="dateToTsBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button></div>
 <div id="date结果" class="result-line"></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
-  var tsInput=document.getElementById('tsInput'),ts结果=document.getElementById('ts结果'),date结果=document.getElementById('date结果');
+  var tsInput=document.getElementById('tsInput'),ts结果=document.getElementById(t('ui.14','ts结果')),date结果=document.getElementById(t('ui.13','date结果'));
   var currentEpoch=document.getElementById('currentEpoch'),currentMs=document.getElementById('currentMs'),tzGrid=document.getElementById('tzGrid');
   var weekEl=document.getElementById('weekOfYear'),quarterEl=document.getElementById('quarter'),doyEl=document.getElementById('dayOfYear'),extraInfo=document.getElementById('extraDateInfo');
   var tzList=[{name:'UTC',zone:'UTC'},{name:'Local',zone:null},{name:'New York (EST)',zone:'America/New_York'},{name:'London (GMT)',zone:'Europe/London'},{name:'Tokyo (JST)',zone:'Asia/Tokyo'},{name:'Shanghai (CST)',zone:'Asia/Shanghai'}];
@@ -66,20 +67,20 @@
   function getDateFromTs(val,unit){var num=parseFloat(val);if(isNaN(num))return null;return unit==='auto'?(num>1e12?new Date(num):new Date(num*1000)):(unit==='milliseconds'?new Date(num):new Date(num*1000));}
 
   document.getElementById('tsToDateBtn').addEventListener('click',function(){
-    var raw=tsInput.value.trim();if(!raw){ts结果.textContent='请输入时间戳';extraInfo.style.display='none';return;}
-    var d=getDateFromTs(raw,tsUnit.value);if(!d||isNaN(d.getTime())){ts结果.textContent='时间戳无效';extraInfo.style.display='none';return;}
+    var raw=tsInput.value.trim();if(!raw){ts结果.textContent = t('ui.12','请输入时间戳');extraInfo.style.display='none';return;}
+    var d=getDateFromTs(raw,tsUnit.value);if(!d||isNaN(d.getTime())){ts结果.textContent = t('ui.11','时间戳无效');extraInfo.style.display='none';return;}
     ts结果.textContent=formatDate(d,'Asia/Shanghai')+' (CST) | '+d.toISOString()+' (UTC)';
     weekEl.textContent=getWeekOfYear(d);quarterEl.textContent='Q'+getQuarter(d);doyEl.textContent=getDayOfYear(d);extraInfo.style.display='block';
-    setStatus('已转换');});
+    setStatus(t('ui.converted','已转换'));});
 
   document.getElementById('dateToTsBtn').addEventListener('click',function(){
-    var val=dateInput.value;if(!val){date结果.textContent='请选择日期/时间';return;}
-    var d=new Date(val);if(isNaN(d.getTime())){date结果.textContent='日期无效';return;}
+    var val=dateInput.value;if(!val){date结果.textContent = t('ui.10','请选择日期/时间');return;}
+    var d=new Date(val);if(isNaN(d.getTime())){date结果.textContent = t('ui.9','日期无效');return;}
     date结果.textContent='Seconds: '+Math.floor(d.getTime()/1000)+' | Milliseconds: '+d.getTime()+' | Week: '+getWeekOfYear(d)+' | Q'+getQuarter(d)+' | DOY: '+getDayOfYear(d);});
 
   tsInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('tsToDateBtn').click();});
   updateClock();setInterval(updateClock,1000);
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
   var o=document.getElementById('outputText');
   setInterval(function(){var now=Date.now();o.textContent=Math.floor(now/1000);},1000);
 })();

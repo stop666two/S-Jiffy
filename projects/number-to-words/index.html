@@ -12,7 +12,7 @@
 <main class="tool-workspace"><h1 data-i18n="h1">数字转英文</h1><p class="tool-desc" data-i18n="desc">将 0-999999 范围内的阿拉伯数字转换为英文单词表示。</p>
 <div class="num-controls card" style="margin-bottom:var(--space-3);">
 <input id="numberInput" class="input js-focus-input" type="number" min="0" max="999999" placeholder="输入数字（0-999999）" style="width:200px;">
-<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 </div>
 <div class="example-chips">
 <button class="example-chip" data-n="0">0</button>
@@ -29,10 +29,11 @@
 <button class="example-chip" data-n="100000">100,000</button>
 <button class="example-chip" data-n="999999">999,999</button>
 </div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var ni=document.getElementById('numberInput'),o=document.getElementById('outputText');
 var ones=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
@@ -54,6 +55,6 @@ document.getElementById('convertBtn').addEventListener('click',function(){
 });
 var chips=document.querySelectorAll('.example-chip');
 for(var i=0;i<chips.length;i++){chips[i].addEventListener('click',function(){ni.value=this.dataset.n;document.getElementById('convertBtn').click();});}
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 })();</script>
 </body></html>

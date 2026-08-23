@@ -111,12 +111,12 @@
     <p class="tool-desc" data-i18n="desc">选择本地视频与起止时间，在浏览器内完成剪切，全程无需上传。</p>
     <div class="card">
       <div class="drop-zone" id="dropZone">
-        <div>点击选择视频，或将视频文件拖拽到此处</div>
+        <div data-i18n="ui.1">点击选择视频，或将视频文件拖拽到此处</div>
         <div class="dz-name" id="fileName"></div>
-        <div class="dz-hint">支持 mp4 / mov / webm / m4v 格式</div>
+        <div class="dz-hint" data-i18n="ui.2">支持 mp4 / mov / webm / m4v 格式</div>
       </div>
       <input type="file" id="fileInput" accept=".mp4,.mov,.webm,.m4v,video/mp4,video/quicktime,video/webm,video/x-m4v" style="display:none">
-      <span class="engine-pill" id="enginePill">引擎：未加载</span>
+      <span class="engine-pill" id="enginePill" data-i18n="ui.3">引擎：未加载</span>
     </div>
     <div class="card" id="setupCard" style="display:none">
       <div class="preview-wrap">
@@ -124,28 +124,28 @@
       </div>
       <div class="time-row">
         <div class="time-field">
-          <label for="startTime">开始时间（秒）</label>
+          <label for="startTime" data-i18n="ui.4">开始时间（秒）</label>
           <input id="startTime" class="input" type="number" min="0" step="0.1" value="0">
         </div>
         <div class="time-field">
-          <label for="endTime">结束时间（秒）</label>
+          <label for="endTime" data-i18n="ui.5">结束时间（秒）</label>
           <input id="endTime" class="input" type="number" min="0" step="0.1" value="0">
         </div>
       </div>
       <div class="time-actions">
-        <button id="setStartBtn" class="btn btn-secondary">设为开始时间</button>
-        <button id="setEndBtn" class="btn btn-secondary">设为结束时间</button>
+        <button id="setStartBtn" class="btn btn-secondary" data-i18n="ui.6">设为开始时间</button>
+        <button id="setEndBtn" class="btn btn-secondary" data-i18n="ui.7">设为结束时间</button>
       </div>
-      <div class="note">提示：播放到目标位置后点击对应按钮即可自动填入当前时间（精确到 0.1 秒）。</div>
+      <div class="note" data-i18n="ui.8">提示：播放到目标位置后点击对应按钮即可自动填入当前时间（精确到 0.1 秒）。</div>
     </div>
     <div class="card" id="actionCard" style="display:none">
-      <button id="cutBtn" class="btn btn-primary" style="width:100%">开始剪切</button>
+      <button id="cutBtn" class="btn btn-primary" style="width:100%" data-i18n="ui.9">开始剪切</button>
       <div class="progress-track" id="progressTrack" style="display:none"><div class="progress-bar" id="progressBar"></div></div>
       <div class="progress-text" id="progressText"></div>
       <div class="result-wrap" id="resultWrap" style="display:none">
         <video id="resultVideo" controls></video>
         <div style="margin-top:12px">
-          <button id="downloadBtn" class="btn btn-primary">下载剪切结果</button>
+          <button id="downloadBtn" class="btn btn-primary" data-i18n="ui.10">下载剪切结果</button>
         </div>
       </div>
       <div class="note">视频仅在本机浏览器内处理，不上传任何数据；剪切采用无损复制，速度快且不损失画质，起止点会就近对齐到关键帧。</div>
@@ -153,9 +153,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var FILE_LIMIT = 800 * 1024 * 1024;
@@ -192,8 +193,8 @@
       }
 
       function loadEngine() {
-        setEnginePill('引擎：正在加载…');
-        setStatus('正在加载视频处理引擎（首次加载约需数十秒）…');
+        setEnginePill(t('ui.30','引擎：正在加载…'));
+        setStatus(t('ui.29','正在加载视频处理引擎（首次加载约需数十秒）…'));
         var script = document.createElement('script');
         script.src = UMD_URL;
         script.onload = function () {
@@ -210,7 +211,7 @@
             if (p && typeof p.progress === 'number') {
               var percent = Math.max(0, Math.min(100, Math.round(p.progress * 100)));
               progressBar.style.width = percent + '%';
-              progressText.textContent = '处理中：' + percent + '%';
+              progressText.textContent = t('ui.28','处理中：') + percent + '%';
             }
           });
           inst.load({
@@ -220,10 +221,10 @@
             engineReady = true;
             ffmpegInst = inst;
             setEnginePill('引擎：就绪', 'ok');
-            setStatus('视频处理引擎就绪');
+            setStatus(t('ui.27','视频处理引擎就绪'));
           }).catch(function (e) {
             setEnginePill('引擎：加载失败', 'bad');
-            setStatus('引擎核心加载失败：' + (e && e.message ? e.message : '网络异常，请检查网络后刷新'), 'error');
+            setStatus(t('ui.26','引擎核心加载失败：') + (e && e.message ? e.message : '网络异常，请检查网络后刷新'), 'error');
           });
         };
         script.onerror = function () {
@@ -244,7 +245,7 @@
         var name = file.name || '';
         var ext = (name.split('.').pop() || '').toLowerCase();
         if (['mp4', 'mov', 'webm', 'm4v'].indexOf(ext) === -1) {
-          setStatus('不支持的文件格式：' + htmlEscape(ext || '未知'), 'error');
+          setStatus(t('ui.25','不支持的文件格式：') + htmlEscape(ext || '未知'), 'error');
           return false;
         }
         if (file.size > FILE_LIMIT) {
@@ -271,7 +272,7 @@
             endTime.value = Math.max(0, Math.round(d * 10) / 10);
           }
         };
-        setStatus('视频已载入，可拖动播放器定位剪切点');
+        setStatus(t('ui.24','视频已载入，可拖动播放器定位剪切点'));
       }
 
       dropZone.addEventListener('click', function () {
@@ -301,13 +302,13 @@
         if (!currentFile) return;
         var t = player.currentTime;
         if (isFinite(t)) startTime.value = Math.round(t * 10) / 10;
-        setStatus('已将当前播放位置设为开始时间');
+        setStatus(t('ui.23','已将当前播放位置设为开始时间'));
       });
       setEndBtn.addEventListener('click', function () {
         if (!currentFile) return;
         var t = player.currentTime;
         if (isFinite(t)) endTime.value = Math.round(t * 10) / 10;
-        setStatus('已将当前播放位置设为结束时间');
+        setStatus(t('ui.22','已将当前播放位置设为结束时间'));
       });
 
       function readInput(el) {
@@ -319,7 +320,7 @@
         if (cutting) return;
         if (!currentFile) { setStatus('请先选择视频文件', 'error'); return; }
         if (!engineReady) {
-          setStatus(enginePill.textContent.indexOf('失败') !== -1 ? '处理引擎未就绪，请刷新页面重试' : '处理引擎仍在加载，请稍候再试', 'error');
+          setStatus(enginePill.textContent.indexOf(t('ui.21','失败')) !== -1 ? '处理引擎未就绪，请刷新页面重试' : '处理引擎仍在加载，请稍候再试', 'error');
           return;
         }
         var start = readInput(startTime);
@@ -329,7 +330,7 @@
         if (start >= end) { setStatus('开始时间必须小于结束时间', 'error'); return; }
         var dur = player.duration;
         if (isFinite(dur) && end > dur + 0.05) {
-          setStatus('结束时间超出视频总时长（' + Math.round(dur * 10) / 10 + ' 秒）', 'error');
+          setStatus(t('ui.20','结束时间超出视频总时长（') + Math.round(dur * 10) / 10 + t('ui.19',' 秒）'), 'error');
           return;
         }
         var ext = (currentFile.name.split('.').pop() || 'mp4').toLowerCase();
@@ -340,26 +341,26 @@
         resultWrap.style.display = 'none';
         progressTrack.style.display = 'block';
         progressBar.style.width = '0%';
-        progressText.textContent = '准备中…';
+        progressText.textContent = t('ui.18','准备中…');
         lastLog = '';
         var clipSec = Math.round((end - start) * 10) / 10;
         currentFile.arrayBuffer().then(function (buf) {
           return ffmpegInst ? buf : null;
         }).then(function (buf) {
-          if (!buf) throw new Error('引擎已失效');
+          if (!buf) throw new Error(t('ui.17','引擎已失效'));
           return ffmpegInst.writeFile(inName, new Uint8Array(buf));
         }).then(function () {
           var args = ['-ss', String(start), '-i', inName, '-t', String(clipSec), '-c', 'copy', '-avoid_negative_ts', 'make_zero', '-movflags', '+faststart', outName];
           if (ext === 'webm') return ffmpegInst.exec(args);
           return ffmpegInst.exec(args).catch(function () {
-            progressText.textContent = '无损复制不可用，正在重新编码…';
+            progressText.textContent = t('ui.16','无损复制不可用，正在重新编码…');
             var args2 = ['-i', inName, '-ss', String(start), '-t', String(clipSec), '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26', '-c:a', 'aac', '-movflags', '+faststart', outName];
             return ffmpegInst.exec(args2);
           });
         }).then(function () {
           return ffmpegInst.readFile(outName);
         }).then(function (data) {
-          if (!data || data.length === 0) throw new Error('处理结果为空');
+          if (!data || data.length === 0) throw new Error(t('ui.15','处理结果为空'));
           var blob = new Blob([data], { type: 'video/mp4' });
           if (resultUrl) URL.revokeObjectURL(resultUrl);
           resultUrl = URL.createObjectURL(blob);
@@ -368,12 +369,12 @@
           downloadBtn.setAttribute('download', outName);
           resultWrap.style.display = 'block';
           progressBar.style.width = '100%';
-          progressText.textContent = '剪切完成';
-          setStatus('剪切完成，可预览或下载结果');
+          progressText.textContent = t('ui.14','剪切完成');
+          setStatus(t('ui.13','剪切完成，可预览或下载结果'));
         }).catch(function (e) {
-          progressText.textContent = '处理失败';
+          progressText.textContent = t('ui.12','处理失败');
           var msg = e && e.message ? e.message : '未知错误';
-          setStatus('剪切失败：' + msg + (lastLog ? '（' + lastLog.slice(-120) + '）' : ''), 'error');
+          setStatus(t('ui.11','剪切失败：') + msg + (lastLog ? '（' + lastLog.slice(-120) + '）' : ''), 'error');
         }).then(function () {
           cutting = false;
           cutBtn.disabled = false;

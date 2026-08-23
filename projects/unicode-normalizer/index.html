@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Unicode 归一化</h1><p class="tool-desc" data-i18n="desc">查看文本的 NFD / NFC / NFKD / NFKC 归一化形式和码点序列</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（如 é, ﬃ, ①, ガ）..." style="min-height:80px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="normalizeBtn" class="btn btn-primary">归一化</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="normalizeBtn" class="btn btn-primary" data-i18n="ui.1">归一化</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="normResults"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var inputText=document.getElementById('inputText'),normalizeBtn=document.getElementById('normalizeBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),normResults=document.getElementById('normResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 function codePoints(str){
@@ -52,9 +53,9 @@ normalizeBtn.addEventListener('click',function(){
   }
   normResults.innerHTML=html;resultCard.style.display='block';
   outputText.textContent='NFD: '+forms[0].val+' | NFC: '+forms[1].val+' | NFKD: '+forms[2].val+' | NFKC: '+forms[3].val;
-  setStatus('归一化完成');
+  setStatus(t('ui.2','归一化完成'));
 });
 clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

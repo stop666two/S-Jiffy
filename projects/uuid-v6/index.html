@@ -21,18 +21,19 @@
     <p class="tool-desc" data-i18n="desc">生成 UUID v6（重新排序的时间基 UUID），显示十六进制拆分。</p>
     <div class="card">
       <div class="u6-row">
-        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="1" min="1" max="100"></div>
+        <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="1" min="1" max="100"></div>
       </div>
       <div class="u6-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="upperChk" type="checkbox"> 大写</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
       <div class="hex-breakdown" id="breakdown"></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var countEl = document.getElementById('countVal');
     var upperChk = document.getElementById('upperChk');
@@ -109,11 +110,11 @@
 
       breakdown.innerHTML = breakHtml;
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + count + ' 个 UUID v6');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.1',' 个 UUID v6'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

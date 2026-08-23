@@ -30,21 +30,22 @@
     <div class="card">
       <div class="sn-row">
         <div class="sn-field">
-          <label for="numInput">输入数字（普通十进制或科学计数法）</label>
+          <label for="numInput" data-i18n="ui.1">输入数字（普通十进制或科学计数法）</label>
           <input type="text" id="numInput" class="input js-focus-input" placeholder="如 1.5e-7 或 0.00000015">
         </div>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var numEl = document.getElementById('numInput');
@@ -207,7 +208,7 @@
         html += '<span class="res-label">单位前缀对照（当前量级已高亮）</span>';
         html += prefixTable(p);
         outputText.innerHTML = html;
-        setStatus('转换完成');
+        setStatus(t('ui.convertDone','转换完成'));
       }
 
       numEl.addEventListener('input', run);

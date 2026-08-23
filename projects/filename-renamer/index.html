@@ -29,11 +29,11 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文件名列表，每行一个..." style="min-height:130px;"></textarea>
       <div class="ren-controls">
         <select id="opSelect" class="input">
-          <option value="replace">替换文本</option>
-          <option value="prefix">加前缀</option>
-          <option value="suffix">加后缀</option>
-          <option value="ext">扩展名转换</option>
-          <option value="seq">序号重命名</option>
+          <option value="replace" data-i18n="ui.1">替换文本</option>
+          <option value="prefix" data-i18n="ui.2">加前缀</option>
+          <option value="suffix" data-i18n="ui.3">加后缀</option>
+          <option value="ext" data-i18n="ui.4">扩展名转换</option>
+          <option value="seq" data-i18n="ui.5">序号重命名</option>
         </select>
         <input id="param1" type="text" class="input" placeholder="查找文本">
         <input id="param2" type="text" class="input" placeholder="替换为" style="display:none;">
@@ -42,14 +42,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -68,25 +69,25 @@
         p3.style.display = 'none';
         if (op === 'replace') {
           p1.style.display = '';
-          p1.placeholder = '查找文本';
+          p1.placeholder = t('ui.16','查找文本');
           p2.style.display = '';
-          p2.placeholder = '替换为';
+          p2.placeholder = t('ui.15','替换为');
         } else if (op === 'prefix') {
           p1.style.display = '';
-          p1.placeholder = '前缀';
+          p1.placeholder = t('ui.14','前缀');
         } else if (op === 'suffix') {
           p1.style.display = '';
-          p1.placeholder = '后缀';
+          p1.placeholder = t('ui.13','后缀');
         } else if (op === 'ext') {
           p1.style.display = '';
-          p1.placeholder = '新扩展名（如 txt）';
+          p1.placeholder = t('ui.12','新扩展名（如 txt）');
         } else if (op === 'seq') {
           p1.style.display = '';
-          p1.placeholder = '基础名（如 file）';
+          p1.placeholder = t('ui.11','基础名（如 file）');
           p2.style.display = '';
-          p2.placeholder = '起始序号（默认为 1）';
+          p2.placeholder = t('ui.10','起始序号（默认为 1）');
           p3.style.display = '';
-          p3.placeholder = '数字位数（如 3）';
+          p3.placeholder = t('ui.9','数字位数（如 3）');
         }
       }
 
@@ -195,10 +196,10 @@
           html.push('<tr><td>' + htmlEscape(row.oldName) + '</td><td class="arrow">→</td><td>' + htmlEscape(row.newName) + flag + '</td></tr>');
         }
         html.push('</tbody></table></div>');
-        html.push('<div class="ren-note">共处理 ' + rows.length + ' 个文件' + (skipped ? '，跳过空行 ' + skipped + ' 个' : '') + (conflicts ? '，发现 <span class="ren-conflict">' + conflicts + ' 处重名冲突</span>' : '，无重名冲突') + '</div>');
+        html.push('<div class="ren-note">共处理 ' + rows.length + t('ui.8',' 个文件') + (skipped ? t('ui.7','，跳过空行 ') + skipped + ' 个' : '') + (conflicts ? '，发现 <span class="ren-conflict">' + conflicts + ' 处重名冲突</span>' : '，无重名冲突') + '</div>');
         outputEl.innerHTML = html.join('');
         lastPlain = newNames.join('\n');
-        setStatus('已生成 ' + rows.length + ' 个新文件名');
+        setStatus(t('ui.generated','已生成 ') + rows.length + t('ui.6',' 个新文件名'));
       }
 
       opEl.addEventListener('change', function () {

@@ -35,90 +35,91 @@
       <div class="control-row">
         <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索类型名或说明，如 int / 时间 / json">
         <select id="catSelect" class="input cat-select">
-          <option value="">全部分类</option>
+          <option value="" data-i18n="ui.1">全部分类</option>
         </select>
       </div>
-      <p class="hint">点击类型名复制，方便直接粘贴到 SQL 中。</p>
+      <p class="hint" data-i18n="ui.2">点击类型名复制，方便直接粘贴到 SQL 中。</p>
       <p class="result-count" id="resultCount"></p>
       <div class="type-list" id="typeList"></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var DATA = [
-      { cat: '数值', name: 'smallint', size: '2 字节', range: '-32768 ~ 32767', desc: '小范围整数，别名 int2。' },
-      { cat: '数值', name: 'integer', size: '4 字节', range: '-2147483648 ~ 2147483647', desc: '常用整数类型，别名 int、int4。' },
-      { cat: '数值', name: 'bigint', size: '8 字节', range: '-9223372036854775808 ~ 9223372036854775807', desc: '大范围整数，别名 int8。' },
-      { cat: '数值', name: 'decimal', size: '可变', range: '最多 131072 位精度（小数前）', desc: '任意精度数字，别名 numeric，适合金额与精确计算。' },
+      { cat: '数值', name: 'smallint', size: '2 字节', range: '-32768 ~ 32767', desc: t('ui.52','小范围整数，别名 int2。') },
+      { cat: '数值', name: 'integer', size: '4 字节', range: '-2147483648 ~ 2147483647', desc: t('ui.51','常用整数类型，别名 int、int4。') },
+      { cat: '数值', name: 'bigint', size: '8 字节', range: '-9223372036854775808 ~ 9223372036854775807', desc: t('ui.50','大范围整数，别名 int8。') },
+      { cat: '数值', name: 'decimal', size: '可变', range: '最多 131072 位精度（小数前）', desc: t('ui.49','任意精度数字，别名 numeric，适合金额与精确计算。') },
       { cat: '数值', name: 'numeric(p,s)', size: '可变', range: 'p 位精度，s 位小数', desc: '指定精度与标度的定点数，如 numeric(10,2)。' },
-      { cat: '数值', name: 'real', size: '4 字节', range: '约 6 位十进制精度', desc: '单精度浮点数，别名 float4。' },
-      { cat: '数值', name: 'double precision', size: '8 字节', range: '约 15 位十进制精度', desc: '双精度浮点数，别名 float8。' },
-      { cat: '数值', name: 'smallserial', size: '2 字节', range: '1 ~ 32767', desc: '自增小整数，等价 smallint + 序列。' },
-      { cat: '数值', name: 'serial', size: '4 字节', range: '1 ~ 2147483647', desc: '自增整数，等价 integer + 序列。' },
-      { cat: '数值', name: 'bigserial', size: '8 字节', range: '1 ~ 9223372036854775807', desc: '自增大整数，等价 bigint + 序列。' },
-      { cat: '数值', name: 'money', size: '8 字节', range: '-92233720368547758.08 ~ 92233720368547758.07', desc: '带本地化货币符号的金额类型，精度为 2 位小数。' },
+      { cat: '数值', name: 'real', size: '4 字节', range: '约 6 位十进制精度', desc: t('ui.48','单精度浮点数，别名 float4。') },
+      { cat: '数值', name: 'double precision', size: '8 字节', range: '约 15 位十进制精度', desc: t('ui.47','双精度浮点数，别名 float8。') },
+      { cat: '数值', name: 'smallserial', size: '2 字节', range: '1 ~ 32767', desc: t('ui.46','自增小整数，等价 smallint + 序列。') },
+      { cat: '数值', name: 'serial', size: '4 字节', range: '1 ~ 2147483647', desc: t('ui.45','自增整数，等价 integer + 序列。') },
+      { cat: '数值', name: 'bigserial', size: '8 字节', range: '1 ~ 9223372036854775807', desc: t('ui.44','自增大整数，等价 bigint + 序列。') },
+      { cat: '数值', name: 'money', size: '8 字节', range: '-92233720368547758.08 ~ 92233720368547758.07', desc: t('ui.43','带本地化货币符号的金额类型，精度为 2 位小数。') },
 
       { cat: '字符', name: 'character(n)', size: '定长', range: 'n ≤ 10485760', desc: '定长字符串，不足 n 位以空格补齐，别名 char(n)。' },
       { cat: '字符', name: 'character varying(n)', size: '变长', range: 'n ≤ 10485760', desc: '限长变长字符串，超长会报错，别名 varchar(n)。' },
-      { cat: '字符', name: 'text', size: '变长', range: '无长度上限', desc: '不限长度的变长字符串，PostgreSQL 推荐用于长文本。' },
-      { cat: '字符', name: 'name', size: '64 字节', range: '内部标识符', desc: '用于系统目录的内部名称类型。' },
+      { cat: '字符', name: 'text', size: '变长', range: '无长度上限', desc: t('ui.42','不限长度的变长字符串，PostgreSQL 推荐用于长文本。') },
+      { cat: '字符', name: 'name', size: '64 字节', range: '内部标识符', desc: t('ui.41','用于系统目录的内部名称类型。') },
 
       { cat: '二进制', name: 'bytea', size: '变长', range: '1-4 字节额外开销', desc: '二进制大对象（BLOB），支持 \\x 十六进制输入。' },
-      { cat: '二进制', name: 'bit(n)', size: '定长', range: 'n 位', desc: '定长位串。' },
+      { cat: '二进制', name: 'bit(n)', size: '定长', range: 'n 位', desc: t('ui.40','定长位串。') },
       { cat: '二进制', name: 'bit varying(n)', size: '变长', range: '最长 n 位', desc: '变长位串，别名 varbit(n)。' },
 
-      { cat: '日期时间', name: 'timestamp(p)', size: '8 字节', range: '4713 BC ~ 294276 AD', desc: '日期 + 时间，无时区，p 为小数秒精度（0-6）。' },
-      { cat: '日期时间', name: 'timestamptz(p)', size: '8 字节', range: '4713 BC ~ 294276 AD', desc: '日期 + 时间，带时区（内部按 UTC 存储）。' },
-      { cat: '日期时间', name: 'date', size: '4 字节', range: '4713 BC ~ 5874897 AD', desc: '仅日期。' },
-      { cat: '日期时间', name: 'time(p)', size: '8 字节', range: '00:00:00 ~ 24:00:00', desc: '仅时间（一天内）。' },
-      { cat: '日期时间', name: 'timetz(p)', size: '12 字节', range: '带时区的时间', desc: '时间 + 时区偏移，一般不推荐使用。' },
+      { cat: '日期时间', name: 'timestamp(p)', size: '8 字节', range: '4713 BC ~ 294276 AD', desc: t('ui.39','日期 + 时间，无时区，p 为小数秒精度（0-6）。') },
+      { cat: '日期时间', name: 'timestamptz(p)', size: '8 字节', range: '4713 BC ~ 294276 AD', desc: t('ui.38','日期 + 时间，带时区（内部按 UTC 存储）。') },
+      { cat: '日期时间', name: 'date', size: '4 字节', range: '4713 BC ~ 5874897 AD', desc: t('ui.37','仅日期。') },
+      { cat: '日期时间', name: 'time(p)', size: '8 字节', range: '00:00:00 ~ 24:00:00', desc: t('ui.36','仅时间（一天内）。') },
+      { cat: '日期时间', name: 'timetz(p)', size: '12 字节', range: '带时区的时间', desc: t('ui.35','时间 + 时区偏移，一般不推荐使用。') },
       { cat: '日期时间', name: 'interval(p)', size: '16 字节', range: '-178000000 ~ 178000000 年', desc: '时间间隔，如 interval \'1 day\'。' },
 
-      { cat: 'JSON', name: 'json', size: '变长', range: '按输入原样存储', desc: 'JSON 文本，保留空格、键顺序与重复键。' },
-      { cat: 'JSON', name: 'jsonb', size: '变长', range: '规范化二进制存储', desc: 'JSON 二进制格式，支持索引（GIN）与高效查询，推荐默认使用。' },
+      { cat: 'JSON', name: 'json', size: '变长', range: '按输入原样存储', desc: t('ui.34','JSON 文本，保留空格、键顺序与重复键。') },
+      { cat: 'JSON', name: 'jsonb', size: '变长', range: '规范化二进制存储', desc: t('ui.33','JSON 二进制格式，支持索引（GIN）与高效查询，推荐默认使用。') },
 
-      { cat: '几何', name: 'point', size: '16 字节', range: '平面坐标 (x, y)', desc: '二维平面上的点。' },
-      { cat: '几何', name: 'line', size: '32 字节', range: '无限直线', desc: '由两点确定的无限直线。' },
-      { cat: '几何', name: 'lseg', size: '32 字节', range: '有限线段', desc: '两个端点确定的线段。' },
-      { cat: '几何', name: 'box', size: '32 字节', range: '矩形', desc: '由对角点确定的矩形。' },
-      { cat: '几何', name: 'path', size: '可变', range: '开放或闭合路径', desc: '由点序列组成的路径（开放或闭合）。' },
-      { cat: '几何', name: 'polygon', size: '可变', range: '多边形', desc: '闭合路径表示的多边形。' },
-      { cat: '几何', name: 'circle', size: '24 字节', range: '圆', desc: '圆心 + 半径。' },
+      { cat: '几何', name: 'point', size: '16 字节', range: '平面坐标 (x, y)', desc: t('ui.32','二维平面上的点。') },
+      { cat: '几何', name: 'line', size: '32 字节', range: '无限直线', desc: t('ui.31','由两点确定的无限直线。') },
+      { cat: '几何', name: 'lseg', size: '32 字节', range: '有限线段', desc: t('ui.30','两个端点确定的线段。') },
+      { cat: '几何', name: 'box', size: '32 字节', range: '矩形', desc: t('ui.29','由对角点确定的矩形。') },
+      { cat: '几何', name: 'path', size: '可变', range: '开放或闭合路径', desc: t('ui.28','由点序列组成的路径（开放或闭合）。') },
+      { cat: '几何', name: 'polygon', size: '可变', range: '多边形', desc: t('ui.27','闭合路径表示的多边形。') },
+      { cat: '几何', name: 'circle', size: '24 字节', range: '圆', desc: t('ui.26','圆心 + 半径。') },
 
-      { cat: '网络', name: 'inet', size: '7-19 字节', range: 'IPv4 / IPv6 地址', desc: 'IP 地址，支持 CIDR 掩码（如 192.168.0.1/24）。' },
-      { cat: '网络', name: 'cidr', size: '7-19 字节', range: 'IPv4 / IPv6 网络', desc: '网络地址（要求掩码位数合法）。' },
-      { cat: '网络', name: 'macaddr', size: '6 字节', range: '48 位 MAC', desc: '以太网 MAC 地址。' },
-      { cat: '网络', name: 'macaddr8', size: '8 字节', range: '64 位 MAC', desc: 'EUI-64 格式 MAC 地址。' },
+      { cat: '网络', name: 'inet', size: '7-19 字节', range: 'IPv4 / IPv6 地址', desc: t('ui.25','IP 地址，支持 CIDR 掩码（如 192.168.0.1/24）。') },
+      { cat: '网络', name: 'cidr', size: '7-19 字节', range: 'IPv4 / IPv6 网络', desc: t('ui.24','网络地址（要求掩码位数合法）。') },
+      { cat: '网络', name: 'macaddr', size: '6 字节', range: '48 位 MAC', desc: t('ui.23','以太网 MAC 地址。') },
+      { cat: '网络', name: 'macaddr8', size: '8 字节', range: '64 位 MAC', desc: t('ui.22','EUI-64 格式 MAC 地址。') },
 
       { cat: '数组', name: 'int[]', size: '变长', range: '任意维度', desc: '整数数组，如 ARRAY[1,2,3] 或 \'{1,2,3}\'。' },
-      { cat: '数组', name: 'text[]', size: '变长', range: '任意维度', desc: '字符串数组。' },
-      { cat: '数组', name: 'numeric[]', size: '变长', range: '任意维度', desc: '任意精度数字数组。' },
-      { cat: '数组', name: '多维数组', size: '变长', range: '任意维度', desc: '所有类型都可声明数组，如 int[3][3]。' },
+      { cat: '数组', name: 'text[]', size: '变长', range: '任意维度', desc: t('ui.21','字符串数组。') },
+      { cat: '数组', name: 'numeric[]', size: '变长', range: '任意维度', desc: t('ui.20','任意精度数字数组。') },
+      { cat: '数组', name: t('ui.19','多维数组'), size: '变长', range: '任意维度', desc: t('ui.18','所有类型都可声明数组，如 int[3][3]。') },
 
-      { cat: '其他', name: 'boolean', size: '1 字节', range: 'true / false', desc: '布尔值，接受 true/false/1/0/yes/no/on/off 等输入。' },
-      { cat: '其他', name: 'uuid', size: '16 字节', range: '128 位', desc: 'UUID 通用唯一标识，适合分布式主键。' },
-      { cat: '其他', name: 'xml', size: '变长', range: 'XML 文档', desc: 'XML 数据，支持 XPath 查询。' },
+      { cat: '其他', name: 'boolean', size: '1 字节', range: 'true / false', desc: t('ui.17','布尔值，接受 true/false/1/0/yes/no/on/off 等输入。') },
+      { cat: '其他', name: 'uuid', size: '16 字节', range: '128 位', desc: t('ui.16','UUID 通用唯一标识，适合分布式主键。') },
+      { cat: '其他', name: 'xml', size: '变长', range: 'XML 文档', desc: t('ui.15','XML 数据，支持 XPath 查询。') },
       { cat: '其他', name: 'enum', size: '4 字节', range: '预定义枚举值', desc: '枚举类型，先 CREATE TYPE mood AS ENUM (...)。' },
-      { cat: '其他', name: 'tsvector', size: '变长', range: '全文检索向量', desc: '全文检索：预处理的词位列表，配合 GIN 索引。' },
+      { cat: '其他', name: 'tsvector', size: '变长', range: '全文检索向量', desc: t('ui.14','全文检索：预处理的词位列表，配合 GIN 索引。') },
       { cat: '其他', name: 'tsquery', size: '变长', range: '全文检索查询', desc: '全文检索查询表达式，如 \'cat & dog\'。' },
-      { cat: '其他', name: 'int4range', size: '变长', range: '[1,10) 等区间', desc: '整数范围，支持包含/排除边界。' },
-      { cat: '其他', name: 'numrange', size: '变长', range: '数值范围', desc: 'numeric 范围类型。' },
-      { cat: '其他', name: 'tsrange', size: '变长', range: '时间范围（无时区）', desc: 'timestamp 范围类型。' },
-      { cat: '其他', name: 'tstzrange', size: '变长', range: '时间范围（带时区）', desc: 'timestamptz 范围类型。' },
-      { cat: '其他', name: 'daterange', size: '变长', range: '日期范围', desc: 'date 范围类型。' },
-      { cat: '其他', name: 'pg_lsn', size: '8 字节', range: '日志序列号', desc: 'WAL 日志位置，用于复制与恢复。' },
-      { cat: '其他', name: 'txid_snapshot', size: '变长', range: '事务快照', desc: '事务快照可见性信息。' },
-      { cat: '其他', name: 'oid', size: '4 字节', range: '对象标识符', desc: '系统对象的数字标识。' },
-      { cat: '其他', name: 'regclass', size: '4 字节', range: '表 OID', desc: '引用表的 OID 别名类型。' }
+      { cat: '其他', name: 'int4range', size: '变长', range: '[1,10) 等区间', desc: t('ui.13','整数范围，支持包含/排除边界。') },
+      { cat: '其他', name: 'numrange', size: '变长', range: '数值范围', desc: t('ui.12','numeric 范围类型。') },
+      { cat: '其他', name: 'tsrange', size: '变长', range: '时间范围（无时区）', desc: t('ui.11','timestamp 范围类型。') },
+      { cat: '其他', name: 'tstzrange', size: '变长', range: '时间范围（带时区）', desc: t('ui.10','timestamptz 范围类型。') },
+      { cat: '其他', name: 'daterange', size: '变长', range: '日期范围', desc: t('ui.9','date 范围类型。') },
+      { cat: '其他', name: 'pg_lsn', size: '8 字节', range: '日志序列号', desc: t('ui.8','WAL 日志位置，用于复制与恢复。') },
+      { cat: '其他', name: 'txid_snapshot', size: '变长', range: '事务快照', desc: t('ui.7','事务快照可见性信息。') },
+      { cat: '其他', name: 'oid', size: '4 字节', range: '对象标识符', desc: t('ui.6','系统对象的数字标识。') },
+      { cat: '其他', name: 'regclass', size: '4 字节', range: '表 OID', desc: t('ui.5','引用表的 OID 别名类型。') }
     ];
 
     var CATS = [];
@@ -160,7 +161,7 @@
         }
         items.push(d);
       }
-      resultCount.textContent = '共 ' + items.length + ' / ' + DATA.length + ' 种类型';
+      resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 种类型');
       if (items.length === 0) {
         typeList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的类型，换个关键词试试。</p>';
         return;
@@ -183,7 +184,7 @@
             currentType = name;
             outputText.textContent = name;
             copyToClipboard(name, copyBtn);
-            setStatus('已复制类型名');
+            setStatus(t('ui.3','已复制类型名'));
           };
         })(names[k]);
       }

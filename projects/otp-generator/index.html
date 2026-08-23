@@ -26,30 +26,31 @@
     <div class="card">
       <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:var(--space-3); flex-wrap:wrap;">
         <div class="field" style="flex:1;min-width:200px;">
-          <label for="otpSecret" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">Base32 密钥</label>
+          <label for="otpSecret" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">Base32 密钥</label>
           <input id="otpSecret" class="input" type="text" value="JBSWY3DPEHPK3PXP" placeholder="Base32 密钥">
         </div>
-        <button id="otpRefreshBtn" class="btn btn-secondary">刷新</button>
+        <button id="otpRefreshBtn" class="btn btn-secondary" data-i18n="ui.2">刷新</button>
       </div>
       <div class="otp-display">
         <div class="otp-current" id="otpCurrent">------</div>
         <div class="otp-countdown" id="otpCountdown">--s</div>
         <div class="otp-others">
-          <div><div class="lbl">上一组</div><div class="val" id="otpPrev">------</div></div>
-          <div><div class="lbl">下一组</div><div class="val" id="otpNext">------</div></div>
+          <div><div class="lbl" data-i18n="ui.3">上一组</div><div class="val" id="otpPrev">------</div></div>
+          <div><div class="lbl" data-i18n="ui.4">下一组</div><div class="val" id="otpNext">------</div></div>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var otpSecret = document.getElementById('otpSecret');
@@ -153,7 +154,7 @@
           otpNext.textContent = next;
           otpCountdown.textContent = remaining + 's';
 
-          outputEl.textContent = '当前: ' + cur + ' | 剩余: ' + remaining + 's';
+          outputEl.textContent = t('ui.6','当前: ') + cur + t('ui.5',' | 剩余: ') + remaining + 's';
         } catch (e) {
           otpCurrent.textContent = '------';
           setStatus('密钥无效', 'error');
@@ -171,7 +172,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = otpCurrent.textContent;
-        if (text && text !== '------') { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text && text !== '------') { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       startTimer();

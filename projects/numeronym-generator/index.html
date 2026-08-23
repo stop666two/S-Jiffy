@@ -28,8 +28,8 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（每行一个单词）" style="min-height:100px;flex:1;"></textarea>
     </div>
     <div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
-      <button id="generateBtn" class="btn btn-primary">转换</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="example-tags">
       <span class="example-tag" data-text="internationalization">i18n</span>
@@ -41,14 +41,15 @@
     </div>
     <div class="output-box">
       <div id="outputText" style="display:block;padding-right:60px;"></div>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputText');
     var outputEl = document.getElementById('outputText');
@@ -73,7 +74,7 @@
         html += '<div class="result-line"><span class="result-original">' + htmlEscape(line) + '</span><span class="result-arrow">→</span><span class="result-numeronym">' + htmlEscape(numeronym) + '</span></div>';
       }
       outputEl.innerHTML = html;
-      setStatus('转换完成');
+      setStatus(t('ui.convertDone','转换完成'));
     }
     document.getElementById('generateBtn').addEventListener('click', convert);
     document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
@@ -84,7 +85,7 @@
         var numEl = lines[i].querySelector('.result-numeronym');
         if (numEl) texts.push(numEl.textContent);
       }
-      if (texts.length) { copyToClipboard(texts.join('\n'), this); setStatus('已复制'); }
+      if (texts.length) { copyToClipboard(texts.join('\n'), this); setStatus(t('ui.copied','已复制')); }
     });
     var tags = document.querySelectorAll('.example-tag');
     for (var i = 0; i < tags.length; i++) {

@@ -26,7 +26,7 @@
     <div class="card">
       <div class="bf-row">
         <div class="field">
-          <label for="bytesInput">字节数</label>
+          <label for="bytesInput" data-i18n="ui.1">字节数</label>
           <input id="bytesInput" class="input js-focus-input" type="number" value="1048576" min="0">
         </div>
         <div style="display:flex;align-items:flex-end;gap:12px;">
@@ -35,29 +35,30 @@
         </div>
       </div>
       <div class="bf-results">
-        <div class="bf-item"><span class="key">IEC 格式 (1024)</span><span class="val" id="iec结果">-</span></div>
-        <div class="bf-item"><span class="key">SI 格式 (1000)</span><span class="val" id="si结果">-</span></div>
-        <div class="bf-item"><span class="key">二进制 (bits)</span><span class="val" id="bit结果">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.2">IEC 格式 (1024)</span><span class="val" id="iec结果">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.3">SI 格式 (1000)</span><span class="val" id="si结果">-</span></div>
+        <div class="bf-item"><span class="key" data-i18n="ui.4">二进制 (bits)</span><span class="val" id="bit结果">-</span></div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var bytesInput = document.getElementById('bytesInput');
       var formatIecBtn = document.getElementById('formatIecBtn');
       var formatSiBtn = document.getElementById('formatSiBtn');
-      var iec结果 = document.getElementById('iec结果');
-      var si结果 = document.getElementById('si结果');
-      var bit结果 = document.getElementById('bit结果');
+      var iec结果 = document.getElementById(t('ui.8','iec结果'));
+      var si结果 = document.getElementById(t('ui.7','si结果'));
+      var bit结果 = document.getElementById(t('ui.6','bit结果'));
       var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
 
@@ -80,7 +81,7 @@
         si结果.textContent = formatBytes(bytes, true);
         bit结果.textContent = (bytes * 8).toLocaleString() + ' bits';
         outputEl.textContent = bytes + ' B = ' + iec结果.textContent + ' = ' + si结果.textContent;
-        setStatus('格式化完成');
+        setStatus(t('ui.5','格式化完成'));
       }
 
       formatIecBtn.addEventListener('click', formatAll);
@@ -91,7 +92,7 @@
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

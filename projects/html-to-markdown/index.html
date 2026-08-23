@@ -7,20 +7,21 @@
 <main class="tool-workspace"><h1 data-i18n="h1">HTML 转 Markdown</h1><p class="tool-desc" data-i18n="desc">将 HTML 转换为 Markdown 格式文本，支持常用块级和行内元素。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;">
-<button id="convertBtn" class="btn btn-primary">转换为 Markdown</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.1">转换为 Markdown</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="split-pane">
-<textarea id="htmlInput" class="js-focus-input" placeholder="在此粘贴 HTML 源码..."><h1>标题</h1><p><strong>加粗</strong> 和 <em>斜体</em></p><ul><li>列表项 1</li><li>列表项 2</li></ul><a href="https://example.com">链接</a></textarea>
+<textarea id="htmlInput" class="js-focus-input" placeholder="在此粘贴 HTML 源码..."><h1 data-i18n="ui.2">标题</h1><p><strong data-i18n="ui.3">加粗</strong> 和 <em data-i18n="ui.4">斜体</em></p><ul><li data-i18n="ui.5">列表项 1</li><li data-i18n="ui.6">列表项 2</li></ul><a href="https://example.com" data-i18n="ui.7">链接</a></textarea>
 <textarea id="md输出" readonly placeholder="转换后的 Markdown 将显示在此..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var htmlInput=document.getElementById('htmlInput');
-var md输出=document.getElementById('md输出');
+var md输出=document.getElementById(t('ui.9','md输出'));
 var convertBtn=document.getElementById('convertBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -69,12 +70,12 @@ var html=htmlInput.value;
 if(!html){md输出.value='';outputEl.textContent='';setStatus('请输入 HTML','error');return;}
 var md=htmlToMd(html);
 md输出.value=md;
-outputEl.textContent='转换完成，共 '+md.length+' 字符';
+outputEl.textContent = t('ui.8','转换完成，共 ')+md.length+ t('ui.chars',' 字符');
 setStatus('');
 }
 
 convertBtn.addEventListener('click',convert);
 clearBtn.addEventListener('click',function(){htmlInput.value='';md输出.value='';outputEl.textContent='';setStatus('');htmlInput.focus();});
-copyBtn.addEventListener('click',function(){if(md输出.value){copyToClipboard(md输出.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(md输出.value){copyToClipboard(md输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 htmlInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')convert();});
 })();</script></body></html>

@@ -23,21 +23,22 @@
     <p class="tool-desc" data-i18n="desc">同时计算常用对数 (log₁₀)、自然对数 (ln)、以 2 为底的对数和自定义底数。</p>
     <div class="card">
       <div class="lc-row">
-        <div class="field"><label for="inputVal">数值</label><input id="inputVal" class="input" type="number" value="100" step="any" min="0.0001"></div>
-        <div class="field"><label for="baseVal">自定义底数（可选）</label><input id="baseVal" class="input" type="number" placeholder="留空不显示" step="any" min="0.1"></div>
+        <div class="field"><label for="inputVal" data-i18n="ui.number">数值</label><input id="inputVal" class="input" type="number" value="100" step="any" min="0.0001"></div>
+        <div class="field"><label for="baseVal" data-i18n="ui.1">自定义底数（可选）</label><input id="baseVal" class="input" type="number" placeholder="留空不显示" step="any" min="0.1"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
       <div class="log-grid" id="logGrid">
-        <div class="log-item"><div class="label">log₁₀ (常用对数)</div><div class="value" id="log10Val">-</div></div>
-        <div class="log-item"><div class="label">ln (自然对数)</div><div class="value" id="lnVal">-</div></div>
-        <div class="log-item"><div class="label">log₂ (二进制对数)</div><div class="value" id="log2Val">-</div></div>
-        <div class="log-item"><div class="label" id="customLabel">自定义底数</div><div class="value" id="customVal">-</div></div>
+        <div class="log-item"><div class="label" data-i18n="ui.2">log₁₀ (常用对数)</div><div class="value" id="log10Val">-</div></div>
+        <div class="log-item"><div class="label" data-i18n="ui.3">ln (自然对数)</div><div class="value" id="lnVal">-</div></div>
+        <div class="log-item"><div class="label" data-i18n="ui.4">log₂ (二进制对数)</div><div class="value" id="log2Val">-</div></div>
+        <div class="log-item"><div class="label" id="customLabel" data-i18n="ui.5">自定义底数</div><div class="value" id="customVal">-</div></div>
       </div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var baseEl = document.getElementById('baseVal');
@@ -61,7 +62,7 @@
       if (customBase) {
         var base = parseFloat(customBase);
         if (isNaN(base) || base <= 0 || base === 1) {
-          document.getElementById('customVal').textContent = '无效底数';
+          document.getElementById('customVal').textContent = t('ui.6','无效底数');
         } else {
           var customLog = Math.log(val) / Math.log(base);
           document.getElementById('customLabel').textContent = 'log' + base.sub;
@@ -69,7 +70,7 @@
           document.getElementById('customVal').textContent = customLog.toFixed(6);
         }
       } else {
-        document.getElementById('customLabel').innerHTML = '自定义底数';
+        document.getElementById('customLabel').innerHTML = t('ui.5','自定义底数');
         document.getElementById('customVal').textContent = '-';
       }
 
@@ -84,11 +85,11 @@
         }
       }
       outputEl.textContent = output;
-      setStatus('计算完成');
+      setStatus(t('ui.calcDone','计算完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

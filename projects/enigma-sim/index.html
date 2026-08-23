@@ -7,33 +7,34 @@
 <main class="tool-workspace"><h1 data-i18n="h1">Enigma 模拟器</h1><p class="tool-desc" data-i18n="desc">简化版 Enigma 密码机模拟：3 转子、反射器、插线板。</p>
 <div class="card">
 <div class="enigma-grid">
-<label>转子 1（左侧）</label><select id="rotor1" class="input" style="width:80px;">
+<label data-i18n="ui.1">转子 1（左侧）</label><select id="rotor1" class="input" style="width:80px;">
 <option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
 <option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
 <option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
 </select>
-<label>转子 2（中间）</label><select id="rotor2" class="input" style="width:80px;">
+<label data-i18n="ui.2">转子 2（中间）</label><select id="rotor2" class="input" style="width:80px;">
 <option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
 <option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
 <option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
 </select>
-<label>转子 3（右侧）</label><select id="rotor3" class="input" style="width:80px;">
+<label data-i18n="ui.3">转子 3（右侧）</label><select id="rotor3" class="input" style="width:80px;">
 <option value="BDFHJLCPRTXVZNYEIWGAKMUSQO">III</option>
 <option value="EKMFLGDQVZNTOWYHXUSPAIBRCJ">I</option>
 <option value="AJDKSIRUXBLHWTMCQGZNPYFVOE">II</option>
 </select>
-<label>转子位置（3 字母）</label><input id="positions" class="input" value="AAA" style="width:60px;" maxlength="3">
-<label>插线板（如 AB CD）</label><input id="plugboard" class="input" placeholder="AB CD EF" style="width:200px;">
+<label data-i18n="ui.4">转子位置（3 字母）</label><input id="positions" class="input" value="AAA" style="width:60px;" maxlength="3">
+<label data-i18n="ui.5">插线板（如 AB CD）</label><input id="plugboard" class="input" placeholder="AB CD EF" style="width:200px;">
 </div>
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要加密/解密的文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="processBtn" class="btn btn-primary">加密/解密</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="processBtn" class="btn btn-primary" data-i18n="ui.6">加密/解密</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -104,6 +105,6 @@ outputEl.textContent=r;
 setStatus('');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

@@ -22,20 +22,21 @@
     <p class="tool-desc" data-i18n="desc">规范化邮箱地址：转小写、去除 Gmail 点号和 +tag 部分。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <input id="emailInput" class="input js-focus-input" type="text" placeholder="输入邮箱地址，如 User.Name+spam@gmail.com" style="flex:1;min-width:250px;font-size:14px;">
-      <button id="normalizeBtn" class="btn btn-primary">规范化</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="normalizeBtn" class="btn btn-primary" data-i18n="ui.1">规范化</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="email-grid" id="emailGrid"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('emailInput');
     var outputEl = document.getElementById('outputText');
@@ -44,7 +45,7 @@
     function normalize(email) {
       if (!email) return null;
       var parts = email.trim().split('@');
-      if (parts.length !== 2) return { original: email.trim(), normalized: null, error: '格式无效', domain: null, local: null };
+      if (parts.length !== 2) return { original: email.trim(), normalized: null, error: t('ui.8','格式无效'), domain: null, local: null };
       var local = parts[0];
       var domain = parts[1].toLowerCase();
       var isGmail = false;
@@ -75,12 +76,12 @@
       }
       outputEl.style.color = 'var(--color-success)';
       var items = [
-        { label: '原始地址', val: d.original },
-        { label: '规范化后', val: d.normalized },
-        { label: '本地部分', val: d.local },
-        { label: '域名', val: d.domain },
-        { label: 'Gmail 别名', val: d.isGmail ? '是（已去除 . 和 +tag）' : '否' },
-        { label: '变化', val: d.normalized === d.original ? '无变化' : '已规范化' }
+        { label: t('ui.7','原始地址'), val: d.original },
+        { label: t('ui.6','规范化后'), val: d.normalized },
+        { label: t('ui.5','本地部分'), val: d.local },
+        { label: t('ui.4','域名'), val: d.domain },
+        { label: t('ui.3','Gmail 别名'), val: d.isGmail ? '是（已去除 . 和 +tag）' : '否' },
+        { label: t('ui.2','变化'), val: d.normalized === d.original ? '无变化' : '已规范化' }
       ];
       var html = '';
       for (var i = 0; i < items.length; i++) {
@@ -103,7 +104,7 @@
       if (text) {
         var m = text.match(/→ (.+)$/);
         copyToClipboard(m ? m[1] : text, this);
-        setStatus('已复制');
+        setStatus(t('ui.copied','已复制'));
       }
     });
   })();</script>

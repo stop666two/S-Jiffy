@@ -52,18 +52,18 @@
     <p class="tool-desc" data-i18n="desc">按传统六爻规则起卦排盘，自动推演本卦与变卦，供传统文化爱好者参考。</p>
     <div class="card">
       <div class="mode-row" id="modeRow">
-        <button class="btn btn-secondary mode-btn on" data-mode="manual">手工摇卦</button>
-        <button class="btn btn-secondary mode-btn" data-mode="num">报数起卦</button>
-        <button class="btn btn-secondary mode-btn" data-mode="time">时间起卦</button>
-        <button class="btn btn-secondary mode-btn" data-mode="auto">自动起卦</button>
+        <button class="btn btn-secondary mode-btn on" data-mode="manual" data-i18n="ui.1">手工摇卦</button>
+        <button class="btn btn-secondary mode-btn" data-mode="num" data-i18n="ui.2">报数起卦</button>
+        <button class="btn btn-secondary mode-btn" data-mode="time" data-i18n="ui.3">时间起卦</button>
+        <button class="btn btn-secondary mode-btn" data-mode="auto" data-i18n="ui.4">自动起卦</button>
       </div>
       <div class="mode-panel show" id="panelManual">
         <div class="coin-wrap">
-          <button id="coinBtn" class="btn btn-primary coin-btn">掷铜钱</button>
+          <button id="coinBtn" class="btn btn-primary coin-btn" data-i18n="ui.5">掷铜钱</button>
           <div>
-            <div class="throw-hint" id="throwHint">第 1/6 次 · 点击铜钱模拟抛掷三枚硬币</div>
+            <div class="throw-hint" id="throwHint" data-i18n="ui.6">第 1/6 次 · 点击铜钱模拟抛掷三枚硬币</div>
             <div class="throw-list" id="throwList"></div>
-            <button id="resetBtn" class="btn btn-secondary reset-btn">重新起卦</button>
+            <button id="resetBtn" class="btn btn-secondary reset-btn" data-i18n="ui.7">重新起卦</button>
           </div>
         </div>
       </div>
@@ -74,24 +74,24 @@
             <input id="numUpper" class="input" type="number" min="1" max="8" value="1">
           </div>
           <div class="input-group">
-            <label>下卦数（1-8）</label>
+            <label data-i18n="ui.8">下卦数（1-8）</label>
             <input id="numLower" class="input" type="number" min="1" max="8" value="2">
           </div>
           <div class="input-group">
-            <label>动爻（1-6，初爻为 1）</label>
+            <label data-i18n="ui.9">动爻（1-6，初爻为 1）</label>
             <input id="numMove" class="input" type="number" min="1" max="6" value="3">
           </div>
         </div>
         <label class="check-label"><input type="checkbox" id="useShichen"> 以当前时辰修正动爻：动爻 =（上卦数 + 下卦数 + 时辰数）÷ 6 的余数，余 0 取 6</label>
-        <button id="numBtn" class="btn btn-primary">起卦</button>
+        <button id="numBtn" class="btn btn-primary" data-i18n="ui.10">起卦</button>
       </div>
       <div class="mode-panel" id="panelTime">
-        <p class="opt-hint">以当前公历年月日时推算上下卦与动爻，同时显示当前时辰。</p>
-        <button id="timeBtn" class="btn btn-primary">以当前时间起卦</button>
+        <p class="opt-hint" data-i18n="ui.11">以当前公历年月日时推算上下卦与动爻，同时显示当前时辰。</p>
+        <button id="timeBtn" class="btn btn-primary" data-i18n="ui.12">以当前时间起卦</button>
       </div>
       <div class="mode-panel" id="panelAuto">
-        <p class="opt-hint">随机生成上下卦与动爻，一键完成排盘。</p>
-        <button id="autoBtn" class="btn btn-primary">自动起卦</button>
+        <p class="opt-hint" data-i18n="ui.13">随机生成上下卦与动爻，一键完成排盘。</p>
+        <button id="autoBtn" class="btn btn-primary" data-i18n="ui.4">自动起卦</button>
       </div>
     </div>
     <div class="card">
@@ -99,16 +99,17 @@
     </div>
     <div class="card">
       <div class="act-row">
-        <button id="copyBtn" class="btn btn-secondary" style="display:none">复制排盘</button>
-        <span class="opt-hint">本工具为传统文化排盘参考，仅供娱乐。</span>
+        <button id="copyBtn" class="btn btn-secondary" style="display:none" data-i18n="ui.14">复制排盘</button>
+        <span class="opt-hint" data-i18n="ui.15">本工具为传统文化排盘参考，仅供娱乐。</span>
       </div>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var GUA = [
@@ -177,9 +178,9 @@
         { n: '水火既济', l: '101010', g: '亨小，利贞。初吉终乱。' },
         { n: '火水未济', l: '010101', g: '亨。小狐汔济，濡其尾，无攸利。' }
       ];
-      var TRIGRAMS = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤'];
+      var TRIGRAMS = [ t('ui.58','乾'), t('ui.57','兑'), t('ui.56','离'), t('ui.55','震'), t('ui.54','巽'), t('ui.53','坎'), t('ui.52','艮'), t('ui.51','坤')];
       var TRIG_LINES = ['111', '110', '101', '100', '011', '010', '001', '000'];
-      var YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+      var YAO_NAMES = [ t('ui.50','初爻'), t('ui.49','二爻'), t('ui.48','三爻'), t('ui.47','四爻'), t('ui.46','五爻'), t('ui.45','上爻')];
       var YAO_TYPES = { 3: '老阳', 0: '老阴', 2: '少阳', 1: '少阴' };
       var MARK_TXT = { 3: '○', 0: '×' };
 
@@ -198,13 +199,13 @@
 
       function shichenNow() {
         var h = new Date().getHours();
-        var table = [[23, 1, '子'], [1, 3, '丑'], [3, 5, '寅'], [5, 7, '卯'], [7, 9, '辰'], [9, 11, '巳'], [11, 13, '午'], [13, 15, '未'], [15, 17, '申'], [17, 19, '酉'], [19, 21, '戌'], [21, 23, '亥']];
+        var table = [[23, 1, t('ui.33','子')], [1, 3, t('ui.44','丑')], [3, 5, t('ui.43','寅')], [5, 7, t('ui.42','卯')], [7, 9, t('ui.41','辰')], [9, 11, t('ui.40','巳')], [11, 13, t('ui.39','午')], [13, 15, t('ui.38','未')], [15, 17, t('ui.37','申')], [17, 19, t('ui.36','酉')], [19, 21, t('ui.35','戌')], [21, 23, t('ui.34','亥')]];
         for (var i = 0; i < table.length; i++) {
           var lo = table[i][0], hi = table[i][1], name = table[i][2];
           if (h >= lo && h < hi) return { name: name, num: i + 1 };
           if (lo === 23 && h >= 23) return { name: name, num: i + 1 };
         }
-        return { name: '子', num: 1 };
+        return { name: t('ui.33','子'), num: 1 };
       }
 
       function trigBits(n) {
@@ -260,7 +261,7 @@
         var heads = 0;
         for (var i = 0; i < 3; i++) if (coins[i] === 1) heads++;
         var desc = heads === 3 ? '三正' : heads === 0 ? '三反' : heads === 2 ? '二正一反' : '一正二反';
-        return '第 ' + th.idx + ' 次：' + YAO_TYPES[th.v] + '（' + desc + '）';
+        return t('ui.nth','第 ') + th.idx + t('ui.32',' 次：') + YAO_TYPES[th.v] + '（' + desc + '）';
       }
 
       function doManualThrow() {
@@ -279,19 +280,19 @@
         item.textContent = fmtThrow({ idx: idx, coins: coins, v: v });
         list.appendChild(item);
         if (throws.length < 6) {
-          document.getElementById('throwHint').textContent = '第 ' + (idx + 1) + '/6 次 · 点击铜钱模拟抛掷三枚硬币';
+          document.getElementById('throwHint').textContent = t('ui.nth','第 ') + (idx + 1) + t('ui.31','/6 次 · 点击铜钱模拟抛掷三枚硬币');
         } else {
-          document.getElementById('throwHint').textContent = '六次摇毕，正在排盘';
+          document.getElementById('throwHint').textContent = t('ui.30','六次摇毕，正在排盘');
           var lines = [];
           for (var j = 0; j < 6; j++) lines.push(throws[j].v);
-          renderPan(lines, '手工摇卦');
+          renderPan(lines, t('ui.1','手工摇卦'));
         }
       }
 
       function resetManual() {
         throws = [];
         document.getElementById('throwList').innerHTML = '';
-        document.getElementById('throwHint').textContent = '第 1/6 次 · 点击铜钱模拟抛掷三枚硬币';
+        document.getElementById('throwHint').textContent = t('ui.6','第 1/6 次 · 点击铜钱模拟抛掷三枚硬币');
         resultArea.innerHTML = '';
         copyBtn.style.display = 'none';
       }
@@ -320,7 +321,7 @@
           lines.push(bits.charAt(i) === '1' ? 2 : 1);
         }
         lines[move - 1] = lines[move - 1] === 2 ? 3 : 0;
-        renderPan(lines, '报数起卦' + (useSh ? '（时辰修正，' + sh.name + '时=' + sh.num + '）' : ''));
+        renderPan(lines, t('ui.2','报数起卦') + (useSh ? t('ui.29','（时辰修正，') + sh.name + t('ui.27','时=') + sh.num + '）' : ''));
       }
 
       function timePan() {
@@ -339,7 +340,7 @@
           lines.push(bits.charAt(i) === '1' ? 2 : 1);
         }
         lines[move - 1] = lines[move - 1] === 2 ? 3 : 0;
-        renderPan(lines, '时间起卦（' + sh.name + '时=' + sh.num + '）');
+        renderPan(lines, t('ui.28','时间起卦（') + sh.name + t('ui.27','时=') + sh.num + '）');
       }
 
       function autoPan() {
@@ -348,7 +349,7 @@
           var r = randInt(0, 3);
           lines.push(r === 3 ? 3 : r === 0 ? 0 : r === 1 ? 2 : 1);
         }
-        renderPan(lines, '自动起卦');
+        renderPan(lines, t('ui.4','自动起卦'));
       }
 
       function renderPan(lines, method) {
@@ -376,7 +377,7 @@
         resultArea.innerHTML = '';
         var meta = document.createElement('div');
         meta.className = 'pan-meta';
-        meta.textContent = '起卦方式：' + method + '　起卦时间：' + timeStr;
+        meta.textContent = t('ui.26','起卦方式：') + method + t('ui.25','　起卦时间：') + timeStr;
         resultArea.appendChild(meta);
         var grid = document.createElement('div');
         grid.className = 'pan-grid';
@@ -384,12 +385,12 @@
         colBen.className = 'pan-col';
         var tBen = document.createElement('div');
         tBen.className = 'pan-title';
-        tBen.textContent = '本卦 · ' + (ben ? ben.n : '未知卦');
+        tBen.textContent = t('ui.24','本卦 · ') + (ben ? ben.n : '未知卦');
         var subBen = document.createElement('div');
         subBen.className = 'pan-sub';
         var upN = TRIG_LINES.indexOf(bits.charAt(3) + bits.charAt(4) + bits.charAt(5));
         var loN = TRIG_LINES.indexOf(bits.charAt(0) + bits.charAt(1) + bits.charAt(2));
-        subBen.textContent = '上' + TRIGRAMS[upN] + '下' + TRIGRAMS[loN] + ' · 六爻';
+        subBen.textContent = t('ui.23','上') + TRIGRAMS[upN] + t('ui.22','下') + TRIGRAMS[loN] + t('ui.21',' · 六爻');
         colBen.appendChild(tBen);
         colBen.appendChild(subBen);
         colBen.appendChild(buildYaoWrap(lines, true));
@@ -406,9 +407,9 @@
           for (var m = 0; m < moving.length; m++) {
             parts.push(YAO_NAMES[moving[m]] + '（' + YAO_TYPES[lines[moving[m]]] + '）');
           }
-          mv.textContent = '动爻：' + parts.join('、');
+          mv.textContent = t('ui.20','动爻：') + parts.join('、');
         } else {
-          mv.textContent = '六爻安静，无动爻，不变卦';
+          mv.textContent = t('ui.19','六爻安静，无动爻，不变卦');
         }
         colBen.appendChild(mv);
         grid.appendChild(colBen);
@@ -417,10 +418,10 @@
           colBian.className = 'pan-col';
           var tBian = document.createElement('div');
           tBian.className = 'pan-title';
-          tBian.textContent = '变卦 · ' + bian.n;
+          tBian.textContent = t('ui.18','变卦 · ') + bian.n;
           var subBian = document.createElement('div');
           subBian.className = 'pan-sub';
-          subBian.textContent = '由本卦动爻变化而来';
+          subBian.textContent = t('ui.17','由本卦动爻变化而来');
           var bianLines = [];
           for (var b = 0; b < 6; b++) bianLines.push(bianBits.charAt(b) === '1' ? 2 : 1);
           colBian.appendChild(tBian);
@@ -435,7 +436,7 @@
         resultArea.appendChild(grid);
         var disc = document.createElement('div');
         disc.className = 'disclaim';
-        disc.textContent = '本工具为传统文化排盘参考，仅供娱乐。';
+        disc.textContent = t('ui.15','本工具为传统文化排盘参考，仅供娱乐。');
         resultArea.appendChild(disc);
         copyBtn.style.display = '';
         lastCopyText = '【六爻排盘】\n起卦方式：' + method + '\n起卦时间：' + timeStr + '\n本卦：' + (ben ? ben.n : '') + '\n卦辞：' + (ben ? ben.g : '') + '\n' + mv.textContent + (bian ? '\n变卦：' + bian.n + '\n卦辞：' + bian.g : '') + '\n本工具为传统文化排盘参考，仅供娱乐。';
@@ -470,7 +471,7 @@
         copyBtn.addEventListener('click', function () {
           if (lastCopyText) {
             copyToClipboard(lastCopyText, copyBtn);
-            setStatus('已复制排盘结果');
+            setStatus(t('ui.16','已复制排盘结果'));
           }
         });
       }

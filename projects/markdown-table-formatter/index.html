@@ -21,28 +21,29 @@
     <p class="tool-desc" data-i18n="desc">粘贴 Markdown 表格或 CSV 数据，自动对齐列宽、重排分隔行，输出规范的 Markdown 表格。</p>
     <div class="card">
       <div class="form-row">
-        <label for="tableInput" class="field-label">表格内容（支持 Markdown 表格或 CSV，首行为表头）</label>
+        <label for="tableInput" class="field-label" data-i18n="ui.1">表格内容（支持 Markdown 表格或 CSV，首行为表头）</label>
         <textarea id="tableInput" class="input textarea js-focus-input" style="min-height:180px;" placeholder="名称,数量,价格&#10;苹果,3,2.5&#10;香蕉,5,1.8&#10;橙子,2,3.2"></textarea>
       </div>
       <div class="form-row">
-        <label for="alignSel" class="field-label">列对齐方式</label>
+        <label for="alignSel" class="field-label" data-i18n="ui.2">列对齐方式</label>
         <select id="alignSel" class="input" style="height:44px;max-width:240px;">
-          <option value="left">左对齐</option>
-          <option value="center">居中对齐</option>
-          <option value="right">右对齐</option>
+          <option value="left" data-i18n="ui.3">左对齐</option>
+          <option value="center" data-i18n="ui.4">居中对齐</option>
+          <option value="right" data-i18n="ui.5">右对齐</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('tableInput');
@@ -178,7 +179,7 @@
           out.push(buildRow(padded, widths));
         }
         outputEl.textContent = out.join('\n');
-        setStatus('已生成 ' + (data.length + 1) + ' 行 × ' + maxCols + ' 列表格（' + (isMarkdown ? 'Markdown 模式' : 'CSV 模式') + '）');
+        setStatus(t('ui.generated','已生成 ') + (data.length + 1) + t('ui.7',' 行 × ') + maxCols + t('ui.6',' 列表格（') + (isMarkdown ? 'Markdown 模式' : 'CSV 模式') + '）');
       }
 
       function buildRow(cells, widths) {
@@ -200,7 +201,7 @@
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       format();

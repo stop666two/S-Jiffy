@@ -7,8 +7,8 @@
 <main class="tool-workspace"><h1 data-i18n="h1">JS 压缩</h1><p class="tool-desc" data-i18n="desc">压缩 JavaScript 代码：移除注释、多余空白和换行。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<button id="minifyBtn" class="btn btn-primary">压缩</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="minifyBtn" class="btn btn-primary" data-i18n="ui.1">压缩</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
 <textarea id="jsInput" class="js-focus-input" placeholder="粘贴 JS 代码...">// 这是一个函数
@@ -23,12 +23,13 @@ function hello(name) {
 </div>
 <div class="stats" id="stats"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var jsInput=document.getElementById('jsInput');
-var js输出=document.getElementById('js输出');
+var js输出=document.getElementById(t('ui.3','js输出'));
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -74,12 +75,12 @@ var outputSize=result.length;
 var saved=inputSize-outputSize;
 var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
 stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
-outputEl.textContent='压缩完成';
+outputEl.textContent = t('ui.2','压缩完成');
 setStatus('');
 }
 
 clearBtn.addEventListener('click',function(){jsInput.value='';js输出.value='';stats.textContent='';outputEl.textContent='';setStatus('');jsInput.focus();});
 minifyBtn.addEventListener('click',minify);
-copyBtn.addEventListener('click',function(){if(js输出.value){copyToClipboard(js输出.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(js输出.value){copyToClipboard(js输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 jsInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minify();});
 })();</script></body></html>

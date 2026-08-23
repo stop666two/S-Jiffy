@@ -19,21 +19,22 @@
     <p class="tool-desc" data-i18n="desc">计算 a mod b、模逆元和模幂运算。</p>
     <div class="card">
       <div class="mc-row">
-        <div class="field"><label for="aVal">a（底数）</label><input id="aVal" class="input" type="number" value="7"></div>
-        <div class="field"><label for="bVal">b（模数）</label><input id="bVal" class="input" type="number" value="26"></div>
+        <div class="field"><label for="aVal" data-i18n="ui.1">a（底数）</label><input id="aVal" class="input" type="number" value="7"></div>
+        <div class="field"><label for="bVal" data-i18n="ui.2">b（模数）</label><input id="bVal" class="input" type="number" value="26"></div>
       </div>
       <div class="mc-row" id="powRow" style="display:none;">
-        <div class="field"><label for="expVal">指数 (mod pow)</label><input id="expVal" class="input" type="number" value="3" min="0"></div>
+        <div class="field"><label for="expVal" data-i18n="ui.3">指数 (mod pow)</label><input id="expVal" class="input" type="number" value="3" min="0"></div>
       </div>
       <div class="mc-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="showPowChk" type="checkbox"> 模幂运算</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var aEl = document.getElementById('aVal');
     var bEl = document.getElementById('bVal');
@@ -99,11 +100,11 @@
       }
 
       outputEl.textContent = output;
-      setStatus('计算完成');
+      setStatus(t('ui.calcDone','计算完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

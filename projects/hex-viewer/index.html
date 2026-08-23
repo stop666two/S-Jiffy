@@ -26,14 +26,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -96,14 +97,14 @@
           lines.push(offset + '  ' + hexParts.join(' ') + '  ' + ascii.join(''));
           i += 16;
         }
-        plainDump = lines.join('\n') + '\n共 ' + bytes.length + ' 字节';
+        plainDump = lines.join('\n') + '\n共 ' + bytes.length + t('ui.bytes',' 字节');
         var html = [];
         for (var k = 0; k < lines.length; k++) {
           html.push(htmlEscape(lines[k]));
         }
         outputEl.innerHTML = '<div class="hex-panel">' + html.join('\n') + '</div>' +
-          '<div class="sum-line">共 ' + bytes.length + ' 字节（' + text.length + ' 个 UTF-16 字符）</div>';
-        setStatus('已解析 ' + bytes.length + ' 字节');
+          '<div class="sum-line">共 ' + bytes.length + t('ui.2',' 字节（') + text.length + ' 个 UTF-16 字符）</div>';
+        setStatus(t('ui.1','已解析 ') + bytes.length + t('ui.bytes',' 字节'));
       }
 
       inputEl.addEventListener('input', render);

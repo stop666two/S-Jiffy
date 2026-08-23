@@ -27,36 +27,37 @@
     <div id="preview" class="hsl-preview"></div>
     <div class="card hsl-controls">
       <div class="hsl-row">
-        <label>H 色相</label>
+        <label data-i18n="ui.1">H 色相</label>
         <input id="hueSlider" type="range" min="0" max="360" value="0">
         <input id="hueVal" type="number" min="0" max="360" value="0">
       </div>
       <div class="hsl-row">
-        <label>S 饱和度</label>
+        <label data-i18n="ui.2">S 饱和度</label>
         <input id="satSlider" type="range" min="0" max="100" value="100">
         <input id="satVal" type="number" min="0" max="100" value="100">
       </div>
       <div class="hsl-row">
-        <label>L 亮度</label>
+        <label data-i18n="ui.3">L 亮度</label>
         <input id="lightSlider" type="range" min="0" max="100" value="50">
         <input id="lightVal" type="number" min="0" max="100" value="50">
       </div>
       <div class="hsl-row">
-        <label>A 透明度</label>
+        <label data-i18n="ui.4">A 透明度</label>
         <input id="alphaSlider" type="range" min="0" max="100" value="100">
         <input id="alphaVal" type="number" min="0" max="100" value="100">
       </div>
     </div>
     <div class="output-box" style="min-height:auto;background:var(--color-bg);">
       <div id="outputText" class="hsl-values" style="display:block;padding-right:60px;"></div>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var hueSlider = document.getElementById('hueSlider');
@@ -128,7 +129,7 @@
         if (text) {
           var lines = text.split(/\s+/);
           copyToClipboard(lines[1] || text, copyBtn);
-          setStatus('已复制 HEX');
+          setStatus(t('ui.5','已复制 HEX'));
         }
       });
 

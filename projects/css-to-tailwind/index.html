@@ -18,11 +18,12 @@ margin-top: 8px;
 background-color: #3b82f6;
 color: white;
 border-radius: 8px;" style="min-height:200px;"></textarea></div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var inputEl = document.getElementById('inputText');
@@ -201,11 +202,11 @@ border-radius: 8px;" style="min-height:200px;"></textarea></div>
       return;
     }
     outputEl.textContent = classes.join(' ');
-    setStatus('转换完成，生成 ' + classes.length + ' 个类名');
+    setStatus(t('ui.2','转换完成，生成 ') + classes.length + t('ui.1',' 个类名'));
   }
 
   document.getElementById('convertBtn').addEventListener('click', convert);
   document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
 })();
 </script></body></html>

@@ -21,20 +21,21 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入列表..."></textarea>
     </div>
     <div class="lr-actions">
-      <button id="shuffleBtn" class="btn btn-primary">打乱顺序</button>
-      <button id="pickOneBtn" class="btn btn-secondary">随机抽取一项</button>
-      <button id="pickSomeBtn" class="btn btn-secondary">随机抽取多项</button>
+      <button id="shuffleBtn" class="btn btn-primary" data-i18n="ui.1">打乱顺序</button>
+      <button id="pickOneBtn" class="btn btn-secondary" data-i18n="ui.2">随机抽取一项</button>
+      <button id="pickSomeBtn" class="btn btn-secondary" data-i18n="ui.3">随机抽取多项</button>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
@@ -61,7 +62,7 @@
         var items = getItems();
         if (!items) return;
         outputEl.textContent = shuffle(items).join('\n');
-        setStatus('已打乱，共 ' + items.length + ' 项');
+        setStatus(t('ui.6','已打乱，共 ') + items.length + t('ui.items',' 项'));
       });
 
       document.getElementById('pickOneBtn').addEventListener('click', function() {
@@ -69,7 +70,7 @@
         if (!items) return;
         var picked = items[Math.floor(Math.random() * items.length)];
         outputEl.textContent = '→ ' + picked;
-        setStatus('已随机抽取一项');
+        setStatus(t('ui.5','已随机抽取一项'));
       });
 
       document.getElementById('pickSomeBtn').addEventListener('click', function() {
@@ -78,14 +79,14 @@
         var count = Math.min(3, items.length);
         var shuffled = shuffle(items.slice());
         outputEl.textContent = shuffled.slice(0, count).map(function(s) { return '→ ' + s; }).join('\n');
-        setStatus('已随机抽取 ' + count + ' 项');
+        setStatus(t('ui.4','已随机抽取 ') + count + t('ui.items',' 项'));
       });
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
     })();

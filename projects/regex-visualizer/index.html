@@ -30,8 +30,8 @@
         <input id="patternInput" class="input js-focus-input" placeholder="\d{3}-\d{2}-\d{4}" style="width:340px;font-family:var(--font-mono);">
         <span style="font-family:var(--font-mono);font-size:20px;color:var(--color-text-secondary);">/</span>
         <input id="flagsInput" class="input" placeholder="gi" style="width:60px;">
-        <button id="testBtn" class="btn btn-primary">测试</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="testBtn" class="btn btn-primary" data-i18n="ui.test">测试</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
 
@@ -43,11 +43,12 @@
 
     <div class="output-box" style="min-height:100px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var patternInput = document.getElementById('patternInput');
@@ -142,14 +143,14 @@
             if (!re.global) break;
           }
           if (matches.length === 0) {
-            outputText.innerHTML = '无匹配结果';
+            outputText.innerHTML = t('ui.2','无匹配结果');
           } else {
             outputText.innerHTML = '共 <strong>' + matches.length + '</strong> 处匹配:<br><br>' + matches.join('<br>');
           }
           setStatus('');
         } catch (e) {
           outputText.innerHTML = '';
-          setStatus('正则语法错误: ' + e.message, 'error');
+          setStatus(t('ui.1','正则语法错误: ') + e.message, 'error');
         }
       });
 
@@ -164,7 +165,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus(t('ui.copied','已复制')); }
       });
 
       testInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') testBtn.click(); });

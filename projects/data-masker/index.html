@@ -52,20 +52,21 @@
         <label class="mask-opt"><input type="checkbox" id="optSecret" checked> 密钥类长串（≥24 位 → 前6后4）</label>
       </div>
       <div style="margin-top:12px;display:flex;gap:12px;">
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
       <div id="maskStats" class="mask-stats"></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputText = document.getElementById('inputText');
@@ -149,11 +150,11 @@
         var result = maskText(text);
         outputText.textContent = result.text;
         var items = [
-          { label: '手机号', n: result.counts.phone },
-          { label: '邮箱', n: result.counts.email },
-          { label: '身份证', n: result.counts.idcard },
-          { label: '银行卡', n: result.counts.bank },
-          { label: '密钥长串', n: result.counts.secret }
+          { label: t('ui.7','手机号'), n: result.counts.phone },
+          { label: t('ui.6','邮箱'), n: result.counts.email },
+          { label: t('ui.5','身份证'), n: result.counts.idcard },
+          { label: t('ui.4','银行卡'), n: result.counts.bank },
+          { label: t('ui.3','密钥长串'), n: result.counts.secret }
         ];
         var html = '';
         var total = 0;
@@ -164,12 +165,12 @@
           }
         }
         if (total === 0) {
-          maskStats.textContent = '未发现可脱敏内容（或对应类型未勾选）';
+          maskStats.textContent = t('ui.2','未发现可脱敏内容（或对应类型未勾选）');
         } else {
           html = '共替换 <b>' + total + '</b> 处｜' + html;
           maskStats.innerHTML = html.slice(0, -3);
         }
-        setStatus('脱敏完成');
+        setStatus(t('ui.1','脱敏完成'));
       }
 
       inputText.addEventListener('input', function () {
@@ -198,7 +199,7 @@
       copyBtn.addEventListener('click', function () {
         if (outputText.textContent) {
           copyToClipboard(outputText.textContent, copyBtn);
-          setStatus('已复制');
+          setStatus(t('ui.copied','已复制'));
         }
       });
     })();

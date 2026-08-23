@@ -31,21 +31,21 @@
     <div class="card">
       <div class="lr-grid">
         <div class="lr-field">
-          <label for="dataInput">数据点（每行一组 x,y，逗号分隔）</label>
+          <label for="dataInput" data-i18n="ui.1">数据点（每行一组 x,y，逗号分隔）</label>
           <textarea id="dataInput" class="input textarea js-focus-input" placeholder="1,2&#10;2,3.5&#10;3,5&#10;4,7"></textarea>
         </div>
         <div class="lr-field">
-          <label for="predictInput">预测：输入新 x 值</label>
+          <label for="predictInput" data-i18n="ui.2">预测：输入新 x 值</label>
           <input type="text" id="predictInput" class="input" placeholder="如 6">
         </div>
       </div>
       <div style="margin-top:var(--space-2);">
-        <button class="btn btn-primary" id="calcBtn">拟合</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.3">拟合</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="chart-wrap" id="chartWrap" style="display:none;">
       <canvas id="lrChart" width="640" height="320"></canvas>
@@ -53,9 +53,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var dataEl = document.getElementById('dataInput');
@@ -87,17 +88,17 @@
           }
           var parts = line.split(',');
           if (parts.length !== 2) {
-            return { error: '第 ' + (i + 1) + ' 行必须为 x,y 两个值' };
+            return { error: t('ui.nth','第 ') + (i + 1) + t('ui.8',' 行必须为 x,y 两个值') };
           }
           var x = parts[0].trim();
           var y = parts[1].trim();
           if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(x) || !/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(y)) {
-            return { error: '第 ' + (i + 1) + ' 行包含非数字' };
+            return { error: t('ui.nth','第 ') + (i + 1) + t('ui.7',' 行包含非数字') };
           }
           points.push({ x: parseFloat(x), y: parseFloat(y) });
         }
         if (points.length < 2) {
-          return { error: '至少需要 2 个数据点' };
+          return { error: t('ui.6','至少需要 2 个数据点') };
         }
         return { data: points };
       }
@@ -222,13 +223,13 @@
             }
             var xv = parseFloat(pxv);
             var yv = b * xv + a;
-            html += '<div class="eq-line">预测：x = ' + htmlEscape(fmt(xv)) + ' 时，y = ' + htmlEscape(fmt(yv)) + '</div>';
+            html += '<div class="eq-line">预测：x = ' + htmlEscape(fmt(xv)) + t('ui.5',' 时，y = ') + htmlEscape(fmt(yv)) + '</div>';
           }
         }
         outputText.innerHTML = html;
         chartWrap.style.display = 'block';
         drawChart(points, b, a);
-        setStatus('拟合完成');
+        setStatus(t('ui.4','拟合完成'));
       }
 
       calcBtn.addEventListener('click', run);

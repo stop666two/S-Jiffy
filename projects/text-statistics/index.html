@@ -24,27 +24,28 @@
     <p class="tool-desc" data-i18n="desc">实时统计：音节数、Flesch-Kincaid 年级水平、阅读难度、词频。</p>
     <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴或输入文本..." style="min-height:200px;"></textarea></div>
     <div class="stat-grid" id="statGrid">
-      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label">字符（含空格）</div></div>
-      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label">字符（不含空格）</div></div>
-      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label">中文字符</div></div>
-      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label">单词数</div></div>
-      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label">句子数</div></div>
-      <div class="stat-item"><div class="num" id="syllableCount">0</div><div class="label">音节数</div></div>
-      <div class="stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch 阅读指数</div></div>
-      <div class="stat-item"><div class="num" id="gradeLevel">0</div><div class="label">年级水平</div></div>
-      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label">行数</div></div>
-      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label">段落数</div></div>
-      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label">平均词长</div></div>
-      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label">阅读时间（分钟）</div></div>
+      <div class="stat-item"><div class="num" id="charCount">0</div><div class="label" data-i18n="ui.1">字符（含空格）</div></div>
+      <div class="stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label" data-i18n="ui.2">字符（不含空格）</div></div>
+      <div class="stat-item"><div class="num" id="charCnCount">0</div><div class="label" data-i18n="ui.3">中文字符</div></div>
+      <div class="stat-item"><div class="num" id="wordCount">0</div><div class="label" data-i18n="ui.4">单词数</div></div>
+      <div class="stat-item"><div class="num" id="sentenceCount">0</div><div class="label" data-i18n="ui.5">句子数</div></div>
+      <div class="stat-item"><div class="num" id="syllableCount">0</div><div class="label" data-i18n="ui.6">音节数</div></div>
+      <div class="stat-item"><div class="num" id="fleschScore">0</div><div class="label" data-i18n="ui.7">Flesch 阅读指数</div></div>
+      <div class="stat-item"><div class="num" id="gradeLevel">0</div><div class="label" data-i18n="ui.8">年级水平</div></div>
+      <div class="stat-item"><div class="num" id="lineCount">0</div><div class="label" data-i18n="ui.9">行数</div></div>
+      <div class="stat-item"><div class="num" id="paraCount">0</div><div class="label" data-i18n="ui.10">段落数</div></div>
+      <div class="stat-item"><div class="num" id="avgWordLen">0</div><div class="label" data-i18n="ui.11">平均词长</div></div>
+      <div class="stat-item"><div class="num" id="readingTime">0</div><div class="label" data-i18n="ui.12">阅读时间（分钟）</div></div>
     </div>
     <div class="card">
-      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">词频 Top 10</h2>
-      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本以查看词频</p></div>
+      <h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);" data-i18n="ui.13">词频 Top 10</h2>
+      <div id="freqContainer" class="word-freq"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);" data-i18n="ui.14">输入文本以查看词频</p></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
@@ -131,7 +132,7 @@
       }
 
       inputEl.addEventListener('input', updateStats);
-      document.getElementById('copyBtn').addEventListener('click', function () { var text = outputEl.textContent; if (text) { copyToClipboard(text, this); setStatus('已复制'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { var text = outputEl.textContent; if (text) { copyToClipboard(text, this); setStatus(t('ui.copied','已复制')); } });
       updateStats();
     })();
   </script>

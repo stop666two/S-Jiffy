@@ -28,15 +28,15 @@
     <p class="tool-desc" data-i18n="desc">按需勾选功能，生成可直接部署的 Apache .htaccess 配置。</p>
     <div class="card">
       <div class="field">
-        <label>域名（www 跳转与 HTTPS 跳转使用）</label>
+        <label data-i18n="ui.1">域名（www 跳转与 HTTPS 跳转使用）</label>
         <input id="domain" class="input js-focus-input" placeholder="如 example.com">
       </div>
       <div class="field">
-        <label>自定义 404 页面路径</label>
+        <label data-i18n="ui.2">自定义 404 页面路径</label>
         <input id="errorPage" class="input" value="/404.html" placeholder="如 /404.html">
       </div>
       <div class="field">
-        <label>密码保护 .htpasswd 路径</label>
+        <label data-i18n="ui.3">密码保护 .htpasswd 路径</label>
         <input id="htpasswdPath" class="input" value="/path/to/.htpasswd" placeholder="如 /etc/apache2/.htpasswd">
       </div>
       <div class="opt-grid">
@@ -53,20 +53,21 @@
         <label><input type="checkbox" id="optAuth"> 密码保护目录</label>
       </div>
       <div class="actions">
-        <button id="generateBtn" class="btn btn-primary">生成 .htaccess</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.4">生成 .htaccess</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var output = document.getElementById('outputText');
@@ -84,7 +85,7 @@
         var needRewriteEngine = isChecked('optHttps') || isChecked('optWww') || isChecked('optRewrite');
 
         if (isChecked('optHttps')) {
-          parts.push('# 强制 HTTPS 跳转');
+          parts.push(t('ui.17','# 强制 HTTPS 跳转'));
           parts.push('RewriteCond %{HTTPS} off');
           parts.push('RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]');
           parts.push('');
@@ -92,32 +93,32 @@
 
         if (isChecked('optWww')) {
           if (!domain) { setStatus('勾选 www 跳转时必须填写域名', 'error'); return null; }
-          parts.push('# www 跳转到非 www');
+          parts.push(t('ui.16','# www 跳转到非 www'));
           parts.push('RewriteCond %{HTTP_HOST} ^www\\.(.*)$ [NC]');
           parts.push('RewriteRule ^(.*)$ https://' + domain + '/$1 [R=301,L]');
           parts.push('');
         }
 
         if (isChecked('optRewrite')) {
-          parts.push('# URL 重写示例（旧路径 301 到新路径）');
+          parts.push(t('ui.15','# URL 重写示例（旧路径 301 到新路径）'));
           parts.push('RewriteRule ^old-page$ /new-page [R=301,L]');
           parts.push('');
         }
 
         if (isChecked('opt404')) {
-          parts.push('# 自定义 404 页面');
+          parts.push(t('ui.14','# 自定义 404 页面'));
           parts.push('ErrorDocument 404 ' + errorPage);
           parts.push('');
         }
 
         if (isChecked('optIndex')) {
-          parts.push('# 禁止目录浏览');
+          parts.push(t('ui.13','# 禁止目录浏览'));
           parts.push('Options -Indexes');
           parts.push('');
         }
 
         if (isChecked('optGzip')) {
-          parts.push('# 开启 gzip 压缩');
+          parts.push(t('ui.12','# 开启 gzip 压缩'));
           parts.push('<IfModule mod_deflate.c>');
           parts.push('  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml application/xml');
           parts.push('</IfModule>');
@@ -125,7 +126,7 @@
         }
 
         if (isChecked('optCache')) {
-          parts.push('# 浏览器缓存过期');
+          parts.push(t('ui.11','# 浏览器缓存过期'));
           parts.push('<IfModule mod_expires.c>');
           parts.push('  ExpiresActive On');
           parts.push('  ExpiresByType image/png "access plus 30 days"');
@@ -139,7 +140,7 @@
         }
 
         if (isChecked('optHeaders')) {
-          parts.push('# 安全响应头');
+          parts.push(t('ui.10','# 安全响应头'));
           parts.push('<IfModule mod_headers.c>');
           parts.push('  Header set X-Frame-Options "SAMEORIGIN"');
           parts.push('  Header set X-Content-Type-Options "nosniff"');
@@ -151,7 +152,7 @@
         }
 
         if (isChecked('optSensitive')) {
-          parts.push('# 禁止访问敏感文件');
+          parts.push(t('ui.9','# 禁止访问敏感文件'));
           parts.push('<FilesMatch "\\.(env|git|htpasswd|htaccess|log|bak|sql|ini|sh)$">');
           parts.push('  Require all denied');
           parts.push('</FilesMatch>');
@@ -159,7 +160,7 @@
         }
 
         if (isChecked('optCors')) {
-          parts.push('# CORS 跨域请求头');
+          parts.push(t('ui.8','# CORS 跨域请求头'));
           parts.push('<IfModule mod_headers.c>');
           parts.push('  Header set Access-Control-Allow-Origin "*"');
           parts.push('  Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"');
@@ -169,7 +170,7 @@
         }
 
         if (isChecked('optAuth')) {
-          parts.push('# 密码保护（需先创建 .htpasswd 文件：htpasswd -c ' + htpasswd + ' 用户名）');
+          parts.push(t('ui.7','# 密码保护（需先创建 .htpasswd 文件：htpasswd -c ') + htpasswd + t('ui.6',' 用户名）'));
           parts.push('AuthType Basic');
           parts.push('AuthName "Restricted Area"');
           parts.push('AuthUserFile ' + htpasswd);
@@ -188,7 +189,7 @@
         var ht = buildHtaccess();
         if (ht === null) { output.textContent = ''; return; }
         output.textContent = ht;
-        setStatus('.htaccess 已生成');
+        setStatus(t('ui.5','.htaccess 已生成'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {

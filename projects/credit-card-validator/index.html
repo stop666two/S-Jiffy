@@ -23,20 +23,21 @@
     <div class="card">
       <input id="cardInput" class="input js-focus-input" type="text" placeholder="输入信用卡号..." style="margin-bottom:var(--space-2);">
       <div class="cc-result">
-        <span id="validBadge" class="cc-badge">等待输入</span>
+        <span id="validBadge" class="cc-badge" data-i18n="ui.1">等待输入</span>
         <span id="cardType" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var cardInput = document.getElementById('cardInput');
@@ -74,7 +75,7 @@
       function validate() {
         var raw = cardInput.value.replace(/\s+/g, '');
         if (!raw) {
-          validBadge.textContent = '等待输入';
+          validBadge.textContent = t('ui.1','等待输入');
           validBadge.className = 'cc-badge';
           cardType.textContent = '';
           outputEl.textContent = '';
@@ -83,10 +84,10 @@
 
         var digitsOnly = raw.replace(/\D/g, '');
         if (digitsOnly.length !== raw.length || raw.length < 13 || raw.length > 19) {
-          validBadge.textContent = '无效';
+          validBadge.textContent = t('ui.11','无效');
           validBadge.className = 'cc-badge invalid';
-          cardType.textContent = '号码长度或格式不正确';
-          outputEl.textContent = '信用卡号无效：长度或格式错误';
+          cardType.textContent = t('ui.10','号码长度或格式不正确');
+          outputEl.textContent = t('ui.9','信用卡号无效：长度或格式错误');
           return;
         }
 
@@ -94,16 +95,16 @@
         var type = detectCardType(raw);
 
         if (valid) {
-          validBadge.textContent = '有效 ✓';
+          validBadge.textContent = t('ui.8','有效 ✓');
           validBadge.className = 'cc-badge valid';
-          cardType.textContent = '卡类型: ' + type;
-          outputEl.textContent = '有效 ' + type + ' 卡号';
+          cardType.textContent = t('ui.7','卡类型: ') + type;
+          outputEl.textContent = t('ui.6','有效 ') + type + t('ui.5',' 卡号');
           setStatus('');
         } else {
-          validBadge.textContent = '无效 ✗';
+          validBadge.textContent = t('ui.4','无效 ✗');
           validBadge.className = 'cc-badge invalid';
-          cardType.textContent = 'Luhn 校验失败';
-          outputEl.textContent = '信用卡号无效：Luhn 校验失败';
+          cardType.textContent = t('ui.3','Luhn 校验失败');
+          outputEl.textContent = t('ui.2','信用卡号无效：Luhn 校验失败');
           setStatus('Luhn 校验失败', 'error');
         }
       }
@@ -114,7 +115,7 @@
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
     })();

@@ -27,16 +27,16 @@
 <div class="sep"></div>
 <div class="swatch-row" id="sizeRow"></div>
 <div class="sep"></div>
-<button id="eraserBtn" class="btn btn-secondary" style="height:36px;min-width:72px;">橡皮擦</button>
-<button id="undoBtn" class="btn btn-secondary" style="height:36px;min-width:72px;">撤销</button>
-<button id="clearBtn" class="btn btn-secondary" style="height:36px;min-width:72px;">清空</button>
-<button id="saveBtn" class="btn btn-primary" style="height:36px;min-width:72px;">下载 PNG</button>
+<button id="eraserBtn" class="btn btn-secondary" style="height:36px;min-width:72px;" data-i18n="ui.1">橡皮擦</button>
+<button id="undoBtn" class="btn btn-secondary" style="height:36px;min-width:72px;" data-i18n="ui.2">撤销</button>
+<button id="clearBtn" class="btn btn-secondary" style="height:36px;min-width:72px;" data-i18n="ui.clear">清空</button>
+<button id="saveBtn" class="btn btn-primary" style="height:36px;min-width:72px;" data-i18n="ui.3">下载 PNG</button>
 </div>
 <div class="canvas-wrap" id="canvasWrap">
 <canvas id="board" width="800" height="500"></canvas>
 </div>
 <div class="canvas-info">
-<span id="modeInfo">工具：画笔 颜色：#111111 粗细：4px</span>
+<span id="modeInfo" data-i18n="ui.4">工具：画笔 颜色：#111111 粗细：4px</span>
 <span>画布尺寸 <select id="sizeSelect">
 <option value="800,500" selected>800 × 500</option>
 <option value="640,480">640 × 480</option>
@@ -44,8 +44,9 @@
 </select></span>
 </div>
 </div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
 <script>
 (function(){
@@ -84,7 +85,7 @@ b.addEventListener('click',function(){
 curColor=color;colorInput.value=color;eraser=false;
 var all=swatchRow.getElementsByTagName('button');
 for(var j=0;j<all.length;j++)all[j].className='swatch'+(all[j].style.background===color?' active':'');
-updateInfo();setStatus('已选择颜色 '+color);});
+updateInfo();setStatus(t('ui.13','已选择颜色 ') +color);});
 swatchRow.appendChild(b);
 })(PRESETS[i]);}
 colorInput.addEventListener('input',function(){
@@ -157,15 +158,15 @@ eraserBtn.classList.toggle('btn-secondary',!eraser);
 if(eraser){var all=swatchRow.getElementsByTagName('button');for(var j=0;j<all.length;j++)all[j].className='swatch';}
 updateInfo();setStatus(eraser?'已切换为橡皮擦':'已切换为画笔');});
 undoBtn.addEventListener('click',function(){
-if(undoStack.length===0){setStatus('没有可撤销的操作');return;}
+if(undoStack.length===0){setStatus(t('ui.12','没有可撤销的操作'));return;}
 ctx.putImageData(undoStack.pop(),0,0);
-updateInfo();setStatus('已撤销上一步');});
+updateInfo();setStatus(t('ui.11','已撤销上一步'));});
 clearBtn.addEventListener('click',function(){
 showConfirm('确定要清空画布吗？清空后无法恢复。',function(ok){
 if(!ok)return;
 snapshot();
 fillWhite();
-setStatus('画布已清空');});});
+setStatus(t('ui.10','画布已清空'));});});
 saveBtn.addEventListener('click',function(){
 try{
 var url=canvas.toDataURL('image/png');
@@ -175,16 +176,16 @@ a.download='drawing-'+Date.now()+'.png';
 document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
-setStatus('图片已下载');}
+setStatus(t('ui.9','图片已下载'));}
 catch(e){setStatus('导出失败','error');}});
 sizeSelect.addEventListener('change',function(){
 var parts=sizeSelect.value.split(',');
 resizeCanvas(parseInt(parts[0],10),parseInt(parts[1],10));
-setStatus('画布已调整为 '+parts[0]+' × '+parts[1]);});
+setStatus(t('ui.8','画布已调整为 ') +parts[0]+' × '+parts[1]);});
 
 function updateInfo(){
 var tool=eraser?'橡皮擦':'画笔';
-modeInfo.textContent='工具：'+tool+' 颜色：'+(eraser?'—':curColor)+' 粗细：'+curSize+'px';}
+modeInfo.textContent = t('ui.7','工具：')+tool+ t('ui.6',' 颜色：')+(eraser?'—':curColor)+ t('ui.5',' 粗细：')+curSize+'px';}
 
 resizeCanvas(800,500);
 renderSwatches();

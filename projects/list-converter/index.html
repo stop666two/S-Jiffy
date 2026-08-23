@@ -25,35 +25,36 @@
     <div class="card lc-options">
       <label>输入格式:
         <select id="inputFormat">
-          <option value="comma">逗号分隔</option>
-          <option value="newline">换行分隔</option>
-          <option value="numbered">编号列表 (1. )</option>
-          <option value="bullet">符号列表 (- / *)</option>
-          <option value="space">空格分隔</option>
+          <option value="comma" data-i18n="ui.1">逗号分隔</option>
+          <option value="newline" data-i18n="ui.2">换行分隔</option>
+          <option value="numbered" data-i18n="ui.3">编号列表 (1. )</option>
+          <option value="bullet" data-i18n="ui.4">符号列表 (- / *)</option>
+          <option value="space" data-i18n="ui.5">空格分隔</option>
         </select>
       </label>
       <label>输出格式:
         <select id="outputFormat">
-          <option value="comma">逗号分隔</option>
-          <option value="newline" selected>换行分隔</option>
-          <option value="numbered">编号列表 (1. )</option>
-          <option value="bullet">符号列表 (- / *)</option>
-          <option value="space">空格分隔</option>
+          <option value="comma" data-i18n="ui.1">逗号分隔</option>
+          <option value="newline" selected data-i18n="ui.2">换行分隔</option>
+          <option value="numbered" data-i18n="ui.3">编号列表 (1. )</option>
+          <option value="bullet" data-i18n="ui.4">符号列表 (- / *)</option>
+          <option value="space" data-i18n="ui.5">空格分隔</option>
         </select>
       </label>
-      <button id="convertBtn" class="btn btn-primary">转换</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -119,11 +120,11 @@
         var parsed = parseItems(text, inFmt.value);
         if (parsed.length === 0) { outputEl.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
         outputEl.textContent = formatItems(parsed, outFmt.value);
-        setStatus('共 ' + parsed.length + ' 项');
+        setStatus(t('ui.total','共 ') + parsed.length + t('ui.items',' 项'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
     })();
   </script>
 </body>

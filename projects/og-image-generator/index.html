@@ -29,37 +29,38 @@
         <canvas id="ogCanvas" class="og-canvas" width="1200" height="630"></canvas>
       </div>
       <div class="field-row">
-        <label>标题</label>
+        <label data-i18n="ui.1">标题</label>
         <input id="titleInput" class="input js-focus-input" type="text" placeholder="分享标题（必填）">
       </div>
       <div class="field-row">
-        <label>描述</label>
+        <label data-i18n="ui.desc">描述</label>
         <input id="descInput" class="input" type="text" placeholder="一句话描述（选填）">
       </div>
       <div class="field-row">
-        <label>站点名</label>
+        <label data-i18n="ui.2">站点名</label>
         <input id="siteInput" class="input" type="text" placeholder="站点名称（选填）">
       </div>
       <div class="field-row">
-        <label>背景色</label>
+        <label data-i18n="ui.bgColor">背景色</label>
         <input id="bgInput" type="color" value="#111111">
-        <label>文字色</label>
+        <label data-i18n="ui.3">文字色</label>
         <input id="fgInput" type="color" value="#ffffff">
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="exportBtn">导出 PNG</button>
+        <button class="btn btn-primary" id="exportBtn" data-i18n="ui.4">导出 PNG</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>
     (function () {
@@ -142,11 +143,11 @@
           ctx.font = 'bold 28px Arial, sans-serif';
           ctx.fillText(site, margin, H - 56);
         }
-        var summary = '尺寸 1200×630 · 标题 ' + titleLines.length + ' 行';
-        if (desc) summary += ' · 描述 ' + descLines.length + ' 行';
+        var summary = t('ui.8','尺寸 1200×630 · 标题 ') + titleLines.length + t('ui.rows',' 行');
+        if (desc) summary += t('ui.7',' · 描述 ') + descLines.length + t('ui.rows',' 行');
         summary += ' · 点击「导出 PNG」保存为 og-image.png';
         outputText.textContent = summary;
-        setStatus('预览已更新');
+        setStatus(t('ui.6','预览已更新'));
       }
 
       function exportPng() {
@@ -161,7 +162,7 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setStatus('已导出 og-image.png');
+        setStatus(t('ui.5','已导出 og-image.png'));
       }
 
       titleInput.addEventListener('input', render);
@@ -173,7 +174,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!outputText.textContent) return;
         copyToClipboard(outputText.textContent, this);
-        setStatus('已复制');
+        setStatus(t('ui.copied','已复制'));
       });
       render();
     })();

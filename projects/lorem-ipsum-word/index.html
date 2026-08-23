@@ -7,23 +7,24 @@
 <main class="tool-workspace"><h1 data-i18n="h1">Lorem Ipsum 单词</h1><p class="tool-desc" data-i18n="desc">按指定单词数量生成 Lorem Ipsum 占位文本。</p>
 <div class="card">
 <div class="controls">
-<label style="font-size:14px;">单词数量:</label>
+<label style="font-size:14px;" data-i18n="ui.1">单词数量:</label>
 <input id="wordCount" class="input" type="number" value="50" min="1" max="10000" style="width:110px;text-align:center;">
-<button id="generateBtn" class="btn btn-primary">生成</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <textarea id="lorem输出" class="lorem-output js-focus-input" readonly placeholder="生成的 Lorem Ipsum 文本将显示在此..."></textarea>
 <div class="word-count" id="wordCountDisplay"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var wordPool=[
 'lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','ut','aliquip','ex','ea','commodo','consequat','duis','aute','irure','dolor','in','reprehenderit','voluptate','velit','esse','cillum','eu','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','qui','officia','deserunt','mollit','anim','id','est','laborum','sed','perspiciatis','unde','omnis','iste','natus','error','voluptatem','accusantium','doloremque','laudantium','totam','rem','aperiam','eaque','ipsa','ab','illo','inventore','veritatis','quasi','architecto','beatae','vitae','dicta','sunt','explicabo','nemo','enim','ipsam','voluptatem','quia','voluptas','aspernatur','aut','odit','fugit','sed','quia','consequuntur','magni','dolores','eos','ratione','voluptatem','sequi','nesciunt','neque','porro','quisquam','est','qui','dolorem','ipsum','quia','dolor','amet','consectetur','adipisci','velit','sed','quia','non','numquam','modi','tempora','incidunt','ut','labore','dolore','magnam','aliquam','quaerat','voluptatem','ut','enim','ad','minima','veniam','quis','nostrum','exercitationem','ullam','corporis','suscipit','laboriosam','nisi','ut','aliquid','ex','ea','commodi','consequatur','quis','autem','vel','eum','iure','reprehenderit','qui','in','ea','voluptate','velit','esse','quam','nihil','molestiae','consequatur','vel','illum','qui','dolorem','eum','fugiat','quo','voluptas','nulla','pariatur'
 ];
 var wordCountInput=document.getElementById('wordCount');
-var lorem输出=document.getElementById('lorem输出');
+var lorem输出=document.getElementById(t('ui.5','lorem输出'));
 var generateBtn=document.getElementById('generateBtn');
 var clearBtn=document.getElementById('clearBtn');
 var wordCountDisplay=document.getElementById('wordCountDisplay');
@@ -62,14 +63,14 @@ if(n<1)n=1;if(n>10000)n=10000;
 var text=generateLorem(n);
 lorem输出.value=text;
 var actualCount=text.split(/\s+/).length;
-wordCountDisplay.textContent='实际生成: '+actualCount+' 个词';
-outputEl.textContent='生成了 '+actualCount+' 个词';
+wordCountDisplay.textContent = t('ui.4','实际生成: ')+actualCount+ t('ui.2',' 个词');
+outputEl.textContent = t('ui.3','生成了 ')+actualCount+ t('ui.2',' 个词');
 setStatus('');
 }
 
 generateBtn.addEventListener('click',generate);
 clearBtn.addEventListener('click',function(){lorem输出.value='';wordCountDisplay.textContent='';outputEl.textContent='';setStatus('');});
-copyBtn.addEventListener('click',function(){if(lorem输出.value){copyToClipboard(lorem输出.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(lorem输出.value){copyToClipboard(lorem输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 wordCountInput.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
 generate();
 })();</script></body></html>

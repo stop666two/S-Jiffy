@@ -19,7 +19,7 @@
 <h1 data-i18n="h1">调色板生成器</h1>
 <p class="tool-desc" data-i18n="desc">从基色生成 6 种配色方案。可导出为 CSS 变量、SCSS、LESS、JSON。</p>
 <div class="card">
-<div class="base-row"><label style="font-size:var(--font-size-sm)">基色</label><input id="baseColor" type="color" value="#e74c3c"><span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span></div>
+<div class="base-row"><label style="font-size:var(--font-size-sm)" data-i18n="ui.1">基色</label><input id="baseColor" type="color" value="#e74c3c"><span id="baseHex" style="font-family:var(--font-mono);font-size:var(--font-size-sm)">#e74c3c</span></div>
 <div class="scheme-row" id="schemeRow">
 <label><input type="radio" name="scheme" value="monochromatic" checked> Monochromatic</label>
 <label><input type="radio" name="scheme" value="complementary"> Complementary</label>
@@ -35,9 +35,10 @@
 <button id="exportLessBtn" class="btn btn-secondary">LESS</button>
 </div>
 </div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
 <script>
 (function(){
@@ -69,7 +70,7 @@
     for(var c=0;c<palettes[p].colors.length;c++){var col=palettes[p].colors[c],rgb2=hexToRgb(col);
     html+='<div class="swatch" style="background:'+col+'" data-color="'+col+'"><span class="hex">'+col+'</span><span class="rgb">'+rgb2.r+','+rgb2.g+','+rgb2.b+'</span></div>';}
     html+='</div></div>';}
-    container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus('已生成 '+scheme+' 配色方案');}
+    container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus(t('ui.generated','已生成 ') +scheme+ t('ui.3',' 配色方案'));}
 
   function exportFmt(type){if(currentColors.length===0){setStatus('请先生成调色板','error');return;}
     var lines=[];
@@ -79,14 +80,14 @@
     out.textContent=lines.join('\n');}
     else if(type==='less'){currentColors.forEach(function(c,i){lines.push('@color-'+(i+1)+': '+c+';');});
     out.textContent=lines.join('\n');}
-    setStatus('已导出为 '+type.toUpperCase());}
+    setStatus(t('ui.2','已导出为 ') +type.toUpperCase());}
 
   baseInp.addEventListener('input',generatePalette);
   var radios=document.querySelectorAll('input[name="scheme"]');for(var i=0;i<radios.length;i++)radios[i].addEventListener('change',generatePalette);
   document.getElementById('exportCssBtn').addEventListener('click',function(){exportFmt('css');});
   document.getElementById('exportScssBtn').addEventListener('click',function(){exportFmt('scss');});
   document.getElementById('exportLessBtn').addEventListener('click',function(){exportFmt('less');});
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=out.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=out.textContent;if(t){copyToClipboard(t,this);setStatus(t('ui.copied','已复制'));}});
   generatePalette();
 })();
 </script></body></html>

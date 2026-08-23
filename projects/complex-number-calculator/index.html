@@ -30,38 +30,39 @@
     <div class="card">
       <div class="cpx-grid">
         <div class="cpx-field">
-          <label for="z1Input">复数 z1（格式 a+bi）</label>
+          <label for="z1Input" data-i18n="ui.1">复数 z1（格式 a+bi）</label>
           <input type="text" id="z1Input" class="input js-focus-input" placeholder="如 3+4i">
         </div>
         <div class="cpx-field" id="z2Field">
-          <label for="z2Input">复数 z2（格式 a+bi）</label>
+          <label for="z2Input" data-i18n="ui.2">复数 z2（格式 a+bi）</label>
           <input type="text" id="z2Input" class="input" placeholder="如 1-2i">
         </div>
       </div>
       <div class="op-row">
-        <label for="opSelect">运算</label>
+        <label for="opSelect" data-i18n="ui.3">运算</label>
         <select id="opSelect" class="input">
           <option value="add">z1 + z2</option>
           <option value="subtract">z1 - z2</option>
           <option value="multiply">z1 × z2</option>
           <option value="divide">z1 ÷ z2</option>
-          <option value="modulus">模 |z1|</option>
-          <option value="conjugate">共轭 z1</option>
-          <option value="argument">辐角 arg(z1)</option>
+          <option value="modulus" data-i18n="ui.4">模 |z1|</option>
+          <option value="conjugate" data-i18n="ui.5">共轭 z1</option>
+          <option value="argument" data-i18n="ui.6">辐角 arg(z1)</option>
         </select>
-        <button class="btn btn-primary" id="calcBtn">计算</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.calc">计算</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var z1El = document.getElementById('z1Input');
@@ -234,20 +235,20 @@
           html += item('辐角（角度）', fmtNum(argument(z1) * 180 / Math.PI) + '°');
           html += '</div>';
           outputText.innerHTML = html;
-          setStatus('计算完成');
+          setStatus(t('ui.calcDone','计算完成'));
           return;
         } else if (op === 'conjugate') {
           res = { a: z1.a, b: -z1.b };
         } else {
           var arg = argument(z1);
-          html += '<div class="main-result">arg(z1) = ' + htmlEscape(fmtNum(arg)) + ' 弧度（' + htmlEscape(fmtNum(arg * 180 / Math.PI)) + '°）</div>';
+          html += '<div class="main-result">arg(z1) = ' + htmlEscape(fmtNum(arg)) + t('ui.7',' 弧度（') + htmlEscape(fmtNum(arg * 180 / Math.PI)) + '°）</div>';
           html += '<div class="res-grid">';
           html += item('z1 代数式', fmtComplex(z1));
           html += item('模 |z1|', fmtNum(modulus(z1)));
           html += item('极坐标形式', fmtNum(modulus(z1)) + '·(cos ' + fmtNum(arg) + ' + i·sin ' + fmtNum(arg) + ')');
           html += '</div>';
           outputText.innerHTML = html;
-          setStatus('计算完成');
+          setStatus(t('ui.calcDone','计算完成'));
           return;
         }
         var r = modulus(res);
@@ -262,7 +263,7 @@
         html += item('指数形式', fmtNum(r) + '·e^(i·' + fmtNum(argR) + ')');
         html += '</div>';
         outputText.innerHTML = html;
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       opEl.addEventListener('change', run);

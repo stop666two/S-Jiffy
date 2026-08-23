@@ -15,13 +15,14 @@
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="uppercase" type="checkbox" checked> 大写</label>
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="includeDigits" type="checkbox"> 包含数字</label>
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="skipWords" type="checkbox" checked> 跳过介词/冠词</label>
-<button id="generateBtn" class="btn btn-primary">生成</button>
+<button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
 </div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 <div id="variants" class="output-variants"></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var i=document.getElementById('inputText'),o=document.getElementById('outputText'),vr=document.getElementById('variants');
 var uc=document.getElementById('uppercase'),id=document.getElementById('includeDigits'),sw=document.getElementById('skipWords');
@@ -39,11 +40,11 @@ document.getElementById('generateBtn').addEventListener('click',function(){
   var acronymUpper=filtered.map(function(w){return w[0].toUpperCase();}).join('');
   var dots=filtered.map(function(w){return (uc.checked?w[0].toUpperCase():w[0].toLowerCase())+'.';}).join('');
   o.textContent=acronym;
-  setStatus('缩写: '+acronym+'  ('+filtered.length+' 个单词)');
+  setStatus(t('ui.2','缩写: ') +acronym+'  ('+filtered.length+' 个单词)');
   vr.innerHTML='<button class="variant-chip" data-v="'+esc(acronymUpper)+'">'+esc(acronymUpper)+'</button><button class="variant-chip" data-v="'+esc(acronymLower)+'">'+esc(acronymLower)+'</button><button class="variant-chip" data-v="'+esc(dots)+'">'+esc(dots)+'</button>';
   var chips=vr.querySelectorAll('.variant-chip');
-  for(var i2=0;i2<chips.length;i2++){chips[i2].addEventListener('click',function(){o.textContent=this.dataset.v;setStatus('已选择: '+this.dataset.v);});}
+  for(var i2=0;i2<chips.length;i2++){chips[i2].addEventListener('click',function(){o.textContent=this.dataset.v;setStatus(t('ui.1','已选择: ') +this.dataset.v);});}
 });
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 })();</script>
 </body></html>

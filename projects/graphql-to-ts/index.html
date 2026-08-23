@@ -24,14 +24,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var SCALARS = { ID: 'string', String: 'string', Int: 'number', Float: 'number', Boolean: 'boolean' };
@@ -159,18 +160,18 @@
           lines.push('');
         }
         current = lines.join('\n').replace(/\n+$/, '');
-        var stat = '解析统计：type ' + counts.type + '、interface ' + counts.interface + '、enum ' + counts.enum +
-          '、input ' + counts.input + '、union ' + counts.union + '，共 ' + blocks.length + ' 个定义、' + totalFields + ' 个字段/值';
+        var stat = t('ui.5','解析统计：type ') + counts.type + '、interface ' + counts.interface + '、enum ' + counts.enum +
+          '、input ' + counts.input + '、union ' + counts.union + t('ui.4','，共 ') + blocks.length + t('ui.3',' 个定义、') + totalFields + t('ui.2',' 个字段/值');
         document.getElementById('statLine').textContent = stat;
         output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
-        setStatus('转换完成');
+        setStatus(t('ui.convertDone','转换完成'));
       }
 
       document.getElementById('inputText').addEventListener('input', update);
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制 TypeScript 定义');
+        setStatus(t('ui.1','已复制 TypeScript 定义'));
       });
     })();
   </script>

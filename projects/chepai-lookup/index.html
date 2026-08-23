@@ -18,25 +18,26 @@
 <div class="card">
 <div class="lookup-row">
 <input id="plateInput" class="input js-focus-input" type="text" placeholder="例如：京A12345 或 粤B" maxlength="12">
-<button id="queryBtn" class="btn btn-primary">查询</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="queryBtn" class="btn btn-primary" data-i18n="ui.query">查询</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <p class="hint-line" id="matchHint"></p>
 <div id="resultBox" class="output-box" style="display:none"></div>
 </div>
 <div class="card">
-<h2 style="font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-2);">车牌结构说明</h2>
+<h2 style="font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-2);" data-i18n="ui.1">车牌结构说明</h2>
 <ul class="knowledge-list">
 <li>首位汉字：车辆注册地的省级行政区简称，如「京」为北京、「沪」为上海、「粤」为广东。</li>
-<li>第二位字母：发牌机关代号，一般对应地级市或特定区域，字母与城市的对应关系见上表。</li>
-<li>后五位：车辆序号，由数字或字母组合而成，用于区分具体车辆。</li>
+<li data-i18n="ui.2">第二位字母：发牌机关代号，一般对应地级市或特定区域，字母与城市的对应关系见上表。</li>
+<li data-i18n="ui.3">后五位：车辆序号，由数字或字母组合而成，用于区分具体车辆。</li>
 <li>特殊号牌：「使」字头为外国驻华使领馆车辆；「O」一般用于警用车辆；「学」字头为教练车。</li>
 <li>特殊前缀：如「粤Z」为港澳入内地车辆、「沪R」为崇明、「渝C」为永川、「陕V」为杨凌等，均已收录于表中。</li>
 <li>部分省份对同一城市发放多个字母段（如「鲁B」「鲁U」均为青岛），或存在历史区划代号，查询结果仅供参考。</li>
 </ul>
 </div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
 var DATA=[
@@ -96,8 +97,8 @@ html+='<tr><td>'+htmlEscape(best.p)+'</td><td>'+htmlEscape(best.a)+'</td></tr>';
 html+='</tbody></table>';
 resultBox.style.display='block';
 resultBox.innerHTML=html;
-matchHint.textContent='匹配到 '+hits.length+' 条记录，已取最长前缀。';
-setStatus('查询完成');}
+matchHint.textContent = t('ui.6','匹配到 ')+hits.length+ t('ui.5',' 条记录，已取最长前缀。');
+setStatus(t('ui.4','查询完成'));}
 
 queryBtn.addEventListener('click',query);
 input.addEventListener('keydown',function(e){if(e.key==='Enter')query();});

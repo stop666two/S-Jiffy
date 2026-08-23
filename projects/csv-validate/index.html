@@ -7,16 +7,17 @@
 <main class="tool-workspace"><h1 data-i18n="h1">CSV 验证器</h1><p class="tool-desc" data-i18n="desc">验证 CSV 格式：检查行长度、引号匹配、分隔符一致性。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴或输入 CSV 内容..." style="min-height:200px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="validateBtn" class="btn btn-primary">验证</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="validateBtn" class="btn btn-primary" data-i18n="ui.1">验证</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div id="results" style="display:none;">
-<div class="card"><h3 style="margin-bottom:var(--space-1);">验证结果</h3><p id="summary" style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"></p></div>
+<div class="card"><h3 style="margin-bottom:var(--space-1);" data-i18n="ui.2">验证结果</h3><p id="summary" style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"></p></div>
 <div class="card"><ul id="errorList" class="cv-errors"></ul></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -60,11 +61,11 @@ totalCols+=cols.length;
 if(expectedCols===-1){
 expectedCols=cols.length;
 }else if(cols.length!==expectedCols){
-errors.push({type:'error',line:lineNum,msg:'列数不匹配: 期望 '+expectedCols+' 列，实际 '+cols.length+' 列'});
+errors.push({type:'error',line:lineNum,msg: t('ui.14','列数不匹配: 期望 ')+expectedCols+ t('ui.13',' 列，实际 ')+cols.length+ t('ui.8',' 列')});
 }
 }
 var avgCols=totalCols/lines.filter(function(l){return l.trim()!=='';}).length;
-outputEl.textContent='验证完成: '+(errors.length===0?'通过':'发现 '+errors.length+' 个问题');
+outputEl.textContent = t('ui.12','验证完成: ')+(errors.length===0?'通过':t('ui.11','发现 ') +errors.length+ t('ui.3',' 个问题'));
 return{errors:errors,totalLines:lines.length,expectedCols:expectedCols,avgCols:avgCols.toFixed(1)};
 }
 validateBtn.addEventListener('click',function(){
@@ -74,23 +75,23 @@ var r=validate(t);
 results.style.display='block';
 errorList.innerHTML='';
 if(r.errors.length===0){
-summary.innerHTML='<span class="cv-ok">✓ 通过</span> — 共 '+r.totalLines+' 行，'+r.expectedCols+' 列，平均每行 '+r.avgCols+' 列';
+summary.innerHTML='<span class="cv-ok">✓ 通过</span> — 共 '+r.totalLines+ t('ui.10',' 行，')+r.expectedCols+ t('ui.9',' 列，平均每行 ')+r.avgCols+ t('ui.8',' 列');
 errorList.innerHTML='<li class="cv-ok">✓ 格式正确，未发现问题</li>';
-setStatus('验证通过');
+setStatus(t('ui.7','验证通过'));
 }else{
 var errCount=r.errors.filter(function(e){return e.type==='error';}).length;
-summary.innerHTML='<span class="cv-error">✗ 发现 '+r.errors.length+' 个问题</span>（其中 '+errCount+' 个错误）— 共 '+r.totalLines+' 行';
+summary.innerHTML='<span class="cv-error">✗ 发现 '+r.errors.length+' 个问题</span>（其中 '+errCount+ t('ui.6',' 个错误）— 共 ')+r.totalLines+ t('ui.rows',' 行');
 r.errors.forEach(function(e){
 var cls=e.type==='error'?'cv-error':'cv-warn';
 var li=document.createElement('li');
 li.className=cls;
-li.textContent='['+e.type+'] 行 '+e.line+': '+e.msg;
+li.textContent='['+e.type+ t('ui.5','] 行 ')+e.line+': '+e.msg;
 errorList.appendChild(li);
 });
-setStatus('验证完成，发现 '+r.errors.length+' 个问题');
+setStatus(t('ui.4','验证完成，发现 ') +r.errors.length+ t('ui.3',' 个问题'));
 }
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';results.style.display='none';errorList.innerHTML='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

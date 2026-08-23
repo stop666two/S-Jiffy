@@ -33,21 +33,22 @@
       <div class="conv-controls">
         <input id="numInput" type="number" step="any" class="input js-focus-input" placeholder="输入数值" value="1">
         <select id="fromSelect" class="input"></select>
-        <button id="swapBtn" class="btn btn-secondary">⇄ 互换</button>
+        <button id="swapBtn" class="btn btn-secondary" data-i18n="ui.1">⇄ 互换</button>
         <span>→</span>
         <select id="toSelect" class="input"></select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var numInput = document.getElementById('numInput');
@@ -58,24 +59,24 @@
     var copyBtn = document.getElementById('copyBtn');
 
     var units = [
-      { id: 'ms', name: '毫秒', ms: 1 },
-      { id: 's', name: '秒', ms: 1000 },
-      { id: 'min', name: '分钟', ms: 60000 },
-      { id: 'hour', name: '小时', ms: 3600000 },
-      { id: 'day', name: '天', ms: 86400000 },
-      { id: 'week', name: '周', ms: 604800000 },
-      { id: 'month', name: '月', ms: 2592000000 },
-      { id: 'year', name: '年', ms: 31536000000 }
+      { id: 'ms', name: t('ui.10','毫秒'), ms: 1 },
+      { id: 's', name: t('ui.second','秒'), ms: 1000 },
+      { id: 'min', name: t('ui.minute','分钟'), ms: 60000 },
+      { id: 'hour', name: t('ui.hour','小时'), ms: 3600000 },
+      { id: 'day', name: t('ui.day','天'), ms: 86400000 },
+      { id: 'week', name: t('ui.week','周'), ms: 604800000 },
+      { id: 'month', name: t('ui.month','月'), ms: 2592000000 },
+      { id: 'year', name: t('ui.year','年'), ms: 31536000000 }
     ];
 
     var scenarios = [
-      { ms: 1000, label: '1000 ms = 1 秒' },
-      { ms: 60000, label: '60000 ms = 1 分钟' },
-      { ms: 3600000, label: '3600000 ms = 1 小时' },
-      { ms: 86400000, label: '86400000 ms = 1 天' },
-      { ms: 604800000, label: '604800000 ms = 1 周' },
-      { ms: 2592000000, label: '2592000000 ms = 1 月（按 30 天）' },
-      { ms: 31536000000, label: '31536000000 ms = 1 年（按 365 天）' }
+      { ms: 1000, label: t('ui.9','1000 ms = 1 秒') },
+      { ms: 60000, label: t('ui.8','60000 ms = 1 分钟') },
+      { ms: 3600000, label: t('ui.7','3600000 ms = 1 小时') },
+      { ms: 86400000, label: t('ui.6','86400000 ms = 1 天') },
+      { ms: 604800000, label: t('ui.5','604800000 ms = 1 周') },
+      { ms: 2592000000, label: t('ui.4','2592000000 ms = 1 月（按 30 天）') },
+      { ms: 31536000000, label: t('ui.3','31536000000 ms = 1 年（按 365 天）') }
     ];
 
     function fillSelect(sel, selected) {
@@ -144,12 +145,12 @@
       outputText.innerHTML = html;
       var lines = [fmt(n) + ' ' + from.name + ' = ' + fmt(converted) + ' ' + to.name];
       lines.push('');
-      lines.push('全单位对照：');
+      lines.push(t('ui.2','全单位对照：'));
       for (var k = 0; k < units.length; k++) {
         lines.push(fmt(totalMs / units[k].ms) + ' ' + units[k].name);
       }
       copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
-      setStatus('转换完成');
+      setStatus(t('ui.convertDone','转换完成'));
     }
 
     fillSelect(fromSelect, 'hour');

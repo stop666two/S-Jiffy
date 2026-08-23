@@ -7,20 +7,21 @@
 <main class="tool-workspace"><h1 data-i18n="h1">CSV 美化器</h1><p class="tool-desc" data-i18n="desc">将 CSV 格式化为对齐的表格，可选择空格/Tab 填充。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
-<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">填充方式</label>
-<select id="padSelect" class="input" style="width:120px;"><option value="space">空格填充</option><option value="tab">Tab 填充</option></select>
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">填充方式</label>
+<select id="padSelect" class="input" style="width:120px;"><option value="space" data-i18n="ui.2">空格填充</option><option value="tab" data-i18n="ui.3">Tab 填充</option></select>
 <label style="font-size:var(--font-size-sm);cursor:pointer;margin-left:12px;"><input type="checkbox" id="headerLine" checked> 首行为表头</label>
 </div>
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 CSV..." style="min-height:120px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="formatBtn" class="btn btn-primary">格式化</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 <div id="tableArea" style="overflow-x:auto;margin-top:var(--space-2);"></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -104,9 +105,9 @@ if(rows.length<2){setStatus('CSV 至少需要 2 行','error');return;}
 var formatted=formatCSV(rows,padSelect.value);
 outputEl.textContent=formatted;
 tableArea.innerHTML=buildTable(rows,headerLine.checked);
-setStatus('共 '+rows.length+' 行，'+(rows[0]?rows[0].length:0)+' 列');
+setStatus(t('ui.total','共 ') +rows.length+ t('ui.5',' 行，')+(rows[0]?rows[0].length:0)+ t('ui.4',' 列'));
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';tableArea.innerHTML='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

@@ -27,28 +27,29 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入多行文本，每行一条..." style="min-height:140px;"></textarea>
       <div class="line-controls">
         <select id="opSelect" class="input">
-          <option value="prefix">添加前缀</option>
-          <option value="suffix">添加后缀</option>
-          <option value="rmPrefix">删除前缀 N 字符</option>
-          <option value="rmSuffix">删除后缀 N 字符</option>
-          <option value="filterKeep">过滤包含</option>
-          <option value="filterDrop">过滤不包含</option>
-          <option value="blank">去空行</option>
-          <option value="number">加行号</option>
+          <option value="prefix" data-i18n="ui.1">添加前缀</option>
+          <option value="suffix" data-i18n="ui.2">添加后缀</option>
+          <option value="rmPrefix" data-i18n="ui.3">删除前缀 N 字符</option>
+          <option value="rmSuffix" data-i18n="ui.4">删除后缀 N 字符</option>
+          <option value="filterKeep" data-i18n="ui.5">过滤包含</option>
+          <option value="filterDrop" data-i18n="ui.6">过滤不包含</option>
+          <option value="blank" data-i18n="ui.7">去空行</option>
+          <option value="number" data-i18n="ui.8">加行号</option>
         </select>
         <input id="paramInput" type="text" class="input" placeholder="参数">
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -63,22 +64,22 @@
       function setPlaceholder() {
         var op = opEl.value;
         if (op === 'rmPrefix' || op === 'rmSuffix') {
-          paramEl.placeholder = '输入要删除的字符数（正整数）';
+          paramEl.placeholder = t('ui.16','输入要删除的字符数（正整数）');
           paramEl.type = 'text';
         } else if (op === 'filterKeep' || op === 'filterDrop') {
-          paramEl.placeholder = '输入过滤关键字';
+          paramEl.placeholder = t('ui.15','输入过滤关键字');
           paramEl.type = 'text';
         } else if (op === 'number') {
-          paramEl.placeholder = '起始行号（默认为 1）';
+          paramEl.placeholder = t('ui.14','起始行号（默认为 1）');
           paramEl.type = 'text';
         } else if (op === 'prefix') {
-          paramEl.placeholder = '输入要添加的前缀';
+          paramEl.placeholder = t('ui.13','输入要添加的前缀');
           paramEl.type = 'text';
         } else if (op === 'suffix') {
-          paramEl.placeholder = '输入要添加的后缀';
+          paramEl.placeholder = t('ui.12','输入要添加的后缀');
           paramEl.type = 'text';
         } else {
-          paramEl.placeholder = '无需参数';
+          paramEl.placeholder = t('ui.11','无需参数');
           paramEl.type = 'text';
         }
       }
@@ -86,7 +87,7 @@
       function parseCount(value, label) {
         var n = parseInt(value, 10);
         if (isNaN(n) || n < 0) {
-          setStatus(label + '必须是大于等于 0 的整数', 'error');
+          setStatus(label + t('ui.10','必须是大于等于 0 的整数'), 'error');
           return null;
         }
         return n;
@@ -152,7 +153,7 @@
         html += htmlEscape(lastPlain);
         html += '</div><div class="stat-line">输入 <b>' + lastIn + '</b> 行 → 输出 <b>' + lastOut + '</b> 行（变化 ' + deltaHtml + '）</div>';
         outputEl.innerHTML = html;
-        setStatus('已处理 ' + lastOut + ' 行');
+        setStatus(t('ui.9','已处理 ') + lastOut + t('ui.rows',' 行'));
       }
 
       opEl.addEventListener('change', function () {

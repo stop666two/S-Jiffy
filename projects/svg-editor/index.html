@@ -9,25 +9,26 @@
 <div class="control-row">
 <label>宽度: <input id="svgWidth" type="number" value="400" style="width:110px;" class="input"></label>
 <label>高度: <input id="svgHeight" type="number" value="300" style="width:110px;" class="input"></label>
-<button id="updateSizeBtn" class="btn btn-secondary" style="height:40px;">更新尺寸</button>
+<button id="updateSizeBtn" class="btn btn-secondary" style="height:40px;" data-i18n="ui.1">更新尺寸</button>
 </div>
 <div class="shape-bar">
-<button class="btn btn-secondary" data-shape="rect" style="height:36px;">矩形</button>
-<button class="btn btn-secondary" data-shape="circle" style="height:36px;">圆形</button>
-<button class="btn btn-secondary" data-shape="ellipse" style="height:36px;">椭圆</button>
-<button class="btn btn-secondary" data-shape="line" style="height:36px;">线条</button>
-<button class="btn btn-secondary" data-shape="polygon" style="height:36px;">三角形</button>
-<button class="btn btn-secondary" data-shape="star" style="height:36px;">星形</button>
+<button class="btn btn-secondary" data-shape="rect" style="height:36px;" data-i18n="ui.2">矩形</button>
+<button class="btn btn-secondary" data-shape="circle" style="height:36px;" data-i18n="ui.3">圆形</button>
+<button class="btn btn-secondary" data-shape="ellipse" style="height:36px;" data-i18n="ui.4">椭圆</button>
+<button class="btn btn-secondary" data-shape="line" style="height:36px;" data-i18n="ui.5">线条</button>
+<button class="btn btn-secondary" data-shape="polygon" style="height:36px;" data-i18n="ui.6">三角形</button>
+<button class="btn btn-secondary" data-shape="star" style="height:36px;" data-i18n="ui.7">星形</button>
 </div>
 <div class="svg-layout">
 <textarea id="svgInput" class="js-focus-input" placeholder="&lt;svg&gt;...&lt;/svg&gt;"></textarea>
 <div class="svg-preview" id="svgPreview"></div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var svgInput=document.getElementById('svgInput');
 var svgPreview=document.getElementById('svgPreview');
 var svgWidth=document.getElementById('svgWidth');
@@ -52,7 +53,7 @@ if(svgEl){
 svgEl.style.maxWidth='100%';
 svgEl.style.maxHeight='260px';
 }
-outputEl.textContent='SVG 尺寸: '+svgWidth.value+'x'+svgHeight.value;
+outputEl.textContent = t('ui.10','SVG 尺寸: ')+svgWidth.value+'x'+svgHeight.value;
 }
 
 function addShape(type){
@@ -94,7 +95,7 @@ render();
 svgInput.value=defaultSvg(w,h);
 render();
 }
-setStatus('尺寸已更新');
+setStatus(t('ui.9','尺寸已更新'));
 });
 
 var shapeBtns=document.querySelectorAll('[data-shape]');
@@ -105,7 +106,7 @@ el.addEventListener('click',function(){addShape(this.getAttribute('data-shape'))
 }
 
 svgInput.addEventListener('input',render);
-copyBtn.addEventListener('click',function(){if(svgInput.value){copyToClipboard(svgInput.value,copyBtn);setStatus('已复制 SVG 代码');}});
+copyBtn.addEventListener('click',function(){if(svgInput.value){copyToClipboard(svgInput.value,copyBtn);setStatus(t('ui.8','已复制 SVG 代码'));}});
 svgInput.value=defaultSvg(400,300);
 render();
 })();</script></body></html>

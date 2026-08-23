@@ -38,14 +38,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var timeInput = document.getElementById('timeInput');
@@ -55,19 +56,19 @@
     var copyBtn = document.getElementById('copyBtn');
 
     var zones = [
-      { id: 'beijing', name: '北京', offset: 8 },
-      { id: 'tokyo', name: '东京', offset: 9 },
-      { id: 'sydney', name: '悉尼', offset: 10 },
-      { id: 'singapore', name: '新加坡', offset: 8 },
-      { id: 'dubai', name: '迪拜', offset: 4 },
-      { id: 'berlin', name: '柏林', offset: 1 },
-      { id: 'london', name: '伦敦', offset: 0 },
-      { id: 'newyork', name: '纽约', offset: -5 },
-      { id: 'losangeles', name: '洛杉矶', offset: -8 },
-      { id: 'sanfrancisco', name: '旧金山', offset: -8 }
+      { id: 'beijing', name: t('ui.21','北京'), offset: 8 },
+      { id: 'tokyo', name: t('ui.20','东京'), offset: 9 },
+      { id: 'sydney', name: t('ui.19','悉尼'), offset: 10 },
+      { id: 'singapore', name: t('ui.18','新加坡'), offset: 8 },
+      { id: 'dubai', name: t('ui.17','迪拜'), offset: 4 },
+      { id: 'berlin', name: t('ui.16','柏林'), offset: 1 },
+      { id: 'london', name: t('ui.15','伦敦'), offset: 0 },
+      { id: 'newyork', name: t('ui.14','纽约'), offset: -5 },
+      { id: 'losangeles', name: t('ui.13','洛杉矶'), offset: -8 },
+      { id: 'sanfrancisco', name: t('ui.12','旧金山'), offset: -8 }
     ];
 
-    var weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    var weekdays = [ t('ui.11','周日'), t('ui.10','周一'), t('ui.9','周二'), t('ui.8','周三'), t('ui.7','周四'), t('ui.6','周五'), t('ui.5','周六')];
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
@@ -124,7 +125,7 @@
         return;
       }
       var html = '';
-      var lines = ['会议时间（本地）：' + fmtZone(utcMs, -new Date().getTimezoneOffset() / 60) + '', '各时区时间：'];
+      var lines = [ t('ui.4','会议时间（本地）：') + fmtZone(utcMs, -new Date().getTimezoneOffset() / 60) + '', t('ui.3','各时区时间：')];
       for (var j = 0; j < selected.length; j++) {
         var z = selected[j];
         var offset = z.offset;
@@ -140,7 +141,7 @@
       html += '<div class="mtg-note">工作时段按各时区当地时间 9:00-17:00 判定；夏令时已简化处理，可在输入框下方勾选悉尼夏令时。</div>';
       outputText.innerHTML = html;
       copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
-      setStatus('已换算 ' + selected.length + ' 个时区');
+      setStatus(t('ui.2','已换算 ') + selected.length + t('ui.1',' 个时区'));
     }
 
     buildZones();

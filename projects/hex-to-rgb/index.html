@@ -9,7 +9,7 @@
 <div class="color-preview" id="colorPreview" style="background:#3498db;"></div>
 <div class="input-row">
 <input id="hexInput" class="input js-focus-input" placeholder="#RRGGBB or #RGB" value="#3498DB">
-<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 </div>
 <div class="result-group">
 <div class="result-item"><span class="chip" style="background:rgb(52,152,219)"></span>RGB: <span class="val" id="rgb结果">52, 152, 219</span></div>
@@ -18,14 +18,15 @@
 <div class="result-item">B: <b id="bVal">219</b></div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var hexInput=document.getElementById('hexInput');
 var convertBtn=document.getElementById('convertBtn');
 var colorPreview=document.getElementById('colorPreview');
-var rgb结果=document.getElementById('rgb结果');
+var rgb结果=document.getElementById(t('ui.2','rgb结果'));
 var rVal=document.getElementById('rVal');
 var gVal=document.getElementById('gVal');
 var bVal=document.getElementById('bVal');
@@ -39,7 +40,7 @@ if(hex.length===3){
 hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
 }
 if(!/^[0-9a-fA-F]{6}$/.test(hex)){
-outputEl.textContent='无效的 HEX 颜色值';
+outputEl.textContent = t('ui.1','无效的 HEX 颜色值');
 setStatus('输入错误','error');
 return;
 }
@@ -62,7 +63,7 @@ if(e.key==='Enter')convert();
 convertBtn.addEventListener('click',convert);
 copyBtn.addEventListener('click',function(){
 var rgb='rgb('+rVal.textContent+', '+gVal.textContent+', '+bVal.textContent+')';
-if(rVal.textContent!==''){copyToClipboard(rgb,copyBtn);setStatus('已复制');}
+if(rVal.textContent!==''){copyToClipboard(rgb,copyBtn);setStatus(t('ui.copied','已复制'));}
 });
 convert();
 })();</script></body></html>

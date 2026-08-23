@@ -7,21 +7,22 @@
 <main class="tool-workspace"><h1 data-i18n="h1">时间段计算</h1><p class="tool-desc" data-i18n="desc">计算两个时间之间的精确时、分、秒差。</p>
 <div class="card">
 <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
-<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">开始时间</label><input id="startTime" type="time" class="input" value="09:00"></div>
-<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;">结束时间</label><input id="endTime" type="time" class="input" value="17:30"></div>
-<button id="calcBtn" class="btn btn-primary" style="margin-top:14px;">计算</button>
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;" data-i18n="ui.1">开始时间</label><input id="startTime" type="time" class="input" value="09:00"></div>
+<div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;" data-i18n="ui.2">结束时间</label><input id="endTime" type="time" class="input" value="17:30"></div>
+<button id="calcBtn" class="btn btn-primary" style="margin-top:14px;" data-i18n="ui.calc">计算</button>
 </div>
 </div>
 <div class="td-grid">
-<div class="td-card"><div class="num" id="hours">-</div><div class="lbl">小时</div></div>
-<div class="td-card"><div class="num" id="minutes">-</div><div class="lbl">分钟</div></div>
-<div class="td-card"><div class="num" id="seconds">-</div><div class="lbl">秒</div></div>
-<div class="td-card"><div class="num" id="totalMin">-</div><div class="lbl">总分钟</div></div>
+<div class="td-card"><div class="num" id="hours">-</div><div class="lbl" data-i18n="ui.hour">小时</div></div>
+<div class="td-card"><div class="num" id="minutes">-</div><div class="lbl" data-i18n="ui.minute">分钟</div></div>
+<div class="td-card"><div class="num" id="seconds">-</div><div class="lbl" data-i18n="ui.second">秒</div></div>
+<div class="td-card"><div class="num" id="totalMin">-</div><div class="lbl" data-i18n="ui.3">总分钟</div></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var startTime=document.getElementById('startTime');
 var endTime=document.getElementById('endTime');
@@ -49,11 +50,11 @@ hoursEl.textContent=h;
 minutesEl.textContent=m;
 secondsEl.textContent=sec;
 totalMinEl.textContent=diff;
-outputEl.textContent='间隔 '+h+' 小时 '+m+' 分钟（共 '+diff+' 分钟）';
+outputEl.textContent = t('ui.6','间隔 ')+h+ t('ui.hour',' 小时 ')+m+ t('ui.5',' 分钟（共 ')+diff+ t('ui.4',' 分钟）');
 setStatus('');
 }
 calcBtn.addEventListener('click',calc);
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 calc();
 })();
 </script></body></html>

@@ -23,23 +23,24 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">在线录音</h1><p class="tool-desc" data-i18n="desc">使用浏览器麦克风录制音频，支持暂停继续与本地保存，录音数据不出本机。</p>
 <div class="card">
-<div class="focus-warn" id="focusWarn">页面已切换或隐藏，录音仍在后台继续，请勿关闭本页面，以免丢失录音。</div>
-<div class="rec-state" id="recState">未开始</div>
+<div class="focus-warn" id="focusWarn" data-i18n="ui.1">页面已切换或隐藏，录音仍在后台继续，请勿关闭本页面，以免丢失录音。</div>
+<div class="rec-state" id="recState" data-i18n="ui.2">未开始</div>
 <div class="timer-display" id="timerDisplay">00:00:00</div>
 <div class="ctrl-row">
-<button id="startBtn" class="btn btn-primary">开始录音</button>
-<button id="pauseBtn" class="btn btn-secondary" disabled>暂停</button>
-<button id="stopBtn" class="btn btn-secondary" disabled>停止</button>
+<button id="startBtn" class="btn btn-primary" data-i18n="ui.3">开始录音</button>
+<button id="pauseBtn" class="btn btn-secondary" disabled data-i18n="ui.4">暂停</button>
+<button id="stopBtn" class="btn btn-secondary" disabled data-i18n="ui.5">停止</button>
 </div>
-<p class="opt-hint" style="text-align:center;color:var(--color-text-disabled);font-size:var(--font-size-xs);">录音过程中请保持页面在前台，浏览器会持续采集麦克风音频。</p>
+<p class="opt-hint" style="text-align:center;color:var(--color-text-disabled);font-size:var(--font-size-xs);" data-i18n="ui.6">录音过程中请保持页面在前台，浏览器会持续采集麦克风音频。</p>
 </div>
 <div class="card">
-<h2 style="font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-2);">录音列表</h2>
+<h2 style="font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-2);" data-i18n="ui.7">录音列表</h2>
 <ul class="rec-list" id="recList"></ul>
-<div class="empty-tip" id="emptyTip">暂无录音，点击「开始录音」录制第一条。</div>
+<div class="empty-tip" id="emptyTip" data-i18n="ui.8">暂无录音，点击「开始录音」录制第一条。</div>
 </div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
 var startBtn=document.getElementById('startBtn'),pauseBtn=document.getElementById('pauseBtn'),stopBtn=document.getElementById('stopBtn');
@@ -71,7 +72,7 @@ var li=document.createElement('li');
 li.className='rec-item';
 var meta=document.createElement('span');
 meta.className='meta';
-meta.textContent='第 '+(i+1)+' 段 · '+it.dur;
+meta.textContent = t('ui.nth','第 ')+(i+1)+ t('ui.24',' 段 · ')+it.dur;
 var audio=document.createElement('audio');
 audio.controls=true;
 audio.preload='metadata';
@@ -79,7 +80,7 @@ audio.src=it.url;
 var ops=document.createElement('span');
 ops.className='ops';
 var dl=document.createElement('button');
-dl.textContent='下载';
+dl.textContent = t('ui.23','下载');
 dl.addEventListener('click',function(){
 try{
 var a=document.createElement('a');
@@ -88,16 +89,16 @@ a.download='recording-'+it.name+'.'+extOf(it.mime);
 document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
-setStatus('已开始下载录音');}
+setStatus(t('ui.22','已开始下载录音'));}
 catch(e){setStatus('下载失败','error');}});
 var del=document.createElement('button');
-del.textContent='删除';
+del.textContent = t('ui.21','删除');
 del.addEventListener('click',function(){
 URL.revokeObjectURL(it.url);
 var idx=items.indexOf(it);
 if(idx>-1)items.splice(idx,1);
 renderItems();
-setStatus('已删除该条录音');});
+setStatus(t('ui.20','已删除该条录音'));});
 ops.appendChild(dl);
 ops.appendChild(del);
 li.appendChild(meta);
@@ -108,11 +109,11 @@ recList.appendChild(li);
 
 function startRec(){
 if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-recState.textContent='当前浏览器不支持录音';
+recState.textContent = t('ui.19','当前浏览器不支持录音');
 setStatus('浏览器不支持麦克风录音','error');
 return;}
 if(!window.MediaRecorder){
-recState.textContent='当前浏览器不支持 MediaRecorder';
+recState.textContent = t('ui.18','当前浏览器不支持 MediaRecorder');
 setStatus('浏览器不支持 MediaRecorder 录音','error');
 return;}
 navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
@@ -122,7 +123,7 @@ try{
 recorder=mime===null?new MediaRecorder(s):new MediaRecorder(s,{mimeType:mime});
 }catch(e){
 try{recorder=new MediaRecorder(s);}
-catch(e2){recState.textContent='录音初始化失败';setStatus('录音初始化失败','error');return;}}
+catch(e2){recState.textContent = t('ui.17','录音初始化失败');setStatus('录音初始化失败','error');return;}}
 chunks=[];
 recorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
 recorder.onstop=function(){
@@ -132,16 +133,16 @@ itemId++;
 items.push({name:itemId,dur:fmt(accMs),url:url,mime:recorder.mimeType||'audio/webm'});
 renderItems();
 finishState();
-setStatus('录音已保存到列表');};
+setStatus(t('ui.16','录音已保存到列表'));};
 recorder.start(250);
 recording=true;paused=false;
 accMs=0;startMark=Date.now();
 timerId=setInterval(updateTimer,200);
 setButtons();
-recState.textContent='录音中…';
+recState.textContent = t('ui.13','录音中…');
 recState.className='rec-state recording';
-setStatus('录音已开始，请对准麦克风说话');}).catch(function(err){
-recState.textContent='麦克风权限被拒绝';
+setStatus(t('ui.15','录音已开始，请对准麦克风说话'));}).catch(function(err){
+recState.textContent = t('ui.14','麦克风权限被拒绝');
 recState.className='rec-state';
 setStatus('无法获取麦克风权限：请在浏览器地址栏或设置中允许本页使用麦克风，并通过 HTTPS 或 localhost 访问本页','error');});}
 function updateTimer(){
@@ -156,7 +157,7 @@ accMs=0;
 if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}
 recorder=null;chunks=[];
 setButtons();
-recState.textContent='未开始';
+recState.textContent = t('ui.2','未开始');
 recState.className='rec-state';}
 
 function setButtons(){
@@ -170,15 +171,15 @@ if(paused){
 recorder.resume();
 paused=false;
 startMark=Date.now();
-recState.textContent='录音中…';
+recState.textContent = t('ui.13','录音中…');
 recState.className='rec-state recording';
-setStatus('已继续录音');}
+setStatus(t('ui.12','已继续录音'));}
 else{
 recorder.pause();
 paused=true;
-recState.textContent='已暂停，点击「继续」恢复录音';
+recState.textContent = t('ui.11','已暂停，点击「继续」恢复录音');
 recState.className='rec-state paused';
-setStatus('录音已暂停');}
+setStatus(t('ui.10','录音已暂停'));}
 setButtons();}
 
 startBtn.addEventListener('click',startRec);
@@ -191,7 +192,7 @@ catch(e){finishState();setStatus('录音已停止','error');}});
 document.addEventListener('visibilitychange',function(){
 if(document.hidden&&recording){
 focusWarn.style.display='block';
-setStatus('页面已隐藏，录音仍在后台进行');}
+setStatus(t('ui.9','页面已隐藏，录音仍在后台进行'));}
 else{focusWarn.style.display='none';}});
 
 renderItems();

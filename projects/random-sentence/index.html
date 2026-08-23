@@ -19,16 +19,17 @@
     <p class="tool-desc" data-i18n="desc">从预设单词列表中生成随机句子，支持长度范围和数量控制。</p>
     <div class="card">
       <div class="rs-row">
-        <div class="field"><label for="countVal">句子数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
-        <div class="field"><label for="minLen">最少单词数</label><input id="minLen" class="input" type="number" value="4" min="1" max="50"></div>
-        <div class="field"><label for="maxLen">最多单词数</label><input id="maxLen" class="input" type="number" value="12" min="1" max="50"></div>
+        <div class="field"><label for="countVal" data-i18n="ui.1">句子数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="minLen" data-i18n="ui.2">最少单词数</label><input id="minLen" class="input" type="number" value="4" min="1" max="50"></div>
+        <div class="field"><label for="maxLen" data-i18n="ui.3">最多单词数</label><input id="maxLen" class="input" type="number" value="12" min="1" max="50"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var countEl = document.getElementById('countVal');
     var minLenEl = document.getElementById('minLen');
@@ -68,11 +69,11 @@
         result.push(sentenceWords.join(' ') + '.');
       }
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + count + ' 个句子');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.4',' 个句子'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

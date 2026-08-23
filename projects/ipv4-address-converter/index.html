@@ -27,22 +27,23 @@
     <div class="card">
       <div class="ipconv-grid">
         <div class="ipconv-row">
-          <div class="field"><label for="ipInput">IPv4 地址</label><input id="ipInput" class="input js-focus-input" type="text" placeholder="192.168.1.1" value="192.168.1.1"></div>
-          <button id="convertBtn" class="btn btn-primary">转换</button>
+          <div class="field"><label for="ipInput" data-i18n="ui.1">IPv4 地址</label><input id="ipInput" class="input js-focus-input" type="text" placeholder="192.168.1.1" value="192.168.1.1"></div>
+          <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
         </div>
       </div>
       <div class="ipconv-result" id="resultContainer"></div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var ipInput = document.getElementById('ipInput');
@@ -81,16 +82,16 @@
 
         var html = '';
         var items = [
-          ['十进制（整数）', dec],
-          ['十六进制', hex],
-          ['二进制', binaryGrouped],
-          ['IPv6 映射地址', ipv6Mapped]
+          [ t('ui.6','十进制（整数）'), dec],
+          [ t('ui.hex','十六进制'), hex],
+          [ t('ui.binary','二进制'), binaryGrouped],
+          [ t('ui.5','IPv6 映射地址'), ipv6Mapped]
         ];
         for (var i = 0; i < items.length; i++) {
           html += '<div class="item"><span class="lbl">' + items[i][0] + '</span><span>' + htmlEscape(items[i][1]) + '</span></div>';
         }
         resultContainer.innerHTML = html;
-        outputEl.textContent = ip + ' → 十进制: ' + dec + ' | 十六进制: ' + hex + ' | 二进制: ' + binary;
+        outputEl.textContent = ip + t('ui.4',' → 十进制: ') + dec + t('ui.3',' | 十六进制: ') + hex + t('ui.2',' | 二进制: ') + binary;
         setStatus('');
       }
 
@@ -99,7 +100,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       convert();

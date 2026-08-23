@@ -30,68 +30,69 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var SECTIONS = [
-        { name: '功能正确性', items: [
-          { text: '核心功能按需求实现', desc: '对照需求逐条验证行为' },
-          { text: '结果与预期一致', desc: '常规输入下输出正确' },
-          { text: '错误路径有明确提示', desc: '失败时用户可感知' },
-          { text: '异步/时序无竞态', desc: '并发回调顺序可控' },
-          { text: '状态切换完整闭环', desc: '无遗漏的分支状态' }
+        { name: t('ui.89','功能正确性'), items: [
+          { text: t('ui.88','核心功能按需求实现'), desc: t('ui.87','对照需求逐条验证行为') },
+          { text: t('ui.86','结果与预期一致'), desc: t('ui.85','常规输入下输出正确') },
+          { text: t('ui.84','错误路径有明确提示'), desc: t('ui.83','失败时用户可感知') },
+          { text: t('ui.82','异步/时序无竞态'), desc: t('ui.81','并发回调顺序可控') },
+          { text: t('ui.80','状态切换完整闭环'), desc: t('ui.79','无遗漏的分支状态') }
         ]},
-        { name: '边界与异常', items: [
-          { text: '空值/极值有兜底', desc: 'null、undefined、空串、零值' },
-          { text: '数值越界与除零已处理', desc: '无 NaN/Infinity 泄漏' },
-          { text: '非法输入被拒绝并提示', desc: '不静默接受脏数据' },
-          { text: '异常被捕获并合理反馈', desc: '不吞异常也不裸抛' },
-          { text: '资源正确释放', desc: '连接、句柄、流、监听器' }
+        { name: t('ui.78','边界与异常'), items: [
+          { text: t('ui.77','空值/极值有兜底'), desc: t('ui.76','null、undefined、空串、零值') },
+          { text: t('ui.75','数值越界与除零已处理'), desc: t('ui.74','无 NaN/Infinity 泄漏') },
+          { text: t('ui.73','非法输入被拒绝并提示'), desc: t('ui.72','不静默接受脏数据') },
+          { text: t('ui.71','异常被捕获并合理反馈'), desc: t('ui.70','不吞异常也不裸抛') },
+          { text: t('ui.69','资源正确释放'), desc: t('ui.68','连接、句柄、流、监听器') }
         ]},
-        { name: '安全性', items: [
-          { text: '用户输入经校验/转义', desc: '防注入与 XSS' },
-          { text: '无硬编码密钥与敏感信息', desc: '凭据走环境变量' },
-          { text: '权限校验完备', desc: '越权操作被拦截' },
-          { text: '日志不泄漏敏感数据', desc: '手机号/Token 脱敏' },
-          { text: '依赖无已知高危漏洞', desc: 'CVE 检查通过' }
+        { name: t('ui.67','安全性'), items: [
+          { text: t('ui.66','用户输入经校验/转义'), desc: t('ui.65','防注入与 XSS') },
+          { text: t('ui.64','无硬编码密钥与敏感信息'), desc: t('ui.63','凭据走环境变量') },
+          { text: t('ui.62','权限校验完备'), desc: t('ui.61','越权操作被拦截') },
+          { text: t('ui.60','日志不泄漏敏感数据'), desc: t('ui.59','手机号/Token 脱敏') },
+          { text: t('ui.58','依赖无已知高危漏洞'), desc: t('ui.57','CVE 检查通过') }
         ]},
-        { name: '性能', items: [
-          { text: '无重复计算与多余请求', desc: '相同结果不反复计算' },
-          { text: '复杂度适合数据规模', desc: '避免隐性 O(n²)' },
-          { text: '缓存策略恰当', desc: '键名清晰、失效可控' },
-          { text: '无明显内存泄漏', desc: '长生命周期对象可控' },
-          { text: '响应/加载时间达标', desc: '满足性能预算' }
+        { name: t('ui.56','性能'), items: [
+          { text: t('ui.55','无重复计算与多余请求'), desc: t('ui.54','相同结果不反复计算') },
+          { text: t('ui.53','复杂度适合数据规模'), desc: '避免隐性 O(n²)' },
+          { text: t('ui.52','缓存策略恰当'), desc: t('ui.51','键名清晰、失效可控') },
+          { text: t('ui.50','无明显内存泄漏'), desc: t('ui.49','长生命周期对象可控') },
+          { text: t('ui.48','响应/加载时间达标'), desc: t('ui.47','满足性能预算') }
         ]},
-        { name: '可读性与命名', items: [
-          { text: '命名自解释且一致', desc: '无过短或误导性命名' },
-          { text: '函数单一职责', desc: '结构清晰不臃肿' },
-          { text: '无魔法数字/字符串', desc: '常量具名化' },
-          { text: '无重复逻辑', desc: '复用已有实现' }
+        { name: t('ui.46','可读性与命名'), items: [
+          { text: t('ui.45','命名自解释且一致'), desc: t('ui.44','无过短或误导性命名') },
+          { text: t('ui.43','函数单一职责'), desc: t('ui.42','结构清晰不臃肿') },
+          { text: t('ui.41','无魔法数字/字符串'), desc: t('ui.40','常量具名化') },
+          { text: t('ui.39','无重复逻辑'), desc: t('ui.38','复用已有实现') }
         ]},
-        { name: '测试覆盖', items: [
-          { text: '核心逻辑有单元测试', desc: '关键函数可回归' },
-          { text: '异常路径有测试', desc: '不只有快乐路径' },
-          { text: '修复 bug 附带回归测试', desc: '防止复发' },
-          { text: '测试全部通过且无跳过', desc: '无 disabled 用例' }
+        { name: t('ui.37','测试覆盖'), items: [
+          { text: t('ui.36','核心逻辑有单元测试'), desc: t('ui.35','关键函数可回归') },
+          { text: t('ui.34','异常路径有测试'), desc: t('ui.33','不只有快乐路径') },
+          { text: t('ui.32','修复 bug 附带回归测试'), desc: t('ui.31','防止复发') },
+          { text: t('ui.30','测试全部通过且无跳过'), desc: t('ui.29','无 disabled 用例') }
         ]},
-        { name: '依赖与兼容性', items: [
-          { text: '依赖版本已锁定', desc: '无漂移风险' },
-          { text: '未使用已废弃 API', desc: '无 deprecated 调用' },
-          { text: '向后兼容旧数据/接口', desc: '破坏性变更已评估' },
-          { text: '包体积无异常膨胀', desc: '无冗余依赖' }
+        { name: t('ui.28','依赖与兼容性'), items: [
+          { text: t('ui.27','依赖版本已锁定'), desc: t('ui.26','无漂移风险') },
+          { text: t('ui.25','未使用已废弃 API'), desc: t('ui.24','无 deprecated 调用') },
+          { text: t('ui.23','向后兼容旧数据/接口'), desc: t('ui.22','破坏性变更已评估') },
+          { text: t('ui.21','包体积无异常膨胀'), desc: t('ui.20','无冗余依赖') }
         ]},
-        { name: '日志与可观测性', items: [
-          { text: '关键路径有结构化日志', desc: '模块名可辨识' },
-          { text: '错误日志可定位问题', desc: '含上下文信息' },
-          { text: '关键指标可监控', desc: '有可观测性锚点' },
-          { text: '敏感信息不入日志', desc: '日志内容安全' }
+        { name: t('ui.19','日志与可观测性'), items: [
+          { text: t('ui.18','关键路径有结构化日志'), desc: t('ui.17','模块名可辨识') },
+          { text: t('ui.16','错误日志可定位问题'), desc: t('ui.15','含上下文信息') },
+          { text: t('ui.14','关键指标可监控'), desc: t('ui.13','有可观测性锚点') },
+          { text: t('ui.12','敏感信息不入日志'), desc: t('ui.11','日志内容安全') }
         ]}
       ];
       var total = 0;
@@ -143,13 +144,13 @@
           if (boxes[i].checked) passed++;
         }
         var percent = total ? Math.round(passed * 100 / total) : 0;
-        progressEl.textContent = '已通过 ' + passed + ' / ' + total + '（' + percent + '%）';
+        progressEl.textContent = t('ui.10','已通过 ') + passed + ' / ' + total + '（' + percent + '%）';
         if (!passed) {
           outputEl.textContent = '';
           setStatus('');
           return;
         }
-        var lines = ['# 代码审查报告', '', '日期：' + todayStr(), '通过：' + passed + ' / ' + total + '（' + percent + '%）', ''];
+        var lines = [ t('ui.9','# 代码审查报告'), '', t('ui.8','日期：') + todayStr(), t('ui.7','通过：') + passed + ' / ' + total + '（' + percent + '%）', ''];
         var pending = 0;
         var boxIndex = 0;
         for (var s = 0; s < SECTIONS.length; s++) {
@@ -162,27 +163,27 @@
               lines.push('- [x] ' + sec.items[j].text);
             } else {
               pending++;
-              lines.push('- [ ] ' + sec.items[j].text + '（待确认：' + sec.items[j].desc + '）');
+              lines.push('- [ ] ' + sec.items[j].text + t('ui.6','（待确认：') + sec.items[j].desc + '）');
             }
           }
           lines.push('');
         }
         if (pending === 0) {
-          lines.push('## 结论');
-          lines.push('全部 ' + total + ' 项检查通过，可以合入。');
+          lines.push(t('ui.4','## 结论'));
+          lines.push(t('ui.all','全部 ') + total + t('ui.5',' 项检查通过，可以合入。'));
         } else {
-          lines.push('## 结论');
-          lines.push('存在 ' + pending + ' 项待确认问题，建议逐项核实后合入。');
+          lines.push(t('ui.4','## 结论'));
+          lines.push(t('ui.3','存在 ') + pending + t('ui.2',' 项待确认问题，建议逐项核实后合入。'));
         }
         outputEl.textContent = lines.join('\n');
-        setStatus('已生成审查报告');
+        setStatus(t('ui.1','已生成审查报告'));
       }
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       renderList();

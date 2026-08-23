@@ -31,14 +31,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var METHODS = ['get', 'post', 'put', 'delete', 'patch'];
@@ -117,7 +118,7 @@
       }
 
       function render(rows) {
-        var lines = ['共 ' + rows.length + ' 个端点：'];
+        var lines = [ t('ui.total','共 ') + rows.length + t('ui.4',' 个端点：')];
         for (var i = 0; i < rows.length; i++) {
           lines.push(rows[i].method.toUpperCase() + ' ' + rows[i].path +
             (rows[i].opId ? '  [' + rows[i].opId + ']' : '') +
@@ -133,7 +134,7 @@
         }
         html += '</table>';
         output.innerHTML = html;
-        setStatus('解析成功，共 ' + rows.length + ' 个端点');
+        setStatus(t('ui.3','解析成功，共 ') + rows.length + t('ui.2',' 个端点'));
       }
 
       function clearResult() {
@@ -175,7 +176,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制端点清单');
+        setStatus(t('ui.1','已复制端点清单'));
       });
       update();
     })();

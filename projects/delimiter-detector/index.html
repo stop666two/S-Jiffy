@@ -31,14 +31,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -49,11 +50,11 @@
       var lastRows = [];
 
       var delims = [
-        { name: '逗号 ,', ch: ',' },
-        { name: '制表符 Tab', ch: '\t' },
-        { name: '分号 ;', ch: ';' },
-        { name: '竖线 |', ch: '|' },
-        { name: '空格', ch: ' ' }
+        { name: t('ui.6','逗号 ,'), ch: ',' },
+        { name: t('ui.5','制表符 Tab'), ch: '\t' },
+        { name: t('ui.4','分号 ;'), ch: ';' },
+        { name: t('ui.3','竖线 |'), ch: '|' },
+        { name: t('ui.2','空格'), ch: ' ' }
       ];
 
       function countChar(line, ch) {
@@ -190,7 +191,7 @@
           tsv.push(rows[t2].map(function (f) { return '"' + f.split('"').join('""') + '"'; }).join(delim.ch));
         }
         lastPlain = tsv.join('\n');
-        setStatus('已识别分隔符：' + delim.name);
+        setStatus(t('ui.1','已识别分隔符：') + delim.name);
       }
 
       inputEl.addEventListener('input', analyze);

@@ -28,29 +28,30 @@
     <p class="tool-desc" data-i18n="desc">输入两个 JSON 对象，对比找出差异（新增/删除/修改的字段）。</p>
     <div class="json-diff-container">
       <div class="json-pane">
-        <label for="jsonA">JSON A (左/旧)</label>
+        <label for="jsonA" data-i18n="ui.1">JSON A (左/旧)</label>
         <textarea id="jsonA" class="input textarea" placeholder='{"name":"Alice","age":30}' style="min-height:180px;"></textarea>
       </div>
       <div class="json-pane">
-        <label for="jsonB">JSON B (右/新)</label>
+        <label for="jsonB" data-i18n="ui.2">JSON B (右/新)</label>
         <textarea id="jsonB" class="input textarea" placeholder='{"name":"Bob","age":31,"city":"NYC"}' style="min-height:180px;"></textarea>
       </div>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin:16px 0; flex-wrap:wrap;">
-      <button id="diffBtn" class="btn btn-primary">对比</button>
-      <button id="swapBtn" class="btn btn-secondary">交换</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="diffBtn" class="btn btn-primary" data-i18n="ui.3">对比</button>
+      <button id="swapBtn" class="btn btn-secondary" data-i18n="ui.4">交换</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;font-size:12px;line-height:1.6;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var jsonA = document.getElementById('jsonA');
@@ -105,13 +106,13 @@
         if (!textA || !textB) { setStatus('请同时输入两个 JSON', 'error'); return; }
 
         var objA, objB;
-        try { objA = JSON.parse(textA); } catch (e) { setStatus('JSON A 格式错误: ' + e.message, 'error'); return; }
-        try { objB = JSON.parse(textB); } catch (e) { setStatus('JSON B 格式错误: ' + e.message, 'error'); return; }
+        try { objA = JSON.parse(textA); } catch (e) { setStatus(t('ui.12','JSON A 格式错误: ') + e.message, 'error'); return; }
+        try { objB = JSON.parse(textB); } catch (e) { setStatus(t('ui.11','JSON B 格式错误: ') + e.message, 'error'); return; }
 
         var diffs = deepDiff(objA, objB, '');
         if (diffs.length === 0) {
           outputEl.innerHTML = '<span style="color:#27ae60;">✅ 两个 JSON 完全一致</span>';
-          setStatus('完全一致');
+          setStatus(t('ui.10','完全一致'));
           return;
         }
 
@@ -130,9 +131,9 @@
             changed++;
           }
         }
-        html = '<div style="margin-bottom:8px;font-size:var(--font-size-sm);">发现 ' + diffs.length + ' 处差异：新增 ' + added + '，删除 ' + removed + '，修改 ' + changed + '</div>' + html;
+        html = '<div style="margin-bottom:8px;font-size:var(--font-size-sm);">' + t('ui.13','发现 ') + diffs.length + t('ui.9',' 处差异：新增 ') + added + t('ui.8','，删除 ') + removed + t('ui.7','，修改 ') + changed + '</div>' + html;
         outputEl.innerHTML = html;
-        setStatus('发现 ' + diffs.length + ' 处差异');
+        setStatus(t('ui.6','发现 ') + diffs.length + t('ui.5',' 处差异'));
       });
 
       document.getElementById('swapBtn').addEventListener('click', function() {
@@ -151,7 +152,7 @@
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent || outputEl.innerText;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

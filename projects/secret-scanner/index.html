@@ -79,20 +79,21 @@
     <div class="card">
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴配置、日志、代码或环境变量内容，实时扫描敏感信息..."></textarea>
       <div style="margin-top:12px;display:flex;gap:12px;">
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
       <div class="scan-tip">支持识别：AWS Access Key · GitHub Token · OpenAI Key · Stripe Key · Slack Token · 私钥块 · Bearer Token · 密码赋值</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputText = document.getElementById('inputText');
@@ -107,9 +108,9 @@
         { name: 'OpenAI Key', regex: /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/g },
         { name: 'Stripe Key', regex: /sk_live_[A-Za-z0-9]{16,}|pk_live_[A-Za-z0-9]{16,}/g },
         { name: 'Slack Token', regex: /xox[baprs]-[A-Za-z0-9-]{10,}/g },
-        { name: '私钥块', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g, rawDisplay: true },
+        { name: t('ui.10','私钥块'), regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g, rawDisplay: true },
         { name: 'Bearer Token', regex: /Bearer\s+[A-Za-z0-9._-]{20,}/g },
-        { name: '密码赋值', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"]?([^\s'"]{6,})/gi, valueGroup: true }
+        { name: t('ui.9','密码赋值'), regex: /(?:password|passwd|pwd)\s*[=:]\s*['"]?([^\s'"]{6,})/gi, valueGroup: true }
       ];
 
       var MAX_DETAIL = 50;
@@ -185,28 +186,28 @@
         if (total === 0) {
           html = '<div class="scan-empty">未发现敏感信息</div>';
           report = '未发现敏感信息';
-          setStatus('未发现敏感信息');
+          setStatus(t('ui.8','未发现敏感信息'));
         } else {
-          html = '<div class="scan-summary">共发现 ' + total + ' 处敏感信息，涉及 ' + hitTypes + ' 类</div>';
-          report = '共发现 ' + total + ' 处敏感信息，涉及 ' + hitTypes + ' 类';
+          html = '<div class="scan-summary">共发现 ' + total + t('ui.6',' 处敏感信息，涉及 ') + hitTypes + ' 类</div>';
+          report = t('ui.7','共发现 ') + total + t('ui.6',' 处敏感信息，涉及 ') + hitTypes + t('ui.5',' 类');
           for (var g = 0; g < groups.length; g++) {
             var grp = groups[g];
             if (grp.items.length === 0) {
               continue;
             }
             html += '<div class="scan-type-row"><span class="scan-type-name">' + htmlEscape(grp.name) + '</span><span class="scan-count">' + grp.items.length + '</span></div>';
-            report += '\n' + grp.name + '：' + grp.items.length + ' 处';
+            report += '\n' + grp.name + '：' + grp.items.length + t('ui.4',' 处');
             var limit = grp.items.length > MAX_DETAIL ? MAX_DETAIL : grp.items.length;
             for (var k = 0; k < limit; k++) {
               html += '<div class="scan-line"><span class="scan-line-no">第 ' + grp.items[k].line + ' 行</span><span class="scan-mask">' + htmlEscape(grp.items[k].display) + '</span></div>';
-              report += '\n第 ' + grp.items[k].line + ' 行 ' + grp.items[k].display;
+              report += '\n第 ' + grp.items[k].line + t('ui.rows',' 行 ') + grp.items[k].display;
             }
             if (grp.items.length > MAX_DETAIL) {
               html += '<div class="scan-more">… 其余 ' + (grp.items.length - MAX_DETAIL) + ' 处未显示，复制按钮包含完整清单</div>';
-              report += '\n… 其余 ' + (grp.items.length - MAX_DETAIL) + ' 处未显示';
+              report += '\n… 其余 ' + (grp.items.length - MAX_DETAIL) + t('ui.3',' 处未显示');
             }
           }
-          setStatus('发现 ' + total + ' 处敏感信息');
+          setStatus(t('ui.2','发现 ') + total + t('ui.1',' 处敏感信息'));
         }
         outputText.innerHTML = html;
         reportText = report;

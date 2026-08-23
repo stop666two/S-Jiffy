@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">PGP 公钥解析</h1><p class="tool-desc" data-i18n="desc">解析 PGP 公钥块，提取算法、密钥 ID、创建日期等信息</p>
 <div class="card"><textarea id="keyInput" class="input textarea js-focus-input" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----&#10;&#10;mQENBFx3..." style="min-height:140px;font-size:13px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="keyInfo"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var keyInput=document.getElementById('keyInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),keyInfo=document.getElementById('keyInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var algoNames={1:'RSA (Encrypt or Sign)',2:'RSA (Encrypt-Only)',3:'RSA (Sign-Only)',16:'ElGamal (Encrypt-Only)',17:'DSA (Digital Signature Algorithm)',18:'Elliptic Curve',19:'ECDSA',20:'ElGamal (Encrypt or Sign)',21:'Diffie-Hellman',22:'Ed25519',23:'Ed448'};
@@ -49,9 +50,9 @@ parseBtn.addEventListener('click',function(){
   html+='<div class="key-block">'+htmlEscape(text.substring(0,500)+(text.length>500?'\n... (截断)':''))+'</div>';
   keyInfo.innerHTML=html;resultCard.style.display='block';
   outputText.textContent=isPublicKey?'PGP 公钥 ('+body.length+' 字符)':'PGP 密钥块';
-  setStatus('解析完成');
+  setStatus(t('ui.1','解析完成'));
 });
 clearBtn.addEventListener('click',function(){keyInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');keyInput.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

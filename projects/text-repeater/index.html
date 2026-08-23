@@ -22,34 +22,35 @@
     <div class="card">
       <div class="repeater-row">
         <div class="field">
-          <label for="inputText">文本</label>
+          <label for="inputText" data-i18n="ui.1">文本</label>
           <input id="inputText" class="input js-focus-input" placeholder="要重复的文本">
         </div>
         <div class="field">
-          <label for="repeatCount">重复次数</label>
+          <label for="repeatCount" data-i18n="ui.2">重复次数</label>
           <input id="repeatCount" class="input" type="number" value="3" min="1" max="10000">
         </div>
       </div>
       <div class="repeater-row">
         <div class="field">
-          <label for="separatorInput">分隔符</label>
+          <label for="separatorInput" data-i18n="ui.separator">分隔符</label>
           <input id="separatorInput" class="input" placeholder="可选，如逗号/换行等">
         </div>
         <div style="display:flex;align-items:flex-end;">
-          <button id="repeatBtn" class="btn btn-primary">重复</button>
+          <button id="repeatBtn" class="btn btn-primary" data-i18n="ui.3">重复</button>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
@@ -75,7 +76,7 @@
           parts.push(text);
         }
         outputEl.textContent = parts.join(sep);
-        setStatus('已重复 ' + count + ' 次' + (sep ? '，分隔符: ' + sep : ''));
+        setStatus(t('ui.6','已重复 ') + count + t('ui.5',' 次') + (sep ? t('ui.4','，分隔符: ') + sep : ''));
       }
 
       repeatBtn.addEventListener('click', repeat);
@@ -84,7 +85,7 @@
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

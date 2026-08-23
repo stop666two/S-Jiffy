@@ -12,20 +12,21 @@
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">HTTP 请求头构建</h1><p class="tool-desc" data-i18n="desc">可视化构建 HTTP 请求头部信息</p>
-<div class="card"><div id="headerList"></div><button id="addHeaderBtn" class="btn btn-secondary" style="margin-top:8px;height:36px;font-size:13px;">+ 添加头部</button></div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary">生成头部字符串</button><button id="clearBtn" class="btn btn-secondary">清空全部</button><span style="font-size:12px;color:var(--color-text-secondary);align-self:center;">预设: </span>
+<div class="card"><div id="headerList"></div><button id="addHeaderBtn" class="btn btn-secondary" style="margin-top:8px;height:36px;font-size:13px;" data-i18n="ui.1">+ 添加头部</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary" data-i18n="ui.2">生成头部字符串</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.3">清空全部</button><span style="font-size:12px;color:var(--color-text-secondary);align-self:center;" data-i18n="ui.4">预设: </span>
 <select id="presetSelect" class="input" style="width:auto;height:auto;padding:6px 10px;font-size:12px;display:inline-block;width:140px;">
-  <option value="custom">自定义</option>
+  <option value="custom" data-i18n="ui.5">自定义</option>
   <option value="json">JSON API</option>
-  <option value="form">表单提交</option>
+  <option value="form" data-i18n="ui.6">表单提交</option>
   <option value="auth">Bearer Auth</option>
   <option value="graphql">GraphQL</option>
-  <option value="upload">文件上传</option>
+  <option value="upload" data-i18n="ui.7">文件上传</option>
 </select></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var headerList = document.getElementById('headerList');
@@ -108,7 +109,7 @@
   document.getElementById('addHeaderBtn').addEventListener('click', function () { addHeaderRow('', ''); });
   document.getElementById('buildBtn').addEventListener('click', updateOutput);
   document.getElementById('clearBtn').addEventListener('click', function () { headerList.innerHTML = ''; outputEl.textContent = ''; setStatus(''); });
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
   presetSelect.addEventListener('change', function () { applyPreset(this.value); });
 
   addHeaderRow('Content-Type', 'application/json');

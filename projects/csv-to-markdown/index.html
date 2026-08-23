@@ -12,16 +12,17 @@
 <main class="tool-workspace"><h1 data-i18n="h1">CSV 转 Markdown</h1><p class="tool-desc" data-i18n="desc">粘贴 CSV 数据，生成 GitHub 风格的 Markdown 表格。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='name,age,city&#10;Alice,30,NYC&#10;Bob,25,LA' style="min-height:160px;"></textarea></div>
 <div class="opt-row">
-<label>分隔符</label><select id="delimSelect" class="input" style="width:auto;"><option value=",">逗号 (,)</option><option value="\t">制表符</option><option value=";">分号 (;)</option><option value="|">竖线 (|)</option></select>
-<label>对齐</label><select id="alignSelect" class="input" style="width:auto;"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select>
-<button id="convertBtn" class="btn btn-primary">转换</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<label data-i18n="ui.separator">分隔符</label><select id="delimSelect" class="input" style="width:auto;"><option value="," data-i18n="ui.1">逗号 (,)</option><option value="\t" data-i18n="ui.2">制表符</option><option value=";" data-i18n="ui.3">分号 (;)</option><option value="|" data-i18n="ui.4">竖线 (|)</option></select>
+<label data-i18n="ui.5">对齐</label><select id="alignSelect" class="input" style="width:auto;"><option value="left" data-i18n="ui.6">左对齐</option><option value="center" data-i18n="ui.7">居中</option><option value="right" data-i18n="ui.8">右对齐</option></select>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><div id="md输出" class="md-preview"></div><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><div id="md输出" class="md-preview"></div><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
-(function(){var i=document.getElementById('inputText'),md=document.getElementById('md输出');
+(function(){var i=document.getElementById('inputText'),md=document.getElementById(t('ui.9','md输出'));
 
 function escapeMd(s){return s.replace(/\|/g,'\\|').replace(/\n/g,'<br>');}
 
@@ -38,10 +39,10 @@ var sep='';if(align==='left')sep='| '+rows[0].map(function(){return':---'}).join
 else if(align==='center')sep='| '+rows[0].map(function(){return':---:'}).join(' | ')+' |';
 else sep='| '+rows[0].map(function(){return'---:'}).join(' | ')+' |';
 out+=sep+'\n';for(var r3=1;r3<rows.length;r3++){out+='| '+rows[r3].map(function(c){return escapeMd(c);}).join(' | ')+' |\n';}}
-md.textContent=out;setStatus('已转换 '+rows.length+' 行');}
+md.textContent=out;setStatus(t('ui.converted','已转换 ') +rows.length+ t('ui.rows',' 行'));}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';md.textContent='';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(md.textContent){copyToClipboard(md.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(md.textContent){copyToClipboard(md.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

@@ -22,7 +22,7 @@
     <h1 data-i18n="h1">HTML 实时预览</h1>
     <p class="tool-desc" data-i18n="desc">编写 HTML，右侧实时预览渲染效果。</p>
     <div class="split-view">
-      <textarea id="htmlInput" class="js-focus-input" placeholder="<!DOCTYPE html>\n<html>\n<head>\n  <title>演示</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>" spellcheck="false"></textarea>
+      <textarea id="htmlInput" class="js-focus-input" placeholder="<!DOCTYPE html>\n<html>\n<head>\n  <title data-i18n="ui.1">演示</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>" spellcheck="false"></textarea>
       <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts"></iframe>
     </div>
   </main>
@@ -31,6 +31,7 @@
     <div>S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var htmlInput = document.getElementById('htmlInput');
@@ -49,11 +50,11 @@
 
       htmlInput.addEventListener('input', debouncedUpdate);
       htmlInput.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.key === 'Enter') { updatePreview(); setStatus('已刷新预览'); }
+        if (e.ctrlKey && e.key === 'Enter') { updatePreview(); setStatus(t('ui.3','已刷新预览')); }
       });
 
       updatePreview();
-      setStatus('输入 HTML 即可实时预览');
+      setStatus(t('ui.2','输入 HTML 即可实时预览'));
     })();
   </script>
 </body>

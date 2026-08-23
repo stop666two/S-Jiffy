@@ -6,18 +6,19 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">年中第几天</h1><p class="tool-desc" data-i18n="desc">计算指定日期是当年的第几天、第几周，以及当年剩余天数。</p>
 <div class="card"><input id="dateInput" type="date" class="input" style="width:200px;">
-<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary">计算</button><button id="todayBtn" class="btn btn-secondary">今天</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div style="display:flex;gap:12px;margin-top:var(--space-2);flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button><button id="todayBtn" class="btn btn-secondary" data-i18n="ui.1">今天</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 </div>
 <div class="doy-grid">
-<div class="doy-card"><div class="num" id="dayNum">-</div><div class="lbl">第几天</div></div>
-<div class="doy-card"><div class="num" id="weekNum">-</div><div class="lbl">第几周</div></div>
-<div class="doy-card"><div class="num" id="daysLeft">-</div><div class="lbl">剩余天数</div></div>
-<div class="doy-card"><div class="num" id="totalDays">-</div><div class="lbl">全年天数</div></div>
+<div class="doy-card"><div class="num" id="dayNum">-</div><div class="lbl" data-i18n="ui.2">第几天</div></div>
+<div class="doy-card"><div class="num" id="weekNum">-</div><div class="lbl" data-i18n="ui.3">第几周</div></div>
+<div class="doy-card"><div class="num" id="daysLeft">-</div><div class="lbl" data-i18n="ui.4">剩余天数</div></div>
+<div class="doy-card"><div class="num" id="totalDays">-</div><div class="lbl" data-i18n="ui.5">全年天数</div></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var dateInput=document.getElementById('dateInput');
 var calcBtn=document.getElementById('calcBtn');
@@ -44,7 +45,7 @@ var weekStart=new Date(d);
 weekStart.setDate(weekStart.getDate()+1-(weekStart.getDay()||7));
 var wn=Math.ceil((((weekStart-start)/86400000)+start.getDay()+1)/7);
 weekNum.textContent=wn;
-outputEl.textContent=y+'年第'+doy+'天，第'+wn+'周，剩余'+(total-doy)+'天';
+outputEl.textContent=y+ t('ui.8','年第')+doy+ t('ui.7','天，第')+wn+ t('ui.6','周，剩余')+(total-doy)+ t('ui.day','天');
 setStatus('');
 }
 function setToday(){
@@ -58,6 +59,6 @@ dateInput.addEventListener('keydown',function(e){if(e.key==='Enter')calc(dateInp
 calcBtn.addEventListener('click',function(){calc(dateInput.value);});
 todayBtn.addEventListener('click',setToday);
 clearBtn.addEventListener('click',function(){dateInput.value='';dayNum.textContent='-';weekNum.textContent='-';daysLeft.textContent='-';totalDays.textContent='-';outputEl.textContent='';setStatus('');});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

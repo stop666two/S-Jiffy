@@ -36,149 +36,150 @@
       <div class="control-row">
         <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索函数名或说明，如 CONCAT / 聚合 / JSON">
         <select id="catSelect" class="input cat-select">
-          <option value="">全部分类</option>
+          <option value="" data-i18n="ui.1">全部分类</option>
         </select>
       </div>
-      <p class="hint">点击函数名复制。</p>
+      <p class="hint" data-i18n="ui.2">点击函数名复制。</p>
       <p class="result-count" id="resultCount"></p>
       <div class="fn-list" id="fnList"></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var DATA = [
-      { cat: '字符串', name: 'CONCAT', syntax: 'CONCAT(str1, str2, ...)', desc: '拼接多个字符串，任一参数为 NULL 则结果为 NULL。', example: 'SELECT CONCAT(\'a\', \'b\'); -- ab' },
-      { cat: '字符串', name: 'CONCAT_WS', syntax: 'CONCAT_WS(separator, str1, str2, ...)', desc: '用指定分隔符拼接字符串，自动跳过 NULL。', example: 'SELECT CONCAT_WS(\',\', \'a\', NULL, \'b\'); -- a,b' },
-      { cat: '字符串', name: 'LENGTH', syntax: 'LENGTH(str)', desc: '返回字符串的字节长度（中文占 3 字节）。', example: 'SELECT LENGTH(\'你好\'); -- 6' },
-      { cat: '字符串', name: 'CHAR_LENGTH', syntax: 'CHAR_LENGTH(str)', desc: '返回字符串的字符个数（中英文都算 1）。', example: 'SELECT CHAR_LENGTH(\'你好\'); -- 2' },
-      { cat: '字符串', name: 'SUBSTRING', syntax: 'SUBSTRING(str, pos, len)', desc: '从 pos 起截取 len 个字符，pos 可为负数。', example: 'SELECT SUBSTRING(\'hello\', 2, 3); -- ell' },
-      { cat: '字符串', name: 'SUBSTRING_INDEX', syntax: 'SUBSTRING_INDEX(str, delim, count)', desc: '按分隔符截取，count 为负数时从右侧开始。', example: 'SELECT SUBSTRING_INDEX(\'a,b,c\', \',\', 2); -- a,b' },
-      { cat: '字符串', name: 'LEFT', syntax: 'LEFT(str, len)', desc: '返回字符串左侧 len 个字符。', example: 'SELECT LEFT(\'hello\', 2); -- he' },
-      { cat: '字符串', name: 'RIGHT', syntax: 'RIGHT(str, len)', desc: '返回字符串右侧 len 个字符。', example: 'SELECT RIGHT(\'hello\', 2); -- lo' },
-      { cat: '字符串', name: 'REPLACE', syntax: 'REPLACE(str, from_str, to_str)', desc: '替换字符串中全部匹配的子串。', example: 'SELECT REPLACE(\'abcabc\', \'ab\', \'X\'); -- XcXc' },
-      { cat: '字符串', name: 'TRIM', syntax: 'TRIM([BOTH|LEADING|TRAILING] [remstr] FROM str)', desc: '去除字符串两侧（或指定方向的）空白 / 指定字符。', example: 'SELECT TRIM(\'  hi  \'); -- hi' },
-      { cat: '字符串', name: 'LTRIM', syntax: 'LTRIM(str)', desc: '去除左侧空白。', example: 'SELECT LTRIM(\'  hi\'); -- hi' },
-      { cat: '字符串', name: 'RTRIM', syntax: 'RTRIM(str)', desc: '去除右侧空白。', example: 'SELECT RTRIM(\'hi  \'); -- hi' },
-      { cat: '字符串', name: 'UPPER', syntax: 'UPPER(str)', desc: '转为大写。', example: 'SELECT UPPER(\'hi\'); -- HI' },
-      { cat: '字符串', name: 'LOWER', syntax: 'LOWER(str)', desc: '转为小写。', example: 'SELECT LOWER(\'HI\'); -- hi' },
-      { cat: '字符串', name: 'LPAD', syntax: 'LPAD(str, len, padstr)', desc: '用 padstr 在左侧补齐到 len 位。', example: 'SELECT LPAD(\'5\', 3, \'0\'); -- 005' },
-      { cat: '字符串', name: 'RPAD', syntax: 'RPAD(str, len, padstr)', desc: '用 padstr 在右侧补齐到 len 位。', example: 'SELECT RPAD(\'5\', 3, \'0\'); -- 500' },
-      { cat: '字符串', name: 'REVERSE', syntax: 'REVERSE(str)', desc: '反转字符串。', example: 'SELECT REVERSE(\'abc\'); -- cba' },
-      { cat: '字符串', name: 'LOCATE', syntax: 'LOCATE(substr, str [, pos])', desc: '返回子串首次出现的位置（从 1 开始），没有则返回 0。', example: 'SELECT LOCATE(\'b\', \'abc\'); -- 2' },
-      { cat: '字符串', name: 'INSTR', syntax: 'INSTR(str, substr)', desc: '返回子串首次出现的位置，与 LOCATE 参数顺序相反。', example: 'SELECT INSTR(\'abc\', \'b\'); -- 2' },
-      { cat: '字符串', name: 'STRCMP', syntax: 'STRCMP(str1, str2)', desc: '比较字符串：相同返回 0，str1 大返回 1，否则 -1。', example: 'SELECT STRCMP(\'a\', \'b\'); -- -1' },
-      { cat: '字符串', name: 'SPACE', syntax: 'SPACE(n)', desc: '返回 n 个空格组成的字符串。', example: 'SELECT SPACE(3); -- "   "' },
-      { cat: '字符串', name: 'FORMAT', syntax: 'FORMAT(num, decimals)', desc: '格式化数字，千分位分隔并保留指定小数位。', example: 'SELECT FORMAT(12345.678, 2); -- 12,345.68' },
-      { cat: '字符串', name: 'HEX', syntax: 'HEX(str_or_num)', desc: '返回字符串 / 数字的十六进制表示。', example: 'SELECT HEX(\'abc\'); -- 616263' },
-      { cat: '字符串', name: 'UNHEX', syntax: 'UNHEX(str)', desc: '把十六进制字符串还原为二进制 / 字符。', example: 'SELECT UNHEX(\'616263\'); -- abc' },
-      { cat: '字符串', name: 'FIELD', syntax: 'FIELD(value, val1, val2, ...)', desc: '返回 value 在参数列表中的下标（从 1 开始），没有返回 0。', example: 'SELECT FIELD(\'b\', \'a\', \'b\'); -- 2' },
-      { cat: '字符串', name: 'FIND_IN_SET', syntax: 'FIND_IN_SET(str, strlist)', desc: '返回 str 在逗号分隔列表中的位置。', example: 'SELECT FIND_IN_SET(\'b\', \'a,b,c\'); -- 2' },
-      { cat: '字符串', name: 'REGEXP_REPLACE', syntax: 'REGEXP_REPLACE(str, pattern, repl)', desc: '按正则替换全部匹配（MySQL 8.0+）。', example: 'SELECT REGEXP_REPLACE(\'a1b2\', \'[0-9]\', \'#\'); -- a#b#' },
-      { cat: '字符串', name: 'REGEXP_LIKE', syntax: 'REGEXP_LIKE(str, pattern)', desc: '判断字符串是否匹配正则，返回 1 / 0（MySQL 8.0+）。', example: 'SELECT REGEXP_LIKE(\'abc\', \'^a\'); -- 1' },
+      { cat: '字符串', name: 'CONCAT', syntax: 'CONCAT(str1, str2, ...)', desc: t('ui.118','拼接多个字符串，任一参数为 NULL 则结果为 NULL。'), example: 'SELECT CONCAT(\'a\', \'b\'); -- ab' },
+      { cat: '字符串', name: 'CONCAT_WS', syntax: 'CONCAT_WS(separator, str1, str2, ...)', desc: t('ui.117','用指定分隔符拼接字符串，自动跳过 NULL。'), example: 'SELECT CONCAT_WS(\',\', \'a\', NULL, \'b\'); -- a,b' },
+      { cat: '字符串', name: 'LENGTH', syntax: 'LENGTH(str)', desc: t('ui.116','返回字符串的字节长度（中文占 3 字节）。'), example: 'SELECT LENGTH(\'你好\'); -- 6' },
+      { cat: '字符串', name: 'CHAR_LENGTH', syntax: 'CHAR_LENGTH(str)', desc: t('ui.115','返回字符串的字符个数（中英文都算 1）。'), example: 'SELECT CHAR_LENGTH(\'你好\'); -- 2' },
+      { cat: '字符串', name: 'SUBSTRING', syntax: 'SUBSTRING(str, pos, len)', desc: t('ui.114','从 pos 起截取 len 个字符，pos 可为负数。'), example: 'SELECT SUBSTRING(\'hello\', 2, 3); -- ell' },
+      { cat: '字符串', name: 'SUBSTRING_INDEX', syntax: 'SUBSTRING_INDEX(str, delim, count)', desc: t('ui.113','按分隔符截取，count 为负数时从右侧开始。'), example: 'SELECT SUBSTRING_INDEX(\'a,b,c\', \',\', 2); -- a,b' },
+      { cat: '字符串', name: 'LEFT', syntax: 'LEFT(str, len)', desc: t('ui.112','返回字符串左侧 len 个字符。'), example: 'SELECT LEFT(\'hello\', 2); -- he' },
+      { cat: '字符串', name: 'RIGHT', syntax: 'RIGHT(str, len)', desc: t('ui.111','返回字符串右侧 len 个字符。'), example: 'SELECT RIGHT(\'hello\', 2); -- lo' },
+      { cat: '字符串', name: 'REPLACE', syntax: 'REPLACE(str, from_str, to_str)', desc: t('ui.110','替换字符串中全部匹配的子串。'), example: 'SELECT REPLACE(\'abcabc\', \'ab\', \'X\'); -- XcXc' },
+      { cat: '字符串', name: 'TRIM', syntax: 'TRIM([BOTH|LEADING|TRAILING] [remstr] FROM str)', desc: t('ui.109','去除字符串两侧（或指定方向的）空白 / 指定字符。'), example: 'SELECT TRIM(\'  hi  \'); -- hi' },
+      { cat: '字符串', name: 'LTRIM', syntax: 'LTRIM(str)', desc: t('ui.108','去除左侧空白。'), example: 'SELECT LTRIM(\'  hi\'); -- hi' },
+      { cat: '字符串', name: 'RTRIM', syntax: 'RTRIM(str)', desc: t('ui.107','去除右侧空白。'), example: 'SELECT RTRIM(\'hi  \'); -- hi' },
+      { cat: '字符串', name: 'UPPER', syntax: 'UPPER(str)', desc: t('ui.106','转为大写。'), example: 'SELECT UPPER(\'hi\'); -- HI' },
+      { cat: '字符串', name: 'LOWER', syntax: 'LOWER(str)', desc: t('ui.105','转为小写。'), example: 'SELECT LOWER(\'HI\'); -- hi' },
+      { cat: '字符串', name: 'LPAD', syntax: 'LPAD(str, len, padstr)', desc: t('ui.104','用 padstr 在左侧补齐到 len 位。'), example: 'SELECT LPAD(\'5\', 3, \'0\'); -- 005' },
+      { cat: '字符串', name: 'RPAD', syntax: 'RPAD(str, len, padstr)', desc: t('ui.103','用 padstr 在右侧补齐到 len 位。'), example: 'SELECT RPAD(\'5\', 3, \'0\'); -- 500' },
+      { cat: '字符串', name: 'REVERSE', syntax: 'REVERSE(str)', desc: t('ui.102','反转字符串。'), example: 'SELECT REVERSE(\'abc\'); -- cba' },
+      { cat: '字符串', name: 'LOCATE', syntax: 'LOCATE(substr, str [, pos])', desc: t('ui.101','返回子串首次出现的位置（从 1 开始），没有则返回 0。'), example: 'SELECT LOCATE(\'b\', \'abc\'); -- 2' },
+      { cat: '字符串', name: 'INSTR', syntax: 'INSTR(str, substr)', desc: t('ui.100','返回子串首次出现的位置，与 LOCATE 参数顺序相反。'), example: 'SELECT INSTR(\'abc\', \'b\'); -- 2' },
+      { cat: '字符串', name: 'STRCMP', syntax: 'STRCMP(str1, str2)', desc: t('ui.99','比较字符串：相同返回 0，str1 大返回 1，否则 -1。'), example: 'SELECT STRCMP(\'a\', \'b\'); -- -1' },
+      { cat: '字符串', name: 'SPACE', syntax: 'SPACE(n)', desc: t('ui.98','返回 n 个空格组成的字符串。'), example: 'SELECT SPACE(3); -- "   "' },
+      { cat: '字符串', name: 'FORMAT', syntax: 'FORMAT(num, decimals)', desc: t('ui.97','格式化数字，千分位分隔并保留指定小数位。'), example: 'SELECT FORMAT(12345.678, 2); -- 12,345.68' },
+      { cat: '字符串', name: 'HEX', syntax: 'HEX(str_or_num)', desc: t('ui.96','返回字符串 / 数字的十六进制表示。'), example: 'SELECT HEX(\'abc\'); -- 616263' },
+      { cat: '字符串', name: 'UNHEX', syntax: 'UNHEX(str)', desc: t('ui.95','把十六进制字符串还原为二进制 / 字符。'), example: 'SELECT UNHEX(\'616263\'); -- abc' },
+      { cat: '字符串', name: 'FIELD', syntax: 'FIELD(value, val1, val2, ...)', desc: t('ui.94','返回 value 在参数列表中的下标（从 1 开始），没有返回 0。'), example: 'SELECT FIELD(\'b\', \'a\', \'b\'); -- 2' },
+      { cat: '字符串', name: 'FIND_IN_SET', syntax: 'FIND_IN_SET(str, strlist)', desc: t('ui.93','返回 str 在逗号分隔列表中的位置。'), example: 'SELECT FIND_IN_SET(\'b\', \'a,b,c\'); -- 2' },
+      { cat: '字符串', name: 'REGEXP_REPLACE', syntax: 'REGEXP_REPLACE(str, pattern, repl)', desc: t('ui.92','按正则替换全部匹配（MySQL 8.0+）。'), example: 'SELECT REGEXP_REPLACE(\'a1b2\', \'[0-9]\', \'#\'); -- a#b#' },
+      { cat: '字符串', name: 'REGEXP_LIKE', syntax: 'REGEXP_LIKE(str, pattern)', desc: t('ui.91','判断字符串是否匹配正则，返回 1 / 0（MySQL 8.0+）。'), example: 'SELECT REGEXP_LIKE(\'abc\', \'^a\'); -- 1' },
 
-      { cat: '数值', name: 'ABS', syntax: 'ABS(x)', desc: '返回绝对值。', example: 'SELECT ABS(-5); -- 5' },
-      { cat: '数值', name: 'ROUND', syntax: 'ROUND(x [, d])', desc: '四舍五入，d 为保留小数位数（可为负）。', example: 'SELECT ROUND(3.14159, 2); -- 3.14' },
-      { cat: '数值', name: 'CEIL', syntax: 'CEIL(x)', desc: '向上取整，别名 CEILING。', example: 'SELECT CEIL(1.2); -- 2' },
-      { cat: '数值', name: 'FLOOR', syntax: 'FLOOR(x)', desc: '向下取整。', example: 'SELECT FLOOR(1.8); -- 1' },
-      { cat: '数值', name: 'MOD', syntax: 'MOD(x, y)', desc: '取模（余数），等价于 x % y。', example: 'SELECT MOD(10, 3); -- 1' },
-      { cat: '数值', name: 'POWER', syntax: 'POWER(x, y)', desc: '幂运算，别名 POW。', example: 'SELECT POWER(2, 10); -- 1024' },
-      { cat: '数值', name: 'SQRT', syntax: 'SQRT(x)', desc: '平方根。', example: 'SELECT SQRT(9); -- 3' },
-      { cat: '数值', name: 'SIGN', syntax: 'SIGN(x)', desc: '返回符号：负数 -1、0、正数 1。', example: 'SELECT SIGN(-9); -- -1' },
-      { cat: '数值', name: 'RAND', syntax: 'RAND([seed])', desc: '返回 0 ~ 1 随机浮点数，可指定种子。', example: 'SELECT RAND(); -- 0.34...' },
-      { cat: '数值', name: 'TRUNCATE', syntax: 'TRUNCATE(x, d)', desc: '直接截断（不四舍五入）到 d 位小数。', example: 'SELECT TRUNCATE(3.14159, 2); -- 3.14' },
-      { cat: '数值', name: 'GREATEST', syntax: 'GREATEST(v1, v2, ...)', desc: '返回参数列表中的最大值。', example: 'SELECT GREATEST(1, 9, 5); -- 9' },
-      { cat: '数值', name: 'LEAST', syntax: 'LEAST(v1, v2, ...)', desc: '返回参数列表中的最小值。', example: 'SELECT LEAST(1, 9, 5); -- 1' },
-      { cat: '数值', name: 'EXP', syntax: 'EXP(x)', desc: '返回 e 的 x 次幂。', example: 'SELECT EXP(1); -- 2.718...' },
-      { cat: '数值', name: 'LN', syntax: 'LN(x)', desc: '自然对数。', example: 'SELECT LN(EXP(1)); -- 1' },
-      { cat: '数值', name: 'LOG', syntax: 'LOG([b,] x)', desc: '对数，单参数为自然对数，双参数为以 b 为底。', example: 'SELECT LOG(2, 8); -- 3' },
-      { cat: '数值', name: 'LOG10', syntax: 'LOG10(x)', desc: '以 10 为底的对数。', example: 'SELECT LOG10(100); -- 2' },
-      { cat: '数值', name: 'PI', syntax: 'PI()', desc: '返回圆周率 π。', example: 'SELECT PI(); -- 3.141593' },
-      { cat: '数值', name: 'DEGREES', syntax: 'DEGREES(x)', desc: '弧度转角度。', example: 'SELECT DEGREES(PI()); -- 180' },
-      { cat: '数值', name: 'RADIANS', syntax: 'RADIANS(x)', desc: '角度转弧度。', example: 'SELECT RADIANS(180); -- 3.141593' },
-      { cat: '数值', name: 'SIN', syntax: 'SIN(x)', desc: '正弦（参数为弧度）。', example: 'SELECT SIN(PI()/2); -- 1' },
-      { cat: '数值', name: 'COS', syntax: 'COS(x)', desc: '余弦。', example: 'SELECT COS(0); -- 1' },
-      { cat: '数值', name: 'TAN', syntax: 'TAN(x)', desc: '正切。', example: 'SELECT TAN(0); -- 0' },
-      { cat: '数值', name: 'ATAN', syntax: 'ATAN(x)', desc: '反正切。', example: 'SELECT ATAN(1); -- 0.785398' },
+      { cat: '数值', name: 'ABS', syntax: 'ABS(x)', desc: t('ui.90','返回绝对值。'), example: 'SELECT ABS(-5); -- 5' },
+      { cat: '数值', name: 'ROUND', syntax: 'ROUND(x [, d])', desc: t('ui.89','四舍五入，d 为保留小数位数（可为负）。'), example: 'SELECT ROUND(3.14159, 2); -- 3.14' },
+      { cat: '数值', name: 'CEIL', syntax: 'CEIL(x)', desc: t('ui.88','向上取整，别名 CEILING。'), example: 'SELECT CEIL(1.2); -- 2' },
+      { cat: '数值', name: 'FLOOR', syntax: 'FLOOR(x)', desc: t('ui.87','向下取整。'), example: 'SELECT FLOOR(1.8); -- 1' },
+      { cat: '数值', name: 'MOD', syntax: 'MOD(x, y)', desc: t('ui.86','取模（余数），等价于 x % y。'), example: 'SELECT MOD(10, 3); -- 1' },
+      { cat: '数值', name: 'POWER', syntax: 'POWER(x, y)', desc: t('ui.85','幂运算，别名 POW。'), example: 'SELECT POWER(2, 10); -- 1024' },
+      { cat: '数值', name: 'SQRT', syntax: 'SQRT(x)', desc: t('ui.84','平方根。'), example: 'SELECT SQRT(9); -- 3' },
+      { cat: '数值', name: 'SIGN', syntax: 'SIGN(x)', desc: t('ui.83','返回符号：负数 -1、0、正数 1。'), example: 'SELECT SIGN(-9); -- -1' },
+      { cat: '数值', name: 'RAND', syntax: 'RAND([seed])', desc: t('ui.82','返回 0 ~ 1 随机浮点数，可指定种子。'), example: 'SELECT RAND(); -- 0.34...' },
+      { cat: '数值', name: 'TRUNCATE', syntax: 'TRUNCATE(x, d)', desc: t('ui.81','直接截断（不四舍五入）到 d 位小数。'), example: 'SELECT TRUNCATE(3.14159, 2); -- 3.14' },
+      { cat: '数值', name: 'GREATEST', syntax: 'GREATEST(v1, v2, ...)', desc: t('ui.80','返回参数列表中的最大值。'), example: 'SELECT GREATEST(1, 9, 5); -- 9' },
+      { cat: '数值', name: 'LEAST', syntax: 'LEAST(v1, v2, ...)', desc: t('ui.79','返回参数列表中的最小值。'), example: 'SELECT LEAST(1, 9, 5); -- 1' },
+      { cat: '数值', name: 'EXP', syntax: 'EXP(x)', desc: t('ui.78','返回 e 的 x 次幂。'), example: 'SELECT EXP(1); -- 2.718...' },
+      { cat: '数值', name: 'LN', syntax: 'LN(x)', desc: t('ui.77','自然对数。'), example: 'SELECT LN(EXP(1)); -- 1' },
+      { cat: '数值', name: 'LOG', syntax: 'LOG([b,] x)', desc: t('ui.76','对数，单参数为自然对数，双参数为以 b 为底。'), example: 'SELECT LOG(2, 8); -- 3' },
+      { cat: '数值', name: 'LOG10', syntax: 'LOG10(x)', desc: t('ui.75','以 10 为底的对数。'), example: 'SELECT LOG10(100); -- 2' },
+      { cat: '数值', name: 'PI', syntax: 'PI()', desc: t('ui.74','返回圆周率 π。'), example: 'SELECT PI(); -- 3.141593' },
+      { cat: '数值', name: 'DEGREES', syntax: 'DEGREES(x)', desc: t('ui.73','弧度转角度。'), example: 'SELECT DEGREES(PI()); -- 180' },
+      { cat: '数值', name: 'RADIANS', syntax: 'RADIANS(x)', desc: t('ui.72','角度转弧度。'), example: 'SELECT RADIANS(180); -- 3.141593' },
+      { cat: '数值', name: 'SIN', syntax: 'SIN(x)', desc: t('ui.71','正弦（参数为弧度）。'), example: 'SELECT SIN(PI()/2); -- 1' },
+      { cat: '数值', name: 'COS', syntax: 'COS(x)', desc: t('ui.70','余弦。'), example: 'SELECT COS(0); -- 1' },
+      { cat: '数值', name: 'TAN', syntax: 'TAN(x)', desc: t('ui.69','正切。'), example: 'SELECT TAN(0); -- 0' },
+      { cat: '数值', name: 'ATAN', syntax: 'ATAN(x)', desc: t('ui.68','反正切。'), example: 'SELECT ATAN(1); -- 0.785398' },
 
-      { cat: '日期', name: 'NOW', syntax: 'NOW([fsp])', desc: '返回当前日期时间（语句开始时间）。', example: 'SELECT NOW(); -- 2026-08-21 10:30:00' },
-      { cat: '日期', name: 'CURDATE', syntax: 'CURDATE()', desc: '返回当前日期。', example: 'SELECT CURDATE(); -- 2026-08-21' },
-      { cat: '日期', name: 'CURTIME', syntax: 'CURTIME([fsp])', desc: '返回当前时间。', example: 'SELECT CURTIME(); -- 10:30:00' },
-      { cat: '日期', name: 'DATE_ADD', syntax: 'DATE_ADD(date, INTERVAL expr unit)', desc: '日期加上一个时间间隔。', example: 'SELECT DATE_ADD(\'2026-01-01\', INTERVAL 30 DAY);' },
-      { cat: '日期', name: 'DATE_SUB', syntax: 'DATE_SUB(date, INTERVAL expr unit)', desc: '日期减去一个时间间隔。', example: 'SELECT DATE_SUB(NOW(), INTERVAL 1 HOUR);' },
-      { cat: '日期', name: 'DATEDIFF', syntax: 'DATEDIFF(date1, date2)', desc: '返回两个日期相差的天数（date1 - date2）。', example: 'SELECT DATEDIFF(\'2026-01-10\', \'2026-01-01\'); -- 9' },
-      { cat: '日期', name: 'TIMEDIFF', syntax: 'TIMEDIFF(time1, time2)', desc: '返回两个时间之差（TIME 类型）。', example: 'SELECT TIMEDIFF(\'12:00:00\', \'10:00:00\'); -- 02:00:00' },
-      { cat: '日期', name: 'TIMESTAMPDIFF', syntax: 'TIMESTAMPDIFF(unit, datetime1, datetime2)', desc: '按指定单位返回时间差。', example: 'SELECT TIMESTAMPDIFF(MONTH, \'2025-01-01\', \'2026-01-01\'); -- 12' },
-      { cat: '日期', name: 'YEAR', syntax: 'YEAR(date)', desc: '提取年份。', example: 'SELECT YEAR(NOW()); -- 2026' },
-      { cat: '日期', name: 'MONTH', syntax: 'MONTH(date)', desc: '提取月份（1-12）。', example: 'SELECT MONTH(\'2026-08-21\'); -- 8' },
-      { cat: '日期', name: 'DAY', syntax: 'DAY(date)', desc: '提取日（1-31），别名 DAYOFMONTH。', example: 'SELECT DAY(\'2026-08-21\'); -- 21' },
-      { cat: '日期', name: 'HOUR', syntax: 'HOUR(time)', desc: '提取小时。', example: 'SELECT HOUR(\'10:30:00\'); -- 10' },
-      { cat: '日期', name: 'MINUTE', syntax: 'MINUTE(time)', desc: '提取分钟。', example: 'SELECT MINUTE(\'10:30:00\'); -- 30' },
-      { cat: '日期', name: 'SECOND', syntax: 'SECOND(time)', desc: '提取秒。', example: 'SELECT SECOND(\'10:30:45\'); -- 45' },
-      { cat: '日期', name: 'DAYOFWEEK', syntax: 'DAYOFWEEK(date)', desc: '星期几：1=周日，7=周六。', example: 'SELECT DAYOFWEEK(\'2026-08-21\'); -- 6（周五）' },
-      { cat: '日期', name: 'WEEKDAY', syntax: 'WEEKDAY(date)', desc: '星期几：0=周一，6=周日。', example: 'SELECT WEEKDAY(\'2026-08-21\'); -- 4' },
-      { cat: '日期', name: 'DAYOFYEAR', syntax: 'DAYOFYEAR(date)', desc: '一年中的第几天（1-366）。', example: 'SELECT DAYOFYEAR(\'2026-02-01\'); -- 32' },
-      { cat: '日期', name: 'WEEK', syntax: 'WEEK(date [, mode])', desc: '一年中的第几周。', example: 'SELECT WEEK(\'2026-08-21\'); -- 33' },
-      { cat: '日期', name: 'QUARTER', syntax: 'QUARTER(date)', desc: '返回季度（1-4）。', example: 'SELECT QUARTER(\'2026-08-21\'); -- 3' },
-      { cat: '日期', name: 'MONTHNAME', syntax: 'MONTHNAME(date)', desc: '返回月份英文名。', example: 'SELECT MONTHNAME(\'2026-08-21\'); -- August' },
-      { cat: '日期', name: 'DAYNAME', syntax: 'DAYNAME(date)', desc: '返回星期英文名。', example: 'SELECT DAYNAME(\'2026-08-21\'); -- Friday' },
-      { cat: '日期', name: 'LAST_DAY', syntax: 'LAST_DAY(date)', desc: '返回所在月的最后一天。', example: 'SELECT LAST_DAY(\'2026-02-10\'); -- 2026-02-28' },
-      { cat: '日期', name: 'DATE_FORMAT', syntax: 'DATE_FORMAT(date, format)', desc: '按格式字符串格式化日期（%Y %m %d 等）。', example: 'SELECT DATE_FORMAT(NOW(), \'%Y-%m-%d\'); -- 2026-08-21' },
-      { cat: '日期', name: 'STR_TO_DATE', syntax: 'STR_TO_DATE(str, format)', desc: '按格式解析字符串为日期。', example: 'SELECT STR_TO_DATE(\'21/08/2026\', \'%d/%m/%Y\');' },
-      { cat: '日期', name: 'UNIX_TIMESTAMP', syntax: 'UNIX_TIMESTAMP([date])', desc: '返回 Unix 时间戳（秒）。', example: 'SELECT UNIX_TIMESTAMP(\'2026-01-01\');' },
-      { cat: '日期', name: 'FROM_UNIXTIME', syntax: 'FROM_UNIXTIME(timestamp)', desc: 'Unix 时间戳转为日期时间。', example: 'SELECT FROM_UNIXTIME(1767225600);' },
+      { cat: '日期', name: 'NOW', syntax: 'NOW([fsp])', desc: t('ui.67','返回当前日期时间（语句开始时间）。'), example: 'SELECT NOW(); -- 2026-08-21 10:30:00' },
+      { cat: '日期', name: 'CURDATE', syntax: 'CURDATE()', desc: t('ui.66','返回当前日期。'), example: 'SELECT CURDATE(); -- 2026-08-21' },
+      { cat: '日期', name: 'CURTIME', syntax: 'CURTIME([fsp])', desc: t('ui.65','返回当前时间。'), example: 'SELECT CURTIME(); -- 10:30:00' },
+      { cat: '日期', name: 'DATE_ADD', syntax: 'DATE_ADD(date, INTERVAL expr unit)', desc: t('ui.64','日期加上一个时间间隔。'), example: 'SELECT DATE_ADD(\'2026-01-01\', INTERVAL 30 DAY);' },
+      { cat: '日期', name: 'DATE_SUB', syntax: 'DATE_SUB(date, INTERVAL expr unit)', desc: t('ui.63','日期减去一个时间间隔。'), example: 'SELECT DATE_SUB(NOW(), INTERVAL 1 HOUR);' },
+      { cat: '日期', name: 'DATEDIFF', syntax: 'DATEDIFF(date1, date2)', desc: t('ui.62','返回两个日期相差的天数（date1 - date2）。'), example: 'SELECT DATEDIFF(\'2026-01-10\', \'2026-01-01\'); -- 9' },
+      { cat: '日期', name: 'TIMEDIFF', syntax: 'TIMEDIFF(time1, time2)', desc: t('ui.61','返回两个时间之差（TIME 类型）。'), example: 'SELECT TIMEDIFF(\'12:00:00\', \'10:00:00\'); -- 02:00:00' },
+      { cat: '日期', name: 'TIMESTAMPDIFF', syntax: 'TIMESTAMPDIFF(unit, datetime1, datetime2)', desc: t('ui.60','按指定单位返回时间差。'), example: 'SELECT TIMESTAMPDIFF(MONTH, \'2025-01-01\', \'2026-01-01\'); -- 12' },
+      { cat: '日期', name: 'YEAR', syntax: 'YEAR(date)', desc: t('ui.59','提取年份。'), example: 'SELECT YEAR(NOW()); -- 2026' },
+      { cat: '日期', name: 'MONTH', syntax: 'MONTH(date)', desc: t('ui.58','提取月份（1-12）。'), example: 'SELECT MONTH(\'2026-08-21\'); -- 8' },
+      { cat: '日期', name: 'DAY', syntax: 'DAY(date)', desc: t('ui.57','提取日（1-31），别名 DAYOFMONTH。'), example: 'SELECT DAY(\'2026-08-21\'); -- 21' },
+      { cat: '日期', name: 'HOUR', syntax: 'HOUR(time)', desc: t('ui.56','提取小时。'), example: 'SELECT HOUR(\'10:30:00\'); -- 10' },
+      { cat: '日期', name: 'MINUTE', syntax: 'MINUTE(time)', desc: t('ui.55','提取分钟。'), example: 'SELECT MINUTE(\'10:30:00\'); -- 30' },
+      { cat: '日期', name: 'SECOND', syntax: 'SECOND(time)', desc: t('ui.54','提取秒。'), example: 'SELECT SECOND(\'10:30:45\'); -- 45' },
+      { cat: '日期', name: 'DAYOFWEEK', syntax: 'DAYOFWEEK(date)', desc: t('ui.53','星期几：1=周日，7=周六。'), example: 'SELECT DAYOFWEEK(\'2026-08-21\'); -- 6（周五）' },
+      { cat: '日期', name: 'WEEKDAY', syntax: 'WEEKDAY(date)', desc: t('ui.52','星期几：0=周一，6=周日。'), example: 'SELECT WEEKDAY(\'2026-08-21\'); -- 4' },
+      { cat: '日期', name: 'DAYOFYEAR', syntax: 'DAYOFYEAR(date)', desc: t('ui.51','一年中的第几天（1-366）。'), example: 'SELECT DAYOFYEAR(\'2026-02-01\'); -- 32' },
+      { cat: '日期', name: 'WEEK', syntax: 'WEEK(date [, mode])', desc: t('ui.50','一年中的第几周。'), example: 'SELECT WEEK(\'2026-08-21\'); -- 33' },
+      { cat: '日期', name: 'QUARTER', syntax: 'QUARTER(date)', desc: t('ui.49','返回季度（1-4）。'), example: 'SELECT QUARTER(\'2026-08-21\'); -- 3' },
+      { cat: '日期', name: 'MONTHNAME', syntax: 'MONTHNAME(date)', desc: t('ui.48','返回月份英文名。'), example: 'SELECT MONTHNAME(\'2026-08-21\'); -- August' },
+      { cat: '日期', name: 'DAYNAME', syntax: 'DAYNAME(date)', desc: t('ui.47','返回星期英文名。'), example: 'SELECT DAYNAME(\'2026-08-21\'); -- Friday' },
+      { cat: '日期', name: 'LAST_DAY', syntax: 'LAST_DAY(date)', desc: t('ui.46','返回所在月的最后一天。'), example: 'SELECT LAST_DAY(\'2026-02-10\'); -- 2026-02-28' },
+      { cat: '日期', name: 'DATE_FORMAT', syntax: 'DATE_FORMAT(date, format)', desc: t('ui.45','按格式字符串格式化日期（%Y %m %d 等）。'), example: 'SELECT DATE_FORMAT(NOW(), \'%Y-%m-%d\'); -- 2026-08-21' },
+      { cat: '日期', name: 'STR_TO_DATE', syntax: 'STR_TO_DATE(str, format)', desc: t('ui.44','按格式解析字符串为日期。'), example: 'SELECT STR_TO_DATE(\'21/08/2026\', \'%d/%m/%Y\');' },
+      { cat: '日期', name: 'UNIX_TIMESTAMP', syntax: 'UNIX_TIMESTAMP([date])', desc: t('ui.43','返回 Unix 时间戳（秒）。'), example: 'SELECT UNIX_TIMESTAMP(\'2026-01-01\');' },
+      { cat: '日期', name: 'FROM_UNIXTIME', syntax: 'FROM_UNIXTIME(timestamp)', desc: t('ui.42','Unix 时间戳转为日期时间。'), example: 'SELECT FROM_UNIXTIME(1767225600);' },
 
       { cat: '聚合', name: 'COUNT', syntax: 'COUNT(*) | COUNT(expr) | COUNT(DISTINCT expr)', desc: '统计行数；COUNT(*) 含 NULL，COUNT(expr) 跳过 NULL。', example: 'SELECT COUNT(*) FROM orders;' },
-      { cat: '聚合', name: 'SUM', syntax: 'SUM(expr)', desc: '求和，忽略 NULL。', example: 'SELECT SUM(amount) FROM orders;' },
-      { cat: '聚合', name: 'AVG', syntax: 'AVG(expr)', desc: '平均值。', example: 'SELECT AVG(price) FROM products;' },
-      { cat: '聚合', name: 'MIN', syntax: 'MIN(expr)', desc: '最小值（数字 / 字符串 / 日期）。', example: 'SELECT MIN(created_at) FROM orders;' },
-      { cat: '聚合', name: 'MAX', syntax: 'MAX(expr)', desc: '最大值。', example: 'SELECT MAX(price) FROM products;' },
-      { cat: '聚合', name: 'GROUP_CONCAT', syntax: 'GROUP_CONCAT(expr [ORDER BY ...] [SEPARATOR str])', desc: '把分组内值拼接为字符串，默认逗号分隔。', example: 'SELECT GROUP_CONCAT(name) FROM tags;' },
-      { cat: '聚合', name: 'STDDEV', syntax: 'STDDEV(expr)', desc: '总体标准差，别名 STDDEV_POP。', example: 'SELECT STDDEV(score) FROM exams;' },
-      { cat: '聚合', name: 'VARIANCE', syntax: 'VARIANCE(expr)', desc: '总体方差。', example: 'SELECT VARIANCE(score) FROM exams;' },
-      { cat: '聚合', name: 'BIT_AND', syntax: 'BIT_AND(expr)', desc: '按位与。', example: 'SELECT BIT_AND(flags) FROM items;' },
-      { cat: '聚合', name: 'BIT_OR', syntax: 'BIT_OR(expr)', desc: '按位或。', example: 'SELECT BIT_OR(flags) FROM items;' },
+      { cat: '聚合', name: 'SUM', syntax: 'SUM(expr)', desc: t('ui.41','求和，忽略 NULL。'), example: 'SELECT SUM(amount) FROM orders;' },
+      { cat: '聚合', name: 'AVG', syntax: 'AVG(expr)', desc: t('ui.40','平均值。'), example: 'SELECT AVG(price) FROM products;' },
+      { cat: '聚合', name: 'MIN', syntax: 'MIN(expr)', desc: t('ui.39','最小值（数字 / 字符串 / 日期）。'), example: 'SELECT MIN(created_at) FROM orders;' },
+      { cat: '聚合', name: 'MAX', syntax: 'MAX(expr)', desc: t('ui.38','最大值。'), example: 'SELECT MAX(price) FROM products;' },
+      { cat: '聚合', name: 'GROUP_CONCAT', syntax: 'GROUP_CONCAT(expr [ORDER BY ...] [SEPARATOR str])', desc: t('ui.37','把分组内值拼接为字符串，默认逗号分隔。'), example: 'SELECT GROUP_CONCAT(name) FROM tags;' },
+      { cat: '聚合', name: 'STDDEV', syntax: 'STDDEV(expr)', desc: t('ui.36','总体标准差，别名 STDDEV_POP。'), example: 'SELECT STDDEV(score) FROM exams;' },
+      { cat: '聚合', name: 'VARIANCE', syntax: 'VARIANCE(expr)', desc: t('ui.35','总体方差。'), example: 'SELECT VARIANCE(score) FROM exams;' },
+      { cat: '聚合', name: 'BIT_AND', syntax: 'BIT_AND(expr)', desc: t('ui.34','按位与。'), example: 'SELECT BIT_AND(flags) FROM items;' },
+      { cat: '聚合', name: 'BIT_OR', syntax: 'BIT_OR(expr)', desc: t('ui.33','按位或。'), example: 'SELECT BIT_OR(flags) FROM items;' },
 
-      { cat: '流程控制', name: 'IF', syntax: 'IF(expr, true_val, false_val)', desc: '条件表达式：expr 为真返回 true_val。', example: 'SELECT IF(1 > 2, \'yes\', \'no\'); -- no' },
-      { cat: '流程控制', name: 'IFNULL', syntax: 'IFNULL(expr1, expr2)', desc: 'expr1 为 NULL 时返回 expr2。', example: 'SELECT IFNULL(NULL, \'default\'); -- default' },
-      { cat: '流程控制', name: 'NULLIF', syntax: 'NULLIF(expr1, expr2)', desc: '两值相等返回 NULL，否则返回 expr1。', example: 'SELECT NULLIF(1, 1); -- NULL' },
-      { cat: '流程控制', name: 'COALESCE', syntax: 'COALESCE(v1, v2, ...)', desc: '返回第一个非 NULL 值。', example: 'SELECT COALESCE(NULL, NULL, 3); -- 3' },
-      { cat: '流程控制', name: 'CASE', syntax: 'CASE WHEN cond THEN val ... ELSE default END', desc: '多分支条件语句。', example: 'SELECT CASE WHEN n > 0 THEN \'正\' ELSE \'非正\' END;' },
-      { cat: '流程控制', name: 'ISNULL', syntax: 'ISNULL(expr)', desc: '为 NULL 返回 1，否则 0。', example: 'SELECT ISNULL(NULL); -- 1' },
+      { cat: '流程控制', name: 'IF', syntax: 'IF(expr, true_val, false_val)', desc: t('ui.32','条件表达式：expr 为真返回 true_val。'), example: 'SELECT IF(1 > 2, \'yes\', \'no\'); -- no' },
+      { cat: '流程控制', name: 'IFNULL', syntax: 'IFNULL(expr1, expr2)', desc: t('ui.31','expr1 为 NULL 时返回 expr2。'), example: 'SELECT IFNULL(NULL, \'default\'); -- default' },
+      { cat: '流程控制', name: 'NULLIF', syntax: 'NULLIF(expr1, expr2)', desc: t('ui.30','两值相等返回 NULL，否则返回 expr1。'), example: 'SELECT NULLIF(1, 1); -- NULL' },
+      { cat: '流程控制', name: 'COALESCE', syntax: 'COALESCE(v1, v2, ...)', desc: t('ui.29','返回第一个非 NULL 值。'), example: 'SELECT COALESCE(NULL, NULL, 3); -- 3' },
+      { cat: '流程控制', name: 'CASE', syntax: 'CASE WHEN cond THEN val ... ELSE default END', desc: t('ui.28','多分支条件语句。'), example: 'SELECT CASE WHEN n > 0 THEN \'正\' ELSE \'非正\' END;' },
+      { cat: '流程控制', name: 'ISNULL', syntax: 'ISNULL(expr)', desc: t('ui.27','为 NULL 返回 1，否则 0。'), example: 'SELECT ISNULL(NULL); -- 1' },
 
-      { cat: '加密', name: 'MD5', syntax: 'MD5(str)', desc: '返回 32 位十六进制 MD5 哈希。', example: 'SELECT MD5(\'hello\'); -- 5d41402abc4b2a76b9719d911017c592' },
-      { cat: '加密', name: 'SHA1', syntax: 'SHA1(str)', desc: '返回 40 位十六进制 SHA-1 哈希。', example: 'SELECT SHA1(\'hello\');' },
-      { cat: '加密', name: 'SHA2', syntax: 'SHA2(str, hash_length)', desc: 'SHA-224/256/384/512 哈希。', example: 'SELECT SHA2(\'hello\', 256);' },
-      { cat: '加密', name: 'AES_ENCRYPT', syntax: 'AES_ENCRYPT(str, key_str)', desc: 'AES 加密，返回二进制串。', example: 'SELECT AES_ENCRYPT(\'secret\', \'key\');' },
-      { cat: '加密', name: 'AES_DECRYPT', syntax: 'AES_DECRYPT(crypt_str, key_str)', desc: 'AES 解密，密钥错误返回 NULL。', example: 'SELECT AES_DECRYPT(AES_ENCRYPT(\'s\', \'k\'), \'k\');' },
-      { cat: '加密', name: 'RANDOM_BYTES', syntax: 'RANDOM_BYTES(len)', desc: '返回 len 字节的加密随机数。', example: 'SELECT RANDOM_BYTES(16);' },
-      { cat: '加密', name: 'COMPRESS', syntax: 'COMPRESS(str)', desc: 'zlib 压缩字符串。', example: 'SELECT COMPRESS(REPEAT(\'a\', 1000));' },
-      { cat: '加密', name: 'UNCOMPRESS', syntax: 'UNCOMPRESS(compressed)', desc: '解压 COMPRESS 产生的数据。', example: 'SELECT UNCOMPRESS(COMPRESS(\'data\'));' },
+      { cat: '加密', name: 'MD5', syntax: 'MD5(str)', desc: t('ui.26','返回 32 位十六进制 MD5 哈希。'), example: 'SELECT MD5(\'hello\'); -- 5d41402abc4b2a76b9719d911017c592' },
+      { cat: '加密', name: 'SHA1', syntax: 'SHA1(str)', desc: t('ui.25','返回 40 位十六进制 SHA-1 哈希。'), example: 'SELECT SHA1(\'hello\');' },
+      { cat: '加密', name: 'SHA2', syntax: 'SHA2(str, hash_length)', desc: t('ui.24','SHA-224/256/384/512 哈希。'), example: 'SELECT SHA2(\'hello\', 256);' },
+      { cat: '加密', name: 'AES_ENCRYPT', syntax: 'AES_ENCRYPT(str, key_str)', desc: t('ui.23','AES 加密，返回二进制串。'), example: 'SELECT AES_ENCRYPT(\'secret\', \'key\');' },
+      { cat: '加密', name: 'AES_DECRYPT', syntax: 'AES_DECRYPT(crypt_str, key_str)', desc: t('ui.22','AES 解密，密钥错误返回 NULL。'), example: 'SELECT AES_DECRYPT(AES_ENCRYPT(\'s\', \'k\'), \'k\');' },
+      { cat: '加密', name: 'RANDOM_BYTES', syntax: 'RANDOM_BYTES(len)', desc: t('ui.21','返回 len 字节的加密随机数。'), example: 'SELECT RANDOM_BYTES(16);' },
+      { cat: '加密', name: 'COMPRESS', syntax: 'COMPRESS(str)', desc: t('ui.20','zlib 压缩字符串。'), example: 'SELECT COMPRESS(REPEAT(\'a\', 1000));' },
+      { cat: '加密', name: 'UNCOMPRESS', syntax: 'UNCOMPRESS(compressed)', desc: t('ui.19','解压 COMPRESS 产生的数据。'), example: 'SELECT UNCOMPRESS(COMPRESS(\'data\'));' },
 
       { cat: 'JSON', name: 'JSON_EXTRACT', syntax: 'JSON_EXTRACT(json_doc, path)', desc: '按路径提取 JSON 值，等价于 -> 运算符。', example: 'SELECT JSON_EXTRACT(\'{"a":1}\', \'$.a\'); -- 1' },
       { cat: 'JSON', name: 'JSON_UNQUOTE', syntax: 'JSON_UNQUOTE(json_val)', desc: '去掉 JSON 值的引号，等价于 ->> 运算符。', example: 'SELECT JSON_UNQUOTE(JSON_EXTRACT(\'{"a":"x"}\', \'$.a\')); -- x' },
-      { cat: 'JSON', name: 'JSON_LENGTH', syntax: 'JSON_LENGTH(json_doc [, path])', desc: '数组元素个数或对象键数量。', example: 'SELECT JSON_LENGTH(\'[1,2,3]\'); -- 3' },
-      { cat: 'JSON', name: 'JSON_TYPE', syntax: 'JSON_TYPE(json_val)', desc: '返回值的 JSON 类型（OBJECT/ARRAY/STRING 等）。', example: 'SELECT JSON_TYPE(\'[1]\'); -- ARRAY' },
-      { cat: 'JSON', name: 'JSON_KEYS', syntax: 'JSON_KEYS(json_doc [, path])', desc: '返回对象的键数组。', example: 'SELECT JSON_KEYS(\'{"a":1,"b":2}\'); -- ["a", "b"]' },
-      { cat: 'JSON', name: 'JSON_ARRAY', syntax: 'JSON_ARRAY(v1, v2, ...)', desc: '构造 JSON 数组。', example: 'SELECT JSON_ARRAY(1, \'a\'); -- [1, "a"]' },
-      { cat: 'JSON', name: 'JSON_OBJECT', syntax: 'JSON_OBJECT(key, value, ...)', desc: '构造 JSON 对象。', example: 'SELECT JSON_OBJECT(\'k\', 1); -- {"k": 1}' },
-      { cat: 'JSON', name: 'JSON_SET', syntax: 'JSON_SET(json_doc, path, val, ...)', desc: '插入或覆盖路径值。', example: 'SELECT JSON_SET(\'{}\', \'$.a\', 1); -- {"a": 1}' },
-      { cat: 'JSON', name: 'JSON_INSERT', syntax: 'JSON_INSERT(json_doc, path, val, ...)', desc: '仅当路径不存在时插入值。', example: 'SELECT JSON_INSERT(\'{"a":1}\', \'$.a\', 9); -- {"a": 1}' },
-      { cat: 'JSON', name: 'JSON_REPLACE', syntax: 'JSON_REPLACE(json_doc, path, val, ...)', desc: '仅替换已存在的路径值。', example: 'SELECT JSON_REPLACE(\'{"a":1}\', \'$.a\', 9); -- {"a": 9}' },
-      { cat: 'JSON', name: 'JSON_REMOVE', syntax: 'JSON_REMOVE(json_doc, path, ...)', desc: '删除路径值。', example: 'SELECT JSON_REMOVE(\'{"a":1,"b":2}\', \'$.a\'); -- {"b": 2}' },
-      { cat: 'JSON', name: 'JSON_CONTAINS', syntax: 'JSON_CONTAINS(target, candidate [, path])', desc: '判断 JSON 是否包含目标值，返回 1 / 0。', example: 'SELECT JSON_CONTAINS(\'[1,2]\', \'2\'); -- 1' },
-      { cat: 'JSON', name: 'JSON_SEARCH', syntax: 'JSON_SEARCH(json_doc, one_or_all, search_str)', desc: '按值搜索路径，返回匹配路径。', example: 'SELECT JSON_SEARCH(\'{"a":"x"}\', \'one\', \'x\'); -- "$.a"' },
-      { cat: 'JSON', name: 'JSON_ARRAYAGG', syntax: 'JSON_ARRAYAGG(expr)', desc: '聚合为 JSON 数组。', example: 'SELECT JSON_ARRAYAGG(name) FROM users;' },
-      { cat: 'JSON', name: 'JSON_OBJECTAGG', syntax: 'JSON_OBJECTAGG(key, value)', desc: '聚合为 JSON 对象。', example: 'SELECT JSON_OBJECTAGG(k, v) FROM kv;' },
-      { cat: 'JSON', name: 'JSON_VALID', syntax: 'JSON_VALID(str)', desc: '判断是否为合法 JSON，返回 1 / 0。', example: 'SELECT JSON_VALID(\'{"a":1}\'); -- 1' }
+      { cat: 'JSON', name: 'JSON_LENGTH', syntax: 'JSON_LENGTH(json_doc [, path])', desc: t('ui.18','数组元素个数或对象键数量。'), example: 'SELECT JSON_LENGTH(\'[1,2,3]\'); -- 3' },
+      { cat: 'JSON', name: 'JSON_TYPE', syntax: 'JSON_TYPE(json_val)', desc: t('ui.17','返回值的 JSON 类型（OBJECT/ARRAY/STRING 等）。'), example: 'SELECT JSON_TYPE(\'[1]\'); -- ARRAY' },
+      { cat: 'JSON', name: 'JSON_KEYS', syntax: 'JSON_KEYS(json_doc [, path])', desc: t('ui.16','返回对象的键数组。'), example: 'SELECT JSON_KEYS(\'{"a":1,"b":2}\'); -- ["a", "b"]' },
+      { cat: 'JSON', name: 'JSON_ARRAY', syntax: 'JSON_ARRAY(v1, v2, ...)', desc: t('ui.15','构造 JSON 数组。'), example: 'SELECT JSON_ARRAY(1, \'a\'); -- [1, "a"]' },
+      { cat: 'JSON', name: 'JSON_OBJECT', syntax: 'JSON_OBJECT(key, value, ...)', desc: t('ui.14','构造 JSON 对象。'), example: 'SELECT JSON_OBJECT(\'k\', 1); -- {"k": 1}' },
+      { cat: 'JSON', name: 'JSON_SET', syntax: 'JSON_SET(json_doc, path, val, ...)', desc: t('ui.13','插入或覆盖路径值。'), example: 'SELECT JSON_SET(\'{}\', \'$.a\', 1); -- {"a": 1}' },
+      { cat: 'JSON', name: 'JSON_INSERT', syntax: 'JSON_INSERT(json_doc, path, val, ...)', desc: t('ui.12','仅当路径不存在时插入值。'), example: 'SELECT JSON_INSERT(\'{"a":1}\', \'$.a\', 9); -- {"a": 1}' },
+      { cat: 'JSON', name: 'JSON_REPLACE', syntax: 'JSON_REPLACE(json_doc, path, val, ...)', desc: t('ui.11','仅替换已存在的路径值。'), example: 'SELECT JSON_REPLACE(\'{"a":1}\', \'$.a\', 9); -- {"a": 9}' },
+      { cat: 'JSON', name: 'JSON_REMOVE', syntax: 'JSON_REMOVE(json_doc, path, ...)', desc: t('ui.10','删除路径值。'), example: 'SELECT JSON_REMOVE(\'{"a":1,"b":2}\', \'$.a\'); -- {"b": 2}' },
+      { cat: 'JSON', name: 'JSON_CONTAINS', syntax: 'JSON_CONTAINS(target, candidate [, path])', desc: t('ui.9','判断 JSON 是否包含目标值，返回 1 / 0。'), example: 'SELECT JSON_CONTAINS(\'[1,2]\', \'2\'); -- 1' },
+      { cat: 'JSON', name: 'JSON_SEARCH', syntax: 'JSON_SEARCH(json_doc, one_or_all, search_str)', desc: t('ui.8','按值搜索路径，返回匹配路径。'), example: 'SELECT JSON_SEARCH(\'{"a":"x"}\', \'one\', \'x\'); -- "$.a"' },
+      { cat: 'JSON', name: 'JSON_ARRAYAGG', syntax: 'JSON_ARRAYAGG(expr)', desc: t('ui.7','聚合为 JSON 数组。'), example: 'SELECT JSON_ARRAYAGG(name) FROM users;' },
+      { cat: 'JSON', name: 'JSON_OBJECTAGG', syntax: 'JSON_OBJECTAGG(key, value)', desc: t('ui.6','聚合为 JSON 对象。'), example: 'SELECT JSON_OBJECTAGG(k, v) FROM kv;' },
+      { cat: 'JSON', name: 'JSON_VALID', syntax: 'JSON_VALID(str)', desc: t('ui.5','判断是否为合法 JSON，返回 1 / 0。'), example: 'SELECT JSON_VALID(\'{"a":1}\'); -- 1' }
     ];
 
     var CATS = [];
@@ -220,7 +221,7 @@
         }
         items.push(d);
       }
-      resultCount.textContent = '共 ' + items.length + ' / ' + DATA.length + ' 个函数';
+      resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 个函数');
       if (items.length === 0) {
         fnList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的函数，换个关键词试试。</p>';
         return;
@@ -244,7 +245,7 @@
             currentFn = name;
             outputText.textContent = name;
             copyToClipboard(name, copyBtn);
-            setStatus('已复制函数名');
+            setStatus(t('ui.3','已复制函数名'));
           };
         })(names[k]);
       }

@@ -51,9 +51,9 @@
     <div class="card">
       <div class="search-row">
         <input id="searchInput" class="input" type="text" placeholder="输入卦名搜索，如：乾、屯、既济">
-        <span class="count-note" id="countNote">共 64 卦</span>
+        <span class="count-note" id="countNote" data-i18n="ui.1">共 64 卦</span>
       </div>
-      <div class="preview-strip" id="previewStrip">悬停任意卦卡，此处预览卦辞</div>
+      <div class="preview-strip" id="previewStrip" data-i18n="ui.2">悬停任意卦卡，此处预览卦辞</div>
     </div>
     <div class="card detail-panel" id="detailPanel">
       <div class="detail-head">
@@ -64,23 +64,24 @@
         </div>
       </div>
       <div class="detail-body">
-        <div class="detail-line"><span class="dl-label">卦辞</span><p id="detailGuaci"></p></div>
-        <div class="detail-line detail-note"><span class="dl-label">简注</span><p id="detailNote"></p></div>
+        <div class="detail-line"><span class="dl-label" data-i18n="ui.3">卦辞</span><p id="detailGuaci"></p></div>
+        <div class="detail-line detail-note"><span class="dl-label" data-i18n="ui.4">简注</span><p id="detailNote"></p></div>
       </div>
-      <div class="close-row"><button id="detailClose" class="btn btn-secondary">收起详情</button></div>
+      <div class="close-row"><button id="detailClose" class="btn btn-secondary" data-i18n="ui.5">收起详情</button></div>
     </div>
     <div class="card">
       <div class="gua-grid" id="guaGrid"></div>
     </div>
     <div class="card">
-      <p style="font-size:var(--font-size-xs);color:var(--color-text-disabled)">卦辞为《周易》原文，简注为便于理解的通俗提示，仅供传统文化爱好者研读参考。</p>
+      <p style="font-size:var(--font-size-xs);color:var(--color-text-disabled)" data-i18n="ui.6">卦辞为《周易》原文，简注为便于理解的通俗提示，仅供传统文化爱好者研读参考。</p>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var GUA = [
@@ -149,7 +150,7 @@
         { n: '水火既济', l: '101010', g: '亨小，利贞。初吉终乱。', j: '事已成时，慎防终乱' },
         { n: '火水未济', l: '010101', g: '亨。小狐汔济，濡其尾，无攸利。', j: '事未成时，再接再厉' }
       ];
-      var YAO_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+      var YAO_NAMES = [ t('ui.25','初爻'), t('ui.24','二爻'), t('ui.23','三爻'), t('ui.22','四爻'), t('ui.21','五爻'), t('ui.20','上爻')];
       var previewStrip = document.getElementById('previewStrip');
       var grid = document.getElementById('guaGrid');
       var searchInput = document.getElementById('searchInput');
@@ -215,7 +216,7 @@
         for (var i = 0; i < GUA.length; i++) {
           grid.appendChild(makeCard(GUA[i]));
         }
-        countNote.textContent = '共 ' + GUA.length + ' 卦';
+        countNote.textContent = t('ui.total','共 ') + GUA.length + t('ui.19',' 卦');
       }
 
       function applyFilter() {
@@ -228,7 +229,7 @@
           cards[i].className = 'gua-card' + (hit ? '' : ' hidden');
           if (hit) shown += 1;
         }
-        countNote.textContent = '共 ' + shown + '/' + GUA.length + ' 卦';
+        countNote.textContent = t('ui.total','共 ') + shown + '/' + GUA.length + t('ui.19',' 卦');
       }
 
       function showDetail(item) {
@@ -236,14 +237,14 @@
         document.getElementById('detailYao').innerHTML = '';
         document.getElementById('detailYao').appendChild(buildYaoBox(item.l, 'detail-yao', true));
         document.getElementById('detailName').textContent = item.n;
-        var TRIG = ['坤', '艮', '坎', '巽', '震', '离', '兑', '乾'];
+        var TRIG = [ t('ui.18','坤'), t('ui.17','艮'), t('ui.16','坎'), t('ui.15','巽'), t('ui.14','震'), t('ui.13','离'), t('ui.12','兑'), t('ui.11','乾')];
         var lo = parseInt(item.l.slice(0, 3), 2);
         var up = parseInt(item.l.slice(3, 6), 2);
-        document.getElementById('detailSub').textContent = '下卦' + TRIG[lo] + ' · 上卦' + TRIG[up] + ' · 六爻卦象';
+        document.getElementById('detailSub').textContent = t('ui.10','下卦') + TRIG[lo] + t('ui.9',' · 上卦') + TRIG[up] + t('ui.8',' · 六爻卦象');
         document.getElementById('detailGuaci').textContent = item.g;
         document.getElementById('detailNote').textContent = item.j;
         detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setStatus('正在查看：' + item.n);
+        setStatus(t('ui.7','正在查看：') + item.n);
       }
 
       document.getElementById('detailClose').addEventListener('click', function () {
@@ -252,7 +253,7 @@
       searchInput.addEventListener('input', applyFilter);
 
       renderGrid();
-      previewStrip.textContent = '悬停任意卦卡，此处预览卦辞';
+      previewStrip.textContent = t('ui.2','悬停任意卦卡，此处预览卦辞');
     })();
   </script>
 </body>

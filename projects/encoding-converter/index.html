@@ -28,14 +28,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -149,12 +150,12 @@
           utf16.push(hexByte(cu & 0xFF), hexByte(cu >> 8));
         }
         blocks = [
-          { label: 'UTF-8 十六进制', cnt: bytes.length + ' 字节', val: utf8hex.join(' ') },
-          { label: 'UTF-16LE 十六进制', cnt: text.length * 2 + ' 字节', val: utf16.join(' ') },
+          { label: t('ui.7','UTF-8 十六进制'), cnt: bytes.length + t('ui.bytes',' 字节'), val: utf8hex.join(' ') },
+          { label: t('ui.6','UTF-16LE 十六进制'), cnt: text.length * 2 + t('ui.bytes',' 字节'), val: utf16.join(' ') },
           { label: 'Base64', cnt: '', val: toBase64(bytes) },
-          { label: 'URL 编码', cnt: '', val: toUrl(bytes) },
-          { label: 'Unicode 转义', cnt: text.length + ' 个码元', val: toUnicodeEscape(text) },
-          { label: 'HTML 实体', cnt: '', val: toHtmlEntities(text) }
+          { label: t('ui.5','URL 编码'), cnt: '', val: toUrl(bytes) },
+          { label: t('ui.4','Unicode 转义'), cnt: text.length + t('ui.3',' 个码元'), val: toUnicodeEscape(text) },
+          { label: t('ui.2','HTML 实体'), cnt: '', val: toHtmlEntities(text) }
         ];
         var html = [];
         html.push('<div class="enc-list">');
@@ -170,7 +171,7 @@
           lines.push(blocks[m].label + '：' + blocks[m].val);
         }
         lastSummary = lines.join('\n');
-        setStatus('已生成 6 种编码表示');
+        setStatus(t('ui.1','已生成 6 种编码表示'));
       }
 
       outputEl.addEventListener('click', function (e) {

@@ -32,38 +32,38 @@
     <div class="card">
       <div class="param-grid">
         <div class="param-field">
-          <label for="meanInput">均值 μ</label>
+          <label for="meanInput" data-i18n="ui.1">均值 μ</label>
           <input type="text" id="meanInput" class="input js-focus-input" placeholder="如 0">
         </div>
         <div class="param-field">
-          <label for="sdInput">标准差 σ</label>
+          <label for="sdInput" data-i18n="ui.2">标准差 σ</label>
           <input type="text" id="sdInput" class="input" placeholder="如 1">
         </div>
       </div>
       <div class="mode-row">
-        <label for="modeSelect">计算模式</label>
+        <label for="modeSelect" data-i18n="ui.3">计算模式</label>
         <select id="modeSelect" class="input">
-          <option value="single">单 X 值</option>
-          <option value="interval">区间 [x1, x2]</option>
+          <option value="single" data-i18n="ui.4">单 X 值</option>
+          <option value="interval" data-i18n="ui.5">区间 [x1, x2]</option>
         </select>
       </div>
       <div class="x-row">
         <div class="param-field">
-          <label for="x1Input" id="x1Label">X 值</label>
+          <label for="x1Input" id="x1Label" data-i18n="ui.6">X 值</label>
           <input type="text" id="x1Input" class="input" placeholder="如 1.5">
         </div>
         <div class="param-field" id="x2Field" style="display:none;">
-          <label for="x2Input">X2 值</label>
+          <label for="x2Input" data-i18n="ui.7">X2 值</label>
           <input type="text" id="x2Input" class="input" placeholder="如 2.5">
         </div>
       </div>
       <div style="margin-top:var(--space-2);">
-        <button class="btn btn-primary" id="calcBtn">计算</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.calc">计算</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="chart-wrap" id="chartWrap" style="display:none;">
       <canvas id="normChart" width="640" height="260"></canvas>
@@ -71,9 +71,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var meanEl = document.getElementById('meanInput');
@@ -270,7 +271,7 @@
         } else {
           drawCurve(mu, sigma, z1, (x2 - mu) / sigma, true);
         }
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       function toggleMode() {

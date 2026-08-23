@@ -25,26 +25,27 @@
     <div class="card">
       <div class="range-controls">
         <input id="startInput" type="date" class="input js-focus-input">
-        <span>至</span>
+        <span data-i18n="ui.1">至</span>
         <input id="endInput" type="date" class="input">
         <select id="stepSelect" class="input">
-          <option value="day">每天</option>
-          <option value="week">每周</option>
-          <option value="month">每月</option>
-          <option value="year">每年</option>
+          <option value="day" data-i18n="ui.2">每天</option>
+          <option value="week" data-i18n="ui.3">每周</option>
+          <option value="month" data-i18n="ui.4">每月</option>
+          <option value="year" data-i18n="ui.5">每年</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var startInput = document.getElementById('startInput');
@@ -147,14 +148,14 @@
       }
       if (i > MAX_ITEMS) {
         outputText.innerHTML = '';
-        setStatus('日期序列超过 ' + MAX_ITEMS + ' 条，请缩小日期范围', 'error');
+        setStatus(t('ui.8','日期序列超过 ') + MAX_ITEMS + t('ui.7',' 条，请缩小日期范围'), 'error');
         return;
       }
       var html = '<div class="range-summary">共 <b>' + list.length + '</b> 个日期（' + htmlEscape(stepLabel(step)) + '）</div>';
       html += '<div class="date-list">' + htmlEscape(list.join('\n')).replace(/\n/g, '<br>') + '</div>';
       outputText.innerHTML = html;
       copyBtn.onclick = function () { copyToClipboard(list.join('\n'), copyBtn); };
-      setStatus('已生成 ' + list.length + ' 个日期');
+      setStatus(t('ui.generated','已生成 ') + list.length + t('ui.6',' 个日期'));
     }
 
     function stepLabel(step) {

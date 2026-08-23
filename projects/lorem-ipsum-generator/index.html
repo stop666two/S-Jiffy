@@ -18,20 +18,20 @@
 <p class="tool-desc" data-i18n="desc">生成占位文本，支持字节、Markdown 模式与多语言词库。</p>
 <div class="card">
 <div class="lorem-controls">
-<div class="field"><label for="loremUnit">单位</label>
+<div class="field"><label for="loremUnit" data-i18n="ui.1">单位</label>
 <select id="loremUnit" class="input" style="width:auto;">
-<option value="paragraphs">段落</option><option value="sentences">句子</option><option value="words">单词</option><option value="chars">字符</option><option value="bytes">字节</option>
+<option value="paragraphs" data-i18n="ui.2">段落</option><option value="sentences" data-i18n="ui.3">句子</option><option value="words" data-i18n="ui.4">单词</option><option value="chars" data-i18n="ui.chars">字符</option><option value="bytes" data-i18n="ui.bytes">字节</option>
 </select></div>
-<div class="field"><label for="loremCount">计数</label><input id="loremCount" class="input" type="number" min="1" max="500" value="3"></div>
-<div class="field"><label for="loremFormat">格式化</label>
+<div class="field"><label for="loremCount" data-i18n="ui.5">计数</label><input id="loremCount" class="input" type="number" min="1" max="500" value="3"></div>
+<div class="field"><label for="loremFormat" data-i18n="ui.format">格式化</label>
 <select id="loremFormat" class="input" style="width:auto;">
-<option value="text">纯文本</option><option value="html">HTML</option><option value="markdown">Markdown</option>
+<option value="text" data-i18n="ui.6">纯文本</option><option value="html">HTML</option><option value="markdown">Markdown</option>
 </select></div>
-<div class="field"><label for="loremLocale">语言</label>
+<div class="field"><label for="loremLocale" data-i18n="ui.7">语言</label>
 <select id="loremLocale" class="input" style="width:auto;">
-<option value="latin">拉丁语</option><option value="english">英语</option><option value="chinese">中文</option>
+<option value="latin" data-i18n="ui.8">拉丁语</option><option value="english" data-i18n="ui.9">英语</option><option value="chinese" data-i18n="ui.10">中文</option>
 </select></div>
-<div><button id="generateBtn" class="btn btn-primary">生成</button></div>
+<div><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
 </div>
 <div class="gen-stats" id="genStats">
 <span class="stat">单词：<strong id="statWords">0</strong></span>
@@ -40,9 +40,10 @@
 <span class="stat">句子：<strong id="statSents">0</strong></span>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
   var loremUnit=document.getElementById('loremUnit'),loremCount=document.getElementById('loremCount'),loremFormat=document.getElementById('loremFormat'),loremLocale=document.getElementById('loremLocale');
@@ -51,8 +52,8 @@
 
   var wordLists={
     latin:['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','aliquip','ex','ea','commodo','consequat','duis','aute','irure','reprehenderit','voluptate','velit','esse','cillum','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','officia','deserunt','mollit','anim','id','est','laborum'],
-    english:['the','quick','brown','fox','jumps','over','lazy','dog','hello','world','example','sample','text','generate','random','content','placeholder','data','value','test','demo','user','input','输出','format','parser','builder','maker','tool','utility','function','method','variable','constant','string','number','array','object','boolean','null','undefined'],
-    chinese:['你好','世界','示例','文本','生成','随机','内容','占位','数据','测试','用户','输入','输出','格式','解析','构建','工具','功能','方法','变量','常量','字符串','数字','数组','对象','布尔','空值']
+    english:['the','quick','brown','fox','jumps','over','lazy','dog','hello','world','example','sample','text','generate','random','content','placeholder','data','value','test','demo','user','input', t('ui.23','输出'),'format','parser','builder','maker','tool','utility','function','method','variable','constant','string','number','array','object','boolean','null','undefined'],
+    chinese:[ t('ui.33','你好'), t('ui.32','世界'), t('ui.31','示例'), t('ui.30','文本'), t('ui.generate','生成'), t('ui.29','随机'), t('ui.28','内容'), t('ui.27','占位'), t('ui.26','数据'), t('ui.test','测试'), t('ui.25','用户'), t('ui.24','输入'), t('ui.23','输出'), t('ui.22','格式'), t('ui.parse','解析'), t('ui.21','构建'), t('ui.20','工具'), t('ui.19','功能'), t('ui.18','方法'), t('ui.17','变量'), t('ui.16','常量'), t('ui.string','字符串'), t('ui.15','数字'), t('ui.14','数组'), t('ui.13','对象'), t('ui.12','布尔'), t('ui.11','空值')]
   };
   function getWords(){return wordLists[loremLocale.value]||wordLists.latin;}
   function randomWord(){var w=getWords();return w[Math.floor(Math.random()*w.length)];}
@@ -78,10 +79,10 @@
     var ft=outputEl.textContent;statWords.textContent=ft.trim()?ft.trim().split(/\s+/).length:0;
     statChars.textContent=ft.length;statParas.textContent=ft.split(/\n\s*\n/).filter(function(p){return p.trim().length>0;}).length||(ft.trim()?1:0);
     statSents.textContent=ft.split(/[.!?。！？]+/).filter(function(s){return s.trim().length>0;}).length;
-    setStatus('已生成 '+count+' '+unit);}
+    setStatus(t('ui.generated','已生成 ') +count+' '+unit);}
 
   generateBtn.addEventListener('click',generate);
-  document.getElementById('copyBtn').addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,this);setStatus(t('ui.copied','已复制'));}});
   generate();
 })();
 </script></body></html>

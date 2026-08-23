@@ -21,23 +21,24 @@
     <div class="card" style="display:flex;flex-direction:column;gap:16px;">
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
-          <label for="barcodeInput" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;">输入内容</label>
+          <label for="barcodeInput" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">输入内容</label>
           <input id="barcodeInput" class="input js-focus-input" placeholder="输入条码内容" value="S-JIFFY-123">
         </div>
-        <div><button id="generateBtn" class="btn btn-primary">生成条码</button></div>
+        <div><button id="generateBtn" class="btn btn-primary" data-i18n="ui.2">生成条码</button></div>
       </div>
     </div>
     <div class="barcode-wrap" id="barcodeWrap" style="display:none;"></div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var barcodeInput = document.getElementById('barcodeInput');
@@ -121,8 +122,8 @@
         if (!svg) return;
         barcodeWrap.innerHTML = svg;
         barcodeWrap.style.display = 'flex';
-        outputEl.textContent = '条码已生成: ' + text + ' (CODE128)';
-        setStatus('条码生成成功');
+        outputEl.textContent = t('ui.4','条码已生成: ') + text + ' (CODE128)';
+        setStatus(t('ui.3','条码生成成功'));
       }
 
       generateBtn.addEventListener('click', generate);
@@ -132,7 +133,7 @@
         var text = outputEl.textContent;
         if (text) {
           copyToClipboard(text, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

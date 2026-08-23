@@ -33,32 +33,33 @@
       <div class="filter-row">
         <input id="searchInput" class="input js-focus-input" placeholder="搜索端口号、服务名或用途，如 3306 / mysql / 邮件">
         <select id="catSel" class="input">
-          <option value="all">全部分类</option>
+          <option value="all" data-i18n="ui.1">全部分类</option>
           <option value="web">Web</option>
-          <option value="db">数据库</option>
-          <option value="mail">邮件</option>
-          <option value="remote">远程</option>
-          <option value="other">其他</option>
+          <option value="db" data-i18n="ui.database">数据库</option>
+          <option value="mail" data-i18n="ui.2">邮件</option>
+          <option value="remote" data-i18n="ui.3">远程</option>
+          <option value="other" data-i18n="ui.4">其他</option>
         </select>
       </div>
       <div class="port-count" id="countLine"></div>
       <div class="port-scroll">
         <table class="port-table">
-          <thead><tr><th>端口</th><th>服务</th><th>协议</th><th>用途</th></tr></thead>
+          <thead><tr><th data-i18n="ui.5">端口</th><th data-i18n="ui.6">服务</th><th data-i18n="ui.7">协议</th><th data-i18n="ui.8">用途</th></tr></thead>
           <tbody id="portBody"></tbody>
         </table>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var PORTS = [
@@ -247,9 +248,9 @@
           html += '<tr data-port="' + rows[k].p + '"><td class="port-num">' + rows[k].p + '</td><td>' + htmlEscape(rows[k].n) + '</td><td>' + htmlEscape(rows[k].t) + '</td><td>' + htmlEscape(rows[k].u) + ' <span class="cat-tag">' + htmlEscape(catLabel(rows[k].c)) + '</span></td></tr>';
         }
         document.getElementById('portBody').innerHTML = html;
-        document.getElementById('countLine').textContent = '共 ' + PORTS.length + ' 个端口，当前显示 ' + rows.length + ' 个';
-        var tail = lastCopied ? '｜最近复制：' + lastCopied : '';
-        output.innerHTML = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">当前显示 ' + rows.length + '/' + PORTS.length + ' 个端口。点击任意行复制该端口号。' + htmlEscape(tail) + '</span>';
+        document.getElementById('countLine').textContent = t('ui.total','共 ') + PORTS.length + t('ui.13',' 个端口，当前显示 ') + rows.length + t('ui.count',' 个');
+        var tail = lastCopied ? t('ui.12','｜最近复制：') + lastCopied : '';
+        output.innerHTML = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">当前显示 ' + rows.length + '/' + PORTS.length + t('ui.11',' 个端口。点击任意行复制该端口号。') + htmlEscape(tail) + '</span>';
         current = '';
         var list = [];
         for (var j = 0; j < rows.length; j++) list.push(rows[j].p + ' ' + rows[j].n);
@@ -271,7 +272,7 @@
         var port = tr.getAttribute('data-port');
         lastCopied = port;
         copyToClipboard(port, document.getElementById('copyBtn'));
-        setStatus('已复制端口号 ' + port);
+        setStatus(t('ui.10','已复制端口号 ') + port);
         render();
       });
       document.getElementById('searchInput').addEventListener('input', render);
@@ -279,7 +280,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制当前筛选出的端口清单');
+        setStatus(t('ui.9','已复制当前筛选出的端口清单'));
       });
       render();
     })();

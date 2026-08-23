@@ -29,21 +29,22 @@
         <input type="checkbox" id="mapOpt" checked> 表名与模型名不同时添加 @@map
       </div>
       <div class="btn-row" style="display:-webkit-box;display:-ms-flexbox;display:flex;gap:var(--space-2)">
-        <button class="btn btn-primary" id="genBtn">生成 Prisma Schema</button>
+        <button class="btn btn-primary" id="genBtn" data-i18n="ui.1">生成 Prisma Schema</button>
       </div>
       <ul class="stat-list" id="statList" style="display:none"></ul>
       <ul class="warn-list" id="warnList" style="display:none"></ul>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var sqlInput = document.getElementById('sqlInput');
@@ -244,11 +245,11 @@
         if (/^(KEY|INDEX|CONSTRAINT)/i.test(it)) continue;
         var col = parseColumn(it);
         if (!col) {
-          warnings.push('无法解析的定义：' + it.substring(0, 60));
+          warnings.push(t('ui.14','无法解析的定义：') + it.substring(0, 60));
           continue;
         }
         if (col.primary) pkCols.push(col.name);
-        if (col.unknownType) warnings.push('未知类型 ' + col.rawType + ' 已映射为 String，请手动核对。');
+        if (col.unknownType) warnings.push(t('ui.13','未知类型 ') + col.rawType + t('ui.12',' 已映射为 String，请手动核对。'));
         columns.push(col);
       }
       return {
@@ -349,7 +350,7 @@
       }
       var stmts = splitStatements(sql);
       if (stmts.length === 0) {
-        outputText.textContent = '未找到 CREATE TABLE 语句，请检查 SQL 语法（每条语句以 CREATE TABLE 开头）。';
+        outputText.textContent = t('ui.11','未找到 CREATE TABLE 语句，请检查 SQL 语法（每条语句以 CREATE TABLE 开头）。');
         statList.style.display = 'none';
         warnList.style.display = 'none';
         setStatus('未找到 CREATE TABLE', 'error');
@@ -361,11 +362,11 @@
       for (var i = 0; i < stmts.length; i++) {
         var parsed = parseCreateTable(stmts[i]);
         if (!parsed) {
-          allWarnings.push('第 ' + (i + 1) + ' 条 CREATE TABLE 解析失败，已跳过。');
+          allWarnings.push(t('ui.nth','第 ') + (i + 1) + t('ui.10',' 条 CREATE TABLE 解析失败，已跳过。'));
           continue;
         }
         if (parsed.columns.length === 0) {
-          allWarnings.push('表 ' + parsed.tableName + ' 未解析到任何列，请检查括号与逗号。');
+          allWarnings.push(t('ui.8','表 ') + parsed.tableName + t('ui.9',' 未解析到任何列，请检查括号与逗号。'));
           continue;
         }
         models.push(buildModel(parsed, mapOpt.checked));
@@ -381,11 +382,11 @@
           uniq: parsed.columns.filter(function (c) { return c.unique; }).length + parsed.uniques.length
         });
         for (var w = 0; w < parsed.warnings.length; w++) {
-          allWarnings.push('表 ' + parsed.tableName + '：' + parsed.warnings[w]);
+          allWarnings.push(t('ui.8','表 ') + parsed.tableName + '：' + parsed.warnings[w]);
         }
       }
       if (models.length === 0) {
-        outputText.textContent = '全部 CREATE TABLE 语句解析失败，请检查 SQL 语法。';
+        outputText.textContent = t('ui.7','全部 CREATE TABLE 语句解析失败，请检查 SQL 语法。');
         statList.style.display = 'none';
         warnList.style.display = 'none';
         setStatus('解析失败', 'error');
@@ -395,7 +396,7 @@
       var statHtml = '';
       for (var s = 0; s < stats.length; s++) {
         var st = stats[s];
-        statHtml += '<li><b>' + htmlEscape(st.name) + '</b>：' + st.colCount + ' 个字段，主键 ' + htmlEscape(st.pk) + '，' + st.uniq + ' 处唯一约束' + (st.fks.length ? '，外键 ' + htmlEscape(st.fks.join('；')) : '') + '</li>';
+        statHtml += '<li><b>' + htmlEscape(st.name) + '</b>：' + st.colCount + t('ui.6',' 个字段，主键 ') + htmlEscape(st.pk) + '，' + st.uniq + t('ui.5',' 处唯一约束') + (st.fks.length ? t('ui.4','，外键 ') + htmlEscape(st.fks.join('；')) : '') + '</li>';
       }
       statList.innerHTML = statHtml;
       statList.style.display = 'block';
@@ -410,7 +411,7 @@
         warnList.style.display = 'none';
       }
       outputText.textContent = lastCode;
-      setStatus('成功生成 ' + models.length + ' 个 model');
+      setStatus(t('ui.3','成功生成 ') + models.length + t('ui.2',' 个 model'));
     }
 
     document.getElementById('genBtn').onclick = generate;

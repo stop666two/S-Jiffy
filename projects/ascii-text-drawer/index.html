@@ -19,7 +19,7 @@
     <p class="tool-desc" data-i18n="desc">将文本转换为 ASCII 艺术字，使用 figlet.js 标准库，6 种本地字体。</p>
     <div class="card font-select">
       <input id="inputText" class="input js-focus-input" type="text" placeholder="输入英文文本..." style="flex:1;min-width:150px;font-size:16px;letter-spacing:1px;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">字体</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">字体</label>
       <select id="fontSelect" class="input" style="width:auto;min-width:120px;">
         <option value="Standard">Standard</option>
         <option value="Big">Big</option>
@@ -28,16 +28,17 @@
         <option value="Bubble">Bubble</option>
         <option value="Digital">Digital</option>
       </select>
-      <button id="generateBtn" class="btn btn-primary">生成</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" style="padding:0;">
       <pre class="ascii-output" id="outputText" style="padding-right:60px;"></pre>
-      <button class="copy-btn" id="copyBtn" style="top:4px;right:4px;">复制</button>
+      <button class="copy-btn" id="copyBtn" style="top:4px;right:4px;" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var i=document.getElementById('inputText'),f=document.getElementById('fontSelect'),o=document.getElementById('outputText');
     figlet.defaults({fontPath:'fonts'});
@@ -51,7 +52,7 @@
     document.getElementById('generateBtn').addEventListener('click',gen);
     i.addEventListener('keydown',function(e){if(e.key==='Enter')gen();});
     document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});
-    document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+    document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
   })();</script>
 </body>
 </html>

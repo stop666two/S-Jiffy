@@ -41,14 +41,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var searchInput = document.getElementById('searchInput');
@@ -60,35 +61,35 @@
     var lastCopy = '';
 
     var items = [
-      { cat: '变量与基础', name: '变量与类型', syntax: 'x = 1\ny = "str"\nz = 1.5', example: 'age = 25\nname = "Tom"\npi = 3.14\nis_ok = True' },
-      { cat: '变量与基础', name: 'f-string 格式化', syntax: 'f"{name} 今年 {age} 岁"', example: 'name = "Tom"\nprint(f"Hello, {name}!")' },
-      { cat: '变量与基础', name: '解包赋值', syntax: 'a, b = b, a\nx, *rest = items', example: 'a, b = 1, 2\na, b = b, a\nnums = [1, 2, 3]\nfirst, *rest = nums' },
-      { cat: '列表与切片', name: '列表推导式', syntax: '[expr for x in seq if cond]', example: 'squares = [n * n for n in range(10)]\nevens = [n for n in range(20) if n % 2 == 0]' },
-      { cat: '列表与切片', name: '切片', syntax: 'seq[start:stop:step]', example: 'nums = [0, 1, 2, 3, 4, 5]\nnums[1:4]   # [1, 2, 3]\nnums[::-1]  # 反转' },
-      { cat: '列表与切片', name: '列表常用方法', syntax: 'list.append(x) / extend(seq) / remove(x)', example: 'lst = [1, 2]\nlst.append(3)\nlst.extend([4, 5])\nlst.remove(2)' },
-      { cat: '字典', name: '字典操作', syntax: 'd = {"a": 1}\nd["b"] = 2\nd.get("a")', example: 'd = {"name": "Tom", "age": 25}\nd["city"] = "Beijing"\nd.get("name")      # Tom\nitems = d.items()' },
-      { cat: '字典', name: '字典推导与合并', syntax: '{k: v for ...}\n{a: b, **c}', example: 'sq = {n: n * n for n in range(3)}\nd1 = {"a": 1}\nd2 = {"b": 2}\nmerged = {**d1, **d2}' },
-      { cat: '函数', name: '函数定义', syntax: 'def f(a, b=10):\n    return a + b', example: 'def greet(name, greeting="Hi"):\n    return f"{greeting}, {name}"' },
-      { cat: '函数', name: '参数类型', syntax: 'def f(*args, **kwargs):', example: 'def log(*args, **kwargs):\n    print(args, kwargs)\n\nlog(1, 2, key="v")' },
-      { cat: '函数', name: 'lambda 匿名函数', syntax: 'lambda x: x + 1', example: 'double = lambda x: x * 2\nsorted([3, 1, 2], key=lambda x: -x)' },
+      { cat: '变量与基础', name: t('ui.37','变量与类型'), syntax: 'x = 1\ny = "str"\nz = 1.5', example: 'age = 25\nname = "Tom"\npi = 3.14\nis_ok = True' },
+      { cat: '变量与基础', name: t('ui.36','f-string 格式化'), syntax: 'f"{name} 今年 {age} 岁"', example: 'name = "Tom"\nprint(f"Hello, {name}!")' },
+      { cat: '变量与基础', name: t('ui.35','解包赋值'), syntax: 'a, b = b, a\nx, *rest = items', example: 'a, b = 1, 2\na, b = b, a\nnums = [1, 2, 3]\nfirst, *rest = nums' },
+      { cat: '列表与切片', name: t('ui.34','列表推导式'), syntax: '[expr for x in seq if cond]', example: 'squares = [n * n for n in range(10)]\nevens = [n for n in range(20) if n % 2 == 0]' },
+      { cat: '列表与切片', name: t('ui.33','切片'), syntax: 'seq[start:stop:step]', example: 'nums = [0, 1, 2, 3, 4, 5]\nnums[1:4]   # [1, 2, 3]\nnums[::-1]  # 反转' },
+      { cat: '列表与切片', name: t('ui.32','列表常用方法'), syntax: 'list.append(x) / extend(seq) / remove(x)', example: 'lst = [1, 2]\nlst.append(3)\nlst.extend([4, 5])\nlst.remove(2)' },
+      { cat: '字典', name: t('ui.31','字典操作'), syntax: 'd = {"a": 1}\nd["b"] = 2\nd.get("a")', example: 'd = {"name": "Tom", "age": 25}\nd["city"] = "Beijing"\nd.get("name")      # Tom\nitems = d.items()' },
+      { cat: '字典', name: t('ui.30','字典推导与合并'), syntax: '{k: v for ...}\n{a: b, **c}', example: 'sq = {n: n * n for n in range(3)}\nd1 = {"a": 1}\nd2 = {"b": 2}\nmerged = {**d1, **d2}' },
+      { cat: '函数', name: t('ui.29','函数定义'), syntax: 'def f(a, b=10):\n    return a + b', example: 'def greet(name, greeting="Hi"):\n    return f"{greeting}, {name}"' },
+      { cat: '函数', name: t('ui.28','参数类型'), syntax: 'def f(*args, **kwargs):', example: 'def log(*args, **kwargs):\n    print(args, kwargs)\n\nlog(1, 2, key="v")' },
+      { cat: '函数', name: t('ui.27','lambda 匿名函数'), syntax: 'lambda x: x + 1', example: 'double = lambda x: x * 2\nsorted([3, 1, 2], key=lambda x: -x)' },
       { cat: '异常', name: 'try / except', syntax: 'try:\n    ...\nexcept ValueError:\n    ...\nfinally:\n    ...', example: 'try:\n    n = int("abc")\nexcept ValueError:\n    print("转换失败")' },
-      { cat: '异常', name: '抛出异常', syntax: 'raise ValueError("msg")', example: 'def check(x):\n    if x < 0:\n        raise ValueError("不能为负数")\n    return x' },
-      { cat: '文件读写', name: '文件读写', syntax: 'with open("f.txt", "r") as f:\n    data = f.read()', example: 'with open("data.txt", "w", encoding="utf-8") as f:\n    f.write("hello")\n\nwith open("data.txt", "r") as f:\n    for line in f:\n        print(line.strip())' },
-      { cat: '内置函数', name: '常用内置函数', syntax: 'len() / type() / range() / zip() / enumerate()', example: 'names = ["a", "b"]\nfor i, n in enumerate(names, 1):\n    print(i, n)\n\nlist(zip([1, 2], ["x", "y"]))' },
-      { cat: '内置函数', name: '排序与聚合', syntax: 'sorted() / min() / max() / sum()', example: 'nums = [3, 1, 2]\nsorted(nums)         # [1, 2, 3]\nsum(nums)            # 6\nmax(nums, key=lambda x: -x)' },
-      { cat: '字符串方法', name: '字符串常用方法', syntax: 's.upper() / strip() / split() / join()', example: 's = "  hello world  "\ns.strip()\ns.split()\n"-".join(["a", "b"])\ns.replace("world", "python")' },
-      { cat: '字符串方法', name: '字符串判断', syntax: 's.startswith() / isdigit() / find()', example: 'url = "https://example.com"\nurl.startswith("https")\n"123".isdigit()\n"abc".find("b")  # 1' },
-      { cat: '集合', name: '集合操作', syntax: 'set() / 并集 | / 交集 & / 差集 -', example: 'a = {1, 2, 3}\nb = {2, 3, 4}\na | b   # {1, 2, 3, 4}\na & b   # {2, 3}\na - b   # {1}' },
-      { cat: '装饰器', name: '装饰器', syntax: '@deco\ndef f(): ...', example: 'import time\n\ndef timer(func):\n    def wrapper(*args, **kwargs):\n        t0 = time.time()\n        r = func(*args, **kwargs)\n        print("耗时", time.time() - t0)\n        return r\n    return wrapper\n\n@timer\ndef work():\n    time.sleep(1)' },
-      { cat: '生成器', name: '生成器', syntax: 'def gen():\n    yield x', example: 'def count_up(n):\n    i = 0\n    while i < n:\n        yield i\n        i += 1\n\nfor x in count_up(3):\n    print(x)' },
-      { cat: '生成器', name: '生成器表达式', syntax: '(expr for x in seq)', example: 'sum(x * x for x in range(10))\n\n# 内存友好的惰性求值' },
-      { cat: '虚拟环境', name: 'venv 虚拟环境', syntax: 'python -m venv .venv\n.venv\\Scripts\\activate', example: '# Windows\npython -m venv .venv\n.venv\\Scripts\\activate\npip install requests\npip freeze > requirements.txt' },
-      { cat: '常用库', name: '常用库导入', syntax: 'import os\nfrom datetime import datetime', example: 'import os\nimport sys\nimport json\nfrom datetime import datetime\nfrom collections import defaultdict\nfrom pathlib import Path' },
-      { cat: '常用库', name: '数据处理导入', syntax: 'import pandas as pd\nimport numpy as np', example: 'import pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({"a": [1, 2], "b": [3, 4]})' },
-      { cat: '常用库', name: '正则表达式', syntax: 'import re\nre.search(r"\\d+", s)', example: 'import re\n\nm = re.search(r"\\d+", "abc123")\nm.group() if m else None' }
+      { cat: '异常', name: t('ui.26','抛出异常'), syntax: 'raise ValueError("msg")', example: 'def check(x):\n    if x < 0:\n        raise ValueError("不能为负数")\n    return x' },
+      { cat: '文件读写', name: t('ui.10','文件读写'), syntax: 'with open("f.txt", "r") as f:\n    data = f.read()', example: 'with open("data.txt", "w", encoding="utf-8") as f:\n    f.write("hello")\n\nwith open("data.txt", "r") as f:\n    for line in f:\n        print(line.strip())' },
+      { cat: '内置函数', name: t('ui.25','常用内置函数'), syntax: 'len() / type() / range() / zip() / enumerate()', example: 'names = ["a", "b"]\nfor i, n in enumerate(names, 1):\n    print(i, n)\n\nlist(zip([1, 2], ["x", "y"]))' },
+      { cat: '内置函数', name: t('ui.24','排序与聚合'), syntax: 'sorted() / min() / max() / sum()', example: 'nums = [3, 1, 2]\nsorted(nums)         # [1, 2, 3]\nsum(nums)            # 6\nmax(nums, key=lambda x: -x)' },
+      { cat: '字符串方法', name: t('ui.23','字符串常用方法'), syntax: 's.upper() / strip() / split() / join()', example: 's = "  hello world  "\ns.strip()\ns.split()\n"-".join(["a", "b"])\ns.replace("world", "python")' },
+      { cat: '字符串方法', name: t('ui.22','字符串判断'), syntax: 's.startswith() / isdigit() / find()', example: 'url = "https://example.com"\nurl.startswith("https")\n"123".isdigit()\n"abc".find("b")  # 1' },
+      { cat: '集合', name: t('ui.21','集合操作'), syntax: 'set() / 并集 | / 交集 & / 差集 -', example: 'a = {1, 2, 3}\nb = {2, 3, 4}\na | b   # {1, 2, 3, 4}\na & b   # {2, 3}\na - b   # {1}' },
+      { cat: '装饰器', name: t('ui.6','装饰器'), syntax: '@deco\ndef f(): ...', example: 'import time\n\ndef timer(func):\n    def wrapper(*args, **kwargs):\n        t0 = time.time()\n        r = func(*args, **kwargs)\n        print("耗时", time.time() - t0)\n        return r\n    return wrapper\n\n@timer\ndef work():\n    time.sleep(1)' },
+      { cat: '生成器', name: t('ui.5','生成器'), syntax: 'def gen():\n    yield x', example: 'def count_up(n):\n    i = 0\n    while i < n:\n        yield i\n        i += 1\n\nfor x in count_up(3):\n    print(x)' },
+      { cat: '生成器', name: t('ui.20','生成器表达式'), syntax: '(expr for x in seq)', example: 'sum(x * x for x in range(10))\n\n# 内存友好的惰性求值' },
+      { cat: '虚拟环境', name: t('ui.19','venv 虚拟环境'), syntax: 'python -m venv .venv\n.venv\\Scripts\\activate', example: '# Windows\npython -m venv .venv\n.venv\\Scripts\\activate\npip install requests\npip freeze > requirements.txt' },
+      { cat: '常用库', name: t('ui.18','常用库导入'), syntax: 'import os\nfrom datetime import datetime', example: 'import os\nimport sys\nimport json\nfrom datetime import datetime\nfrom collections import defaultdict\nfrom pathlib import Path' },
+      { cat: '常用库', name: t('ui.17','数据处理导入'), syntax: 'import pandas as pd\nimport numpy as np', example: 'import pandas as pd\nimport numpy as np\n\ndf = pd.DataFrame({"a": [1, 2], "b": [3, 4]})' },
+      { cat: '常用库', name: t('ui.16','正则表达式'), syntax: 'import re\nre.search(r"\\d+", s)', example: 'import re\n\nm = re.search(r"\\d+", "abc123")\nm.group() if m else None' }
     ];
 
-    var cats = ['全部', '变量与基础', '列表与切片', '字典', '函数', '异常', '文件读写', '内置函数', '字符串方法', '集合', '装饰器', '生成器', '虚拟环境', '常用库'];
+    var cats = [ t('ui.all','全部'), t('ui.15','变量与基础'), t('ui.14','列表与切片'), t('ui.13','字典'), t('ui.12','函数'), t('ui.11','异常'), t('ui.10','文件读写'), t('ui.9','内置函数'), t('ui.8','字符串方法'), t('ui.7','集合'), t('ui.6','装饰器'), t('ui.5','生成器'), t('ui.4','虚拟环境'), t('ui.3','常用库')];
 
     function buildCats() {
       var html = '';
@@ -135,7 +136,7 @@
             lastCopy = it.example;
             outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · ' + htmlEscape(it.cat) + '</div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.example) + '</div>';
             copyBtn.onclick = function () { copyToClipboard(lastCopy, copyBtn); };
-            setStatus('已选中「' + it.name + '」，点击复制按钮可复制示例');
+            setStatus(t('ui.2','已选中「') + it.name + t('ui.1','」，点击复制按钮可复制示例'));
           };
         })(m);
       }

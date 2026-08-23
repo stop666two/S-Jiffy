@@ -28,49 +28,50 @@
     <div class="card">
       <div class="form-grid">
         <div class="field">
-          <label>目标服务名</label>
+          <label data-i18n="ui.1">目标服务名</label>
           <input id="serviceName" class="input js-focus-input" placeholder="如 backup">
         </div>
         <div class="field">
-          <label>触发方式</label>
+          <label data-i18n="ui.2">触发方式</label>
           <select id="trigger" class="input">
-            <option value="daily">每天（OnCalendar=*-*-* 00:00:00）</option>
-            <option value="hourly">每小时（*-*-* *:00:00）</option>
-            <option value="weekly">每周（Mon *-*-* 00:00:00）</option>
-            <option value="monthly">每月（*-*-01 00:00:00）</option>
-            <option value="reboot">开机后（OnBootSec）</option>
-            <option value="custom">自定义 cron 表达式</option>
+            <option value="daily" data-i18n="ui.3">每天（OnCalendar=*-*-* 00:00:00）</option>
+            <option value="hourly" data-i18n="ui.4">每小时（*-*-* *:00:00）</option>
+            <option value="weekly" data-i18n="ui.5">每周（Mon *-*-* 00:00:00）</option>
+            <option value="monthly" data-i18n="ui.6">每月（*-*-01 00:00:00）</option>
+            <option value="reboot" data-i18n="ui.7">开机后（OnBootSec）</option>
+            <option value="custom" data-i18n="ui.8">自定义 cron 表达式</option>
           </select>
         </div>
         <div class="field full" id="cronRow" style="display:none;">
-          <label>cron 表达式（分 时 日 月 周）</label>
+          <label data-i18n="ui.9">cron 表达式（分 时 日 月 周）</label>
           <input id="cronExpr" class="input" value="0 2 * * *" placeholder="如 0 2 * * *">
           <div class="hint" id="cronPreview"></div>
         </div>
         <div class="field">
-          <label>精度 AccuracySec</label>
+          <label data-i18n="ui.10">精度 AccuracySec</label>
           <input id="accuracy" class="input" value="1min" placeholder="如 1min / 5s / 1h">
         </div>
         <div class="field">
-          <label>延迟启动（OnBootSec，reboot 触发时）</label>
+          <label data-i18n="ui.11">延迟启动（OnBootSec，reboot 触发时）</label>
           <input id="bootDelay" class="input" value="5min" placeholder="如 5min">
         </div>
       </div>
       <div class="actions">
-        <button id="generateBtn" class="btn btn-primary">生成定时器</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.12">生成定时器</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var nameInput = document.getElementById('serviceName');
@@ -100,7 +101,7 @@
         }
         if (!/^\d+$/.test(v)) return false;
         var n = parseInt(v, 10);
-        if (n < min || n > max) { setStatus('cron 字段 ' + name + ' 取值超出范围', 'error'); return false; }
+        if (n < min || n > max) { setStatus(t('ui.19','cron 字段 ') + name + t('ui.18',' 取值超出范围'), 'error'); return false; }
         return true;
       }
 
@@ -112,11 +113,11 @@
         var dom = parts[2];
         var month = parts[3];
         var dow = parts[4];
-        if (!inRange(minute, 0, 59, '分')) return null;
-        if (!inRange(hour, 0, 23, '时')) return null;
-        if (!inRange(dom, 1, 31, '日')) return null;
-        if (!inRange(month, 1, 12, '月')) return null;
-        if (!inRange(dow, 0, 7, '周')) return null;
+        if (!inRange(minute, 0, 59, t('ui.17','分'))) return null;
+        if (!inRange(hour, 0, 23, t('ui.16','时'))) return null;
+        if (!inRange(dom, 1, 31, t('ui.15','日'))) return null;
+        if (!inRange(month, 1, 12, t('ui.month','月'))) return null;
+        if (!inRange(dow, 0, 7, t('ui.week','周'))) return null;
         var dowLabel = '';
         if (dow !== '*') {
           var d = parseInt(dow, 10) % 7;
@@ -181,7 +182,7 @@
         cronRow.style.display = show ? 'block' : 'none';
         if (show) {
           var cal = cronToOnCalendar(cronInput.value);
-          if (cal !== null) cronPreview.textContent = '转换结果：OnCalendar=' + cal;
+          if (cal !== null) cronPreview.textContent = t('ui.14','转换结果：OnCalendar=') + cal;
           else cronPreview.textContent = '';
         }
       }
@@ -193,7 +194,7 @@
         var out = buildTimer();
         if (out === null) { output.textContent = ''; return; }
         output.textContent = out;
-        setStatus('定时器与服务文件已生成');
+        setStatus(t('ui.13','定时器与服务文件已生成'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {

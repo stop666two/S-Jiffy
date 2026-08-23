@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">熵值计算</h1><p class="tool-desc" data-i18n="desc">计算文本/密码的 Shannon 信息熵，评估复杂度</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算熵值的文本或密码..." style="min-height:80px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary">计算熵值</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary" data-i18n="ui.1">计算熵值</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="entropyStats"></div><div id="strengthBox" class="strength-box"></div><div id="charBar" class="char-bar"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var inputText=document.getElementById('inputText'),calcBtn=document.getElementById('calcBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),entropyStats=document.getElementById('entropyStats'),strengthBox=document.getElementById('strengthBox'),charBar=document.getElementById('charBar'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 function shannonEntropy(str){
@@ -36,12 +37,12 @@ function calcCharsetBits(str){
   return bits;
 }
 function guessTime(entropy){var perSec=1e9;var combos=Math.pow(2,entropy);var secs=combos/perSec;
-  if(secs<1)return'即时';if(secs<60)return Math.round(secs)+'秒';
-  var mins=secs/60;if(mins<60)return Math.round(mins)+'分钟';
-  var hrs=mins/60;if(hrs<24)return Math.round(hrs)+'小时';
-  var days=hrs/24;if(days<365)return Math.round(days)+'天';
-  var yrs=days/365;if(yrs<1000)return Math.round(yrs)+'年';
-  return '超过 '+Math.round(yrs/1000)+' 千年';
+  if(secs<1)return'即时';if(secs<60)return Math.round(secs)+ t('ui.second','秒');
+  var mins=secs/60;if(mins<60)return Math.round(mins)+ t('ui.minute','分钟');
+  var hrs=mins/60;if(hrs<24)return Math.round(hrs)+ t('ui.hour','小时');
+  var days=hrs/24;if(days<365)return Math.round(days)+ t('ui.day','天');
+  var yrs=days/365;if(yrs<1000)return Math.round(yrs)+ t('ui.year','年');
+  return t('ui.4','超过 ') +Math.round(yrs/1000)+ t('ui.3',' 千年');
 }
 calcBtn.addEventListener('click',function(){
   var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
@@ -73,10 +74,10 @@ calcBtn.addEventListener('click',function(){
   }
   charBar.innerHTML=barHtml;
   resultCard.style.display='block';
-  outputText.textContent='Shannon 熵: '+entropy.toFixed(2)+' bits';
-  setStatus('计算完成');
+  outputText.textContent = t('ui.2','Shannon 熵: ')+entropy.toFixed(2)+' bits';
+  setStatus(t('ui.calcDone','计算完成'));
 });
 clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

@@ -23,20 +23,21 @@
     <p class="tool-desc" data-i18n="desc">粘贴 CSS 文本，自动列出全部 --变量 定义（名称、值、行号）、引用次数与未使用变量。</p>
     <div class="card">
       <div class="field-row" style="align-items:flex-start;">
-        <label>CSS 文本</label>
+        <label data-i18n="ui.1">CSS 文本</label>
         <textarea id="cssInput" class="input textarea js-focus-input" placeholder="粘贴包含 CSS 自定义属性的样式代码…" style="min-height:220px;"></textarea>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var cssInput = document.getElementById('cssInput');
@@ -83,8 +84,8 @@
         }
         var vars = parseVars(text);
         if (!vars.length) {
-          outputText.textContent = '未检测到 CSS 变量定义';
-          setStatus('未找到任何 --变量 定义');
+          outputText.textContent = t('ui.6','未检测到 CSS 变量定义');
+          setStatus(t('ui.5','未找到任何 --变量 定义'));
           return;
         }
         var used = 0;
@@ -101,7 +102,7 @@
           html += '<div class="var-row">' +
             '<span style="color:var(--color-success);">' + htmlEscape(v.name) + '</span>' +
             ' <span style="color:var(--color-text-secondary);">= ' + htmlEscape(v.value) + '</span>' +
-            ' <span style="color:var(--color-text-disabled);">行 ' + v.line + ' · 引用 ' + count + ' 次</span>' +
+            ' <span style="color:var(--color-text-disabled);">行 ' + v.line + t('ui.4',' · 引用 ') + count + ' 次</span>' +
             '</div>';
         }
         if (unusedList.length) {
@@ -111,14 +112,14 @@
           }
         }
         outputText.innerHTML = html;
-        setStatus('已提取 ' + vars.length + ' 个变量，使用中 ' + used + ' 个');
+        setStatus(t('ui.3','已提取 ') + vars.length + t('ui.2',' 个变量，使用中 ') + used + t('ui.count',' 个'));
       }
 
       cssInput.addEventListener('input', render);
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!outputText.textContent) return;
         copyToClipboard(outputText.textContent, this);
-        setStatus('已复制');
+        setStatus(t('ui.copied','已复制'));
       });
     })();
   </script>

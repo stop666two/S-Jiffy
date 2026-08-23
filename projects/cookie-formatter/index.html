@@ -16,12 +16,13 @@
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="sessionId=abc123; Path=/; HttpOnly; Secure; SameSite=Lax
 theme=dark; Max-Age=3600
 token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></textarea></div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析 Cookie</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary" data-i18n="ui.1">解析 Cookie</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div id="cookieTableContainer"></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var inputEl = document.getElementById('inputText');
@@ -29,14 +30,14 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
   var outputEl = document.getElementById('outputText');
 
   var COOKIE_ATTRS = {
-    'path': { name: 'Path', desc: '限定 Cookie 的 URL 路径' },
-    'domain': { name: 'Domain', desc: '限定 Cookie 的域名' },
-    'max-age': { name: 'Max-Age', desc: 'Cookie 最大存活秒数' },
-    'expires': { name: 'Expires', desc: 'Cookie 过期时间' },
-    'secure': { name: 'Secure', desc: '仅通过 HTTPS 发送' },
-    'httponly': { name: 'HttpOnly', desc: '禁止 JavaScript 访问' },
-    'samesite': { name: 'SameSite', desc: '跨站请求策略: Strict/Lax/None' },
-    'priority': { name: 'Priority', desc: 'Cookie 优先级: Low/Medium/High' },
+    'path': { name: 'Path', desc: t('ui.12','限定 Cookie 的 URL 路径') },
+    'domain': { name: 'Domain', desc: t('ui.11','限定 Cookie 的域名') },
+    'max-age': { name: 'Max-Age', desc: t('ui.10','Cookie 最大存活秒数') },
+    'expires': { name: 'Expires', desc: t('ui.9','Cookie 过期时间') },
+    'secure': { name: 'Secure', desc: t('ui.8','仅通过 HTTPS 发送') },
+    'httponly': { name: 'HttpOnly', desc: t('ui.7','禁止 JavaScript 访问') },
+    'samesite': { name: 'SameSite', desc: t('ui.6','跨站请求策略: Strict/Lax/None') },
+    'priority': { name: 'Priority', desc: t('ui.5','Cookie 优先级: Low/Medium/High') },
     'partitioned': { name: 'Partitioned', desc: '分区存储 (CHIPS)' }
   };
 
@@ -54,7 +55,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
 
     var firstEq = parts[0].indexOf('=');
     if (firstEq === -1) {
-      errors.push('缺少等号，不是有效的 Cookie 键值对');
+      errors.push(t('ui.4','缺少等号，不是有效的 Cookie 键值对'));
       return { name: parts[0].trim(), value: '', attrs: attrs, errors: errors, raw: line };
     }
 
@@ -164,11 +165,11 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
       output += '\n';
     }
     outputEl.textContent = output.trim();
-    setStatus('解析完成，共 ' + parsedCookies.length + ' 个 Cookie');
+    setStatus(t('ui.3','解析完成，共 ') + parsedCookies.length + t('ui.2',' 个 Cookie'));
   }
 
   document.getElementById('parseBtn').addEventListener('click', parse);
   document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; tableContainer.innerHTML = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
 })();
 </script></body></html>

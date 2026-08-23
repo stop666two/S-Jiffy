@@ -5,12 +5,13 @@
 <style>.code-display{font-size:48px;font-weight:700;font-family:var(--font-mono);text-align:center;padding:24px;letter-spacing:8px;color:var(--color-text-primary);}.progress-bar{height:4px;background:var(--color-border);border-radius:2px;margin-top:12px;overflow:hidden;}.progress-fill{height:100%;background:var(--color-success);transition:width 1s linear;border-radius:2px;}.time-display{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:8px;}.info-row{padding:4px 0;font-size:var(--font-size-sm);display:flex;gap:8px;}.info-label{color:var(--color-text-secondary);min-width:80px;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">TOTP 验证码生成</h1><p class="tool-desc" data-i18n="desc">基于 RFC 6238 的时间型一次性密码生成器（Base32 密钥 + SHA-1）</p>
-<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="secretInput" class="input js-focus-input" placeholder="BASE32 密钥 (如 JBSWY3DPEHPK3PXP)" style="flex:1;max-width:400px;"><select id="digitsSelect" class="input" style="width:80px;"><option value="6">6 位</option><option value="8">8 位</option></select><button id="generateBtn" class="btn btn-primary">生成</button></div>
-<div class="card" id="resultCard" style="display:none;"><div id="codeDisplay" class="code-display">------</div><div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:100%;"></div></div><div id="timeDisplay" class="time-display"></div><div style="margin-top:var(--space-2);border-top:1px solid var(--color-border);padding-top:var(--space-2);"><div class="info-row"><span class="info-label">算法</span><span>HMAC-SHA1</span></div><div class="info-row"><span class="info-label">时间步长</span><span>30 秒</span></div><div class="info-row"><span class="info-label">当前时间</span><span id="currentTime"></span></div><div class="info-row"><span class="info-label">剩余</span><span id="remainingTime"></span></div></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="secretInput" class="input js-focus-input" placeholder="BASE32 密钥 (如 JBSWY3DPEHPK3PXP)" style="flex:1;max-width:400px;"><select id="digitsSelect" class="input" style="width:80px;"><option value="6" data-i18n="ui.1">6 位</option><option value="8" data-i18n="ui.2">8 位</option></select><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="codeDisplay" class="code-display">------</div><div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:100%;"></div></div><div id="timeDisplay" class="time-display"></div><div style="margin-top:var(--space-2);border-top:1px solid var(--color-border);padding-top:var(--space-2);"><div class="info-row"><span class="info-label" data-i18n="ui.algorithm">算法</span><span>HMAC-SHA1</span></div><div class="info-row"><span class="info-label" data-i18n="ui.3">时间步长</span><span data-i18n="ui.4">30 秒</span></div><div class="info-row"><span class="info-label" data-i18n="ui.5">当前时间</span><span id="currentTime"></span></div><div class="info-row"><span class="info-label" data-i18n="ui.6">剩余</span><span id="remainingTime"></span></div></div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var secretInput=document.getElementById('secretInput'),digitsSelect=document.getElementById('digitsSelect'),generateBtn=document.getElementById('generateBtn'),resultCard=document.getElementById('resultCard'),codeDisplay=document.getElementById('codeDisplay'),progressFill=document.getElementById('progressFill'),timeDisplay=document.getElementById('timeDisplay'),currentTime=document.getElementById('currentTime'),remainingTime=document.getElementById('remainingTime'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var timer=null;
@@ -67,13 +68,13 @@ function updateCode(){
   var secret=secretInput.value.trim();if(!secret){return;}
   var digits=parseInt(digitsSelect.value);
   var code=generateTOTP(secret,digits);
-  if(code===null){codeDisplay.textContent='密钥无效';return;}
+  if(code===null){codeDisplay.textContent = t('ui.7','密钥无效');return;}
   codeDisplay.textContent=code;
   var now=Math.floor(Date.now()/1000);var remain=30-(now%30);
   progressFill.style.width=(remain/30*100)+'%';
   var d=new Date();
   currentTime.textContent=d.toLocaleTimeString();
-  remainingTime.textContent=remain+' 秒';
+  remainingTime.textContent=remain+ t('ui.second',' 秒');
   outputText.textContent=code;
 }
 var codeTimer=null;
@@ -82,9 +83,9 @@ generateBtn.addEventListener('click',function(){
   if(codeTimer)clearInterval(codeTimer);
   resultCard.style.display='block';updateCode();
   codeTimer=setInterval(updateCode,1000);
-  setStatus('已生成');
+  setStatus(t('ui.generated','已生成'));
 });
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 secretInput.addEventListener('keydown',function(e){if(e.key==='Enter')generateBtn.click();});
 })();</script>
 </body></html>

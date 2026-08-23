@@ -27,33 +27,33 @@
     <div class="card">
       <div class="dc-fields">
         <div class="dc-field">
-          <label>镜像 (image)</label>
+          <label data-i18n="ui.1">镜像 (image)</label>
           <input id="imageInput" class="js-focus-input" placeholder="nginx:latest">
         </div>
         <div class="dc-field">
-          <label>容器名称 (--name)</label>
+          <label data-i18n="ui.2">容器名称 (--name)</label>
           <input id="nameInput" placeholder="my-container">
         </div>
         <div class="dc-field">
-          <label>端口映射 (-p, 如 80:80)</label>
+          <label data-i18n="ui.3">端口映射 (-p, 如 80:80)</label>
           <input id="portsInput" placeholder="80:80">
         </div>
         <div class="dc-field">
-          <label>卷挂载 (-v, 如 ./html:/usr/share/nginx/html)</label>
+          <label data-i18n="ui.4">卷挂载 (-v, 如 ./html:/usr/share/nginx/html)</label>
           <input id="volumesInput" placeholder="./html:/usr/share/nginx/html">
         </div>
         <div class="dc-field">
-          <label>环境变量 (-e, 如 KEY=value)</label>
+          <label data-i18n="ui.5">环境变量 (-e, 如 KEY=value)</label>
           <input id="envInput" placeholder="KEY=value">
         </div>
         <div class="dc-field">
-          <label>网络 (--network)</label>
+          <label data-i18n="ui.6">网络 (--network)</label>
           <input id="networkInput" placeholder="bridge">
         </div>
         <div class="dc-field">
-          <label>重启策略 (--restart)</label>
+          <label data-i18n="ui.7">重启策略 (--restart)</label>
           <select id="restartSelect">
-            <option value="">无</option>
+            <option value="" data-i18n="ui.none">无</option>
             <option value="no">no</option>
             <option value="always">always</option>
             <option value="on-failure">on-failure</option>
@@ -61,7 +61,7 @@
           </select>
         </div>
         <div class="dc-field">
-          <label>命令 (command)</label>
+          <label data-i18n="ui.8">命令 (command)</label>
           <input id="commandInput" placeholder="nginx -g daemon off;">
         </div>
       </div>
@@ -77,19 +77,20 @@
       </div>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="convertBtn" class="btn btn-primary">生成 Compose</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="convertBtn" class="btn btn-primary" data-i18n="ui.9">生成 Compose</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var outputEl = document.getElementById('outputText');
@@ -203,7 +204,7 @@
         }
 
         outputEl.textContent = lines.join('\n');
-        setStatus('已生成 docker-compose.yml');
+        setStatus(t('ui.10','已生成 docker-compose.yml'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {
@@ -214,7 +215,7 @@
         extraEl.value = ''; outputEl.textContent = ''; setStatus(''); imageEl.focus();
       });
 
-      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
     })();
   </script>
 </body>

@@ -28,20 +28,21 @@
       <div class="form-hint">响应支持 JSON 对象与占位符语法，例如 {"id":"{int}","name":"{name}","email":"{email}","ts":"{timestamp}"}</div>
       <div id="rowsBox"></div>
       <div class="btn-row">
-        <button class="btn btn-secondary" id="addRowBtn">+ 添加端点</button>
-        <button class="btn btn-primary" id="generateBtn">生成 Mock 配置</button>
+        <button class="btn btn-secondary" id="addRowBtn" data-i18n="ui.1">+ 添加端点</button>
+        <button class="btn btn-primary" id="generateBtn" data-i18n="ui.2">生成 Mock 配置</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var FIRST = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'grace', 'henry', 'irene', 'jack'];
@@ -159,7 +160,7 @@
           if (!path) {
             output.innerHTML = '';
             current = '';
-            setStatus('第 ' + (i + 1) + ' 行路径为空，请填写路径', 'error');
+            setStatus(t('ui.nth','第 ') + (i + 1) + t('ui.10',' 行路径为空，请填写路径'), 'error');
             return;
           }
           if (path.charAt(0) !== '/') path = '/' + path;
@@ -169,7 +170,7 @@
           } catch (e) {
             output.innerHTML = '';
             current = '';
-            setStatus('第 ' + (i + 1) + ' 行响应 JSON 解析失败：' + e.message, 'error');
+            setStatus(t('ui.nth','第 ') + (i + 1) + t('ui.9',' 行响应 JSON 解析失败：') + e.message, 'error');
             return;
           }
           var filled = fillPlaceholders(parsed);
@@ -178,7 +179,7 @@
           if (used[path + key]) {
             output.innerHTML = '';
             current = '';
-            setStatus('路径 ' + path + ' 的 ' + key + ' 方法重复定义', 'error');
+            setStatus(t('ui.8','路径 ') + path + t('ui.7',' 的 ') + key + t('ui.6',' 方法重复定义'), 'error');
             return;
           }
           used[path + key] = true;
@@ -186,7 +187,7 @@
         }
         current = JSON.stringify(mock, null, 2);
         output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
-        setStatus('已生成 Mock 配置，共 ' + rows.length + ' 个端点');
+        setStatus(t('ui.5','已生成 Mock 配置，共 ') + rows.length + t('ui.4',' 个端点'));
       }
 
       document.getElementById('addRowBtn').addEventListener('click', function () {
@@ -200,7 +201,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制 Mock 配置');
+        setStatus(t('ui.3','已复制 Mock 配置'));
       });
       renderRows();
     })();

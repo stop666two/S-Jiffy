@@ -27,25 +27,26 @@
     <div class="card">
       <div class="mime-search">
         <input id="mimeSearch" class="input js-focus-input" type="text" placeholder="搜索扩展名或 MIME 类型...">
-        <button class="btn btn-secondary" id="clearSearchBtn">清空</button>
+        <button class="btn btn-secondary" id="clearSearchBtn" data-i18n="ui.clear">清空</button>
       </div>
       <div style="max-height:400px; overflow-y:auto;">
         <table class="mime-table">
-          <thead><tr><th>扩展名</th><th>MIME 类型</th></tr></thead>
+          <thead><tr><th data-i18n="ui.1">扩展名</th><th data-i18n="ui.2">MIME 类型</th></tr></thead>
           <tbody id="mimeTbody"></tbody>
         </table>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var mimeSearch = document.getElementById('mimeSearch');
@@ -89,7 +90,7 @@
           mimeTbody.appendChild(tr);
           count++;
         }
-        outputEl.textContent = '共 ' + count + ' 条记录' + (match ? '（匹配 "' + filter + '"）' : '');
+        outputEl.textContent = t('ui.total','共 ') + count + t('ui.3',' 条记录') + (match ? '（匹配 "' + filter + '"）' : '');
       }
 
       mimeSearch.addEventListener('input', function () { render(this.value); });
@@ -102,7 +103,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       render('');

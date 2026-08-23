@@ -23,30 +23,31 @@
     <div class="card">
       <div class="len-grid">
         <div class="len-row">
-          <div class="field"><label for="inputM">米 (m)</label><input id="inputM" class="input" type="number" value="100"></div>
-          <div class="field"><label for="inputCm">厘米 (cm)</label><input id="inputCm" class="input" type="number" value="10000"></div>
-          <div class="field"><label for="inputKm">千米 (km)</label><input id="inputKm" class="input" type="number" value="0.1"></div>
+          <div class="field"><label for="inputM" data-i18n="ui.1">米 (m)</label><input id="inputM" class="input" type="number" value="100"></div>
+          <div class="field"><label for="inputCm" data-i18n="ui.2">厘米 (cm)</label><input id="inputCm" class="input" type="number" value="10000"></div>
+          <div class="field"><label for="inputKm" data-i18n="ui.3">千米 (km)</label><input id="inputKm" class="input" type="number" value="0.1"></div>
         </div>
         <div class="len-row">
-          <div class="field"><label for="inputIn">英寸 (in)</label><input id="inputIn" class="input" type="number" value="3937.01"></div>
-          <div class="field"><label for="inputFt">英尺 (ft)</label><input id="inputFt" class="input" type="number" value="328.08"></div>
-          <div class="field"><label for="inputYd">码 (yd)</label><input id="inputYd" class="input" type="number" value="109.36"></div>
+          <div class="field"><label for="inputIn" data-i18n="ui.4">英寸 (in)</label><input id="inputIn" class="input" type="number" value="3937.01"></div>
+          <div class="field"><label for="inputFt" data-i18n="ui.5">英尺 (ft)</label><input id="inputFt" class="input" type="number" value="328.08"></div>
+          <div class="field"><label for="inputYd" data-i18n="ui.6">码 (yd)</label><input id="inputYd" class="input" type="number" value="109.36"></div>
         </div>
         <div class="len-row">
-          <div class="field"><label for="inputMi">英里 (mi)</label><input id="inputMi" class="input" type="number" value="0.06"></div>
+          <div class="field"><label for="inputMi" data-i18n="ui.7">英里 (mi)</label><input id="inputMi" class="input" type="number" value="0.06"></div>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputM = document.getElementById('inputM');
@@ -86,7 +87,7 @@
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       fromMeters(100);

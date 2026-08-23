@@ -13,32 +13,33 @@
 <h1 data-i18n="h1">时间戳转换</h1>
 <p class="tool-desc" data-i18n="desc">Unix 时间戳与日期互转，支持 RFC 2822、ISO 8601 及多种格式字符串。</p>
 <div class="card">
-<label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;">时间戳（秒）</label>
+<label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;" data-i18n="ui.1">时间戳（秒）</label>
 <input id="tsInput" class="input js-focus-input" placeholder="e.g. 1760000000" style="margin-bottom:12px;">
-<button id="tsToDateBtn" class="btn btn-primary">转为日期</button>
+<button id="tsToDateBtn" class="btn btn-primary" data-i18n="ui.2">转为日期</button>
 </div>
 <div class="card">
-<label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;">日期时间</label>
+<label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;" data-i18n="ui.3">日期时间</label>
 <input id="dateInput" class="input" type="datetime-local" style="margin-bottom:12px;">
-<button id="dateToTsBtn" class="btn btn-secondary">转为时间戳</button>
+<button id="dateToTsBtn" class="btn btn-secondary" data-i18n="ui.4">转为时间戳</button>
 </div>
 <div id="format结果s" style="display:none;" class="card">
-<h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">格式</h3>
+<h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);" data-i18n="ui.5">格式</h3>
 <div class="fmt-row"><label>ISO 8601:</label><span class="val" id="fmtIso">-</span></div>
 <div class="fmt-row"><label>RFC 2822:</label><span class="val" id="fmtRfc">-</span></div>
-<div class="fmt-row"><label>UTC 字符串：</label><span class="val" id="fmtUtc">-</span></div>
-<div class="fmt-row"><label>语言区域（zh-CN）：</label><span class="val" id="fmtLocale">-</span></div>
-<div class="fmt-row"><label>年月日（YYYY-MM-DD）：</label><span class="val" id="fmtYmd">-</span></div>
-<div class="fmt-row"><label>日月年（DD/MM/YYYY）：</label><span class="val" id="fmtDmy">-</span></div>
-<div class="fmt-row"><label>Unix 毫秒：</label><span class="val" id="fmtMs">-</span></div>
+<div class="fmt-row"><label data-i18n="ui.6">UTC 字符串：</label><span class="val" id="fmtUtc">-</span></div>
+<div class="fmt-row"><label data-i18n="ui.7">语言区域（zh-CN）：</label><span class="val" id="fmtLocale">-</span></div>
+<div class="fmt-row"><label data-i18n="ui.8">年月日（YYYY-MM-DD）：</label><span class="val" id="fmtYmd">-</span></div>
+<div class="fmt-row"><label data-i18n="ui.9">日月年（DD/MM/YYYY）：</label><span class="val" id="fmtDmy">-</span></div>
+<div class="fmt-row"><label data-i18n="ui.10">Unix 毫秒：</label><span class="val" id="fmtMs">-</span></div>
 </div>
-<div class="output-box" id="输出Container"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box" id="输出Container"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
   var tsInput=document.getElementById('tsInput'),dateInput=document.getElementById('dateInput'),o=document.getElementById('outputText');
-  var fmtR=document.getElementById('format结果s'),fIso=document.getElementById('fmtIso'),fRfc=document.getElementById('fmtRfc'),fUtc=document.getElementById('fmtUtc');
+  var fmtR=document.getElementById(t('ui.11','format结果s')),fIso=document.getElementById('fmtIso'),fRfc=document.getElementById('fmtRfc'),fUtc=document.getElementById('fmtUtc');
   var fLoc=document.getElementById('fmtLocale'),fYmd=document.getElementById('fmtYmd'),fDmy=document.getElementById('fmtDmy'),fMs=document.getElementById('fmtMs');
   var now=new Date();dateInput.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'T'+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
 
@@ -65,6 +66,6 @@
     o.textContent=Math.floor(d.getTime()/1000)+' (s)  /  '+d.getTime()+' (ms)';
     showFormats(d);setStatus('');});
 
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

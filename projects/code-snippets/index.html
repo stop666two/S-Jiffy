@@ -88,7 +88,7 @@
       <div class="filter-row">
         <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索片段标题或内容…">
         <select id="catSelect" class="input" style="width:auto;">
-          <option value="">全部分类</option>
+          <option value="" data-i18n="ui.1">全部分类</option>
           <option value="JavaScript">JavaScript</option>
           <option value="HTML">HTML</option>
           <option value="CSS">CSS</option>
@@ -96,22 +96,23 @@
           <option value="Shell">Shell</option>
           <option value="SQL">SQL</option>
           <option value="Git">Git</option>
-          <option value="正则">正则</option>
+          <option value="正则" data-i18n="ui.2">正则</option>
         </select>
-        <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);">点击卡片或「复制」按钮拷贝代码</span>
+        <span style="font-size:var(--font-size-xs);color:var(--color-text-secondary);" data-i18n="ui.3">点击卡片或「复制」按钮拷贝代码</span>
       </div>
     </div>
     <div class="snippet-grid" id="snippetGrid"></div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var searchEl = document.getElementById('searchInput');
@@ -121,78 +122,78 @@
       var copyBtn = document.getElementById('copyBtn');
 
       var snippets = [
-        { cat: 'JavaScript', title: '防抖 debounce', lang: 'js', code: ["function debounce(fn, wait) {", "  var timer = null;", "  return function () {", "    var args = arguments;", "    var ctx = this;", "    clearTimeout(timer);", "    timer = setTimeout(function () { fn.apply(ctx, args); }, wait);", "  };", "}"].join('\n') },
-        { cat: 'JavaScript', title: '节流 throttle', lang: 'js', code: ["function throttle(fn, wait) {", "  var last = 0;", "  return function () {", "    var now = Date.now();", "    if (now - last >= wait) {", "      last = now;", "      fn.apply(this, arguments);", "    }", "  };", "}"].join('\n') },
-        { cat: 'JavaScript', title: '深拷贝（JSON 方案）', lang: 'js', code: ["function deepClone(obj) {", "  return JSON.parse(JSON.stringify(obj));", "}"].join('\n') },
-        { cat: 'JavaScript', title: '深拷贝（递归，支持数组）', lang: 'js', code: ["function deepClone(obj) {", "  if (obj === null || typeof obj !== 'object') return obj;", "  var copy = Array.isArray(obj) ? [] : {};", "  for (var key in obj) {", "    if (obj.hasOwnProperty(key)) copy[key] = deepClone(obj[key]);", "  }", "  return copy;", "}"].join('\n') },
-        { cat: 'JavaScript', title: '数组去重（Set）', lang: 'js', code: ["function unique(arr) {", "  return Array.from(new Set(arr));", "}"].join('\n') },
-        { cat: 'JavaScript', title: '数组去重（indexOf）', lang: 'js', code: ["function unique(arr) {", "  var out = [];", "  for (var i = 0; i < arr.length; i++) {", "    if (out.indexOf(arr[i]) === -1) out.push(arr[i]);", "  }", "  return out;", "}"].join('\n') },
-        { cat: 'JavaScript', title: 'fetch GET 封装（带查询参数）', lang: 'js', code: ["function fetchGet(url, params) {", "  var qs = '';", "  if (params) {", "    var parts = [];", "    for (var key in params) {", "      parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));", "    }", "    qs = '?' + parts.join('&');", "  }", "  return fetch(url + qs).then(function (res) {", "    if (!res.ok) throw new Error('HTTP ' + res.status);", "    return res.json();", "  });", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.81','防抖 debounce'), lang: 'js', code: ["function debounce(fn, wait) {", "  var timer = null;", "  return function () {", "    var args = arguments;", "    var ctx = this;", "    clearTimeout(timer);", "    timer = setTimeout(function () { fn.apply(ctx, args); }, wait);", "  };", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.80','节流 throttle'), lang: 'js', code: ["function throttle(fn, wait) {", "  var last = 0;", "  return function () {", "    var now = Date.now();", "    if (now - last >= wait) {", "      last = now;", "      fn.apply(this, arguments);", "    }", "  };", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.79','深拷贝（JSON 方案）'), lang: 'js', code: ["function deepClone(obj) {", "  return JSON.parse(JSON.stringify(obj));", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.78','深拷贝（递归，支持数组）'), lang: 'js', code: ["function deepClone(obj) {", "  if (obj === null || typeof obj !== 'object') return obj;", "  var copy = Array.isArray(obj) ? [] : {};", "  for (var key in obj) {", "    if (obj.hasOwnProperty(key)) copy[key] = deepClone(obj[key]);", "  }", "  return copy;", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.77','数组去重（Set）'), lang: 'js', code: ["function unique(arr) {", "  return Array.from(new Set(arr));", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.76','数组去重（indexOf）'), lang: 'js', code: ["function unique(arr) {", "  var out = [];", "  for (var i = 0; i < arr.length; i++) {", "    if (out.indexOf(arr[i]) === -1) out.push(arr[i]);", "  }", "  return out;", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.75','fetch GET 封装（带查询参数）'), lang: 'js', code: ["function fetchGet(url, params) {", "  var qs = '';", "  if (params) {", "    var parts = [];", "    for (var key in params) {", "      parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));", "    }", "    qs = '?' + parts.join('&');", "  }", "  return fetch(url + qs).then(function (res) {", "    if (!res.ok) throw new Error('HTTP ' + res.status);", "    return res.json();", "  });", "}"].join('\n') },
         { cat: 'JavaScript', title: 'fetch POST JSON', lang: 'js', code: ["function fetchPost(url, data) {", "  return fetch(url, {", "    method: 'POST',", "    headers: { 'Content-Type': 'application/json' },", "    body: JSON.stringify(data)", "  }).then(function (res) {", "    if (!res.ok) throw new Error('HTTP ' + res.status);", "    return res.json();", "  });", "}"].join('\n') },
-        { cat: 'JavaScript', title: 'localStorage 封装', lang: 'js', code: ["var store = {", "  get: function (key, def) {", "    try {", "      var v = localStorage.getItem(key);", "      return v ? JSON.parse(v) : def;", "    } catch (e) { return def; }", "  },", "  set: function (key, val) {", "    localStorage.setItem(key, JSON.stringify(val));", "  },", "  remove: function (key) {", "    localStorage.removeItem(key);", "  }", "};"].join('\n') },
-        { cat: 'JavaScript', title: '对象深比较', lang: 'js', code: ["function deepEqual(a, b) {", "  if (a === b) return true;", "  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;", "  var ka = Object.keys(a), kb = Object.keys(b);", "  if (ka.length !== kb.length) return false;", "  for (var i = 0; i < ka.length; i++) {", "    if (!b.hasOwnProperty(ka[i]) || !deepEqual(a[ka[i]], b[ka[i]])) return false;", "  }", "  return true;", "}"].join('\n') },
-        { cat: 'JavaScript', title: '数字千分位格式化', lang: 'js', code: ["function formatThousands(n) {", "  var parts = String(n).split('.');", "  parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');", "  return parts.join('.');", "}"].join('\n') },
-        { cat: 'JavaScript', title: '随机字符串生成', lang: 'js', code: ["function randomStr(len) {", "  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';", "  var out = '';", "  for (var i = 0; i < len; i++) {", "    out += chars.charAt(Math.floor(Math.random() * chars.length));", "  }", "  return out;", "}"].join('\n') },
-        { cat: 'JavaScript', title: '数组洗牌（Fisher-Yates）', lang: 'js', code: ["function shuffle(arr) {", "  for (var i = arr.length - 1; i > 0; i--) {", "    var j = Math.floor(Math.random() * (i + 1));", "    var t = arr[i];", "    arr[i] = arr[j];", "    arr[j] = t;", "  }", "  return arr;", "}"].join('\n') },
-        { cat: 'JavaScript', title: 'sleep 延迟函数', lang: 'js', code: ["function sleep(ms) {", "  return new Promise(function (resolve) {", "    setTimeout(resolve, ms);", "  });", "}"].join('\n') },
-        { cat: 'JavaScript', title: '日期格式化', lang: 'js', code: ["function formatDate(d) {", "  var pad = function (n) { return String(n).padStart(2, '0'); };", "  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())", "    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());", "}"].join('\n') },
-        { cat: 'HTML', title: '页面骨架', lang: 'html', code: ['<!DOCTYPE html>', '<html lang="zh-CN">', '<head>', '  <meta charset="UTF-8">', '  <title>页面标题</title>', '</head>', '<body>', '  <h1>你好，世界</h1>', '</body>', '</html>'].join('\n') },
-        { cat: 'HTML', title: '移动端 viewport meta', lang: 'html', code: ['<meta name="viewport" content="width=device-width, initial-scale=1.0">', '<meta name="description" content="页面描述">', '<meta name="theme-color" content="#111111">'].join('\n') },
-        { cat: 'HTML', title: '语义化结构', lang: 'html', code: ['<header>站点头部</header>', '<nav>导航链接</nav>', '<main>', '  <article>文章正文</article>', '  <aside>侧边栏</aside>', '</main>', '<footer>页脚信息</footer>'].join('\n') },
-        { cat: 'HTML', title: '表单示例', lang: 'html', code: ['<form action="/submit" method="post">', '  <label for="name">姓名</label>', '  <input id="name" name="name" type="text" required>', '  <label for="email">邮箱</label>', '  <input id="email" name="email" type="email">', '  <button type="submit">提交</button>', '</form>'].join('\n') },
-        { cat: 'HTML', title: '响应式图片 srcset', lang: 'html', code: ['<img src="small.jpg"', '     srcset="small.jpg 480w, medium.jpg 1024w, large.jpg 1920w"', '     sizes="(max-width: 600px) 100vw, 50vw"', '     alt="响应式图片">'].join('\n') },
-        { cat: 'HTML', title: '视频标签', lang: 'html', code: ['<video controls width="640">', '  <source src="movie.mp4" type="video/mp4">', '  <source src="movie.webm" type="video/webm">', '  您的浏览器不支持 video 标签。', '</video>'].join('\n') },
-        { cat: 'HTML', title: '音频标签', lang: 'html', code: ['<audio controls>', '  <source src="song.mp3" type="audio/mpeg">', '  您的浏览器不支持 audio 标签。', '</audio>'].join('\n') },
-        { cat: 'HTML', title: '内联 SVG', lang: 'html', code: ['<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">', '  <circle cx="50" cy="50" r="40" fill="#4a90d9"/>', '</svg>'].join('\n') },
-        { cat: 'CSS', title: 'flex 水平垂直居中', lang: 'css', code: ['.container {', '  display: flex;', '  align-items: center;', '  justify-content: center;', '}'].join('\n') },
-        { cat: 'CSS', title: 'grid 居中', lang: 'css', code: ['.container {', '  display: grid;', '  place-items: center;', '}'].join('\n') },
-        { cat: 'CSS', title: '绝对定位居中', lang: 'css', code: ['.box {', '  position: absolute;', '  top: 50%;', '  left: 50%;', '  transform: translate(-50%, -50%);', '}'].join('\n') },
-        { cat: 'CSS', title: 'margin auto 居中', lang: 'css', code: ['.container { display: flex; }', '.box { margin: auto; }'].join('\n') },
-        { cat: 'CSS', title: '行高垂直居中', lang: 'css', code: ['.line {', '  height: 48px;', '  line-height: 48px;', '  text-align: center;', '}'].join('\n') },
-        { cat: 'CSS', title: '清除浮动', lang: 'css', code: ['.clearfix::after {', "  content: '';", '  display: table;', '  clear: both;', '}'].join('\n') },
-        { cat: 'CSS', title: '单行文本省略', lang: 'css', code: ['.ellipsis {', '  overflow: hidden;', '  white-space: nowrap;', '  text-overflow: ellipsis;', '}'].join('\n') },
-        { cat: 'CSS', title: '多行文本省略', lang: 'css', code: ['.clamp {', '  display: -webkit-box;', '  -webkit-line-clamp: 2;', '  -webkit-box-orient: vertical;', '  overflow: hidden;', '}'].join('\n') },
-        { cat: 'CSS', title: '响应式媒体查询', lang: 'css', code: ['@media (max-width: 768px) {', '  .grid { grid-template-columns: 1fr; }', '}'].join('\n') },
-        { cat: 'CSS', title: '渐变色背景', lang: 'css', code: ['.gradient {', '  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);', '}'].join('\n') },
-        { cat: 'CSS', title: '自定义滚动条', lang: 'css', code: ['.scroll::-webkit-scrollbar { width: 8px; }', '.scroll::-webkit-scrollbar-thumb {', '  background: #aaa;', '  border-radius: 4px;', '}'].join('\n') },
-        { cat: 'Python', title: '遍历目录文件', lang: 'python', code: ["import os", "for root, dirs, files in os.walk('/path/to/dir'):", "    for name in files:", "        print(os.path.join(root, name))"].join('\n') },
-        { cat: 'Python', title: '读取 CSV 文件', lang: 'python', code: ["import csv", "with open('data.csv', 'r', encoding='utf-8') as f:", "    reader = csv.reader(f)", "    for row in reader:", "        print(row)"].join('\n') },
-        { cat: 'Python', title: '写入 CSV 文件', lang: 'python', code: ["import csv", "with open('out.csv', 'w', encoding='utf-8', newline='') as f:", "    writer = csv.writer(f)", "    writer.writerow(['name', 'age'])", "    writer.writerow(['Alice', 18])"].join('\n') },
-        { cat: 'Python', title: '读取 JSON 文件', lang: 'python', code: ["import json", "with open('config.json', 'r', encoding='utf-8') as f:", "    data = json.load(f)", "print(data['key'])"].join('\n') },
-        { cat: 'Python', title: 'HTTP GET 请求（requests）', lang: 'python', code: ["import requests", "resp = requests.get('https://api.example.com/data', timeout=10)", "print(resp.status_code)", "print(resp.json())"].join('\n') },
-        { cat: 'Python', title: '列表推导式', lang: 'python', code: ["nums = [1, 2, 3, 4, 5]", "squares = [n * n for n in nums if n % 2 == 0]"].join('\n') },
-        { cat: 'Python', title: '复制文件与目录', lang: 'python', code: ["import shutil", "shutil.copy('src.txt', 'dst.txt')", "shutil.copytree('src_dir', 'dst_dir')"].join('\n') },
-        { cat: 'Python', title: '读取环境变量', lang: 'python', code: ["import os", "token = os.environ.get('API_TOKEN', '')", "if not token:", "    raise SystemExit('API_TOKEN is not set')"].join('\n') },
-        { cat: 'Shell', title: '查找端口占用', lang: 'shell', code: ['lsof -i :8080', 'netstat -ano | grep 8080'].join('\n') },
-        { cat: 'Shell', title: '结束占用端口的进程', lang: 'shell', code: ['kill -9 $(lsof -t -i :8080)'].join('\n') },
-        { cat: 'Shell', title: '批量重命名文件', lang: 'shell', code: ['for f in *.txt; do', '  mv "$f" "${f%.txt}.md"', 'done'].join('\n') },
-        { cat: 'Shell', title: '查找大文件', lang: 'shell', code: ['find . -type f -size +100M -exec ls -lh {} \\;', 'du -sh * | sort -rh | head -20'].join('\n') },
-        { cat: 'Shell', title: '递归搜索关键词', lang: 'shell', code: ['grep -rn "TODO" --include="*.js" .', 'rg -n "console.log" src/'].join('\n') },
-        { cat: 'Shell', title: 'tar 打包与解压', lang: 'shell', code: ['tar -czvf backup.tar.gz ./project', 'tar -xzvf backup.tar.gz -C /restore/path'].join('\n') },
-        { cat: 'Shell', title: '后台运行并记录 PID', lang: 'shell', code: ['nohup python app.py > app.log 2>&1 &', 'echo $! > app.pid'].join('\n') },
-        { cat: 'Shell', title: '统计文件数量', lang: 'shell', code: ['find . -type f | wc -l', 'find . -type f -name "*.py" | wc -l'].join('\n') },
-        { cat: 'SQL', title: '分页查询', lang: 'sql', code: ['SELECT * FROM users', 'ORDER BY id', 'LIMIT 20 OFFSET 0;'].join('\n') },
-        { cat: 'SQL', title: '内连接 INNER JOIN', lang: 'sql', code: ['SELECT u.name, o.amount', 'FROM users u', 'INNER JOIN orders o ON o.user_id = u.id;'].join('\n') },
-        { cat: 'SQL', title: '左连接 LEFT JOIN', lang: 'sql', code: ['SELECT u.name, COUNT(o.id) AS order_count', 'FROM users u', 'LEFT JOIN orders o ON o.user_id = u.id', 'GROUP BY u.id, u.name;'].join('\n') },
-        { cat: 'SQL', title: '分组统计 GROUP BY', lang: 'sql', code: ['SELECT status, COUNT(*) AS cnt', 'FROM orders', 'GROUP BY status', 'ORDER BY cnt DESC;'].join('\n') },
-        { cat: 'SQL', title: '去重 DISTINCT', lang: 'sql', code: ['SELECT DISTINCT email FROM users;'].join('\n') },
-        { cat: 'SQL', title: '子查询', lang: 'sql', code: ['SELECT name FROM users', 'WHERE id IN (', '  SELECT user_id FROM orders WHERE amount > 100', ');'].join('\n') },
-        { cat: 'SQL', title: '创建索引', lang: 'sql', code: ['CREATE INDEX idx_users_email ON users(email);'].join('\n') },
-        { cat: 'SQL', title: '条件更新', lang: 'sql', code: ["UPDATE users", "SET status = 'active', updated_at = NOW()", 'WHERE id = 1;'].join('\n') },
-        { cat: 'Git', title: '撤销未提交的修改', lang: 'shell', code: ['git checkout -- .', 'git restore .'].join('\n') },
-        { cat: 'Git', title: '修改最近一次提交信息', lang: 'shell', code: ['git commit --amend -m "new message"'].join('\n') },
-        { cat: 'Git', title: '合并分支', lang: 'shell', code: ['git checkout main', 'git merge feature-branch'].join('\n') },
-        { cat: 'Git', title: '变基与强制推送', lang: 'shell', code: ['git checkout feature', 'git rebase main', 'git push --force-with-lease'].join('\n') },
-        { cat: 'Git', title: 'stash 暂存工作区', lang: 'shell', code: ['git stash push -m "wip"', 'git stash list', 'git stash pop'].join('\n') },
-        { cat: 'Git', title: '回滚到指定提交', lang: 'shell', code: ['git reset --hard <commit-hash>', 'git revert <commit-hash>'].join('\n') },
-        { cat: 'Git', title: '删除分支', lang: 'shell', code: ['git branch -d feature-branch', 'git push origin --delete feature-branch'].join('\n') },
-        { cat: '正则', title: '邮箱地址', lang: 'regex', code: ['^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'].join('\n') },
-        { cat: '正则', title: '中国大陆手机号', lang: 'regex', code: ['^1[3-9]\\d{9}$'].join('\n') },
-        { cat: '正则', title: 'IPv4 地址', lang: 'regex', code: ['^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}$'].join('\n') },
-        { cat: '正则', title: 'URL 地址', lang: 'regex', code: ['^https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+([\\/?#].*)?$'].join('\n') },
-        { cat: '正则', title: '日期 YYYY-MM-DD', lang: 'regex', code: ['^\\d{4}-\\d{2}-\\d{2}$'].join('\n') },
-        { cat: '正则', title: '提取中文字符', lang: 'regex', code: ['[\\u4e00-\\u9fa5]+'].join('\n') },
-        { cat: '正则', title: '密码强度校验', lang: 'regex', code: ['^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$'].join('\n') }
+        { cat: 'JavaScript', title: t('ui.74','localStorage 封装'), lang: 'js', code: ["var store = {", "  get: function (key, def) {", "    try {", "      var v = localStorage.getItem(key);", "      return v ? JSON.parse(v) : def;", "    } catch (e) { return def; }", "  },", "  set: function (key, val) {", "    localStorage.setItem(key, JSON.stringify(val));", "  },", "  remove: function (key) {", "    localStorage.removeItem(key);", "  }", "};"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.73','对象深比较'), lang: 'js', code: ["function deepEqual(a, b) {", "  if (a === b) return true;", "  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;", "  var ka = Object.keys(a), kb = Object.keys(b);", "  if (ka.length !== kb.length) return false;", "  for (var i = 0; i < ka.length; i++) {", "    if (!b.hasOwnProperty(ka[i]) || !deepEqual(a[ka[i]], b[ka[i]])) return false;", "  }", "  return true;", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.72','数字千分位格式化'), lang: 'js', code: ["function formatThousands(n) {", "  var parts = String(n).split('.');", "  parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');", "  return parts.join('.');", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.71','随机字符串生成'), lang: 'js', code: ["function randomStr(len) {", "  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';", "  var out = '';", "  for (var i = 0; i < len; i++) {", "    out += chars.charAt(Math.floor(Math.random() * chars.length));", "  }", "  return out;", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.70','数组洗牌（Fisher-Yates）'), lang: 'js', code: ["function shuffle(arr) {", "  for (var i = arr.length - 1; i > 0; i--) {", "    var j = Math.floor(Math.random() * (i + 1));", "    var t = arr[i];", "    arr[i] = arr[j];", "    arr[j] = t;", "  }", "  return arr;", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.69','sleep 延迟函数'), lang: 'js', code: ["function sleep(ms) {", "  return new Promise(function (resolve) {", "    setTimeout(resolve, ms);", "  });", "}"].join('\n') },
+        { cat: 'JavaScript', title: t('ui.68','日期格式化'), lang: 'js', code: ["function formatDate(d) {", "  var pad = function (n) { return String(n).padStart(2, '0'); };", "  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())", "    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());", "}"].join('\n') },
+        { cat: 'HTML', title: t('ui.67','页面骨架'), lang: 'html', code: ['<!DOCTYPE html>', '<html lang="zh-CN">', '<head>', '  <meta charset="UTF-8">', '  <title data-i18n="ui.4">页面标题</title>', '</head>', '<body>', '  <h1 data-i18n="ui.5">你好，世界</h1>', '</body>', '</html>'].join('\n') },
+        { cat: 'HTML', title: t('ui.66','移动端 viewport meta'), lang: 'html', code: ['<meta name="viewport" content="width=device-width, initial-scale=1.0">', '<meta name="description" content="页面描述">', '<meta name="theme-color" content="#111111">'].join('\n') },
+        { cat: 'HTML', title: t('ui.65','语义化结构'), lang: 'html', code: ['<header>站点头部</header>', '<nav>导航链接</nav>', '<main>', '  <article>文章正文</article>', '  <aside>侧边栏</aside>', '</main>', '<footer>页脚信息</footer>'].join('\n') },
+        { cat: 'HTML', title: t('ui.64','表单示例'), lang: 'html', code: ['<form action="/submit" method="post">', '  <label for="name">姓名</label>', '  <input id="name" name="name" type="text" required>', '  <label for="email">邮箱</label>', '  <input id="email" name="email" type="email">', '  <button type="submit">提交</button>', '</form>'].join('\n') },
+        { cat: 'HTML', title: t('ui.63','响应式图片 srcset'), lang: 'html', code: ['<img src="small.jpg"', '     srcset="small.jpg 480w, medium.jpg 1024w, large.jpg 1920w"', '     sizes="(max-width: 600px) 100vw, 50vw"', '     alt="响应式图片">'].join('\n') },
+        { cat: 'HTML', title: t('ui.62','视频标签'), lang: 'html', code: ['<video controls width="640">', '  <source src="movie.mp4" type="video/mp4">', '  <source src="movie.webm" type="video/webm">', t('ui.61','  您的浏览器不支持 video 标签。'), '</video>'].join('\n') },
+        { cat: 'HTML', title: t('ui.60','音频标签'), lang: 'html', code: ['<audio controls>', '  <source src="song.mp3" type="audio/mpeg">', t('ui.59','  您的浏览器不支持 audio 标签。'), '</audio>'].join('\n') },
+        { cat: 'HTML', title: t('ui.58','内联 SVG'), lang: 'html', code: ['<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">', '  <circle cx="50" cy="50" r="40" fill="#4a90d9"/>', '</svg>'].join('\n') },
+        { cat: 'CSS', title: t('ui.57','flex 水平垂直居中'), lang: 'css', code: ['.container {', '  display: flex;', '  align-items: center;', '  justify-content: center;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.56','grid 居中'), lang: 'css', code: ['.container {', '  display: grid;', '  place-items: center;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.55','绝对定位居中'), lang: 'css', code: ['.box {', '  position: absolute;', '  top: 50%;', '  left: 50%;', '  transform: translate(-50%, -50%);', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.54','margin auto 居中'), lang: 'css', code: ['.container { display: flex; }', '.box { margin: auto; }'].join('\n') },
+        { cat: 'CSS', title: t('ui.53','行高垂直居中'), lang: 'css', code: ['.line {', '  height: 48px;', '  line-height: 48px;', '  text-align: center;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.52','清除浮动'), lang: 'css', code: ['.clearfix::after {', "  content: '';", '  display: table;', '  clear: both;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.51','单行文本省略'), lang: 'css', code: ['.ellipsis {', '  overflow: hidden;', '  white-space: nowrap;', '  text-overflow: ellipsis;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.50','多行文本省略'), lang: 'css', code: ['.clamp {', '  display: -webkit-box;', '  -webkit-line-clamp: 2;', '  -webkit-box-orient: vertical;', '  overflow: hidden;', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.49','响应式媒体查询'), lang: 'css', code: ['@media (max-width: 768px) {', '  .grid { grid-template-columns: 1fr; }', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.48','渐变色背景'), lang: 'css', code: ['.gradient {', '  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);', '}'].join('\n') },
+        { cat: 'CSS', title: t('ui.47','自定义滚动条'), lang: 'css', code: ['.scroll::-webkit-scrollbar { width: 8px; }', '.scroll::-webkit-scrollbar-thumb {', '  background: #aaa;', '  border-radius: 4px;', '}'].join('\n') },
+        { cat: 'Python', title: t('ui.46','遍历目录文件'), lang: 'python', code: ["import os", "for root, dirs, files in os.walk('/path/to/dir'):", "    for name in files:", "        print(os.path.join(root, name))"].join('\n') },
+        { cat: 'Python', title: t('ui.45','读取 CSV 文件'), lang: 'python', code: ["import csv", "with open('data.csv', 'r', encoding='utf-8') as f:", "    reader = csv.reader(f)", "    for row in reader:", "        print(row)"].join('\n') },
+        { cat: 'Python', title: t('ui.44','写入 CSV 文件'), lang: 'python', code: ["import csv", "with open('out.csv', 'w', encoding='utf-8', newline='') as f:", "    writer = csv.writer(f)", "    writer.writerow(['name', 'age'])", "    writer.writerow(['Alice', 18])"].join('\n') },
+        { cat: 'Python', title: t('ui.43','读取 JSON 文件'), lang: 'python', code: ["import json", "with open('config.json', 'r', encoding='utf-8') as f:", "    data = json.load(f)", "print(data['key'])"].join('\n') },
+        { cat: 'Python', title: t('ui.42','HTTP GET 请求（requests）'), lang: 'python', code: ["import requests", "resp = requests.get('https://api.example.com/data', timeout=10)", "print(resp.status_code)", "print(resp.json())"].join('\n') },
+        { cat: 'Python', title: t('ui.41','列表推导式'), lang: 'python', code: ["nums = [1, 2, 3, 4, 5]", "squares = [n * n for n in nums if n % 2 == 0]"].join('\n') },
+        { cat: 'Python', title: t('ui.40','复制文件与目录'), lang: 'python', code: ["import shutil", "shutil.copy('src.txt', 'dst.txt')", "shutil.copytree('src_dir', 'dst_dir')"].join('\n') },
+        { cat: 'Python', title: t('ui.39','读取环境变量'), lang: 'python', code: ["import os", "token = os.environ.get('API_TOKEN', '')", "if not token:", "    raise SystemExit('API_TOKEN is not set')"].join('\n') },
+        { cat: 'Shell', title: t('ui.38','查找端口占用'), lang: 'shell', code: ['lsof -i :8080', 'netstat -ano | grep 8080'].join('\n') },
+        { cat: 'Shell', title: t('ui.37','结束占用端口的进程'), lang: 'shell', code: ['kill -9 $(lsof -t -i :8080)'].join('\n') },
+        { cat: 'Shell', title: t('ui.36','批量重命名文件'), lang: 'shell', code: ['for f in *.txt; do', '  mv "$f" "${f%.txt}.md"', 'done'].join('\n') },
+        { cat: 'Shell', title: t('ui.35','查找大文件'), lang: 'shell', code: ['find . -type f -size +100M -exec ls -lh {} \\;', 'du -sh * | sort -rh | head -20'].join('\n') },
+        { cat: 'Shell', title: t('ui.34','递归搜索关键词'), lang: 'shell', code: ['grep -rn "TODO" --include="*.js" .', 'rg -n "console.log" src/'].join('\n') },
+        { cat: 'Shell', title: t('ui.33','tar 打包与解压'), lang: 'shell', code: ['tar -czvf backup.tar.gz ./project', 'tar -xzvf backup.tar.gz -C /restore/path'].join('\n') },
+        { cat: 'Shell', title: t('ui.32','后台运行并记录 PID'), lang: 'shell', code: ['nohup python app.py > app.log 2>&1 &', 'echo $! > app.pid'].join('\n') },
+        { cat: 'Shell', title: t('ui.31','统计文件数量'), lang: 'shell', code: ['find . -type f | wc -l', 'find . -type f -name "*.py" | wc -l'].join('\n') },
+        { cat: 'SQL', title: t('ui.30','分页查询'), lang: 'sql', code: ['SELECT * FROM users', 'ORDER BY id', 'LIMIT 20 OFFSET 0;'].join('\n') },
+        { cat: 'SQL', title: t('ui.29','内连接 INNER JOIN'), lang: 'sql', code: ['SELECT u.name, o.amount', 'FROM users u', 'INNER JOIN orders o ON o.user_id = u.id;'].join('\n') },
+        { cat: 'SQL', title: t('ui.28','左连接 LEFT JOIN'), lang: 'sql', code: ['SELECT u.name, COUNT(o.id) AS order_count', 'FROM users u', 'LEFT JOIN orders o ON o.user_id = u.id', 'GROUP BY u.id, u.name;'].join('\n') },
+        { cat: 'SQL', title: t('ui.27','分组统计 GROUP BY'), lang: 'sql', code: ['SELECT status, COUNT(*) AS cnt', 'FROM orders', 'GROUP BY status', 'ORDER BY cnt DESC;'].join('\n') },
+        { cat: 'SQL', title: t('ui.26','去重 DISTINCT'), lang: 'sql', code: ['SELECT DISTINCT email FROM users;'].join('\n') },
+        { cat: 'SQL', title: t('ui.25','子查询'), lang: 'sql', code: ['SELECT name FROM users', 'WHERE id IN (', '  SELECT user_id FROM orders WHERE amount > 100', ');'].join('\n') },
+        { cat: 'SQL', title: t('ui.24','创建索引'), lang: 'sql', code: ['CREATE INDEX idx_users_email ON users(email);'].join('\n') },
+        { cat: 'SQL', title: t('ui.23','条件更新'), lang: 'sql', code: ["UPDATE users", "SET status = 'active', updated_at = NOW()", 'WHERE id = 1;'].join('\n') },
+        { cat: 'Git', title: t('ui.22','撤销未提交的修改'), lang: 'shell', code: ['git checkout -- .', 'git restore .'].join('\n') },
+        { cat: 'Git', title: t('ui.21','修改最近一次提交信息'), lang: 'shell', code: ['git commit --amend -m "new message"'].join('\n') },
+        { cat: 'Git', title: t('ui.20','合并分支'), lang: 'shell', code: ['git checkout main', 'git merge feature-branch'].join('\n') },
+        { cat: 'Git', title: t('ui.19','变基与强制推送'), lang: 'shell', code: ['git checkout feature', 'git rebase main', 'git push --force-with-lease'].join('\n') },
+        { cat: 'Git', title: t('ui.18','stash 暂存工作区'), lang: 'shell', code: ['git stash push -m "wip"', 'git stash list', 'git stash pop'].join('\n') },
+        { cat: 'Git', title: t('ui.17','回滚到指定提交'), lang: 'shell', code: ['git reset --hard <commit-hash>', 'git revert <commit-hash>'].join('\n') },
+        { cat: 'Git', title: t('ui.16','删除分支'), lang: 'shell', code: ['git branch -d feature-branch', 'git push origin --delete feature-branch'].join('\n') },
+        { cat: '正则', title: t('ui.15','邮箱地址'), lang: 'regex', code: ['^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'].join('\n') },
+        { cat: '正则', title: t('ui.14','中国大陆手机号'), lang: 'regex', code: ['^1[3-9]\\d{9}$'].join('\n') },
+        { cat: '正则', title: t('ui.13','IPv4 地址'), lang: 'regex', code: ['^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}$'].join('\n') },
+        { cat: '正则', title: t('ui.12','URL 地址'), lang: 'regex', code: ['^https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+([\\/?#].*)?$'].join('\n') },
+        { cat: '正则', title: t('ui.11','日期 YYYY-MM-DD'), lang: 'regex', code: ['^\\d{4}-\\d{2}-\\d{2}$'].join('\n') },
+        { cat: '正则', title: t('ui.10','提取中文字符'), lang: 'regex', code: ['[\\u4e00-\\u9fa5]+'].join('\n') },
+        { cat: '正则', title: t('ui.9','密码强度校验'), lang: 'regex', code: ['^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$'].join('\n') }
       ];
 
       function render() {
@@ -219,7 +220,7 @@
           var idx = parseInt(shown[i].getAttribute('data-index'), 10);
           pres[i].textContent = snippets[idx].code;
         }
-        outputEl.textContent = '共 ' + snippets.length + ' 条片段，当前显示 ' + count + ' 条。';
+        outputEl.textContent = t('ui.total','共 ') + snippets.length + t('ui.8',' 条片段，当前显示 ') + count + t('ui.7',' 条。');
       }
 
       gridEl.addEventListener('click', function (e) {
@@ -236,7 +237,7 @@
         var code = snippets[idx].code;
         var target = btn || card.querySelector('.btn');
         copyToClipboard(code, target);
-        setStatus('已复制「' + snippets[idx].title + '」');
+        setStatus(t('ui.6','已复制「') + snippets[idx].title + '」');
       });
 
       searchEl.addEventListener('input', render);
@@ -245,7 +246,7 @@
       copyBtn.addEventListener('click', function () {
         if (outputEl.textContent) {
           copyToClipboard(outputEl.textContent, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

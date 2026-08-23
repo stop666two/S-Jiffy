@@ -14,10 +14,11 @@
 </div>
 <div class="result-row" id="hex结果">#3498DB</div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var hSlider=document.getElementById('hSlider');
 var sSlider=document.getElementById('sSlider');
 var lSlider=document.getElementById('lSlider');
@@ -25,7 +26,7 @@ var hNum=document.getElementById('hNum');
 var sNum=document.getElementById('sNum');
 var lNum=document.getElementById('lNum');
 var colorPreview=document.getElementById('colorPreview');
-var hex结果=document.getElementById('hex结果');
+var hex结果=document.getElementById(t('ui.1','hex结果'));
 var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 
@@ -77,6 +78,6 @@ lSlider.addEventListener('input',function(){update('l');});
 hNum.addEventListener('input',function(){update('hn');});
 sNum.addEventListener('input',function(){update('sn');});
 lNum.addEventListener('input',function(){update('ln');});
-copyBtn.addEventListener('click',function(){if(hex结果.textContent){copyToClipboard(hex结果.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(hex结果.textContent){copyToClipboard(hex结果.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 update('h');
 })();</script></body></html>

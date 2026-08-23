@@ -34,7 +34,7 @@
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="card" style="margin-top:16px;">
       <div id="emojiGrid" class="emoji-grid"></div>
@@ -42,9 +42,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var emojis = [
@@ -87,7 +88,7 @@
             previewEmoji.textContent = e.e;
             previewName.textContent = e.n.trim();
             previewCode.textContent = 'U+' + e.e.codePointAt(0).toString(16).toUpperCase();
-            setStatus('已选中: ' + e.e);
+            setStatus(t('ui.1','已选中: ') + e.e);
           });
           gridEl.appendChild(cell);
         });
@@ -101,7 +102,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
 
       renderEmojis('');

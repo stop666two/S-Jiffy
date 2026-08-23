@@ -29,10 +29,11 @@
 </div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var cSlider=document.getElementById('cSlider'),mSlider=document.getElementById('mSlider'),ySlider=document.getElementById('ySlider'),kSlider=document.getElementById('kSlider');
 var cNum=document.getElementById('cNum'),mNum=document.getElementById('mNum'),yNum=document.getElementById('yNum'),kNum=document.getElementById('kNum');
 var rSlider=document.getElementById('rSlider'),gSlider=document.getElementById('gSlider'),bSlider=document.getElementById('bSlider');
@@ -84,6 +85,6 @@ cNum.addEventListener('input',function(){updateCMYK('cn');});
 mNum.addEventListener('input',function(){updateCMYK('mn');});
 yNum.addEventListener('input',function(){updateCMYK('yn');});
 kNum.addEventListener('input',function(){updateCMYK('kn');});
-copyBtn.addEventListener('click',function(){if(rgbDisplay.textContent){copyToClipboard(rgbDisplay.textContent,copyBtn);setStatus('已复制 RGB');}});
+copyBtn.addEventListener('click',function(){if(rgbDisplay.textContent){copyToClipboard(rgbDisplay.textContent,copyBtn);setStatus(t('ui.1','已复制 RGB'));}});
 updateCMYK('c');
 })();</script></body></html>

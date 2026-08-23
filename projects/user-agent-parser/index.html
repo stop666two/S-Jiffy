@@ -23,14 +23,15 @@
     <div class="card">
       <textarea id="uaInput" class="input textarea js-focus-input" style="min-height:80px;" placeholder="粘贴 User-Agent 字符串..."></textarea>
     </div>
-    <button id="parseBtn" class="btn btn-primary">解析</button>
+    <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
     <div class="ua-grid" id="uaGrid"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('uaInput');
     var gridEl = document.getElementById('uaGrid');
@@ -57,10 +58,10 @@
     function render(d) {
       if (!d) { gridEl.innerHTML = '<div style="color:var(--color-text-secondary);padding:var(--space-3);">请输入 User-Agent 字符串</div>'; return; }
       var items = [
-        { label: '浏览器', val: d.browser },
-        { label: '操作系统', val: d.os },
-        { label: '渲染引擎', val: d.engine },
-        { label: '设备类型', val: d.device }
+        { label: t('ui.5','浏览器'), val: d.browser },
+        { label: t('ui.4','操作系统'), val: d.os },
+        { label: t('ui.3','渲染引擎'), val: d.engine },
+        { label: t('ui.2','设备类型'), val: d.device }
       ];
       var html = '';
       for (var i = 0; i < items.length; i++) {
@@ -73,7 +74,7 @@
       if (!ua) { setStatus('请输入 User-Agent', 'error'); render(null); return; }
       var result = parseUA(ua);
       render(result);
-      setStatus('解析完成');
+      setStatus(t('ui.1','解析完成'));
     }
     document.getElementById('parseBtn').addEventListener('click', doParse);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && e.ctrlKey) doParse(); });

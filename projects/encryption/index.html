@@ -13,12 +13,12 @@
     <h1 data-i18n="h1">加密工具</h1>
     <p class="tool-desc" data-i18n="desc">支持 Caesar / ROT13 / ROT47 / Atbash / XOR 自定义密钥加密，仅在浏览器本地运行。</p>
     <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">模式</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.mode">模式</label>
       <select id="modeSelect" class="input" style="width:auto;min-width:90px;">
-        <option value="encrypt">加密</option>
-        <option value="decrypt">解密</option>
+        <option value="encrypt" data-i18n="ui.encrypt">加密</option>
+        <option value="decrypt" data-i18n="ui.decrypt">解密</option>
       </select>
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">算法</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.algorithm">算法</label>
       <select id="algoSelect" class="input" style="width:auto;min-width:100px;">
         <option value="caesar">Caesar</option>
         <option value="rot13">ROT13</option>
@@ -26,7 +26,7 @@
         <option value="atbash">Atbash</option>
         <option value="xor">XOR</option>
       </select>
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">位移/密钥</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">位移/密钥</label>
       <input id="shiftInput" class="input" type="number" value="3" min="1" max="25" style="width:110px;">
       <input id="xorKeyInput" class="input" placeholder="XOR 密钥" style="width:100px;display:none;">
     </div>
@@ -34,16 +34,17 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
     </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
-      <button id="processBtn" class="btn btn-primary">执行</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="processBtn" class="btn btn-primary" data-i18n="ui.2">执行</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var modeEl = document.getElementById('modeSelect');
     var algoEl = document.getElementById('algoSelect');
@@ -110,10 +111,10 @@
           result = caesarShift(text, shift, decrypt);
       }
       outputEl.textContent = result;
-      setStatus((decrypt ? '解密' : '加密') + '完成');
+      setStatus((decrypt ? '解密' : '加密') + t('ui.3','完成'));
     });
     document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copied','已复制')); } });
     algoEl.addEventListener('change', function() {
       shiftEl.style.display = (algoEl.value === 'caesar') ? 'inline-block' : 'none';
       xorKeyEl.style.display = (algoEl.value === 'xor') ? 'inline-block' : 'none';

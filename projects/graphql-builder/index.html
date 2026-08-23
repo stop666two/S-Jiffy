@@ -11,10 +11,10 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">GraphQL 查询构建</h1><p class="tool-desc" data-i18n="desc">可视化构建 GraphQL 查询和变更语句</p>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
-  <div style="flex:1;min-width:120px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">操作类型</label><select id="opType" class="input" style="height:44px;"><option value="query">query</option><option value="mutation">mutation</option><option value="subscription">subscription</option></select></div>
-  <div style="flex:2;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">操作名称 (可选)</label><input id="opName" class="input" placeholder="GetUsers" style="height:44px;"></div>
+  <div style="flex:1;min-width:120px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">操作类型</label><select id="opType" class="input" style="height:44px;"><option value="query">query</option><option value="mutation">mutation</option><option value="subscription">subscription</option></select></div>
+  <div style="flex:2;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.2">操作名称 (可选)</label><input id="opName" class="input" placeholder="GetUsers" style="height:44px;"></div>
 </div>
-<div class="card"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">字段列表 (每行一个，用点表示嵌套)</label><textarea id="fieldList" class="input textarea" placeholder="id
+<div class="card"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.3">字段列表 (每行一个，用点表示嵌套)</label><textarea id="fieldList" class="input textarea" placeholder="id
 name
 email
 profile.avatar
@@ -22,14 +22,15 @@ profile.bio
 posts.id
 posts.title" style="min-height:140px;font-size:13px;"></textarea></div>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-  <div style="flex:1;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">参数 (JSON)</label><input id="argsInput" class="input" placeholder='{"id": 1}' style="height:44px;font-size:13px;"></div>
+  <div style="flex:1;min-width:160px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.4">参数 (JSON)</label><input id="argsInput" class="input" placeholder='{"id": 1}' style="height:44px;font-size:13px;"></div>
   <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" id="compactCheck" checked> 紧凑模式</label>
 </div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary">构建查询</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;"><button id="buildBtn" class="btn btn-primary" data-i18n="ui.5">构建查询</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var opType = document.getElementById('opType');
@@ -120,11 +121,11 @@ posts.title" style="min-height:140px;font-size:13px;"></textarea></div>
     result += '{\n' + fields + '\n}';
 
     outputEl.textContent = result;
-    setStatus('查询构建完成');
+    setStatus(t('ui.6','查询构建完成'));
   }
 
   document.getElementById('buildBtn').addEventListener('click', build);
   document.getElementById('clearBtn').addEventListener('click', function () { fieldList.value = ''; argsInput.value = ''; outputEl.textContent = ''; setStatus(''); });
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
 })();
 </script></body></html>

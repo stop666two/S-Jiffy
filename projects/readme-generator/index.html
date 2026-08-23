@@ -23,31 +23,31 @@
     <p class="tool-desc" data-i18n="desc">填写项目信息表单，自动生成结构完整的 README.md 文档（标题/徽章/简介/特性/安装/使用/许可证）。</p>
     <div class="card">
       <div class="form-row">
-        <label for="projName" class="field-label">项目名称（必填）</label>
+        <label for="projName" class="field-label" data-i18n="ui.1">项目名称（必填）</label>
         <input id="projName" class="input js-focus-input" placeholder="my-project">
       </div>
       <div class="form-row">
-        <label for="projDesc" class="field-label">一行描述</label>
+        <label for="projDesc" class="field-label" data-i18n="ui.2">一行描述</label>
         <input id="projDesc" class="input" placeholder="一个简洁高效的示例项目">
       </div>
       <div class="form-row">
-        <label for="projDetail" class="field-label">详细说明</label>
+        <label for="projDetail" class="field-label" data-i18n="ui.3">详细说明</label>
         <textarea id="projDetail" class="input textarea" placeholder="介绍项目解决的问题、核心特性与适用场景…"></textarea>
       </div>
       <div class="form-row">
-        <label for="installCmd" class="field-label">安装命令</label>
+        <label for="installCmd" class="field-label" data-i18n="ui.4">安装命令</label>
         <input id="installCmd" class="input" placeholder="npm install my-project">
       </div>
       <div class="form-row">
-        <label for="usageCode" class="field-label">使用示例代码</label>
+        <label for="usageCode" class="field-label" data-i18n="ui.5">使用示例代码</label>
         <textarea id="usageCode" class="input textarea" style="min-height:120px;" placeholder="const myProject = require('my-project');&#10;myProject.run();"></textarea>
       </div>
       <div class="form-row">
-        <label for="featureList" class="field-label">特性列表（每行一个）</label>
+        <label for="featureList" class="field-label" data-i18n="ui.6">特性列表（每行一个）</label>
         <textarea id="featureList" class="input textarea" style="min-height:100px;" placeholder="零依赖，开箱即用&#10;支持 TypeScript 类型提示&#10;完善的错误处理"></textarea>
       </div>
       <div class="form-row">
-        <label for="licenseSel" class="field-label">许可证</label>
+        <label for="licenseSel" class="field-label" data-i18n="ui.7">许可证</label>
         <select id="licenseSel" class="input" style="height:44px;">
           <option value="MIT">MIT</option>
           <option value="Apache-2.0">Apache-2.0</option>
@@ -57,7 +57,7 @@
         </select>
       </div>
       <div class="form-row">
-        <div class="field-label" style="margin-bottom:6px;">徽章选项</div>
+        <div class="field-label" style="margin-bottom:6px;" data-i18n="ui.8">徽章选项</div>
         <div class="badge-row">
           <label><input type="checkbox" id="badgeVersion"> 版本徽章</label>
           <label><input type="checkbox" id="badgeLicense"> 许可证徽章</label>
@@ -68,14 +68,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var nameEl = document.getElementById('projName');
@@ -144,13 +145,13 @@
           lines.push('');
         }
         if (detail) {
-          lines.push('## 简介');
+          lines.push(t('ui.14','## 简介'));
           lines.push('');
           lines.push(detail);
           lines.push('');
         }
         if (features.length) {
-          lines.push('## 特性');
+          lines.push(t('ui.13','## 特性'));
           lines.push('');
           for (var i = 0; i < features.length; i++) {
             lines.push('- ' + features[i]);
@@ -158,7 +159,7 @@
           lines.push('');
         }
         if (install) {
-          lines.push('## 安装');
+          lines.push(t('ui.12','## 安装'));
           lines.push('');
           lines.push('```bash');
           lines.push(install);
@@ -166,18 +167,18 @@
           lines.push('');
         }
         if (usage) {
-          lines.push('## 使用');
+          lines.push(t('ui.11','## 使用'));
           lines.push('');
           lines.push('```javascript');
           lines.push(usage);
           lines.push('```');
           lines.push('');
         }
-        lines.push('## 许可证');
+        lines.push(t('ui.10','## 许可证'));
         lines.push('');
         lines.push('[' + licenseEl.value + '](https://choosealicense.com/licenses/' + licenseEl.value.toLowerCase() + '/)');
         outputEl.textContent = lines.join('\n');
-        setStatus('已生成 README.md');
+        setStatus(t('ui.9','已生成 README.md'));
       }
 
       var inputs = [nameEl, descEl, detailEl, installEl, usageEl, featureEl];
@@ -193,7 +194,7 @@
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       generate();

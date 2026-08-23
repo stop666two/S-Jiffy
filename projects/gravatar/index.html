@@ -14,22 +14,23 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Gravatar 查询</h1><p class="tool-desc" data-i18n="desc">邮箱 → MD5 哈希 → 带预览的 Gravatar URL。</p>
 <div class="card">
-<div class="grav-row"><div class="field"><label>邮箱</label><input id="emailInput" class="input js-focus-input" type="email" placeholder="you@example.com" value="user@example.com"></div>
-<button id="generateBtn" class="btn btn-primary">生成</button></div>
+<div class="grav-row"><div class="field"><label data-i18n="ui.1">邮箱</label><input id="emailInput" class="input js-focus-input" type="email" placeholder="you@example.com" value="user@example.com"></div>
+<button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
 </div>
 <div class="card">
-<div class="grav-row"><strong style="font-size:var(--font-size-sm);">MD5 哈希：</strong><span id="md5Hash" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
+<div class="grav-row"><strong style="font-size:var(--font-size-sm);" data-i18n="ui.2">MD5 哈希：</strong><span id="md5Hash" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
 <div class="grav-row">
-<label>尺寸</label><select id="sizeSelect" class="input" style="width:auto;"><option value="40">40</option><option value="80" selected>80</option><option value="120">120</option><option value="200">200</option><option value="400">400</option></select>
+<label data-i18n="ui.3">尺寸</label><select id="sizeSelect" class="input" style="width:auto;"><option value="40">40</option><option value="80" selected>80</option><option value="120">120</option><option value="200">200</option><option value="400">400</option></select>
 <label>Default</label><select id="defaultSelect" class="input" style="width:auto;"><option value="mp">Mystery Person</option><option value="identicon">Identicon</option><option value="monsterid">Monster</option><option value="wavatar">Wavatar</option><option value="retro">Retro</option><option value="robohash">Robohash</option><option value="blank">Blank</option></select>
 <label>Rating</label><select id="ratingSelect" class="input" style="width:auto;"><option value="g">G</option><option value="pg">PG</option><option value="r">R</option><option value="x">X</option></select>
 </div>
 <div class="grav-preview" id="previewArea"></div>
 <div class="grav-row"><strong style="font-size:var(--font-size-sm);">Gravatar URL：</strong><span id="gravUrl" style="font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all;">—</span></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制 URL</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.4">复制 URL</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var el=document.getElementById('emailInput'),mh=document.getElementById('md5Hash'),pa=document.getElementById('previewArea'),gu=document.getElementById('gravUrl'),o=document.getElementById('outputText');
 
@@ -60,9 +61,9 @@ var def=document.getElementById('defaultSelect').value;
 var rating=document.getElementById('ratingSelect').value;
 var url='https://www.gravatar.com/avatar/'+hash+'?s='+size+'&d='+def+'&r='+rating;
 gu.textContent=url;pa.innerHTML='<img src="'+url+'" alt="Gravatar" width="'+size+'" height="'+size+'">';
-o.textContent=url;setStatus('头像已生成');}
+o.textContent=url;setStatus(t('ui.6','头像已生成'));}
 
 document.getElementById('generateBtn').addEventListener('click',generate);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('URL 已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.5','URL 已复制'));}});
 generate();})();
 </script></body></html>

@@ -27,8 +27,8 @@
     <div class="card">
       <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:var(--space-2);">
         <input id="cronInput" class="input js-focus-input" placeholder="*/5 * * * *" style="width:200px;font-family:var(--font-mono);">
-        <button id="parseBtn" class="btn btn-primary">验证</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="parseBtn" class="btn btn-primary" data-i18n="ui.1">验证</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
       <div class="cron-fields">
         <div class="cron-field"><label>分钟<br>0-59</label><input id="fMin" readonly></div>
@@ -41,14 +41,15 @@
 
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var cronInput = document.getElementById('cronInput');
@@ -56,20 +57,20 @@
       var parseBtn = document.getElementById('parseBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
       var fields = { min: document.getElementById('fMin'), hour: document.getElementById('fHour'), day: document.getElementById('fDay'), month: document.getElementById('fMonth'), week: document.getElementById('fWeek') };
 
-      var weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
-      var monthNames = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+      var weekdayNames = [ t('ui.23','日'), t('ui.one','一'), t('ui.two','二'), t('ui.three','三'), t('ui.four','四'), t('ui.five','五'), t('ui.six','六')];
+      var monthNames = ['', t('ui.22','一月'), t('ui.21','二月'), t('ui.20','三月'), t('ui.19','四月'), t('ui.18','五月'), t('ui.17','六月'), t('ui.16','七月'), t('ui.15','八月'), t('ui.14','九月'), t('ui.13','十月'), t('ui.12','十一月'), t('ui.11','十二月')];
 
       function describeField(val, type) {
-        if (val === '*') return '每' + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '周');
+        if (val === '*') return t('ui.10','每') + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '周');
         if (val.indexOf('/') !== -1) {
           var parts = val.split('/');
-          return '每 ' + parts[1] + ' ' + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '天') + (parts[0] !== '*' ? '，从 ' + parts[0] + ' 开始' : '');
+          return t('ui.10','每 ') + parts[1] + ' ' + (type === 'min' ? '分钟' : type === 'hour' ? '小时' : type === 'day' ? '天' : type === 'month' ? '月' : '天') + (parts[0] !== '*' ? t('ui.9','，从 ') + parts[0] + ' 开始' : '');
         }
         if (val.indexOf('-') !== -1) {
           var r = val.split('-');
           if (type === 'week') return r[0] + ' (' + weekdayNames[parseInt(r[0])] + ') 到 ' + r[1] + ' (' + weekdayNames[parseInt(r[1])] + ')';
-          if (type === 'month') return monthNames[parseInt(r[0])] + ' 到 ' + monthNames[parseInt(r[1])];
-          return r[0] + ' 到 ' + r[1];
+          if (type === 'month') return monthNames[parseInt(r[0])] + t('ui.8',' 到 ') + monthNames[parseInt(r[1])];
+          return r[0] + t('ui.8',' 到 ') + r[1];
         }
         if (val.indexOf(',') !== -1) {
           var items = val.split(',');
@@ -84,7 +85,7 @@
 
       function parseCron(expr) {
         var parts = expr.trim().split(/\s+/);
-        if (parts.length !== 5) return { error: 'cron 表达式需包含 5 个字段' };
+        if (parts.length !== 5) return { error: t('ui.7','cron 表达式需包含 5 个字段') };
         return { min: parts[0], hour: parts[1], day: parts[2], month: parts[3], week: parts[4] };
       }
 
@@ -134,11 +135,11 @@
         fields.min.value = parsed.min; fields.hour.value = parsed.hour; fields.day.value = parsed.day; fields.month.value = parsed.month; fields.week.value = parsed.week;
 
         var desc = '';
-        desc += '分钟: ' + describeField(parsed.min, 'min') + '\n';
-        desc += '小时: ' + describeField(parsed.hour, 'hour') + '\n';
-        desc += '日期: ' + describeField(parsed.day, 'day') + '\n';
-        desc += '月份: ' + describeField(parsed.month, 'month') + '\n';
-        desc += '星期: ' + describeField(parsed.week, 'week') + '\n';
+        desc += t('ui.6','分钟: ') + describeField(parsed.min, 'min') + '\n';
+        desc += t('ui.5','小时: ') + describeField(parsed.hour, 'hour') + '\n';
+        desc += t('ui.4','日期: ') + describeField(parsed.day, 'day') + '\n';
+        desc += t('ui.3','月份: ') + describeField(parsed.month, 'month') + '\n';
+        desc += t('ui.2','星期: ') + describeField(parsed.week, 'week') + '\n';
 
         var valid = true;
         try { new Function('return ' + JSON.stringify(parsed)); } catch(e) { valid = false; }
@@ -160,7 +161,7 @@
 
       parseBtn.addEventListener('click', update);
       clearBtn.addEventListener('click', function () { cronInput.value = ''; for (var k in fields) fields[k].value = ''; outputEl.textContent = ''; setStatus(''); cronInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
       cronInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
     })();
   </script>

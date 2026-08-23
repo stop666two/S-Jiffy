@@ -65,25 +65,26 @@
       <div class="vp-grid" id="vpGrid"></div>
     </div>
     <div class="card" style="margin-top:var(--space-2);">
-      <div style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-1);">说明</div>
+      <div style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-1);" data-i18n="ui.1">说明</div>
       <ul class="note-list">
         <li>窗口尺寸（outer）＝浏览器窗口整体大小；视口尺寸（inner）＝页面可用显示区域。</li>
         <li>CSS 像素 = 视口尺寸；物理像素 = CSS 像素 × 设备像素比（DPR），即真实屏幕像素。</li>
         <li>滚动条宽度通过对比元素 clientWidth 与 offsetWidth 实测得出。</li>
         <li>设备分类按视口宽度推断：&lt;600px 视为手机，600–1024px 视为平板，&gt;1024px 视为桌面。</li>
-        <li>颜色深度（bit）表示每个颜色通道的位数，通常为 24（真彩色）。</li>
+        <li data-i18n="ui.2">颜色深度（bit）表示每个颜色通道的位数，通常为 24（真彩色）。</li>
       </ul>
     </div>
     <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
       <span id="outputText" style="display:block;padding-right:60px;white-space:pre-line;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var gridEl = document.getElementById('vpGrid');
@@ -124,14 +125,14 @@
         var device = classify(innerW);
 
         var items = [
-          { label: '窗口尺寸 outer', value: outerW + ' × ' + outerH + ' px', sub: '浏览器窗口整体' },
-          { label: '视口尺寸 inner', value: innerW + ' × ' + innerH + ' px', sub: '页面可用区域' },
-          { label: '设备像素比 DPR', value: fmt(dpr) + 'x', sub: 'CSS px → 物理 px 倍率' },
-          { label: 'CSS 像素', value: innerW + ' × ' + innerH + ' px', sub: '视口逻辑尺寸' },
-          { label: '物理像素', value: fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr) + ' px', sub: '实际渲染像素' },
-          { label: '滚动条宽度', value: scrollW + ' px', sub: '实测，无滚动条为 0' },
-          { label: '屏幕尺寸', value: screenW + ' × ' + screenH + ' px', sub: 'screen.width / height' },
-          { label: '颜色深度', value: colorDepth + ' bit', sub: '颜色通道位数' }
+          { label: t('ui.12','窗口尺寸 outer'), value: outerW + ' × ' + outerH + ' px', sub: '浏览器窗口整体' },
+          { label: t('ui.11','视口尺寸 inner'), value: innerW + ' × ' + innerH + ' px', sub: '页面可用区域' },
+          { label: t('ui.10','设备像素比 DPR'), value: fmt(dpr) + 'x', sub: 'CSS px → 物理 px 倍率' },
+          { label: t('ui.9','CSS 像素'), value: innerW + ' × ' + innerH + ' px', sub: '视口逻辑尺寸' },
+          { label: t('ui.8','物理像素'), value: fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr) + ' px', sub: '实际渲染像素' },
+          { label: t('ui.7','滚动条宽度'), value: scrollW + ' px', sub: '实测，无滚动条为 0' },
+          { label: t('ui.6','屏幕尺寸'), value: screenW + ' × ' + screenH + ' px', sub: 'screen.width / height' },
+          { label: t('ui.5','颜色深度'), value: colorDepth + ' bit', sub: '颜色通道位数' }
         ];
         var html = '';
         var i;
@@ -142,7 +143,7 @@
         }
         gridEl.innerHTML = html;
         deviceEl.innerHTML = '<span class="device-badge">当前设备推断：' + htmlEscape(device) + '</span>';
-        outputEl.textContent = '窗口：' + outerW + ' × ' + outerH
+        outputEl.textContent = t('ui.4','窗口：') + outerW + ' × ' + outerH
           + '\n视口：' + innerW + ' × ' + innerH
           + '\nDPR：' + fmt(dpr)
           + '\n物理像素：' + fmt(innerW * dpr) + ' × ' + fmt(innerH * dpr)
@@ -158,12 +159,12 @@
       copyBtn.addEventListener('click', function () {
         if (outputEl.textContent) {
           copyToClipboard(outputEl.textContent, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 
       render();
-      setStatus('实时监测中，拖动窗口即可看到数值变化');
+      setStatus(t('ui.3','实时监测中，拖动窗口即可看到数值变化'));
     })();
   </script>
 </body>

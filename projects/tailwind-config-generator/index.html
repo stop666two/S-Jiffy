@@ -25,44 +25,45 @@
     <p class="tool-desc" data-i18n="desc">可视化配置主题扩展、暗色模式与内容路径，一键生成 tailwind.config.js。</p>
     <div class="card">
       <div class="field-row">
-        <label>主色</label>
+        <label data-i18n="ui.1">主色</label>
         <input id="primaryInput" type="color" value="#346538">
-        <label>次要色</label>
+        <label data-i18n="ui.2">次要色</label>
         <input id="secondaryInput" type="color" value="#787774">
       </div>
       <div class="field-row">
-        <label>间距基准</label>
+        <label data-i18n="ui.3">间距基准</label>
         <input id="spacingInput" class="input" type="number" value="8" min="0" step="1">
         <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">px（spacing.base）</span>
       </div>
       <div class="field-row">
-        <label>圆角</label>
+        <label data-i18n="ui.4">圆角</label>
         <input id="radiusInput" class="input" type="number" value="8" min="0" step="1">
         <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">px（borderRadius.base）</span>
       </div>
       <div class="field-row">
-        <label>暗色模式</label>
+        <label data-i18n="ui.5">暗色模式</label>
         <select id="darkSelect" class="input">
-          <option value="class">class（手动切换）</option>
-          <option value="media">media（跟随系统）</option>
-          <option value="off">不启用</option>
+          <option value="class" data-i18n="ui.6">class（手动切换）</option>
+          <option value="media" data-i18n="ui.7">media（跟随系统）</option>
+          <option value="off" data-i18n="ui.8">不启用</option>
         </select>
       </div>
       <div class="field-row">
-        <label>内容路径</label>
+        <label data-i18n="ui.9">内容路径</label>
         <input id="contentInput" class="input js-focus-input" type="text" value="./index.html" placeholder="多个路径用逗号分隔，如 ./index.html, ./src/**/*.{js,ts}">
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>
     (function () {
@@ -105,7 +106,7 @@
         if (!content) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('请输入内容路径');
+          setStatus(t('ui.12','请输入内容路径'));
           return;
         }
         if (!isFinite(spacing) || spacing < 0) {
@@ -144,7 +145,7 @@
         code += '};\n';
         currentCode = code;
         outputText.innerHTML = '<pre class="code-block">' + htmlEscape(code) + '</pre>';
-        setStatus('已生成 tailwind.config.js');
+        setStatus(t('ui.11','已生成 tailwind.config.js'));
       }
 
       primaryInput.addEventListener('input', render);
@@ -156,7 +157,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!currentCode) return;
         copyToClipboard(currentCode, this);
-        setStatus('已复制配置文件');
+        setStatus(t('ui.10','已复制配置文件'));
       });
       render();
     })();

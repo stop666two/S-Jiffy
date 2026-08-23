@@ -13,27 +13,28 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">拍照工具</h1>
-<p class="tool-desc" data-i18n="desc">使用摄像头拍照并下载，所有数据仅在本地处理。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+<p class="tool-desc" data-i18n="desc">使用摄像头拍照并下载，所有数据仅在本地处理。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
 <p style="font-size:var(--font-size-xs);color:var(--color-error);margin-bottom:var(--space-3);">⚠ 提示：请提前摆好姿势，因浏览器限制摄像头画面可能仅短暂可用。打开后请尽快拍照。</p>
 <div id="wrap">
 <video id="v" autoplay playsinline muted style="display:none;"></video>
 <canvas id="c" style="display:none;"></canvas>
-<span id="hint" style="color:#888;font-size:var(--font-size-sm);">点击「打开摄像头」开始</span>
+<span id="hint" style="color:#888;font-size:var(--font-size-sm);" data-i18n="ui.2">点击「打开摄像头」开始</span>
 </div>
 <div class="ctrl">
-<button id="b0" class="btn btn-primary">打开摄像头</button>
-<button id="b1" class="btn btn-secondary" disabled>拍照</button>
-<button id="b2" class="btn btn-secondary" disabled>关闭</button>
-<button id="b3" class="btn btn-secondary" disabled>下载</button>
+<button id="b0" class="btn btn-primary" data-i18n="ui.3">打开摄像头</button>
+<button id="b1" class="btn btn-secondary" disabled data-i18n="ui.4">拍照</button>
+<button id="b2" class="btn btn-secondary" disabled data-i18n="ui.5">关闭</button>
+<button id="b3" class="btn btn-secondary" disabled data-i18n="ui.6">下载</button>
 </div>
 <div id="preview" style="display:none;">
-<h2 style="font-size:var(--font-size-lg);margin-bottom:8px;">照片预览</h2>
+<h2 style="font-size:var(--font-size-lg);margin-bottom:8px;" data-i18n="ui.7">照片预览</h2>
 <img id="img" alt="照片">
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
   var v=document.getElementById('v'),c=document.getElementById('c'),h=document.getElementById('hint');
@@ -46,8 +47,8 @@
     navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}}}).then(function(s){
       st=s;v.srcObject=s;v.style.display='block';h.style.display='none';
       b0.disabled=true;b1.disabled=false;b2.disabled=false;
-      setStatus('摄像头已开启');
-    }).catch(function(e){setStatus('摄像头错误: '+e.message,'error');});
+      setStatus(t('ui.12','摄像头已开启'));
+    }).catch(function(e){setStatus(t('ui.11','摄像头错误: ') +e.message,'error');});
   }
 
   function takePic(){
@@ -55,25 +56,25 @@
     c.width=v.videoWidth||640;c.height=v.videoHeight||480;
     c.getContext('2d').drawImage(v,0,0);
     im.src=c.toDataURL('image/png');p.style.display='block';b3.disabled=false;
-    o.textContent='已拍照 '+(v.videoWidth||640)+'x'+(v.videoHeight||480);setStatus('已拍照');
+    o.textContent = t('ui.10','已拍照 ')+(v.videoWidth||640)+'x'+(v.videoHeight||480);setStatus(t('ui.10','已拍照'));
   }
 
   function closeCam(){
     if(st){st.getTracks().forEach(function(t){t.stop();});st=null;}
     v.srcObject=null;v.style.display='none';h.style.display='block';
     b0.disabled=false;b1.disabled=true;b2.disabled=true;b3.disabled=true;
-    setStatus('摄像头已关闭');
+    setStatus(t('ui.9','摄像头已关闭'));
   }
 
   function dl(){
-    if(im.src){var a=document.createElement('a');a.href=im.src;a.download='photo_'+Date.now()+'.png';a.click();setStatus('已下载');}
+    if(im.src){var a=document.createElement('a');a.href=im.src;a.download='photo_'+Date.now()+'.png';a.click();setStatus(t('ui.8','已下载'));}
   }
 
   b0.addEventListener('click',openCam);
   b1.addEventListener('click',takePic);
   b2.addEventListener('click',closeCam);
   b3.addEventListener('click',dl);
-  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 
   window.addEventListener('beforeunload',function(){if(st)st.getTracks().forEach(function(t){t.stop();});});
 })();

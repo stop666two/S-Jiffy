@@ -31,46 +31,47 @@
     <div class="card">
       <div id="checkCard"></div>
       <div class="progress-wrap">
-        <span class="progress-text" id="progressText">已勾选 0/16</span>
+        <span class="progress-text" id="progressText" data-i18n="ui.1">已勾选 0/16</span>
         <div class="progress-track">
           <div class="progress-bar" id="progressBar"></div>
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="reportBtn">生成报告</button>
-        <button class="btn btn-secondary" id="allBtn">全部勾选</button>
-        <button class="btn btn-secondary" id="clearBtn">清空</button>
+        <button class="btn btn-primary" id="reportBtn" data-i18n="ui.2">生成报告</button>
+        <button class="btn btn-secondary" id="allBtn" data-i18n="ui.3">全部勾选</button>
+        <button class="btn btn-secondary" id="clearBtn" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var ITEMS = [
-        { key: 'contrast', title: '颜色对比度', desc: '正文与背景色的对比度不低于 4.5:1，大号文字不低于 3:1' },
-        { key: 'semantics', title: '语义化标签', desc: '使用 header/main/nav/footer/article 等语义化标签组织页面结构' },
-        { key: 'keyboard', title: '键盘导航', desc: '所有交互元素（链接、按钮、表单）均可仅用键盘完成操作' },
-        { key: 'focus', title: '焦点可见', desc: 'Tab 切换时焦点指示清晰可见，不被样式隐藏或覆盖' },
-        { key: 'aria', title: '图标按钮 ARIA', desc: '无文字内容的图标按钮提供 aria-label 等可访问名称' },
-        { key: 'alt', title: '图片替代文本', desc: '所有 img 图片提供描述性 alt 属性，装饰图使用空 alt' },
-        { key: 'labels', title: '表单标签', desc: '每个输入控件关联可见 label 或 aria-label' },
-        { key: 'headings', title: '标题层级', desc: '页面标题按 h1 至 h6 顺序使用，不跳级、不滥用' },
-        { key: 'lang', title: '语言声明', desc: 'html 标签声明 lang 属性（如 lang="zh-CN"）' },
-        { key: 'motion', title: '减少动效', desc: '支持 prefers-reduced-motion，尊重用户减少动效的偏好' },
-        { key: 'captions', title: '媒体字幕', desc: '视频提供字幕，音频提供文字稿或转录文本' },
-        { key: 'touch', title: '触控目标', desc: '可点击目标尺寸不小于 44×44px 且彼此间距充足' },
-        { key: 'errors', title: '错误提示', desc: '表单错误信息与对应输入框关联，并给出修复建议' },
-        { key: 'color', title: '颜色非唯一', desc: '不使用颜色作为传递信息的唯一手段，辅以图标或文字' },
-        { key: 'scroll', title: '滚动区域', desc: '溢出内容区域可滚动、滚动条可见，并支持键盘滚动' },
-        { key: 'zoom', title: '字体缩放', desc: '页面在浏览器 200% 缩放下内容完整可读、功能不丢失' }
+        { key: 'contrast', title: t('ui.45','颜色对比度'), desc: t('ui.44','正文与背景色的对比度不低于 4.5:1，大号文字不低于 3:1') },
+        { key: 'semantics', title: t('ui.43','语义化标签'), desc: t('ui.42','使用 header/main/nav/footer/article 等语义化标签组织页面结构') },
+        { key: 'keyboard', title: t('ui.41','键盘导航'), desc: t('ui.40','所有交互元素（链接、按钮、表单）均可仅用键盘完成操作') },
+        { key: 'focus', title: t('ui.39','焦点可见'), desc: t('ui.38','Tab 切换时焦点指示清晰可见，不被样式隐藏或覆盖') },
+        { key: 'aria', title: t('ui.37','图标按钮 ARIA'), desc: t('ui.36','无文字内容的图标按钮提供 aria-label 等可访问名称') },
+        { key: 'alt', title: t('ui.35','图片替代文本'), desc: t('ui.34','所有 img 图片提供描述性 alt 属性，装饰图使用空 alt') },
+        { key: 'labels', title: t('ui.33','表单标签'), desc: t('ui.32','每个输入控件关联可见 label 或 aria-label') },
+        { key: 'headings', title: t('ui.31','标题层级'), desc: t('ui.30','页面标题按 h1 至 h6 顺序使用，不跳级、不滥用') },
+        { key: 'lang', title: t('ui.29','语言声明'), desc: 'html 标签声明 lang 属性（如 lang="zh-CN"）' },
+        { key: 'motion', title: t('ui.28','减少动效'), desc: t('ui.27','支持 prefers-reduced-motion，尊重用户减少动效的偏好') },
+        { key: 'captions', title: t('ui.26','媒体字幕'), desc: t('ui.25','视频提供字幕，音频提供文字稿或转录文本') },
+        { key: 'touch', title: t('ui.24','触控目标'), desc: t('ui.23','可点击目标尺寸不小于 44×44px 且彼此间距充足') },
+        { key: 'errors', title: t('ui.22','错误提示'), desc: t('ui.21','表单错误信息与对应输入框关联，并给出修复建议') },
+        { key: 'color', title: t('ui.20','颜色非唯一'), desc: t('ui.19','不使用颜色作为传递信息的唯一手段，辅以图标或文字') },
+        { key: 'scroll', title: t('ui.18','滚动区域'), desc: t('ui.17','溢出内容区域可滚动、滚动条可见，并支持键盘滚动') },
+        { key: 'zoom', title: t('ui.16','字体缩放'), desc: t('ui.15','页面在浏览器 200% 缩放下内容完整可读、功能不丢失') }
       ];
       var checkCard = document.getElementById('checkCard');
       var progressText = document.getElementById('progressText');
@@ -99,7 +100,7 @@
         for (var i = 0; i < boxes.length; i++) {
           if (boxes[i].checked) n++;
         }
-        progressText.textContent = '已勾选 ' + n + '/' + ITEMS.length;
+        progressText.textContent = t('ui.14','已勾选 ') + n + '/' + ITEMS.length;
         progressBar.style.width = Math.round(n / ITEMS.length * 100) + '%';
         return n;
       }
@@ -116,21 +117,21 @@
         }
         var n = passed.length;
         var lines = [];
-        lines.push('无障碍检查报告');
-        lines.push('通过 ' + n + '/' + ITEMS.length + '，待修复 ' + (ITEMS.length - n) + '/' + ITEMS.length);
+        lines.push(t('ui.13','无障碍检查报告'));
+        lines.push(t('ui.12','通过 ') + n + '/' + ITEMS.length + t('ui.11','，待修复 ') + (ITEMS.length - n) + '/' + ITEMS.length);
         lines.push('');
-        lines.push('[通过]');
+        lines.push(t('ui.10','[通过]'));
         if (!passed.length) {
-          lines.push('（无）');
+          lines.push(t('ui.8','（无）'));
         } else {
           for (var a = 0; a < passed.length; a++) {
             lines.push(passed[a].title + '：' + passed[a].desc);
           }
         }
         lines.push('');
-        lines.push('[待修复]');
+        lines.push(t('ui.9','[待修复]'));
         if (!pending.length) {
-          lines.push('（无）');
+          lines.push(t('ui.8','（无）'));
         } else {
           for (var b = 0; b < pending.length; b++) {
             lines.push(pending[b].title + '：' + pending[b].desc);
@@ -138,24 +139,24 @@
         }
         currentReport = lines.join('\n');
         outputText.innerHTML = '<pre class="code-block">' + htmlEscape(currentReport) + '</pre>';
-        setStatus('报告已生成');
+        setStatus(t('ui.7','报告已生成'));
       }
 
       document.getElementById('reportBtn').addEventListener('click', generateReport);
       document.getElementById('allBtn').addEventListener('click', function () {
         for (var i = 0; i < boxes.length; i++) boxes[i].checked = true;
         updateProgress();
-        setStatus('已全部勾选');
+        setStatus(t('ui.6','已全部勾选'));
       });
       document.getElementById('clearBtn').addEventListener('click', function () {
         for (var i = 0; i < boxes.length; i++) boxes[i].checked = false;
         updateProgress();
-        setStatus('已清空勾选');
+        setStatus(t('ui.5','已清空勾选'));
       });
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!currentReport) return;
         copyToClipboard(currentReport, this);
-        setStatus('已复制报告');
+        setStatus(t('ui.4','已复制报告'));
       });
       renderList();
     })();

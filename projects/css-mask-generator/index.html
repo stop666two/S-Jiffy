@@ -33,42 +33,43 @@
         <label><input type="radio" name="maskType" value="radial"> radial-gradient</label>
       </div>
       <div class="field-row">
-        <label>渐变方向</label>
+        <label data-i18n="ui.1">渐变方向</label>
         <select id="dirSelect" class="input js-focus-input">
-          <option value="to right">to right（向右）</option>
-          <option value="to bottom">to bottom（向下）</option>
-          <option value="to left">to left（向左）</option>
-          <option value="to top">to top（向上）</option>
-          <option value="to bottom right">to bottom right（右下）</option>
-          <option value="to bottom left">to bottom left（左下）</option>
-          <option value="to top right">to top right（右上）</option>
-          <option value="to top left">to top left（左上）</option>
-          <option value="135deg">135deg（斜向）</option>
-          <option value="45deg">45deg（斜向）</option>
-          <option value="225deg">225deg（斜向）</option>
-          <option value="315deg">315deg（斜向）</option>
+          <option value="to right" data-i18n="ui.2">to right（向右）</option>
+          <option value="to bottom" data-i18n="ui.3">to bottom（向下）</option>
+          <option value="to left" data-i18n="ui.4">to left（向左）</option>
+          <option value="to top" data-i18n="ui.5">to top（向上）</option>
+          <option value="to bottom right" data-i18n="ui.6">to bottom right（右下）</option>
+          <option value="to bottom left" data-i18n="ui.7">to bottom left（左下）</option>
+          <option value="to top right" data-i18n="ui.8">to top right（右上）</option>
+          <option value="to top left" data-i18n="ui.9">to top left（左上）</option>
+          <option value="135deg" data-i18n="ui.10">135deg（斜向）</option>
+          <option value="45deg" data-i18n="ui.11">45deg（斜向）</option>
+          <option value="225deg" data-i18n="ui.12">225deg（斜向）</option>
+          <option value="315deg" data-i18n="ui.13">315deg（斜向）</option>
         </select>
       </div>
       <div class="field-row">
-        <label>径向半径</label>
+        <label data-i18n="ui.14">径向半径</label>
         <input id="radiusInput" class="input" type="number" value="70" min="0" max="100" step="1">
-        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">%（透明边界位置）</span>
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.15">%（透明边界位置）</span>
       </div>
       <div class="field-row">
-        <label>背景色</label>
+        <label data-i18n="ui.bgColor">背景色</label>
         <input id="bgInput" type="color" value="#111111">
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>
     (function () {
@@ -99,7 +100,7 @@
         preview.style.maskImage = mv;
         currentCode = '-webkit-mask-image: ' + mv + ';\nmask-image: ' + mv + ';';
         outputText.innerHTML = '<pre class="code-block">' + htmlEscape(currentCode) + '</pre>';
-        setStatus('已生成遮罩 CSS 代码');
+        setStatus(t('ui.17','已生成遮罩 CSS 代码'));
       }
 
       var radios = document.querySelectorAll('input[name="maskType"]');
@@ -113,7 +114,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!currentCode) return;
         copyToClipboard(currentCode, this);
-        setStatus('已复制遮罩代码');
+        setStatus(t('ui.16','已复制遮罩代码'));
       });
       render();
     })();

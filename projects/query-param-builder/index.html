@@ -30,20 +30,21 @@
       </div>
       <div id="rowsBox"></div>
       <div class="btn-row">
-        <button class="btn btn-secondary" id="addBtn">+ 添加参数</button>
-        <button class="btn btn-secondary" id="clearBtn">清空参数</button>
+        <button class="btn btn-secondary" id="addBtn" data-i18n="ui.1">+ 添加参数</button>
+        <button class="btn btn-secondary" id="clearBtn" data-i18n="ui.2">清空参数</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var output = document.getElementById('outputText');
@@ -122,21 +123,21 @@
           full = base + sep + queryText;
         }
         var lines = [];
-        lines.push('【查询字符串】');
+        lines.push(t('ui.8','【查询字符串】'));
         lines.push(queryText || '（暂无参数）');
         lines.push('');
-        lines.push('【完整 URL】');
+        lines.push(t('ui.7','【完整 URL】'));
         lines.push(full || '（请输入基础 URL 或添加参数）');
         lines.push('');
-        lines.push('【解码预览】');
+        lines.push(t('ui.6','【解码预览】'));
         if (readable.length) {
           for (var k = 0; k < readable.length; k++) lines.push(readable[k]);
         } else {
-          lines.push('（暂无参数）');
+          lines.push(t('ui.5','（暂无参数）'));
         }
         var text = lines.join('\n');
         output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(text) + '</pre>';
-        setStatus(pairs.length ? '已生成 ' + pairs.length + ' 个参数' : '');
+        setStatus(pairs.length ? t('ui.generated','已生成 ') + pairs.length + ' 个参数' : '');
       }
 
       document.getElementById('baseUrl').addEventListener('input', build);
@@ -157,7 +158,7 @@
         }
         bindRows();
         build();
-        setStatus('已重置为 3 行空参数');
+        setStatus(t('ui.4','已重置为 3 行空参数'));
       });
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!queryText) {
@@ -165,7 +166,7 @@
           return;
         }
         copyToClipboard(queryText, this);
-        setStatus('已复制查询字符串');
+        setStatus(t('ui.3','已复制查询字符串'));
       });
       renderRows();
     })();

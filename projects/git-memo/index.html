@@ -35,9 +35,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var searchEl = document.getElementById('searchInput');
@@ -45,97 +46,97 @@
 
       var sections = [
         {
-          title: '配置',
+          title: t('ui.57','配置'),
           items: [
-            { cmd: 'git config --global user.name "Name"', desc: '设置全局用户名' },
-            { cmd: 'git config --global user.email "email@example.com"', desc: '设置全局邮箱' },
-            { cmd: 'git config --global alias.co checkout', desc: '创建别名' },
-            { cmd: 'git config --list', desc: '查看所有配置' }
+            { cmd: 'git config --global user.name "Name"', desc: t('ui.56','设置全局用户名') },
+            { cmd: 'git config --global user.email "email@example.com"', desc: t('ui.55','设置全局邮箱') },
+            { cmd: 'git config --global alias.co checkout', desc: t('ui.54','创建别名') },
+            { cmd: 'git config --list', desc: t('ui.53','查看所有配置') }
           ]
         },
         {
-          title: '仓库操作',
+          title: t('ui.52','仓库操作'),
           items: [
-            { cmd: 'git init', desc: '初始化新仓库' },
-            { cmd: 'git clone <url>', desc: '克隆远程仓库' },
-            { cmd: 'git remote add origin <url>', desc: '添加远程仓库' },
-            { cmd: 'git remote -v', desc: '查看远程仓库' }
+            { cmd: 'git init', desc: t('ui.51','初始化新仓库') },
+            { cmd: 'git clone <url>', desc: t('ui.50','克隆远程仓库') },
+            { cmd: 'git remote add origin <url>', desc: t('ui.49','添加远程仓库') },
+            { cmd: 'git remote -v', desc: t('ui.48','查看远程仓库') }
           ]
         },
         {
-          title: '基本操作',
+          title: t('ui.47','基本操作'),
           items: [
-            { cmd: 'git status', desc: '查看工作区状态' },
-            { cmd: 'git add <file>', desc: '添加文件到暂存区' },
-            { cmd: 'git add .', desc: '添加所有更改' },
-            { cmd: 'git commit -m "message"', desc: '提交暂存区' },
-            { cmd: 'git commit -am "message"', desc: '添加并提交' },
-            { cmd: 'git rm <file>', desc: '删除文件' },
-            { cmd: 'git mv <old> <new>', desc: '重命名文件' }
+            { cmd: 'git status', desc: t('ui.46','查看工作区状态') },
+            { cmd: 'git add <file>', desc: t('ui.45','添加文件到暂存区') },
+            { cmd: 'git add .', desc: t('ui.44','添加所有更改') },
+            { cmd: 'git commit -m "message"', desc: t('ui.43','提交暂存区') },
+            { cmd: 'git commit -am "message"', desc: t('ui.42','添加并提交') },
+            { cmd: 'git rm <file>', desc: t('ui.41','删除文件') },
+            { cmd: 'git mv <old> <new>', desc: t('ui.40','重命名文件') }
           ]
         },
         {
-          title: '分支操作',
+          title: t('ui.39','分支操作'),
           items: [
-            { cmd: 'git branch', desc: '查看本地分支' },
-            { cmd: 'git branch <name>', desc: '创建新分支' },
-            { cmd: 'git checkout <branch>', desc: '切换分支' },
-            { cmd: 'git checkout -b <name>', desc: '创建并切换分支' },
-            { cmd: 'git merge <branch>', desc: '合并分支到当前' },
-            { cmd: 'git branch -d <name>', desc: '删除分支' },
-            { cmd: 'git branch -D <name>', desc: '强制删除分支' }
+            { cmd: 'git branch', desc: t('ui.38','查看本地分支') },
+            { cmd: 'git branch <name>', desc: t('ui.37','创建新分支') },
+            { cmd: 'git checkout <branch>', desc: t('ui.36','切换分支') },
+            { cmd: 'git checkout -b <name>', desc: t('ui.35','创建并切换分支') },
+            { cmd: 'git merge <branch>', desc: t('ui.34','合并分支到当前') },
+            { cmd: 'git branch -d <name>', desc: t('ui.33','删除分支') },
+            { cmd: 'git branch -D <name>', desc: t('ui.32','强制删除分支') }
           ]
         },
         {
-          title: '查看历史',
+          title: t('ui.31','查看历史'),
           items: [
-            { cmd: 'git log', desc: '查看提交日志' },
-            { cmd: 'git log --oneline', desc: '简洁日志' },
-            { cmd: 'git log --graph', desc: '图形化日志' },
-            { cmd: 'git log -p', desc: '查看提交差异' },
-            { cmd: 'git show <commit>', desc: '查看某次提交详情' },
-            { cmd: 'git diff', desc: '查看工作区差异' },
-            { cmd: 'git diff --staged', desc: '查看暂存区差异' }
+            { cmd: 'git log', desc: t('ui.30','查看提交日志') },
+            { cmd: 'git log --oneline', desc: t('ui.29','简洁日志') },
+            { cmd: 'git log --graph', desc: t('ui.28','图形化日志') },
+            { cmd: 'git log -p', desc: t('ui.27','查看提交差异') },
+            { cmd: 'git show <commit>', desc: t('ui.26','查看某次提交详情') },
+            { cmd: 'git diff', desc: t('ui.25','查看工作区差异') },
+            { cmd: 'git diff --staged', desc: t('ui.24','查看暂存区差异') }
           ]
         },
         {
-          title: '撤销与恢复',
+          title: t('ui.23','撤销与恢复'),
           items: [
-            { cmd: 'git restore <file>', desc: '撤销工作区修改' },
-            { cmd: 'git restore --staged <file>', desc: '取消暂存' },
-            { cmd: 'git reset --soft HEAD~1', desc: '撤销上次提交，保留更改' },
-            { cmd: 'git reset --hard HEAD~1', desc: '撤销上次提交，丢弃更改' },
-            { cmd: 'git revert <commit>', desc: '创建反转提交' },
-            { cmd: 'git clean -fd', desc: '删除未跟踪文件' }
+            { cmd: 'git restore <file>', desc: t('ui.22','撤销工作区修改') },
+            { cmd: 'git restore --staged <file>', desc: t('ui.21','取消暂存') },
+            { cmd: 'git reset --soft HEAD~1', desc: t('ui.20','撤销上次提交，保留更改') },
+            { cmd: 'git reset --hard HEAD~1', desc: t('ui.19','撤销上次提交，丢弃更改') },
+            { cmd: 'git revert <commit>', desc: t('ui.18','创建反转提交') },
+            { cmd: 'git clean -fd', desc: t('ui.17','删除未跟踪文件') }
           ]
         },
         {
-          title: '远程同步',
+          title: t('ui.16','远程同步'),
           items: [
-            { cmd: 'git fetch', desc: '拉取远程更新' },
-            { cmd: 'git pull', desc: '拉取并合并' },
-            { cmd: 'git push', desc: '推送到远程' },
-            { cmd: 'git push origin <branch>', desc: '推送指定分支' },
-            { cmd: 'git push -u origin <branch>', desc: '推送并设置上游' },
-            { cmd: 'git push --tags', desc: '推送标签' }
+            { cmd: 'git fetch', desc: t('ui.15','拉取远程更新') },
+            { cmd: 'git pull', desc: t('ui.14','拉取并合并') },
+            { cmd: 'git push', desc: t('ui.13','推送到远程') },
+            { cmd: 'git push origin <branch>', desc: t('ui.12','推送指定分支') },
+            { cmd: 'git push -u origin <branch>', desc: t('ui.11','推送并设置上游') },
+            { cmd: 'git push --tags', desc: t('ui.6','推送标签') }
           ]
         },
         {
-          title: '标签',
+          title: t('ui.10','标签'),
           items: [
-            { cmd: 'git tag', desc: '查看标签' },
-            { cmd: 'git tag <name>', desc: '创建轻量标签' },
-            { cmd: 'git tag -a <name> -m "msg"', desc: '创建附注标签' },
-            { cmd: 'git push origin <tag>', desc: '推送标签' }
+            { cmd: 'git tag', desc: t('ui.9','查看标签') },
+            { cmd: 'git tag <name>', desc: t('ui.8','创建轻量标签') },
+            { cmd: 'git tag -a <name> -m "msg"', desc: t('ui.7','创建附注标签') },
+            { cmd: 'git push origin <tag>', desc: t('ui.6','推送标签') }
           ]
         },
         {
-          title: '暂存与储藏',
+          title: t('ui.5','暂存与储藏'),
           items: [
-            { cmd: 'git stash', desc: '暂存当前更改' },
-            { cmd: 'git stash pop', desc: '恢复最近暂存' },
-            { cmd: 'git stash list', desc: '查看暂存列表' },
-            { cmd: 'git stash drop', desc: '删除暂存' }
+            { cmd: 'git stash', desc: t('ui.4','暂存当前更改') },
+            { cmd: 'git stash pop', desc: t('ui.3','恢复最近暂存') },
+            { cmd: 'git stash list', desc: t('ui.2','查看暂存列表') },
+            { cmd: 'git stash drop', desc: t('ui.1','删除暂存') }
           ]
         }
       ];

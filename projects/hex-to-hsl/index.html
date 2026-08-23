@@ -9,7 +9,7 @@
 <div class="color-preview" id="colorPreview"></div>
 <div class="input-row">
 <input id="hexInput" class="input js-focus-input" placeholder="#RRGGBB" value="#E74C3C">
-<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 </div>
 <div class="result-group">
 <div><span class="chip" id="colorChip"></span>HSL: <span class="val" id="hsl结果">6°, 78%, 57%</span></div>
@@ -20,15 +20,16 @@
 <div>L: <b id="lVal">57</b>%</div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var hexInput=document.getElementById('hexInput');
 var convertBtn=document.getElementById('convertBtn');
 var colorPreview=document.getElementById('colorPreview');
 var colorChip=document.getElementById('colorChip');
-var hsl结果=document.getElementById('hsl结果');
+var hsl结果=document.getElementById(t('ui.2','hsl结果'));
 var hVal=document.getElementById('hVal');
 var sVal=document.getElementById('sVal');
 var lVal=document.getElementById('lVal');
@@ -65,7 +66,7 @@ if(hex.length===3){
 hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
 }
 if(!/^[0-9a-fA-F]{6}$/.test(hex)){
-outputEl.textContent='无效的 HEX 颜色值';
+outputEl.textContent = t('ui.1','无效的 HEX 颜色值');
 setStatus('输入错误','error');
 return;
 }
@@ -88,7 +89,7 @@ hexInput.addEventListener('keydown',function(e){if(e.key==='Enter')convert();});
 convertBtn.addEventListener('click',convert);
 copyBtn.addEventListener('click',function(){
 var txt='HSL('+hVal.textContent+'°, '+sVal.textContent+'%, '+lVal.textContent+'%)';
-if(hVal.textContent!==''){copyToClipboard(txt,copyBtn);setStatus('已复制');}
+if(hVal.textContent!==''){copyToClipboard(txt,copyBtn);setStatus(t('ui.copied','已复制'));}
 });
 convert();
 })();</script></body></html>

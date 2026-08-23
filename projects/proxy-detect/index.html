@@ -5,12 +5,13 @@
 <style>.detect-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;}.detect-row:last-child{border:none;}.detect-label{color:var(--color-text-secondary);}.detect-val{font-family:var(--font-mono);font-weight:500;}.yes{color:var(--color-success);}.no{color:var(--color-text-disabled);}.unknown{color:#e37400;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">代理检测</h1><p class="tool-desc" data-i18n="desc">分析浏览器环境，检测是否通过代理服务器连接网络</p>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary">开始检测</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="detectResults"></div><div id="detectSummary" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var detectBtn=document.getElementById('detectBtn'),resultCard=document.getElementById('resultCard'),detectResults=document.getElementById('detectResults'),detectSummary=document.getElementById('detectSummary'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 detectBtn.addEventListener('click',function(){
@@ -18,7 +19,7 @@ detectBtn.addEventListener('click',function(){
   html+='<div class="detect-row"><span class="detect-label">User Agent</span><span class="detect-val" style="font-size:12px;">'+htmlEscape(navigator.userAgent)+'</span></div>';
   out+='User Agent: '+navigator.userAgent+'\n';
   html+='<div class="detect-row"><span class="detect-label">平台</span><span class="detect-val">'+htmlEscape(navigator.platform||'未知')+'</span></div>';
-  out+='平台: '+(navigator.platform||'未知')+'\n';
+  out+=t('ui.3','平台: ') +(navigator.platform||'未知')+'\n';
   var langs=navigator.languages?navigator.languages.join(', '):navigator.language||'未知';
   html+='<div class="detect-row"><span class="detect-label">语言</span><span class="detect-val">'+htmlEscape(langs)+'</span></div>';
   var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
@@ -56,8 +57,8 @@ detectBtn.addEventListener('click',function(){
   else summary='✅ 未检测到明显代理特征。';
   detectSummary.textContent=summary;
   outputText.textContent=summary;resultCard.style.display='block';
-  setStatus('检测完成');
+  setStatus(t('ui.2','检测完成'));
 });
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

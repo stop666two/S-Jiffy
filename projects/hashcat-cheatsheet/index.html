@@ -36,23 +36,23 @@
       <div class="hc-toolbar">
         <input id="searchInput" class="input js-focus-input" placeholder="搜索模式号或类型，如 1400 / NTLM / WPA">
         <select id="catSelect" class="input hc-select">
-          <option value="">全部类别</option>
-          <option value="通用">通用</option>
+          <option value="" data-i18n="ui.1">全部类别</option>
+          <option value="通用" data-i18n="ui.2">通用</option>
           <option value="Windows">Windows</option>
           <option value="Unix">Unix</option>
-          <option value="网络">网络</option>
-          <option value="数据库">数据库</option>
-          <option value="文档">文档</option>
-          <option value="归档">归档</option>
+          <option value="网络" data-i18n="ui.network">网络</option>
+          <option value="数据库" data-i18n="ui.database">数据库</option>
+          <option value="文档" data-i18n="ui.doc">文档</option>
+          <option value="归档" data-i18n="ui.archive">归档</option>
         </select>
       </div>
       <table class="hc-table" id="hcTable">
         <thead>
           <tr>
-            <th style="width:70px;">模式号</th>
-            <th style="width:230px;">哈希类型</th>
-            <th>示例哈希</th>
-            <th style="width:80px;">类别</th>
+            <th style="width:70px;" data-i18n="ui.3">模式号</th>
+            <th style="width:230px;" data-i18n="ui.4">哈希类型</th>
+            <th data-i18n="ui.5">示例哈希</th>
+            <th style="width:80px;" data-i18n="ui.6">类别</th>
           </tr>
         </thead>
         <tbody id="hcBody"></tbody>
@@ -62,14 +62,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var MODES = [
@@ -224,7 +225,7 @@
           html += '</tr>';
         }
         bodyEl.innerHTML = html;
-        countEl.textContent = '共 ' + MODES.length + ' 种模式，当前匹配 ' + matched + ' 项';
+        countEl.textContent = t('ui.total','共 ') + MODES.length + t('ui.8',' 种模式，当前匹配 ') + matched + t('ui.items',' 项');
         var rows = bodyEl.querySelectorAll('tr');
         for (var j = 0; j < rows.length; j++) {
           rows[j].addEventListener('click', function () {
@@ -232,7 +233,7 @@
             currentCopy = text;
             outputEl.textContent = text;
             copyToClipboard(text, copyBtn);
-            setStatus('已复制：' + text);
+            setStatus(t('ui.7','已复制：') + text);
           });
         }
       }
@@ -246,7 +247,7 @@
           return;
         }
         copyToClipboard(currentCopy, copyBtn);
-        setStatus('已复制：' + currentCopy);
+        setStatus(t('ui.7','已复制：') + currentCopy);
       });
 
       renderTable();

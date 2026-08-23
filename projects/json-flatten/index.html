@@ -7,21 +7,22 @@
 <main class="tool-workspace"><h1 data-i18n="h1">JSON 扁平化</h1><p class="tool-desc" data-i18n="desc">将嵌套 JSON 扁平化为单层键值，支持自定义分隔符和反向操作。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
-<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">分隔符</label>
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.separator">分隔符</label>
 <input id="separator" class="input" value="." style="width:50px;">
 <label style="margin-left:12px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="flattenArrays"> 展开数组</label>
 </div>
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='输入 JSON，如 {"a":{"b":"c","d":[1,2]}}' style="min-height:120px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="flattenBtn" class="btn btn-primary">扁平化</button>
-<button id="unflattenBtn" class="btn btn-secondary">还原</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="flattenBtn" class="btn btn-primary" data-i18n="ui.1">扁平化</button>
+<button id="unflattenBtn" class="btn btn-secondary" data-i18n="ui.2">还原</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;font-family:var(--font-mono);font-size:var(--font-size-xs);white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -78,7 +79,7 @@ var flat=flatten(parsed,separator.value||'.',flattenArrays.checked);
 outputEl.textContent=JSON.stringify(flat,null,2);
 setStatus('');
 }catch(e){
-setStatus('JSON 格式错误: '+e.message,'error');
+setStatus(t('ui.3','JSON 格式错误: ') +e.message,'error');
 }
 });
 unflattenBtn.addEventListener('click',function(){
@@ -90,10 +91,10 @@ var unflat=unflatten(parsed,separator.value||'.');
 outputEl.textContent=JSON.stringify(unflat,null,2);
 setStatus('');
 }catch(e){
-setStatus('JSON 格式错误: '+e.message,'error');
+setStatus(t('ui.3','JSON 格式错误: ') +e.message,'error');
 }
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

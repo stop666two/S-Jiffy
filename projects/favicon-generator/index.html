@@ -27,32 +27,33 @@
     <div class="card">
       <div class="preview-wrap">
         <canvas id="previewCanvas" class="preview-canvas" width="128" height="128"></canvas>
-        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">128×128 · 实时预览</span>
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">128×128 · 实时预览</span>
       </div>
       <div class="field-row">
-        <label>文字 / Emoji</label>
+        <label data-i18n="ui.2">文字 / Emoji</label>
         <input id="textInput" class="input js-focus-input" type="text" placeholder="例如：S 或 🚀" maxlength="8" style="max-width:280px">
       </div>
       <div class="field-row">
-        <label>背景色</label>
+        <label data-i18n="ui.bgColor">背景色</label>
         <input id="bgColorInput" type="color" value="#111111">
-        <label>文字色</label>
+        <label data-i18n="ui.3">文字色</label>
         <input id="fgColorInput" type="color" value="#ffffff">
-        <label>圆角</label>
+        <label data-i18n="ui.4">圆角</label>
         <input id="radiusInput" class="input" type="number" value="20" min="0" max="50" step="1">
         <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">%</span>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>
     (function () {
@@ -112,7 +113,7 @@
           '  <text x="64" y="66" font-size="' + fs + '" font-family="Arial, sans-serif" font-weight="bold" fill="' + fg + '" text-anchor="middle" dominant-baseline="central">' + htmlEscape(text) + '</text>\n' +
           '</svg>';
         outputText.innerHTML = '<pre class="code-block">' + htmlEscape(currentCode) + '</pre>';
-        setStatus('已生成 SVG 图标代码');
+        setStatus(t('ui.6','已生成 SVG 图标代码'));
       }
 
       textInput.addEventListener('input', render);
@@ -122,7 +123,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!currentCode) return;
         copyToClipboard(currentCode, this);
-        setStatus('已复制 SVG 代码');
+        setStatus(t('ui.5','已复制 SVG 代码'));
       });
       render();
     })();

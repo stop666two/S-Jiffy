@@ -28,7 +28,7 @@
 
     <div class="card" id="dropZone" class="drop-zone">
       <div class="drop-zone" style="border:none;padding:0;">
-        <p style="color:var(--color-text-secondary);">点击选择或拖拽图片到此处</p>
+        <p style="color:var(--color-text-secondary);" data-i18n="ui.1">点击选择或拖拽图片到此处</p>
         <input id="fileInput" type="file" accept="image/*" style="display:none;">
         <canvas id="canvas" style="display:none;"></canvas>
       </div>
@@ -36,14 +36,15 @@
 
     <div class="output-box" id="resultBox" style="min-height:80px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var fileInput = document.getElementById('fileInput');
@@ -141,7 +142,7 @@
           html += '</div>';
         }
         o.innerHTML = html;
-        setStatus('提取到 ' + colors.length + ' 种主要颜色');
+        setStatus(t('ui.3','提取到 ') + colors.length + t('ui.2',' 种主要颜色'));
       }
 
       dropZone.addEventListener('click', function () { fileInput.click(); });
@@ -173,7 +174,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = o.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

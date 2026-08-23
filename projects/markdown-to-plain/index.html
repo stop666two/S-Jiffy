@@ -8,13 +8,14 @@
 <main class="tool-workspace"><h1 data-i18n="h1">Markdown 转纯文本</h1><p class="tool-desc" data-i18n="desc">去除所有 Markdown 格式，仅保留纯文本内容。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="# Hello\nThis is **bold** and *italic* text." style="min-height:160px;"></textarea></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
-<button id="convertBtn" class="btn btn-primary">转换</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="stat-row"><span>原始字符：<strong id="origChars">0</strong></span><span>去除后字符：<strong id="stripChars">0</strong></span><span>减少：<strong id="reduction">0%</strong></span></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var i=document.getElementById('inputText'),o=document.getElementById('outputText');
 var oc=document.getElementById('origChars'),sc=document.getElementById('stripChars'),rd=document.getElementById('reduction');
@@ -45,10 +46,10 @@ function convert(){var t=i.value;if(!t){o.textContent='';oc.textContent='0';sc.t
 var orig=t.length;var plain=stripMd(t);var stripped=plain.length;
 o.textContent=plain;oc.textContent=orig;sc.textContent=stripped;
 rd.textContent=orig>0?Math.round((1-stripped/orig)*100)+'%':'0%';
-setStatus('已去除格式，共 '+plain.split(/\s+/).length+' 个单词');}
+setStatus(t('ui.2','已去除格式，共 ') +plain.split(/\s+/).length+ t('ui.1',' 个单词'));}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';oc.textContent='0';sc.textContent='0';rd.textContent='0%';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

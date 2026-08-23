@@ -7,8 +7,8 @@
 <main class="tool-workspace"><h1 data-i18n="h1">HTML 压缩</h1><p class="tool-desc" data-i18n="desc">压缩 HTML 代码：移除注释、多余空白、缩短标签属性引号。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<button id="minifyBtn" class="btn btn-primary">压缩</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="minifyBtn" class="btn btn-primary" data-i18n="ui.1">压缩</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
 <textarea id="htmlInput" class="js-focus-input" placeholder="粘贴 HTML 代码..."><!-- 文档 -->
@@ -16,7 +16,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>示例</title>
+  <title data-i18n="ui.2">示例</title>
 </head>
 <body>
   <div class="container">
@@ -32,9 +32,10 @@
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var htmlInput=document.getElementById('htmlInput');
-var html输出=document.getElementById('html输出');
+var html输出=document.getElementById(t('ui.4','html输出'));
 var minifyBtn=document.getElementById('minifyBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -63,12 +64,12 @@ var outputSize=r.length;
 var saved=inputSize-outputSize;
 var pct=inputSize>0?((saved/inputSize)*100).toFixed(1):0;
 stats.innerHTML='<span>原始: '+inputSize+' 字节</span><span>压缩: '+outputSize+' 字节</span><span>节省: '+saved+' 字节 ('+pct+'%)</span>';
-outputEl.textContent='压缩完成';
+outputEl.textContent = t('ui.3','压缩完成');
 setStatus('');
 }
 
 clearBtn.addEventListener('click',function(){htmlInput.value='';html输出.value='';stats.textContent='';outputEl.textContent='';setStatus('');htmlInput.focus();});
 minifyBtn.addEventListener('click',minify);
-copyBtn.addEventListener('click',function(){if(html输出.value){copyToClipboard(html输出.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(html输出.value){copyToClipboard(html输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 htmlInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minify();});
 })();</script></body></html>

@@ -60,23 +60,23 @@
         </button>
         <span class="hit-ring" id="hitRing"></span>
       </div>
-      <div class="count-line" id="countLine">累计功德 0</div>
-      <div class="count-sub" id="countSub">今日敲一敲，烦恼少一少</div>
+      <div class="count-line" id="countLine" data-i18n="ui.1">累计功德 0</div>
+      <div class="count-sub" id="countSub" data-i18n="ui.2">今日敲一敲，烦恼少一少</div>
       <div class="wish-row" id="wishRow">
-        <button class="btn wish-btn on" data-wish="功德+1">功德+1</button>
-        <button class="btn wish-btn" data-wish="涨工资">涨工资</button>
-        <button class="btn wish-btn" data-wish="佛祖保佑">佛祖保佑</button>
-        <button class="btn wish-btn" data-wish="考试必过">考试必过</button>
-        <button class="btn wish-btn" data-wish="__custom__">自定义</button>
+        <button class="btn wish-btn on" data-wish="功德+1" data-i18n="ui.3">功德+1</button>
+        <button class="btn wish-btn" data-wish="涨工资" data-i18n="ui.4">涨工资</button>
+        <button class="btn wish-btn" data-wish="佛祖保佑" data-i18n="ui.5">佛祖保佑</button>
+        <button class="btn wish-btn" data-wish="考试必过" data-i18n="ui.6">考试必过</button>
+        <button class="btn wish-btn" data-wish="__custom__" data-i18n="ui.7">自定义</button>
       </div>
       <div class="custom-row hidden" id="customRow">
         <input id="customInput" class="input" type="text" maxlength="10" placeholder="输入心愿（10 字以内）">
       </div>
       <div class="ctl-row">
-        <button id="soundBtn" class="btn ctl-btn on">声音：开</button>
-        <button id="autoBtn" class="btn ctl-btn">自动敲击：关</button>
-        <button id="fullBtn" class="btn ctl-btn">全屏</button>
-        <button id="clearBtn" class="btn ctl-btn">清零计数</button>
+        <button id="soundBtn" class="btn ctl-btn on" data-i18n="ui.8">声音：开</button>
+        <button id="autoBtn" class="btn ctl-btn" data-i18n="ui.9">自动敲击：关</button>
+        <button id="fullBtn" class="btn ctl-btn" data-i18n="ui.10">全屏</button>
+        <button id="clearBtn" class="btn ctl-btn" data-i18n="ui.11">清零计数</button>
       </div>
       <p class="zen-note">木鱼声由浏览器实时合成，无需音频文件；自动敲击会以随机间隔进行。计数保存在本机浏览器中，仅作娱乐记录。</p>
     </div>
@@ -86,9 +86,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var WISHES = { '功德+1': '功德+1', '涨工资': '涨工资', '佛祖保佑': '佛祖保佑', '考试必过': '考试必过' };
@@ -102,7 +103,7 @@
       var autoBtn = document.getElementById('autoBtn');
       var fullBtn = document.getElementById('fullBtn');
       var count = loadPreference('muyuCount', 0);
-      var wishKey = loadPreference('muyuWish', '功德+1');
+      var wishKey = loadPreference('muyuWish', t('ui.3','功德+1'));
       var customText = loadPreference('muyuCustom', '');
       var soundOn = loadPreference('muyuSound', true);
       var autoOn = loadPreference('muyuAuto', false);
@@ -119,7 +120,7 @@
       }
 
       function updateCount() {
-        countLine.textContent = '累计功德 ' + count;
+        countLine.textContent = t('ui.15','累计功德 ') + count;
       }
 
       function playHit() {
@@ -195,7 +196,7 @@
       function setAuto(on) {
         autoOn = on;
         savePreference('muyuAuto', on);
-        autoBtn.textContent = '自动敲击：' + (on ? '开' : '关');
+        autoBtn.textContent = t('ui.14','自动敲击：') + (on ? '开' : '关');
         autoBtn.className = 'btn ctl-btn' + (on ? ' on' : '');
         clearTimeout(autoTimer);
         if (on) scheduleAuto();
@@ -237,7 +238,7 @@
       soundBtn.addEventListener('click', function () {
         soundOn = !soundOn;
         savePreference('muyuSound', soundOn);
-        soundBtn.textContent = '声音：' + (soundOn ? '开' : '关');
+        soundBtn.textContent = t('ui.12','声音：') + (soundOn ? '开' : '关');
         soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
         if (soundOn) playHit();
       });
@@ -269,14 +270,14 @@
             count = 0;
             savePreference('muyuCount', 0);
             updateCount();
-            setStatus('计数已清零');
+            setStatus(t('ui.13','计数已清零'));
           }
         });
       });
 
       updateCount();
       syncWishUI();
-      soundBtn.textContent = '声音：' + (soundOn ? '开' : '关');
+      soundBtn.textContent = t('ui.12','声音：') + (soundOn ? '开' : '关');
       soundBtn.className = 'btn ctl-btn' + (soundOn ? ' on' : '');
       setAuto(autoOn);
       syncFullLabel();

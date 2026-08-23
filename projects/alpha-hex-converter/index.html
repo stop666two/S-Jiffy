@@ -16,13 +16,14 @@
 <div class="result" id="rgbaToHexResult">#E74C3CCC</div>
 </div>
 <div><h3 style="font-size:14px;margin-bottom:8px;">HEX → RGBA</h3>
-<div style="display:flex;gap:8px;margin-bottom:12px;"><input id="hexInput" class="input" placeholder="#RRGGBBAA" value="#E74C3CCC" style="width:160px;font-family:var(--font-mono);"><button id="hexToRgbaBtn" class="btn btn-secondary" style="height:48px;">转换</button></div>
+<div style="display:flex;gap:8px;margin-bottom:12px;"><input id="hexInput" class="input" placeholder="#RRGGBBAA" value="#E74C3CCC" style="width:160px;font-family:var(--font-mono);"><button id="hexToRgbaBtn" class="btn btn-secondary" style="height:48px;" data-i18n="ui.convert">转换</button></div>
 <div class="result" id="hexToRgbaResult">rgba(231, 76, 60, 0.8)</div>
 </div></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var rS=document.getElementById('rSlider'),gS=document.getElementById('gSlider'),bS=document.getElementById('bSlider'),aS=document.getElementById('aSlider');
 var rN=document.getElementById('rNum'),gN=document.getElementById('gNum'),bN=document.getElementById('bNum'),aN=document.getElementById('aNum');
@@ -63,7 +64,7 @@ h2rBtn.addEventListener('click',function(){
   setStatus('');
 });
 
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 update();
 })();
 </script></body></html>

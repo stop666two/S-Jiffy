@@ -34,34 +34,35 @@
     <p class="tool-desc" data-i18n="desc">可视化编排 $match / $group / $lookup 等聚合阶段，实时生成管道代码与逐步说明。</p>
     <div class="card">
       <div class="op-toolbar">
-        <button class="btn btn-primary" id="addStepBtn">+ 添加步骤</button>
-        <button class="btn btn-secondary" id="clearBtn">清空全部</button>
+        <button class="btn btn-primary" id="addStepBtn" data-i18n="ui.1">+ 添加步骤</button>
+        <button class="btn btn-secondary" id="clearBtn" data-i18n="ui.2">清空全部</button>
       </div>
       <div id="stepList"></div>
       <p class="tool-desc" id="stepHint">每个步骤选择一个聚合操作符，并填写其 JSON 参数（保持参数为 JSON 对象）。</p>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var OPS = [
-      { value: '$match', label: '$match 筛选', desc: '筛选符合条件的文档（相当于 SQL WHERE）' },
-      { value: '$group', label: '$group 分组', desc: '按 _id 分组并计算聚合表达式（相当于 GROUP BY）' },
-      { value: '$sort', label: '$sort 排序', desc: '按字段排序，1 升序，-1 降序' },
-      { value: '$project', label: '$project 投影', desc: '选择 / 重塑输出的字段' },
-      { value: '$limit', label: '$limit 限制', desc: '仅保留前 N 条文档' },
-      { value: '$skip', label: '$skip 跳过', desc: '跳过前 N 条文档' },
-      { value: '$unwind', label: '$unwind 展开', desc: '将数组字段拆分为多条文档' },
-      { value: '$lookup', label: '$lookup 关联', desc: '关联查询其他集合（相当于 LEFT JOIN）' },
-      { value: '$addFields', label: '$addFields 加字段', desc: '为文档添加 / 覆盖字段' }
+      { value: '$match', label: t('ui.34','$match 筛选'), desc: t('ui.33','筛选符合条件的文档（相当于 SQL WHERE）') },
+      { value: '$group', label: t('ui.32','$group 分组'), desc: t('ui.31','按 _id 分组并计算聚合表达式（相当于 GROUP BY）') },
+      { value: '$sort', label: t('ui.30','$sort 排序'), desc: t('ui.29','按字段排序，1 升序，-1 降序') },
+      { value: '$project', label: t('ui.28','$project 投影'), desc: t('ui.27','选择 / 重塑输出的字段') },
+      { value: '$limit', label: t('ui.26','$limit 限制'), desc: t('ui.25','仅保留前 N 条文档') },
+      { value: '$skip', label: t('ui.24','$skip 跳过'), desc: t('ui.23','跳过前 N 条文档') },
+      { value: '$unwind', label: t('ui.22','$unwind 展开'), desc: t('ui.21','将数组字段拆分为多条文档') },
+      { value: '$lookup', label: t('ui.20','$lookup 关联'), desc: t('ui.19','关联查询其他集合（相当于 LEFT JOIN）') },
+      { value: '$addFields', label: t('ui.18','$addFields 加字段'), desc: t('ui.17','为文档添加 / 覆盖字段') }
     ];
     var DEFAULTS = {
       '$match': '{ "status": "active" }',
@@ -112,7 +113,7 @@
       if (!obj) return base;
       var extra = '';
       if (step.op === '$match') {
-        extra = '（条件字段：' + Object.keys(obj).join('、') + '）';
+        extra = t('ui.16','（条件字段：') + Object.keys(obj).join('、') + '）';
       } else if (step.op === '$sort') {
         var dirs = [];
         var keys = Object.keys(obj);
@@ -121,18 +122,18 @@
         }
         extra = '（' + dirs.join('，') + '）';
       } else if (step.op === '$group') {
-        extra = '（按 ' + String(obj['_id'] || '自定义键') + ' 分组）';
+        extra = t('ui.15','（按 ') + String(obj['_id'] || '自定义键') + t('ui.14',' 分组）');
       } else if (step.op === '$project') {
-        extra = '（输出字段：' + Object.keys(obj).join('、') + '）';
+        extra = t('ui.13','（输出字段：') + Object.keys(obj).join('、') + '）';
       } else if (step.op === '$limit' || step.op === '$skip') {
         var n = obj['n'] !== undefined ? obj['n'] : (obj[step.op.replace('$', '')] !== undefined ? obj[step.op.replace('$', '')] : '');
-        if (n !== '') extra = '（数量：' + n + '）';
+        if (n !== '') extra = t('ui.12','（数量：') + n + '）';
       } else if (step.op === '$unwind') {
-        extra = '（路径：' + String(obj['path'] || obj['$unwind'] || '') + '）';
+        extra = t('ui.11','（路径：') + String(obj['path'] || obj['$unwind'] || '') + '）';
       } else if (step.op === '$lookup') {
-        extra = '（关联集合 ' + String(obj['from'] || '?') + '，' + String(obj['localField'] || '?') + ' = ' + String(obj['foreignField'] || '?') + '）';
+        extra = t('ui.10','（关联集合 ') + String(obj['from'] || '?') + '，' + String(obj['localField'] || '?') + ' = ' + String(obj['foreignField'] || '?') + '）';
       } else if (step.op === '$addFields') {
-        extra = '（新增字段：' + Object.keys(obj).join('、') + '）';
+        extra = t('ui.9','（新增字段：') + Object.keys(obj).join('、') + '）';
       }
       return base + extra;
     }
@@ -172,7 +173,7 @@
           + '</div>';
       }
       stepList.innerHTML = html;
-      stepHint.textContent = steps.length === 0 ? '当前没有步骤，点击「添加步骤」开始构建。' : '共 ' + steps.length + ' 个步骤，参数以 JSON 对象书写。';
+      stepHint.textContent = steps.length === 0 ? '当前没有步骤，点击「添加步骤」开始构建。' : t('ui.total','共 ') + steps.length + t('ui.8',' 个步骤，参数以 JSON 对象书写。');
       bindEvents();
       updateOutput();
     }
@@ -238,18 +239,18 @@
         }
       }
       if (invalidIdx !== -1) {
-        outputText.textContent = '第 ' + (invalidIdx + 1) + ' 步的参数不是合法的 JSON，请检查后再生成管道。';
-        setStatus('第 ' + (invalidIdx + 1) + ' 步 JSON 无效', 'error');
+        outputText.textContent = t('ui.nth','第 ') + (invalidIdx + 1) + t('ui.7',' 步的参数不是合法的 JSON，请检查后再生成管道。');
+        setStatus(t('ui.nth','第 ') + (invalidIdx + 1) + t('ui.6',' 步 JSON 无效'), 'error');
         return;
       }
       var pipeline = buildPipeline();
       var code = JSON.stringify(pipeline, null, 2);
-      var lines = ['聚合管道（' + steps.length + ' 个阶段）：'];
+      var lines = [ t('ui.5','聚合管道（') + steps.length + t('ui.4',' 个阶段）：')];
       for (var j = 0; j < steps.length; j++) {
         lines.push((j + 1) + '. ' + getOpLabel(steps[j].op) + ' — ' + explainStep(steps[j]));
       }
       outputText.textContent = '```\n' + code + '\n```\n\n' + lines.join('\n');
-      setStatus('管道已生成');
+      setStatus(t('ui.3','管道已生成'));
     }
 
     document.getElementById('addStepBtn').onclick = function () {

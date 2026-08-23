@@ -28,44 +28,45 @@
     <p class="tool-desc" data-i18n="desc">支持任意长度整数的加、减、乘、幂、阶乘、最大公约数与素性检查，全部字符串逐位运算。</p>
     <div class="card">
       <div class="op-row">
-        <label for="modeSelect">模式</label>
+        <label for="modeSelect" data-i18n="ui.mode">模式</label>
         <select id="modeSelect" class="input">
-          <option value="two">双数模式</option>
-          <option value="single">单数模式</option>
+          <option value="two" data-i18n="ui.1">双数模式</option>
+          <option value="single" data-i18n="ui.2">单数模式</option>
         </select>
       </div>
       <div class="big-grid">
         <div class="big-field">
-          <label for="num1Input">整数 A</label>
+          <label for="num1Input" data-i18n="ui.3">整数 A</label>
           <input type="text" id="num1Input" class="input js-focus-input" placeholder="如 123456789012345678901234567890">
         </div>
         <div class="big-field" id="num2Field">
-          <label for="num2Input">整数 B</label>
+          <label for="num2Input" data-i18n="ui.4">整数 B</label>
           <input type="text" id="num2Input" class="input" placeholder="如 987654321">
         </div>
       </div>
       <div class="op-row">
-        <label for="opSelect">运算</label>
+        <label for="opSelect" data-i18n="ui.5">运算</label>
         <select id="opSelect" class="input">
-          <option value="add">加法 A + B</option>
-          <option value="subtract">减法 A - B</option>
-          <option value="multiply">乘法 A × B</option>
-          <option value="power">幂 A^B（B 为非负整数）</option>
-          <option value="gcd">最大公约数</option>
+          <option value="add" data-i18n="ui.6">加法 A + B</option>
+          <option value="subtract" data-i18n="ui.7">减法 A - B</option>
+          <option value="multiply" data-i18n="ui.8">乘法 A × B</option>
+          <option value="power" data-i18n="ui.9">幂 A^B（B 为非负整数）</option>
+          <option value="gcd" data-i18n="ui.10">最大公约数</option>
         </select>
-        <button class="btn btn-primary" id="calcBtn">计算</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.calc">计算</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var modeEl = document.getElementById('modeSelect');
@@ -374,11 +375,11 @@
 
       function validateInt(v, fieldName) {
         if (!/^[+-]?\d+$/.test(v)) {
-          return fieldName + ' 必须是整数';
+          return fieldName + t('ui.23',' 必须是整数');
         }
         var digits = v.charAt(0) === '-' ? v.slice(1) : v;
         if (digits.length > MAX_INPUT_LEN) {
-          return fieldName + ' 位数过多（最多 ' + MAX_INPUT_LEN + ' 位）';
+          return fieldName + t('ui.22',' 位数过多（最多 ') + MAX_INPUT_LEN + t('ui.21',' 位）');
         }
         return null;
       }
@@ -392,7 +393,7 @@
           return;
         }
         var a = num1El.value.trim();
-        var err = validateInt(a, '整数 A');
+        var err = validateInt(a, t('ui.3','整数 A'));
         if (err) {
           setStatus(err, 'error');
           return;
@@ -405,20 +406,20 @@
             }
             var n = parseInt(a, 10);
             if (String(n) !== trimZero(a)) {
-              setStatus('阶乘数值过大，请直接输入不超过 ' + MAX_FACT + ' 的数字', 'error');
+              setStatus(t('ui.20','阶乘数值过大，请直接输入不超过 ') + MAX_FACT + t('ui.19',' 的数字'), 'error');
               return;
             }
             if (n > MAX_FACT) {
-              setStatus('阶乘上限为 ' + MAX_FACT + '（再大计算量过大）', 'error');
+              setStatus(t('ui.18','阶乘上限为 ') + MAX_FACT + t('ui.17','（再大计算量过大）'), 'error');
               return;
             }
             var f = bigFactorial(n);
             if (f === null) {
-              setStatus('结果超过 ' + MAX_LEN + ' 位，无法计算', 'error');
+              setStatus(t('ui.14','结果超过 ') + MAX_LEN + t('ui.13',' 位，无法计算'), 'error');
               return;
             }
             outputText.innerHTML = '<span class="res-label">结果 ' + htmlEscape(String(n)) + '!</span><span class="res-value">' + htmlEscape(f) + '</span><div class="res-meta">共 ' + digitCount(f) + ' 位</div>';
-            setStatus('计算完成');
+            setStatus(t('ui.calcDone','计算完成'));
             return;
           }
           if (a.charAt(0) === '-') {
@@ -431,7 +432,7 @@
             return;
           }
           outputText.innerHTML = '<span class="res-label">素性检查结果</span><span class="res-value">' + htmlEscape(a) + (p ? ' 是素数' : ' 不是素数（合数）') + '</span>';
-          setStatus('检查完成');
+          setStatus(t('ui.16','检查完成'));
           return;
         }
         if (num2El.value.trim() === '') {
@@ -439,7 +440,7 @@
           return;
         }
         var b = num2El.value.trim();
-        err = validateInt(b, '整数 B');
+        err = validateInt(b, t('ui.4','整数 B'));
         if (err) {
           setStatus(err, 'error');
           return;
@@ -461,7 +462,7 @@
             return;
           }
           if (bigCmpAbs(b, MAX_EXP) > 0) {
-            setStatus('指数过大（最多 ' + MAX_EXP + '）', 'error');
+            setStatus(t('ui.15','指数过大（最多 ') + MAX_EXP + '）', 'error');
             return;
           }
           res = bigPow(a, b);
@@ -471,11 +472,11 @@
           label = 'gcd(A, B)';
         }
         if (res === null) {
-          setStatus('结果超过 ' + MAX_LEN + ' 位，无法计算', 'error');
+          setStatus(t('ui.14','结果超过 ') + MAX_LEN + t('ui.13',' 位，无法计算'), 'error');
           return;
         }
         outputText.innerHTML = '<span class="res-label">结果（' + htmlEscape(label) + '）</span><span class="res-value">' + htmlEscape(res) + '</span><div class="res-meta">共 ' + digitCount(res) + ' 位</div>';
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       function syncMode() {
@@ -485,19 +486,19 @@
         if (single) {
           var o1 = document.createElement('option');
           o1.value = 'factorial';
-          o1.textContent = '阶乘 A!';
+          o1.textContent = t('ui.12','阶乘 A!');
           var o2 = document.createElement('option');
           o2.value = 'isprime';
-          o2.textContent = '素性检查（Miller-Rabin）';
+          o2.textContent = t('ui.11','素性检查（Miller-Rabin）');
           opEl.appendChild(o1);
           opEl.appendChild(o2);
         } else {
           var ops = [
-            ['add', '加法 A + B'],
-            ['subtract', '减法 A - B'],
-            ['multiply', '乘法 A × B'],
-            ['power', '幂 A^B（B 为非负整数）'],
-            ['gcd', '最大公约数']
+            ['add', t('ui.6','加法 A + B')],
+            ['subtract', t('ui.7','减法 A - B')],
+            ['multiply', t('ui.8','乘法 A × B')],
+            ['power', t('ui.9','幂 A^B（B 为非负整数）')],
+            ['gcd', t('ui.10','最大公约数')]
           ];
           for (var i = 0; i < ops.length; i++) {
             var o = document.createElement('option');

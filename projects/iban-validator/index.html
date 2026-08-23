@@ -24,20 +24,21 @@
     <p class="tool-desc" data-i18n="desc">验证国际银行账号 (IBAN) 格式、国家代码和校验位。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <input id="ibanInput" class="input js-focus-input" type="text" placeholder="输入 IBAN，如 GB33BUKB20201555555555" style="flex:1;min-width:200px;font-size:14px;letter-spacing:1px;">
-      <button id="validateBtn" class="btn btn-primary">验证</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="validateBtn" class="btn btn-primary" data-i18n="ui.1">验证</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="resultBox">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="iban-grid" id="ibanGrid"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('ibanInput');
     var outputEl = document.getElementById('outputText');
@@ -77,9 +78,9 @@
       if (!clean) return null;
       if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: '格式无效', clean: clean }; }
       var cc = clean.substr(0, 2);
-      if (!(cc in countryInfo)) { return { valid: false, reason: '未知的国家代码: ' + cc, clean: clean, country: cc }; }
+      if (!(cc in countryInfo)) { return { valid: false, reason: t('ui.9','未知的国家代码: ') + cc, clean: clean, country: cc }; }
       var expectedLen = ibanLengths[cc];
-      if (clean.length !== expectedLen) { return { valid: false, reason: '长度错误: 期望 ' + expectedLen + ', 实际 ' + clean.length, clean: clean, country: cc }; }
+      if (clean.length !== expectedLen) { return { valid: false, reason: t('ui.8','长度错误: 期望 ') + expectedLen + t('ui.7',', 实际 ') + clean.length, clean: clean, country: cc }; }
       var reordered = clean.substr(4) + clean.substr(0, 4);
       var numeric = '';
       for (var i = 0; i < reordered.length; i++) {
@@ -100,11 +101,11 @@
       outputEl.style.color = d.valid ? 'var(--color-success)' : 'var(--color-error)';
       var items = [
         { label: 'IBAN', val: d.clean },
-        { label: '状态', val: d.valid ? '有效' : '无效' },
-        { label: '国家代码', val: d.country || '-' },
-        { label: '国家名称', val: d.countryName || '-' },
-        { label: '长度', val: d.clean ? d.clean.length : '-' + (d.country && ibanLengths[d.country] ? ' (期望 ' + ibanLengths[d.country] + ')' : '') },
-        { label: '校验结果', val: d.reason }
+        { label: t('ui.6','状态'), val: d.valid ? '有效' : '无效' },
+        { label: t('ui.5','国家代码'), val: d.country || '-' },
+        { label: t('ui.4','国家名称'), val: d.countryName || '-' },
+        { label: t('ui.3','长度'), val: d.clean ? d.clean.length : '-' + (d.country && ibanLengths[d.country] ? ' (期望 ' + ibanLengths[d.country] + ')' : '') },
+        { label: t('ui.2','校验结果'), val: d.reason }
       ];
       var html = '';
       for (var i = 0; i < items.length; i++) {
@@ -122,7 +123,7 @@
     document.getElementById('validateBtn').addEventListener('click', doValidate);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doValidate(); });
     document.getElementById('clearBtn').addEventListener('click', function() { inputEl.value = ''; outputEl.textContent = ''; outputEl.style.color = ''; gridEl.innerHTML = ''; setStatus(''); inputEl.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent.replace(/ [✓✗]$/, ''), this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent.replace(/ [✓✗]$/, ''), this); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

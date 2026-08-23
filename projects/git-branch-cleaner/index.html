@@ -31,7 +31,7 @@
     <p class="tool-desc" data-i18n="desc">粘贴 git branch 输出，勾选要清理的分支，一键生成 git branch -d / -D 与远端删除清理脚本。</p>
     <div class="card">
       <div class="form-row">
-        <label for="branchInput" class="field-label">git branch 输出（必填，每行一个分支，* 表示当前分支）</label>
+        <label for="branchInput" class="field-label" data-i18n="ui.1">git branch 输出（必填，每行一个分支，* 表示当前分支）</label>
         <textarea id="branchInput" class="input textarea js-focus-input" style="min-height:140px;" placeholder="* main&#10;feature/login&#10;feature/pay&#10;fix/typo&#10;experiment/cache"></textarea>
       </div>
       <div class="form-row">
@@ -47,14 +47,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var branchEl = document.getElementById('branchInput');
@@ -168,17 +169,17 @@
         }
         var lines = ['#!/bin/bash', ''];
         if (safe.length) {
-          lines.push('# 删除已合并分支（-d 安全删除）');
+          lines.push(t('ui.6','# 删除已合并分支（-d 安全删除）'));
           for (var s = 0; s < safe.length; s++) lines.push('git branch -d ' + safe[s]);
           lines.push('');
         }
         if (force.length) {
-          lines.push('# 删除未合并分支（-D 强制删除，请先确认未合并内容）');
+          lines.push(t('ui.5','# 删除未合并分支（-D 强制删除，请先确认未合并内容）'));
           for (var f = 0; f < force.length; f++) lines.push('git branch -D ' + force[f]);
           lines.push('');
         }
         if (remoteEl.checked && picked.length) {
-          lines.push('# 同步删除远程分支');
+          lines.push(t('ui.4','# 同步删除远程分支'));
           for (var r = 0; r < picked.length; r++) lines.push('git push origin --delete ' + picked[r]);
         }
         if (!safe.length && !force.length) {
@@ -187,7 +188,7 @@
           return;
         }
         outputEl.textContent = lines.join('\n');
-        setStatus('已生成清理脚本（' + picked.length + ' 个分支）');
+        setStatus(t('ui.3','已生成清理脚本（') + picked.length + t('ui.2',' 个分支）'));
       }
 
       branchEl.addEventListener('input', render);
@@ -198,7 +199,7 @@
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       render();

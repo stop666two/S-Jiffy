@@ -35,23 +35,24 @@
     <p class="tool-desc" data-i18n="desc">为每个数值设定权重，计算加权平均，并与简单平均对比，展示各项贡献占比。</p>
     <div class="card">
       <div class="wa-head">
-        <span class="h1">数值</span>
-        <span class="h1">权重</span>
+        <span class="h1" data-i18n="ui.number">数值</span>
+        <span class="h1" data-i18n="ui.1">权重</span>
         <span class="h2"></span>
       </div>
       <div id="rowsBox"></div>
-      <button class="btn btn-secondary add-btn" id="addBtn">+ 添加一行</button>
+      <button class="btn btn-secondary add-btn" id="addBtn" data-i18n="ui.2">+ 添加一行</button>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var rowsBox = document.getElementById('rowsBox');
@@ -81,21 +82,21 @@
         var vInput = document.createElement('input');
         vInput.type = 'text';
         vInput.className = focusFirst ? 'input js-focus-input' : 'input';
-        vInput.placeholder = '数值';
+        vInput.placeholder = t('ui.number','数值');
         if (value !== undefined) {
           vInput.value = value;
         }
         var wInput = document.createElement('input');
         wInput.type = 'text';
         wInput.className = 'input';
-        wInput.placeholder = '权重';
+        wInput.placeholder = t('ui.1','权重');
         if (weight !== undefined) {
           wInput.value = weight;
         }
         var delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'btn btn-secondary';
-        delBtn.textContent = '删除';
+        delBtn.textContent = t('ui.6','删除');
         delBtn.style.padding = '6px 10px';
         delBtn.addEventListener('click', function () {
           rowsBox.removeChild(row);
@@ -135,10 +136,10 @@
           var v = parseNum(vs);
           var w = parseNum(ws);
           if (v === null || isNaN(v)) {
-            return { error: '第 ' + (i + 1) + ' 行的数值无效' };
+            return { error: t('ui.nth','第 ') + (i + 1) + t('ui.5',' 行的数值无效') };
           }
           if (w === null || isNaN(w)) {
-            return { error: '第 ' + (i + 1) + ' 行的权重无效' };
+            return { error: t('ui.nth','第 ') + (i + 1) + t('ui.4',' 行的权重无效') };
           }
           items.push({ v: v, w: w, idx: i + 1 });
         }
@@ -193,13 +194,13 @@
           var contrib = items[k].v * items[k].w;
           var pct = absSum === 0 ? 0 : Math.abs(contrib) / absSum * 100;
           html += '<div class="bar-item">';
-          html += '<div class="bar-label"><span>第 ' + items[k].idx + ' 项：' + htmlEscape(fmt(items[k].v)) + ' × ' + htmlEscape(fmt(items[k].w)) + ' = ' + htmlEscape(fmt(contrib)) + '</span><span>' + htmlEscape(fmt(pct)) + '%</span></div>';
+          html += '<div class="bar-label"><span>第 ' + items[k].idx + t('ui.3',' 项：') + htmlEscape(fmt(items[k].v)) + ' × ' + htmlEscape(fmt(items[k].w)) + ' = ' + htmlEscape(fmt(contrib)) + '</span><span>' + htmlEscape(fmt(pct)) + '%</span></div>';
           html += '<div class="bar-track"><div class="bar-fill" style="width:' + Math.min(pct, 100) + '%;"></div></div>';
           html += '</div>';
         }
         html += '</div>';
         outputText.innerHTML = html;
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       function fmt(v) {

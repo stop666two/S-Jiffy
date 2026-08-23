@@ -32,77 +32,78 @@
     <input id="searchInput" class="status-search js-focus-input" placeholder="搜索状态码或描述... 如 404, not found, redirect..." autocomplete="off">
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var statusCodes = [
-        { code: 100, name: 'Continue', desc: '服务器收到请求头，客户端应继续发送请求体。' },
-        { code: 101, name: 'Switching Protocols', desc: '服务器同意切换协议（如 WebSocket）。' },
-        { code: 102, name: 'Processing', desc: 'WebDAV 请求正在处理。' },
-        { code: 103, name: 'Early Hints', desc: '服务器提前返回部分响应头以加速预加载。' },
-        { code: 200, name: 'OK', desc: '请求成功，正常返回数据。' },
-        { code: 201, name: 'Created', desc: '请求已成功处理，新资源已创建。' },
-        { code: 202, name: 'Accepted', desc: '请求已被接受，但尚未完成处理。' },
-        { code: 203, name: 'Non-Authoritative Information', desc: '返回的元信息来自第三方副本而非原始服务器。' },
-        { code: 204, name: 'No Content', desc: '请求成功，但无返回内容（如 DELETE）。' },
-        { code: 205, name: 'Reset Content', desc: '请求成功，客户端应重置文档视图。' },
-        { code: 206, name: 'Partial Content', desc: '服务器返回部分内容（支持 Range 请求）。' },
-        { code: 207, name: 'Multi-Status', desc: 'WebDAV 多状态响应。' },
-        { code: 300, name: 'Multiple Choices', desc: '请求有多个可能的响应，客户端应选择。' },
-        { code: 301, name: 'Moved Permanently', desc: '资源已永久移动到新 URL。' },
-        { code: 302, name: 'Found', desc: '资源临时移动到新 URL（临时重定向）。' },
-        { code: 303, name: 'See Other', desc: '重定向到其他 URL，应使用 GET 获取。' },
-        { code: 304, name: 'Not Modified', desc: '资源未修改，可使用缓存版本。' },
-        { code: 305, name: 'Use Proxy', desc: '请求必须通过指定代理访问（已弃用）。' },
-        { code: 307, name: 'Temporary Redirect', desc: '临时重定向，请求方法不改变。' },
-        { code: 308, name: 'Permanent Redirect', desc: '永久重定向，请求方法不改变。' },
-        { code: 400, name: 'Bad Request', desc: '请求语法错误，服务器无法理解。' },
-        { code: 401, name: 'Unauthorized', desc: '未授权，需要身份验证。' },
-        { code: 402, name: 'Payment Required', desc: '支付要求（预留，未广泛使用）。' },
-        { code: 403, name: 'Forbidden', desc: '服务器拒绝请求，无权限访问。' },
-        { code: 404, name: 'Not Found', desc: '请求的资源不存在。' },
-        { code: 405, name: 'Method Not Allowed', desc: '请求方法不允许。' },
-        { code: 406, name: 'Not Acceptable', desc: '服务器无法生成客户端 Accept 头要求的内容。' },
-        { code: 407, name: 'Proxy Authentication Required', desc: '需要代理身份验证。' },
-        { code: 408, name: 'Request Timeout', desc: '请求超时，服务器等待过久。' },
-        { code: 409, name: 'Conflict', desc: '请求与资源当前状态冲突。' },
-        { code: 410, name: 'Gone', desc: '请求的资源已永久删除。' },
-        { code: 411, name: 'Length Required', desc: '缺少 Content-Length 头。' },
-        { code: 412, name: 'Precondition Failed', desc: '请求头条件不满足。' },
-        { code: 413, name: 'Content Too Large', desc: '请求体过大，超出服务器限制。' },
-        { code: 414, name: 'URI Too Long', desc: '请求 URI 过长。' },
-        { code: 415, name: 'Unsupported Media Type', desc: '不支持的媒体类型。' },
-        { code: 416, name: 'Range Not Satisfiable', desc: 'Range 请求头范围不满足。' },
-        { code: 417, name: 'Expectation Failed', desc: 'Expect 请求头无法满足。' },
-        { code: 418, name: 'I\'m a Teapot', desc: '超文本咖啡壶控制协议：我是茶壶。' },
-        { code: 421, name: 'Misdirected Request', desc: '请求被发送到无法处理响应的服务器。' },
-        { code: 422, name: 'Unprocessable Content', desc: '请求格式正确，但语义错误（如 WebDAV）。' },
-        { code: 423, name: 'Locked', desc: '资源被锁定（WebDAV）。' },
-        { code: 424, name: 'Failed Dependency', desc: '前置条件失败（WebDAV）。' },
-        { code: 425, name: 'Too Early', desc: '服务器不愿处理可能重放的请求。' },
-        { code: 426, name: 'Upgrade Required', desc: '客户端应升级协议。' },
-        { code: 428, name: 'Precondition Required', desc: '请求必须包含条件头。' },
-        { code: 429, name: 'Too Many Requests', desc: '请求频率过高，触发限流。' },
-        { code: 431, name: 'Request Header Fields Too Large', desc: '请求头字段过大。' },
-        { code: 451, name: 'Unavailable For Legal Reasons', desc: '因法律原因不可用。' },
-        { code: 500, name: 'Internal Server Error', desc: '服务器内部错误。' },
-        { code: 501, name: 'Not Implemented', desc: '服务器不支持该功能。' },
-        { code: 502, name: 'Bad Gateway', desc: '网关或代理收到上游无效响应。' },
-        { code: 503, name: 'Service Unavailable', desc: '服务暂时不可用（过载或维护）。' },
-        { code: 504, name: 'Gateway Timeout', desc: '网关或代理请求上游超时。' },
-        { code: 505, name: 'HTTP Version Not Supported', desc: 'HTTP 协议版本不支持。' },
-        { code: 506, name: 'Variant Also Negotiates', desc: '服务器配置错误（透明协商循环）。' },
-        { code: 507, name: 'Insufficient Storage', desc: '存储空间不足（WebDAV）。' },
-        { code: 508, name: 'Loop Detected', desc: '请求处理检测到无限循环。' },
-        { code: 510, name: 'Not Extended', desc: '请求需要进一步扩展。' },
-        { code: 511, name: 'Network Authentication Required', desc: '需要网络身份验证（如认证 portal）。' }
+        { code: 100, name: 'Continue', desc: t('ui.62','服务器收到请求头，客户端应继续发送请求体。') },
+        { code: 101, name: 'Switching Protocols', desc: t('ui.61','服务器同意切换协议（如 WebSocket）。') },
+        { code: 102, name: 'Processing', desc: t('ui.60','WebDAV 请求正在处理。') },
+        { code: 103, name: 'Early Hints', desc: t('ui.59','服务器提前返回部分响应头以加速预加载。') },
+        { code: 200, name: 'OK', desc: t('ui.58','请求成功，正常返回数据。') },
+        { code: 201, name: 'Created', desc: t('ui.57','请求已成功处理，新资源已创建。') },
+        { code: 202, name: 'Accepted', desc: t('ui.56','请求已被接受，但尚未完成处理。') },
+        { code: 203, name: 'Non-Authoritative Information', desc: t('ui.55','返回的元信息来自第三方副本而非原始服务器。') },
+        { code: 204, name: 'No Content', desc: t('ui.54','请求成功，但无返回内容（如 DELETE）。') },
+        { code: 205, name: 'Reset Content', desc: t('ui.53','请求成功，客户端应重置文档视图。') },
+        { code: 206, name: 'Partial Content', desc: t('ui.52','服务器返回部分内容（支持 Range 请求）。') },
+        { code: 207, name: 'Multi-Status', desc: t('ui.51','WebDAV 多状态响应。') },
+        { code: 300, name: 'Multiple Choices', desc: t('ui.50','请求有多个可能的响应，客户端应选择。') },
+        { code: 301, name: 'Moved Permanently', desc: t('ui.49','资源已永久移动到新 URL。') },
+        { code: 302, name: 'Found', desc: t('ui.48','资源临时移动到新 URL（临时重定向）。') },
+        { code: 303, name: 'See Other', desc: t('ui.47','重定向到其他 URL，应使用 GET 获取。') },
+        { code: 304, name: 'Not Modified', desc: t('ui.46','资源未修改，可使用缓存版本。') },
+        { code: 305, name: 'Use Proxy', desc: t('ui.45','请求必须通过指定代理访问（已弃用）。') },
+        { code: 307, name: 'Temporary Redirect', desc: t('ui.44','临时重定向，请求方法不改变。') },
+        { code: 308, name: 'Permanent Redirect', desc: t('ui.43','永久重定向，请求方法不改变。') },
+        { code: 400, name: 'Bad Request', desc: t('ui.42','请求语法错误，服务器无法理解。') },
+        { code: 401, name: 'Unauthorized', desc: t('ui.41','未授权，需要身份验证。') },
+        { code: 402, name: 'Payment Required', desc: t('ui.40','支付要求（预留，未广泛使用）。') },
+        { code: 403, name: 'Forbidden', desc: t('ui.39','服务器拒绝请求，无权限访问。') },
+        { code: 404, name: 'Not Found', desc: t('ui.38','请求的资源不存在。') },
+        { code: 405, name: 'Method Not Allowed', desc: t('ui.37','请求方法不允许。') },
+        { code: 406, name: 'Not Acceptable', desc: t('ui.36','服务器无法生成客户端 Accept 头要求的内容。') },
+        { code: 407, name: 'Proxy Authentication Required', desc: t('ui.35','需要代理身份验证。') },
+        { code: 408, name: 'Request Timeout', desc: t('ui.34','请求超时，服务器等待过久。') },
+        { code: 409, name: 'Conflict', desc: t('ui.33','请求与资源当前状态冲突。') },
+        { code: 410, name: 'Gone', desc: t('ui.32','请求的资源已永久删除。') },
+        { code: 411, name: 'Length Required', desc: t('ui.31','缺少 Content-Length 头。') },
+        { code: 412, name: 'Precondition Failed', desc: t('ui.30','请求头条件不满足。') },
+        { code: 413, name: 'Content Too Large', desc: t('ui.29','请求体过大，超出服务器限制。') },
+        { code: 414, name: 'URI Too Long', desc: t('ui.28','请求 URI 过长。') },
+        { code: 415, name: 'Unsupported Media Type', desc: t('ui.27','不支持的媒体类型。') },
+        { code: 416, name: 'Range Not Satisfiable', desc: t('ui.26','Range 请求头范围不满足。') },
+        { code: 417, name: 'Expectation Failed', desc: t('ui.25','Expect 请求头无法满足。') },
+        { code: 418, name: 'I\'m a Teapot', desc: t('ui.24','超文本咖啡壶控制协议：我是茶壶。') },
+        { code: 421, name: 'Misdirected Request', desc: t('ui.23','请求被发送到无法处理响应的服务器。') },
+        { code: 422, name: 'Unprocessable Content', desc: t('ui.22','请求格式正确，但语义错误（如 WebDAV）。') },
+        { code: 423, name: 'Locked', desc: t('ui.21','资源被锁定（WebDAV）。') },
+        { code: 424, name: 'Failed Dependency', desc: t('ui.20','前置条件失败（WebDAV）。') },
+        { code: 425, name: 'Too Early', desc: t('ui.19','服务器不愿处理可能重放的请求。') },
+        { code: 426, name: 'Upgrade Required', desc: t('ui.18','客户端应升级协议。') },
+        { code: 428, name: 'Precondition Required', desc: t('ui.17','请求必须包含条件头。') },
+        { code: 429, name: 'Too Many Requests', desc: t('ui.16','请求频率过高，触发限流。') },
+        { code: 431, name: 'Request Header Fields Too Large', desc: t('ui.15','请求头字段过大。') },
+        { code: 451, name: 'Unavailable For Legal Reasons', desc: t('ui.14','因法律原因不可用。') },
+        { code: 500, name: 'Internal Server Error', desc: t('ui.13','服务器内部错误。') },
+        { code: 501, name: 'Not Implemented', desc: t('ui.12','服务器不支持该功能。') },
+        { code: 502, name: 'Bad Gateway', desc: t('ui.11','网关或代理收到上游无效响应。') },
+        { code: 503, name: 'Service Unavailable', desc: t('ui.10','服务暂时不可用（过载或维护）。') },
+        { code: 504, name: 'Gateway Timeout', desc: t('ui.9','网关或代理请求上游超时。') },
+        { code: 505, name: 'HTTP Version Not Supported', desc: t('ui.8','HTTP 协议版本不支持。') },
+        { code: 506, name: 'Variant Also Negotiates', desc: t('ui.7','服务器配置错误（透明协商循环）。') },
+        { code: 507, name: 'Insufficient Storage', desc: t('ui.6','存储空间不足（WebDAV）。') },
+        { code: 508, name: 'Loop Detected', desc: t('ui.5','请求处理检测到无限循环。') },
+        { code: 510, name: 'Not Extended', desc: t('ui.4','请求需要进一步扩展。') },
+        { code: 511, name: 'Network Authentication Required', desc: t('ui.3','需要网络身份验证（如认证 portal）。') }
       ];
 
       var searchEl = document.getElementById('searchInput');
@@ -130,7 +131,7 @@
             + '</div>';
         }
         outputEl.innerHTML = html;
-        setStatus('显示 ' + filtered.length + ' 个状态码');
+        setStatus(t('ui.2','显示 ') + filtered.length + t('ui.1',' 个状态码'));
       }
 
       searchEl.addEventListener('input', function() {
@@ -139,7 +140,7 @@
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent || outputEl.innerText;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
 
       render('');

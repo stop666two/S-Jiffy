@@ -29,19 +29,20 @@
       </div>
     </div>
     <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
-      <button id="slugBtn" class="btn btn-primary">生成 Slug</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="slugBtn" class="btn btn-primary" data-i18n="ui.1">生成 Slug</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var el = document.getElementById('inputText'), o = document.getElementById('outputText');
@@ -68,7 +69,7 @@
       });
       el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { o.textContent = generate(el.value); setStatus(''); } });
       document.getElementById('clearBtn').addEventListener('click', function () { el.value = ''; o.textContent = ''; setStatus(''); el.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('ui.copied','已复制')); } });
     })();
   </script>
 </body>

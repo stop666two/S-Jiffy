@@ -19,20 +19,21 @@
     <h1 data-i18n="h1">IPv6 ULA 生成器</h1>
     <p class="tool-desc" data-i18n="desc">生成随机 IPv6 唯一本地地址 (Unique Local Address)，符合 RFC 4193 标准，固定 fd00::/8 前缀。</p>
     <div class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-      <button id="generateBtn" class="btn btn-primary">生成新地址</button>
-      <button id="generateMultiBtn" class="btn btn-secondary">生成 5 个</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.1">生成新地址</button>
+      <button id="generateMultiBtn" class="btn btn-secondary" data-i18n="ui.2">生成 5 个</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var outputEl = document.getElementById('outputText');
@@ -62,14 +63,14 @@
 
       document.getElementById('generateBtn').addEventListener('click', function() {
         outputEl.textContent = generateULA();
-        setStatus('已生成 ULA 地址');
+        setStatus(t('ui.4','已生成 ULA 地址'));
       });
 
       document.getElementById('generateMultiBtn').addEventListener('click', function() {
         var arr = [];
         for (var i = 0; i < 5; i++) arr.push(generateULA());
         outputEl.textContent = arr.join('\n\n');
-        setStatus('已生成 5 个 ULA 地址');
+        setStatus(t('ui.3','已生成 5 个 ULA 地址'));
       });
 
       clearBtn = document.getElementById('clearBtn');
@@ -79,7 +80,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

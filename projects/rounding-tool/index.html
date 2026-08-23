@@ -23,21 +23,22 @@
     <p class="tool-desc" data-i18n="desc">对一个数值同时展示向下取整、向上取整、四舍五入和截断取整四种结果。</p>
     <div class="card">
       <div class="rt-row">
-        <div class="field"><label for="inputVal">输入数值</label><input id="inputVal" class="input" type="number" value="3.14159" step="any"></div>
-        <div class="field"><label for="decVal">小数位数</label><input id="decVal" class="input" type="number" value="2" min="0" max="15"></div>
+        <div class="field"><label for="inputVal" data-i18n="ui.1">输入数值</label><input id="inputVal" class="input" type="number" value="3.14159" step="any"></div>
+        <div class="field"><label for="decVal" data-i18n="ui.2">小数位数</label><input id="decVal" class="input" type="number" value="2" min="0" max="15"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
       <div class="result-grid" id="resultGrid">
-        <div class="result-item"><div class="label">向下取整 (floor)</div><div class="value" id="floorVal">-</div></div>
-        <div class="result-item"><div class="label">向上取整 (ceil)</div><div class="value" id="ceilVal">-</div></div>
-        <div class="result-item"><div class="label">四舍五入 (round)</div><div class="value" id="roundVal">-</div></div>
-        <div class="result-item"><div class="label">截断取整 (trunc)</div><div class="value" id="truncVal">-</div></div>
+        <div class="result-item"><div class="label" data-i18n="ui.3">向下取整 (floor)</div><div class="value" id="floorVal">-</div></div>
+        <div class="result-item"><div class="label" data-i18n="ui.4">向上取整 (ceil)</div><div class="value" id="ceilVal">-</div></div>
+        <div class="result-item"><div class="label" data-i18n="ui.5">四舍五入 (round)</div><div class="value" id="roundVal">-</div></div>
+        <div class="result-item"><div class="label" data-i18n="ui.6">截断取整 (trunc)</div><div class="value" id="truncVal">-</div></div>
       </div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var decEl = document.getElementById('decVal');
@@ -65,11 +66,11 @@
       document.getElementById('truncVal').textContent = truncV.toFixed(dec);
 
       outputEl.textContent = 'Floor: ' + floorV.toFixed(dec) + ', Ceil: ' + ceilV.toFixed(dec) + ', Round: ' + roundV.toFixed(dec) + ', Trunc: ' + truncV.toFixed(dec);
-      setStatus('取整完成');
+      setStatus(t('ui.7','取整完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

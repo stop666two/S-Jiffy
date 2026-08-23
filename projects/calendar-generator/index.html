@@ -32,34 +32,35 @@
       <div class="cal-controls">
         <input id="yearInput" type="number" min="1900" max="2100" class="input js-focus-input" placeholder="年份 1900-2100">
         <select id="monthSelect" class="input" style="width:auto;">
-          <option value="1">1 月</option>
-          <option value="2">2 月</option>
-          <option value="3">3 月</option>
-          <option value="4">4 月</option>
-          <option value="5">5 月</option>
-          <option value="6">6 月</option>
-          <option value="7">7 月</option>
-          <option value="8">8 月</option>
-          <option value="9">9 月</option>
-          <option value="10">10 月</option>
-          <option value="11">11 月</option>
-          <option value="12">12 月</option>
+          <option value="1" data-i18n="ui.1">1 月</option>
+          <option value="2" data-i18n="ui.2">2 月</option>
+          <option value="3" data-i18n="ui.3">3 月</option>
+          <option value="4" data-i18n="ui.4">4 月</option>
+          <option value="5" data-i18n="ui.5">5 月</option>
+          <option value="6" data-i18n="ui.6">6 月</option>
+          <option value="7" data-i18n="ui.7">7 月</option>
+          <option value="8" data-i18n="ui.8">8 月</option>
+          <option value="9" data-i18n="ui.9">9 月</option>
+          <option value="10" data-i18n="ui.10">10 月</option>
+          <option value="11" data-i18n="ui.11">11 月</option>
+          <option value="12" data-i18n="ui.12">12 月</option>
         </select>
-        <button id="prevBtn" class="btn btn-secondary">上月</button>
-        <button id="nextBtn" class="btn btn-secondary">下月</button>
-        <button id="todayBtn" class="btn btn-secondary">回到本月</button>
+        <button id="prevBtn" class="btn btn-secondary" data-i18n="ui.13">上月</button>
+        <button id="nextBtn" class="btn btn-secondary" data-i18n="ui.14">下月</button>
+        <button id="todayBtn" class="btn btn-secondary" data-i18n="ui.15">回到本月</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var yearInput = document.getElementById('yearInput');
@@ -71,17 +72,17 @@
     var copyBtn = document.getElementById('copyBtn');
 
     var holidays = [
-      { m: 1, d: 1, name: '元旦' },
-      { m: 2, d: 14, name: '情人节' },
-      { m: 3, d: 8, name: '妇女节' },
-      { m: 4, d: 5, name: '清明节' },
-      { m: 5, d: 1, name: '劳动节' },
-      { m: 6, d: 1, name: '儿童节' },
-      { m: 7, d: 1, name: '建党节' },
-      { m: 8, d: 1, name: '建军节' },
-      { m: 9, d: 10, name: '教师节' },
-      { m: 10, d: 1, name: '国庆节' },
-      { m: 12, d: 25, name: '圣诞节' }
+      { m: 1, d: 1, name: t('ui.29','元旦') },
+      { m: 2, d: 14, name: t('ui.28','情人节') },
+      { m: 3, d: 8, name: t('ui.27','妇女节') },
+      { m: 4, d: 5, name: t('ui.26','清明节') },
+      { m: 5, d: 1, name: t('ui.25','劳动节') },
+      { m: 6, d: 1, name: t('ui.24','儿童节') },
+      { m: 7, d: 1, name: t('ui.23','建党节') },
+      { m: 8, d: 1, name: t('ui.22','建军节') },
+      { m: 9, d: 10, name: t('ui.21','教师节') },
+      { m: 10, d: 1, name: t('ui.20','国庆节') },
+      { m: 12, d: 25, name: t('ui.19','圣诞节') }
     ];
 
     function daysInMonth(y, m) {
@@ -143,10 +144,10 @@
       var hints = [];
       for (i = 0; i < holidays.length; i++) {
         if (holidays[i].m === m) {
-          hints.push(holidays[i].m + ' 月 ' + holidays[i].d + ' 日 · ' + holidays[i].name);
+          hints.push(holidays[i].m + t('ui.month',' 月 ') + holidays[i].d + t('ui.18',' 日 · ') + holidays[i].name);
         }
       }
-      var html = '<div class="cal-head">' + htmlEscape(y) + ' 年 ' + htmlEscape(m) + ' 月</div>';
+      var html = '<div class="cal-head">' + htmlEscape(y) + t('ui.year',' 年 ') + htmlEscape(m) + ' 月</div>';
       html += '<table class="cal-table"><thead><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr></thead><tbody>';
       for (i = 0; i < cells.length; i += 7) {
         html += '<tr>';
@@ -166,15 +167,15 @@
       html += '</tbody></table>';
       html += '<div class="cal-hints">' + (hints.length ? '<b>本月节假日：</b>' + htmlEscape(hints.join('；')) : '本月无内置固定节假日') + '</div>';
       outputText.innerHTML = html;
-      var lines = [y + ' 年 ' + m + ' 月'];
+      var lines = [y + t('ui.year',' 年 ') + m + t('ui.month',' 月')];
       for (i = 0; i < cells.length; i += 7) {
         var row = [];
         for (j = 0; j < 7; j++) { row.push(cells[i + j].num); }
         lines.push(row.join(' '));
       }
-      if (hints.length) { lines.push(''); lines.push('节假日：' + hints.join('；')); }
+      if (hints.length) { lines.push(''); lines.push(t('ui.17','节假日：') + hints.join('；')); }
       copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
-      setStatus('已生成 ' + y + ' 年 ' + m + ' 月日历');
+      setStatus(t('ui.generated','已生成 ') + y + t('ui.year',' 年 ') + m + t('ui.16',' 月日历'));
     }
 
     yearInput.addEventListener('input', render);

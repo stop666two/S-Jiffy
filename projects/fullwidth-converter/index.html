@@ -7,14 +7,15 @@
 <main class="tool-workspace"><h1 data-i18n="h1">全角半角转换</h1><p class="tool-desc" data-i18n="desc">全角（ＡＢＣ）与半角（ABC）字符互转，支持字母、数字、符号。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="toFullBtn" class="btn btn-primary">→ 全角</button>
-<button id="toHalfBtn" class="btn btn-secondary">→ 半角</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="toFullBtn" class="btn btn-primary" data-i18n="ui.1">→ 全角</button>
+<button id="toHalfBtn" class="btn btn-secondary" data-i18n="ui.2">→ 半角</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -45,6 +46,6 @@ return r;
 toFullBtn.addEventListener('click',function(){var t=inputEl.value;if(!t){setStatus('请输入文本','error');return;}outputEl.textContent=toFullwidth(t);setStatus('');});
 toHalfBtn.addEventListener('click',function(){var t=inputEl.value;if(!t){setStatus('请输入文本','error');return;}outputEl.textContent=toHalfwidth(t);setStatus('');});
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

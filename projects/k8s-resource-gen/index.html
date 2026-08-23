@@ -10,24 +10,25 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">K8s 资源生成</h1><p class="tool-desc" data-i18n="desc">输入名称、镜像、端口等信息，生成 Kubernetes Deployment + Service YAML。</p>
 <div class="form-grid">
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">资源名称</label><input id="resName" class="input" value="my-app" placeholder="my-app"></div>
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">命名空间</label><input id="namespace" class="input" value="default" placeholder="default"></div>
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">容器镜像</label><input id="image" class="input" value="nginx:alpine" placeholder="nginx:alpine"></div>
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">容器端口</label><input id="containerPort" class="input" type="number" value="80" placeholder="80"></div>
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">副本数</label><input id="replicas" class="input" type="number" value="2" min="1" max="100"></div>
-<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">Service 端口</label><input id="svcPort" class="input" type="number" value="80" placeholder="80"></div>
-<div class="card" style="grid-column:1/-1;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">环境变量（KEY=VALUE, 每行一条）</label><textarea id="envVars" class="input textarea" placeholder="NODE_ENV=production&#10;LOG_LEVEL=info" style="min-height:60px;"></textarea></div></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.1">资源名称</label><input id="resName" class="input" value="my-app" placeholder="my-app"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.2">命名空间</label><input id="namespace" class="input" value="default" placeholder="default"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.3">容器镜像</label><input id="image" class="input" value="nginx:alpine" placeholder="nginx:alpine"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.4">容器端口</label><input id="containerPort" class="input" type="number" value="80" placeholder="80"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.5">副本数</label><input id="replicas" class="input" type="number" value="2" min="1" max="100"></div>
+<div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.6">Service 端口</label><input id="svcPort" class="input" type="number" value="80" placeholder="80"></div>
+<div class="card" style="grid-column:1/-1;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.7">环境变量（KEY=VALUE, 每行一条）</label><textarea id="envVars" class="input textarea" placeholder="NODE_ENV=production&#10;LOG_LEVEL=info" style="min-height:60px;"></textarea></div></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
 <select id="outputFormat" class="input" style="width:auto;min-width:100px;">
   <option value="both">Deployment + Service</option>
-  <option value="deploy">仅 Deployment</option>
-  <option value="service">仅 Service</option>
+  <option value="deploy" data-i18n="ui.8">仅 Deployment</option>
+  <option value="service" data-i18n="ui.9">仅 Service</option>
 </select>
-<button id="generateBtn" class="btn btn-primary">生成 YAML</button></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<button id="generateBtn" class="btn btn-primary" data-i18n="ui.10">生成 YAML</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var nameEl=document.getElementById('resName'),nsEl=document.getElementById('namespace'),imgEl=document.getElementById('image');
 var portEl=document.getElementById('containerPort'),repEl=document.getElementById('replicas'),svcPortEl=document.getElementById('svcPort');
@@ -50,8 +51,8 @@ document.getElementById('generateBtn').addEventListener('click',function(){
   if(outFmt==='deploy'||outFmt==='both')o.textContent=buildDeployment(name,ns,image,port,replicas,envArr);
   if(outFmt==='both')o.textContent+='\n---\n';
   if(outFmt==='service'||outFmt==='both')o.textContent+=buildService(name,ns,port,svcPort);
-  setStatus('K8s 资源 YAML 已生成');
+  setStatus(t('ui.11','K8s 资源 YAML 已生成'));
 });
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 })();</script>
 </body></html>

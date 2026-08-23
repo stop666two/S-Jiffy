@@ -19,22 +19,23 @@
     <h1 data-i18n="h1">BIP39 助记词</h1>
     <p class="tool-desc" data-i18n="desc">生成 BIP39 标准助记词短语，支持自定义熵值。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">熵值 (Hex)</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">熵值 (Hex)</label>
       <input id="entropyInput" class="input" type="text" placeholder="留空随机生成 (32字节)" style="width:280px;font-size:13px;">
-      <button id="generateBtn" class="btn btn-primary">生成</button>
-      <button id="randomBtn" class="btn btn-secondary">随机熵</button>
+      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
+      <button id="randomBtn" class="btn btn-secondary" data-i18n="ui.2">随机熵</button>
     </div>
     <div class="output-box" style="min-height:80px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
     <div class="word-grid" id="wordGrid"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var entropyEl = document.getElementById('entropyInput');
     var outputEl = document.getElementById('outputText');
@@ -78,7 +79,7 @@
       'cloth','cloud','clown','club','clump','cluster','clutch','coach','coast','coconut',
       'code','coffee','coil','coin','collect','color','column','combine','come','comfort',
       'comic','common','company','concert','conduct','confirm','congress','connect','consider','control',
-      'convince','cook','cool','copper','复制','coral','core','corn','correct','cost',
+      'convince','cook','cool','copper', t('ui.copy','复制'),'coral','core','corn','correct','cost',
       'cotton','couch','country','couple','course','cousin','cover','coyote','crack','cradle',
       'craft','cram','crane','crash','crater','crawl','crazy','cream','credit','creek',
       'crew','cricket','crime','crisp','critic','crop','cross','crouch','crowd','crucial',
@@ -165,7 +166,7 @@
       'obtain','obvious','occur','ocean','october','odor','off','offer','office','often',
       'oil','okay','old','olive','olympic','omit','once','one','onion','online',
       'only','open','opera','opinion','oppose','option','orange','orbit','orchard','order',
-      'ordinary','organ','orient','original','orphan','ostrich','other','outdoor','outer','输出',
+      'ordinary','organ','orient','original','orphan','ostrich','other','outdoor','outer', t('ui.5','输出'),
       'outside','oval','oven','over','own','owner','oxygen','oyster','ozone','pact',
       'paddle','page','pair','palace','palm','panda','panel','panic','panther','paper',
       'parade','parent','park','parrot','party','pass','patch','path','patient','patrol',
@@ -186,8 +187,7 @@
       'ready','real','reason','rebel','rebuild','recall','receive','recipe','record','recycle',
       'reduce','reflect','reform','refuse','region','regret','regular','reject','relax','release',
       'relief','rely','remain','remember','remind','remove','render','renew','rent','reopen',
-      'repair','repeat','replace','report','require','rescue','resemble','resist','resource','response',
-      '结果','retire','retreat','return','reunion','reveal','review','reward','rhythm','rib',
+      'repair','repeat','replace','report','require','rescue','resemble','resist','resource','response', t('ui.4','结果'),'retire','retreat','return','reunion','reveal','review','reward','rhythm','rib',
       'ribbon','rice','rich','ride','ridge','rifle','right','rigid','ring','riot',
       'ripple','risk','ritual','rival','river','road','roast','robot','robust','rocket',
       'romance','roof','rookie','room','rose','rotate','rough','round','route','royal',
@@ -340,14 +340,14 @@
       var chips = '';
       for (var i = 0; i < words.length; i++) { chips += '<span class="word-chip">' + (i + 1) + '. ' + words[i] + '</span>'; }
       gridEl.innerHTML = chips;
-      setStatus('生成 ' + words.length + ' 个助记词');
+      setStatus(t('ui.generate','生成 ') + words.length + t('ui.3',' 个助记词'));
     });
     document.getElementById('randomBtn').addEventListener('click', function() {
       var hex = generateEntropy(32);
       entropyEl.value = hex;
       setStatus('已生成随机熵值 (32 字节)');
     });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

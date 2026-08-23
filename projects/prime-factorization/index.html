@@ -31,22 +31,23 @@
     <div class="card">
       <div class="pf-row">
         <div class="pf-field">
-          <label for="numInput">输入整数（1 至 10^12）</label>
+          <label for="numInput" data-i18n="ui.1">输入整数（1 至 10^12）</label>
           <input type="text" id="numInput" class="input js-focus-input" placeholder="如 360">
         </div>
-        <button class="btn btn-primary" id="calcBtn">分解</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.2">分解</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var numEl = document.getElementById('numInput');
@@ -133,7 +134,7 @@
           html += '<div class="res-item"><span class="res-label">约数和</span><span class="res-value">1</span></div>';
           html += '</div>';
           outputText.innerHTML = html;
-          setStatus('分解完成');
+          setStatus(t('ui.3','分解完成'));
           return;
         }
         var factors = factorize(n);
@@ -150,7 +151,7 @@
         html += '<span class="res-label">质因数分解（指数形式）</span>';
         html += '<span class="res-line">' + htmlEscape(fmtExp(factors)) + '</span>';
         if (factors.length === 1 && factors[0].e === 1 && factors[0].p > 1000000) {
-          html += '<div class="prime-hint">' + htmlEscape(raw) + ' 的剩余因子 ' + factors[0].p + ' 大于 10^6，试除法未充分验证，可能为素数（Miller-Rabin 请参考大整数计算器）</div>';
+          html += '<div class="prime-hint">' + htmlEscape(raw) + t('ui.4',' 的剩余因子 ') + factors[0].p + ' 大于 10^6，试除法未充分验证，可能为素数（Miller-Rabin 请参考大整数计算器）</div>';
         }
         html += '<div class="res-grid">';
         html += '<div class="res-item"><span class="res-label">因数个数</span><span class="res-value">' + htmlEscape(String(divCount)) + '</span></div>';
@@ -158,7 +159,7 @@
         html += '<div class="res-item"><span class="res-label">最大质因子</span><span class="res-value">' + htmlEscape(String(maxPrime)) + '</span></div>';
         html += '</div>';
         outputText.innerHTML = html;
-        setStatus('分解完成');
+        setStatus(t('ui.3','分解完成'));
       }
 
       calcBtn.addEventListener('click', run);

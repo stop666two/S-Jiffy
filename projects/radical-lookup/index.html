@@ -86,15 +86,15 @@
     <div class="card">
       <div class="query-row">
         <input id="radicalInput" class="input js-focus-input" type="text" maxlength="2" placeholder="输入部首，如：氵 木 亻">
-        <button id="queryBtn" class="btn btn-primary">查字</button>
+        <button id="queryBtn" class="btn btn-primary" data-i18n="ui.1">查字</button>
         <button id="helpBtn" class="btn btn-secondary" title="查看部首列表">？</button>
       </div>
-      <div class="note-tip">输入 * 可查询无部首的独体字；多字输入时仅取第一个字符。</div>
+      <div class="note-tip" data-i18n="ui.2">输入 * 可查询无部首的独体字；多字输入时仅取第一个字符。</div>
     </div>
     <div class="card panel" id="radicalPanel">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">全部部首（点击填入输入框）</span>
-        <button id="panelCloseBtn" class="btn btn-secondary" style="height:32px;min-width:56px;padding:0 10px;font-size:12px">收起</button>
+        <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)" data-i18n="ui.3">全部部首（点击填入输入框）</span>
+        <button id="panelCloseBtn" class="btn btn-secondary" style="height:32px;min-width:56px;padding:0 10px;font-size:12px" data-i18n="ui.4">收起</button>
       </div>
       <div class="radical-chips" id="radicalChips"></div>
     </div>
@@ -103,29 +103,30 @@
       <div id="resultTableBox" style="max-height:480px;overflow:auto"></div>
     </div>
     <div class="card help-txt">
-      <h4>部首位置规则</h4>
-      <p>部首在汉字中的常见位置决定了查字顺序：</p>
+      <h4 data-i18n="ui.5">部首位置规则</h4>
+      <p data-i18n="ui.6">部首在汉字中的常见位置决定了查字顺序：</p>
       <ul>
-        <li>在左：最常见的位置，如 亻（住）、氵（清）、扌（拉）。</li>
-        <li>在右：如 刂（到）、阝（都）、攵（放）。</li>
-        <li>在上：如 艹（花）、宀（家）、雨（雪）。</li>
-        <li>在下：如 灬（黑）、心（思）、皿（盆）。</li>
-        <li>在外：包围结构的外框，如 囗（国）、门（问）、辶（进）。</li>
-        <li>在内：被包围的部件，如 廴（建）、囗（囚）。</li>
+        <li data-i18n="ui.7">在左：最常见的位置，如 亻（住）、氵（清）、扌（拉）。</li>
+        <li data-i18n="ui.8">在右：如 刂（到）、阝（都）、攵（放）。</li>
+        <li data-i18n="ui.9">在上：如 艹（花）、宀（家）、雨（雪）。</li>
+        <li data-i18n="ui.10">在下：如 灬（黑）、心（思）、皿（盆）。</li>
+        <li data-i18n="ui.11">在外：包围结构的外框，如 囗（国）、门（问）、辶（进）。</li>
+        <li data-i18n="ui.12">在内：被包围的部件，如 廴（建）、囗（囚）。</li>
       </ul>
-      <h4>确定部首的技巧</h4>
+      <h4 data-i18n="ui.13">确定部首的技巧</h4>
       <ul>
-        <li>查上不查下，查左不查右，查外不查内。</li>
-        <li>中间是部首，就不查两边。</li>
-        <li>同一汉字在不同字典中可能归入不同部首，结果以本工具收录为准。</li>
+        <li data-i18n="ui.14">查上不查下，查左不查右，查外不查内。</li>
+        <li data-i18n="ui.15">中间是部首，就不查两边。</li>
+        <li data-i18n="ui.16">同一汉字在不同字典中可能归入不同部首，结果以本工具收录为准。</li>
       </ul>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var STRUCT_NAMES = { a: '左右结构', b: '上下结构', c: '独体结构', d: '半包围结构', e: '全包围结构', f: '品字结构', g: '上中下结构', h: '左中右结构' };
@@ -161,16 +162,16 @@
 
       function renderResult(radical, list, extraNote) {
         lastQuery = radical;
-        resultHead.textContent = '「' + radical + '」部首相关汉字，共 ' + list.length + ' 个' + (extraNote ? extraNote : '');
+        resultHead.textContent = '「' + radical + t('ui.25','」部首相关汉字，共 ') + list.length + t('ui.count',' 个') + (extraNote ? extraNote : '');
         var box = document.createElement('div');
         var table = document.createElement('table');
         table.className = 'char-table';
         var thead = document.createElement('thead');
         var hr = document.createElement('tr');
         var th1 = document.createElement('th');
-        th1.textContent = '汉字';
+        th1.textContent = t('ui.24','汉字');
         var th2 = document.createElement('th');
-        th2.textContent = '结构';
+        th2.textContent = t('ui.23','结构');
         hr.appendChild(th1);
         hr.appendChild(th2);
         thead.appendChild(hr);
@@ -199,20 +200,20 @@
         if (!raw) { setStatus('请输入要查询的部首', 'error'); return; }
         if (raw === '*') {
           var starList = parseStarEntry(RAD_DATA['*']);
-          renderResult('*', starList, '（无部首的独体字）');
-          resultHead.textContent = '无部首的独体字，共 ' + starList.length + ' 个';
-          setStatus('已列出无部首的独体字');
+          renderResult('*', starList, t('ui.22','（无部首的独体字）'));
+          resultHead.textContent = t('ui.21','无部首的独体字，共 ') + starList.length + t('ui.count',' 个');
+          setStatus(t('ui.20','已列出无部首的独体字'));
           return;
         }
         var radical = raw.charAt(0);
         if (!RAD_DATA[radical]) {
           resultCard.style.display = 'none';
-          setStatus('未收录该部首「' + radical + '」，可点击 ？ 查看全部部首', 'error');
+          setStatus(t('ui.19','未收录该部首「') + radical + t('ui.18','」，可点击 ？ 查看全部部首'), 'error');
           return;
         }
         var list = parseEntry(RAD_DATA[radical]);
         renderResult(radical, list);
-        setStatus('查询完成');
+        setStatus(t('ui.17','查询完成'));
       }
 
       queryBtn.addEventListener('click', doQuery);

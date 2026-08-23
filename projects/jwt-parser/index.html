@@ -23,19 +23,20 @@
       <textarea id="jwtInput" class="input textarea js-focus-input" placeholder="粘贴 JWT Token...&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..." style="min-height:80px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="parseBtn" class="btn btn-primary">解析</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var jwtEl = document.getElementById('jwtInput');
@@ -86,8 +87,8 @@
             var expDate = new Date(payloadObj.exp * 1000);
             var now = new Date();
             result += '═══════ 时效检查 ═══════\n';
-            result += '过期时间: ' + expDate.toLocaleString() + '\n';
-            result += '当前时间: ' + now.toLocaleString() + '\n';
+            result += t('ui.4','过期时间: ') + expDate.toLocaleString() + '\n';
+            result += t('ui.3','当前时间: ') + now.toLocaleString() + '\n';
             result += (expDate > now) ? '✅ Token 未过期' : '❌ Token 已过期';
           }
 
@@ -95,10 +96,10 @@
           result += signatureB64.substring(0, 40) + '... (' + signatureB64.length + ' chars)';
 
           outputEl.textContent = result;
-          setStatus('解析成功');
+          setStatus(t('ui.2','解析成功'));
 
         } catch (e) {
-          outputEl.textContent = '解析失败: ' + e.message;
+          outputEl.textContent = t('ui.1','解析失败: ') + e.message;
           setStatus('解析失败', 'error');
         }
       });
@@ -111,7 +112,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

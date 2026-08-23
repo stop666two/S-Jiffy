@@ -21,29 +21,30 @@
     <h1 data-i18n="h1">MessagePack 编解码</h1>
     <p class="tool-desc" data-i18n="desc">将 JSON 编码为 MessagePack 二进制（十六进制），或将 MessagePack 十六进制解码为 JSON。</p>
     <div class="card">
-      <div class="section-title">编码：JSON → MessagePack</div>
+      <div class="section-title" data-i18n="ui.1">编码：JSON → MessagePack</div>
       <textarea id="jsonInput" class="input textarea js-focus-input" rows="8" placeholder='{"name": "S-Jiffy", "count": 100, "ok": true, "tags": ["a", "b"]}'></textarea>
       <div class="btn-row">
-        <button class="btn btn-primary" id="encodeBtn">编码为 MessagePack</button>
+        <button class="btn btn-primary" id="encodeBtn" data-i18n="ui.2">编码为 MessagePack</button>
       </div>
       <div class="note">支持 nil / 布尔 / 整数（fixint、int8/16/32/64、uint8/16/32/64）/ 浮点（float64）/ 字符串（UTF-8）/ 数组 / 映射；16 位以上纯数字字符串按 int64 编码。</div>
-      <div class="section-title">解码：MessagePack → JSON</div>
+      <div class="section-title" data-i18n="ui.3">解码：MessagePack → JSON</div>
       <textarea id="hexInput" class="input textarea" rows="6" placeholder="81 a4 6e 61 6d 65 a7 53 2d 4a 69 66 66 79（支持空格分隔）"></textarea>
       <div class="btn-row">
-        <button class="btn btn-primary" id="decodeBtn">解码为 JSON</button>
+        <button class="btn btn-primary" id="decodeBtn" data-i18n="ui.4">解码为 JSON</button>
       </div>
       <div class="note">解码支持 fixint / int8-64 / uint8-64 / float32-64 / str（fixstr、str8/16/32）/ array（fixarray、array16/32）/ map（fixmap、map16/32）；int64 / uint64 显示为字符串以避免精度丢失；bin / ext 类型暂不支持。</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var jsonInput = document.getElementById('jsonInput');
@@ -80,21 +81,21 @@
           out.push(String.fromCharCode(b));
           i++;
         } else if ((b & 0xe0) === 0xc0) {
-          if (i + 1 >= bytes.length) throw new Error('UTF-8 编码不完整');
+          if (i + 1 >= bytes.length) throw new Error(t('ui.29','UTF-8 编码不完整'));
           out.push(String.fromCharCode(((b & 0x1f) << 6) | (bytes[i + 1] & 0x3f)));
           i += 2;
         } else if ((b & 0xf0) === 0xe0) {
-          if (i + 2 >= bytes.length) throw new Error('UTF-8 编码不完整');
+          if (i + 2 >= bytes.length) throw new Error(t('ui.29','UTF-8 编码不完整'));
           out.push(String.fromCharCode(((b & 0x0f) << 12) | ((bytes[i + 1] & 0x3f) << 6) | (bytes[i + 2] & 0x3f)));
           i += 3;
         } else if ((b & 0xf8) === 0xf0) {
-          if (i + 3 >= bytes.length) throw new Error('UTF-8 编码不完整');
+          if (i + 3 >= bytes.length) throw new Error(t('ui.29','UTF-8 编码不完整'));
           var cp = ((b & 0x07) << 18) | ((bytes[i + 1] & 0x3f) << 12) | ((bytes[i + 2] & 0x3f) << 6) | (bytes[i + 3] & 0x3f);
           cp -= 0x10000;
           out.push(String.fromCharCode(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff)));
           i += 4;
         } else {
-          throw new Error('无效的 UTF-8 字节序列');
+          throw new Error(t('ui.28','无效的 UTF-8 字节序列'));
         }
       }
       return out.join('');
@@ -231,7 +232,7 @@
           return toInt64Bytes(String(Math.floor(value)));
         }
         if (isFinite(value)) return float64Bytes(value);
-        throw new Error('不支持的数值：Infinity / NaN');
+        throw new Error(t('ui.27','不支持的数值：Infinity / NaN'));
       }
       if (typeof value === 'string') {
         if (/^-?\d{16,}$/.test(value)) {
@@ -264,11 +265,11 @@
         if (m <= 0xffff) return concatArr([0xde, (m >> 8) & 0xff, m & 0xff], body);
         return concatArr([0xdf, (m >>> 24) & 0xff, (m >>> 16) & 0xff, (m >>> 8) & 0xff, m & 0xff], body);
       }
-      throw new Error('不支持的 JavaScript 类型：' + typeof value + '（支持 null / 布尔 / 数字 / 字符串 / 数组 / 对象）');
+      throw new Error(t('ui.26','不支持的 JavaScript 类型：') + typeof value + t('ui.25','（支持 null / 布尔 / 数字 / 字符串 / 数组 / 对象）'));
     }
 
     function readU32(bytes, p) {
-      if (p + 4 > bytes.length) throw new Error('数据不完整，无法读取整数');
+      if (p + 4 > bytes.length) throw new Error(t('ui.24','数据不完整，无法读取整数'));
       return ((bytes[p] * 0x1000000) + (bytes[p + 1] << 16) + (bytes[p + 2] << 8) + bytes[p + 3]) >>> 0;
     }
 
@@ -279,7 +280,7 @@
     }
 
     function readFloat64(bytes, p) {
-      if (p + 8 > bytes.length) throw new Error('数据不完整，无法读取浮点数');
+      if (p + 8 > bytes.length) throw new Error(t('ui.23','数据不完整，无法读取浮点数'));
       var buf = new ArrayBuffer(8);
       var view = new DataView(buf);
       for (var i = 0; i < 8; i++) {
@@ -289,7 +290,7 @@
     }
 
     function readFloat32(bytes, p) {
-      if (p + 4 > bytes.length) throw new Error('数据不完整，无法读取浮点数');
+      if (p + 4 > bytes.length) throw new Error(t('ui.23','数据不完整，无法读取浮点数'));
       var buf = new ArrayBuffer(4);
       var view = new DataView(buf);
       for (var i = 0; i < 4; i++) {
@@ -304,7 +305,7 @@
       if (b >= 0xe0) return { v: b - 0x100, pos: pos + 1 };
       if (b >= 0xa0 && b <= 0xbf) {
         var l0 = b & 0x1f;
-        if (pos + 1 + l0 > bytes.length) throw new Error('字符串长度超出数据范围');
+        if (pos + 1 + l0 > bytes.length) throw new Error(t('ui.19','字符串长度超出数据范围'));
         return { v: utf8Decode(bytes.slice(pos + 1, pos + 1 + l0)), pos: pos + 1 + l0 };
       }
       if (b >= 0x90 && b <= 0x9f) return decodeArray(bytes, pos + 1, b & 0x0f);
@@ -315,10 +316,10 @@
         case 0xc3: return { v: true, pos: pos + 1 };
         case 0xc4:
         case 0xc5:
-        case 0xc6: throw new Error('不支持的类型：bin（二进制），请改用 str');
+        case 0xc6: throw new Error(t('ui.22','不支持的类型：bin（二进制），请改用 str'));
         case 0xc7:
         case 0xc8:
-        case 0xc9: throw new Error('不支持的类型：ext（扩展类型），请改用 str');
+        case 0xc9: throw new Error(t('ui.21','不支持的类型：ext（扩展类型），请改用 str'));
         case 0xca: return { v: readFloat32(bytes, pos + 1), pos: pos + 5 };
         case 0xcb: return { v: readFloat64(bytes, pos + 1), pos: pos + 9 };
         case 0xcc: return { v: bytes[pos + 1], pos: pos + 2 };
@@ -353,18 +354,18 @@
         }
         case 0xd9: {
           var l1 = bytes[pos + 1];
-          if (pos + 2 + l1 > bytes.length) throw new Error('字符串长度超出数据范围');
+          if (pos + 2 + l1 > bytes.length) throw new Error(t('ui.19','字符串长度超出数据范围'));
           return { v: utf8Decode(bytes.slice(pos + 2, pos + 2 + l1)), pos: pos + 2 + l1 };
         }
         case 0xda: {
           var l2 = (bytes[pos + 1] << 8) | bytes[pos + 2];
-          if (pos + 3 + l2 > bytes.length) throw new Error('字符串长度超出数据范围');
+          if (pos + 3 + l2 > bytes.length) throw new Error(t('ui.19','字符串长度超出数据范围'));
           return { v: utf8Decode(bytes.slice(pos + 3, pos + 3 + l2)), pos: pos + 3 + l2 };
         }
         case 0xdb: {
           var l3 = readU32(bytes, pos + 1);
-          if (l3 > 0x7fffffff) throw new Error('字符串长度异常（超过 2GB）');
-          if (pos + 5 + l3 > bytes.length) throw new Error('字符串长度超出数据范围');
+          if (l3 > 0x7fffffff) throw new Error(t('ui.20','字符串长度异常（超过 2GB）'));
+          if (pos + 5 + l3 > bytes.length) throw new Error(t('ui.19','字符串长度超出数据范围'));
           return { v: utf8Decode(bytes.slice(pos + 5, pos + 5 + l3)), pos: pos + 5 + l3 };
         }
         case 0xdc: return decodeArray(bytes, pos + 3, (bytes[pos + 1] << 8) | bytes[pos + 2]);
@@ -373,13 +374,13 @@
         case 0xdf: return decodeMap(bytes, pos + 5, readU32(bytes, pos + 1));
         default: {
           var hex = (b < 16 ? '0' : '') + b.toString(16);
-          throw new Error('无法识别的类型标记 0x' + hex);
+          throw new Error(t('ui.18','无法识别的类型标记 0x') + hex);
         }
       }
     }
 
     function decodeArray(bytes, pos, n) {
-      if (n > 0x7fffffff) throw new Error('数组长度异常（超过 2GB）');
+      if (n > 0x7fffffff) throw new Error(t('ui.17','数组长度异常（超过 2GB）'));
       var arr = [];
       var p = pos;
       for (var i = 0; i < n; i++) {
@@ -391,7 +392,7 @@
     }
 
     function decodeMap(bytes, pos, n) {
-      if (n > 0x7fffffff) throw new Error('映射长度异常（超过 2GB）');
+      if (n > 0x7fffffff) throw new Error(t('ui.16','映射长度异常（超过 2GB）'));
       var obj = {};
       var p = pos;
       for (var i = 0; i < n; i++) {
@@ -419,11 +420,11 @@
 
     function hexToBytes(text) {
       var t = text.trim();
-      if (!t) throw new Error('请输入 MessagePack 十六进制数据');
-      if (/[^0-9a-fA-F\s]/.test(t)) throw new Error('包含非法字符：只允许十六进制数字（0-9、a-f、A-F）与空格');
+      if (!t) throw new Error(t('ui.14','请输入 MessagePack 十六进制数据'));
+      if (/[^0-9a-fA-F\s]/.test(t)) throw new Error(t('ui.15','包含非法字符：只允许十六进制数字（0-9、a-f、A-F）与空格'));
       var clean = t.replace(/\s+/g, '');
-      if (clean.length === 0) throw new Error('请输入 MessagePack 十六进制数据');
-      if (clean.length % 2 !== 0) throw new Error('十六进制长度必须为偶数（每字节两个字符）');
+      if (clean.length === 0) throw new Error(t('ui.14','请输入 MessagePack 十六进制数据'));
+      if (clean.length % 2 !== 0) throw new Error(t('ui.13','十六进制长度必须为偶数（每字节两个字符）'));
       var bytes = [];
       for (var i = 0; i < clean.length; i += 2) {
         bytes.push(parseInt(clean.substr(i, 2), 16));
@@ -442,17 +443,17 @@
       try {
         parsed = JSON.parse(text);
       } catch (e) {
-        outputText.textContent = 'JSON 解析失败：' + e.message + '。请检查括号、引号与逗号是否完整。';
+        outputText.textContent = t('ui.12','JSON 解析失败：') + e.message + t('ui.11','。请检查括号、引号与逗号是否完整。');
         setStatus('JSON 解析失败', 'error');
         return;
       }
       try {
         var bytes = encodeValue(parsed);
         var hex = bytesToHex(bytes);
-        outputText.textContent = hex + '\n\n共 ' + bytes.length + ' 字节';
-        setStatus('编码成功，共 ' + bytes.length + ' 字节');
+        outputText.textContent = hex + '\n\n共 ' + bytes.length + t('ui.bytes',' 字节');
+        setStatus(t('ui.10','编码成功，共 ') + bytes.length + t('ui.bytes',' 字节'));
       } catch (e) {
-        outputText.textContent = '编码失败：' + e.message;
+        outputText.textContent = t('ui.9','编码失败：') + e.message;
         setStatus('编码失败', 'error');
       }
     }
@@ -475,12 +476,12 @@
       try {
         var r = decodeValue(bytes, 0);
         if (r.pos !== bytes.length) {
-          outputText.textContent = '解码成功，但末尾有 ' + (bytes.length - r.pos) + ' 字节未消费（数据可能多余）。';
+          outputText.textContent = t('ui.8','解码成功，但末尾有 ') + (bytes.length - r.pos) + t('ui.7',' 字节未消费（数据可能多余）。');
         }
         outputText.textContent = JSON.stringify(r.v, null, 2);
-        setStatus('解码成功');
+        setStatus(t('ui.6','解码成功'));
       } catch (e) {
-        outputText.textContent = '解码失败：' + e.message;
+        outputText.textContent = t('ui.5','解码失败：') + e.message;
         setStatus('解码失败', 'error');
       }
     }

@@ -29,14 +29,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -111,7 +112,7 @@
           html.push('<span class="tag">' + htmlEscape(hits[n]) + '</span>');
         }
         html.push('</div>');
-        html.push('<div class="det-other">特征总数 ' + total + ' 个候选语言，共命中 ' + scores[best] + ' 个特征。</div>');
+        html.push('<div class="det-other">特征总数 ' + total + t('ui.4',' 个候选语言，共命中 ') + scores[best] + ' 个特征。</div>');
         var others = [];
         for (var o = 0; o < scores.length; o++) {
           if (o !== best && scores[o] > 0) {
@@ -122,10 +123,10 @@
           html.push('<div class="det-other">备选：' + htmlEscape(others.join('，')) + '</div>');
         }
         outputEl.innerHTML = html.join('');
-        plainLines.push(langs[best].name + '，置信度 ' + conf + '%');
-        plainLines.push('命中特征：' + hits.join('、'));
+        plainLines.push(langs[best].name + t('ui.3','，置信度 ') + conf + '%');
+        plainLines.push(t('ui.2','命中特征：') + hits.join('、'));
         lastPlain = plainLines.join('\n');
-        setStatus('已识别为 ' + langs[best].name);
+        setStatus(t('ui.1','已识别为 ') + langs[best].name);
       }
 
       inputEl.addEventListener('input', analyze);

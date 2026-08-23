@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">CSP 策略验证</h1><p class="tool-desc" data-i18n="desc">验证 Content-Security-Policy 策略字符串语法，检查常见问题和安全隐患</p>
 <div class="card"><textarea id="cspInput" class="input textarea js-focus-input" placeholder="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src *" style="min-height:80px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="validateBtn" class="btn btn-primary">验证</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="validateBtn" class="btn btn-primary" data-i18n="ui.1">验证</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div class="summary-box" id="summaryBox"></div><div id="issuesList"></div><div id="parsedPolicy" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var cspInput=document.getElementById('cspInput'),validateBtn=document.getElementById('validateBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),summaryBox=document.getElementById('summaryBox'),issuesList=document.getElementById('issuesList'),parsedPolicy=document.getElementById('parsedPolicy'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var knownDirectives=['default-src','script-src','script-src-elem','script-src-attr','style-src','style-src-elem','style-src-attr','img-src','font-src','connect-src','media-src','object-src','frame-src','frame-ancestors','worker-src','manifest-src','base-uri','form-action','report-uri','report-to','navigate-to','prefetch-src','plugin-types','sandbox','upgrade-insecure-requests','block-all-mixed-content','require-sri-for','require-trusted-types-for','trusted-types'];
@@ -33,7 +34,7 @@ validateBtn.addEventListener('click',function(){
     for(var si=0;si<sources.length;si++){
       var src=sources[si];
       if(src==="'unsafe-inline'"&&(dirName==='script-src'||dirName==='script-src-elem'||dirName==='style-src'||dirName==='style-src-elem')){
-        issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 使用了 '+htmlEscape(src)+'，请考虑使用 nonce 或 hash 作为替代'});
+        issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 使用了 '+htmlEscape(src)+ t('ui.8','，请考虑使用 nonce 或 hash 作为替代')});
       }
       if(src==="'unsafe-eval'"&&dirName.indexOf('script')>=0){issues.push({level:'warning',msg:'指令 "'+htmlEscape(dirName)+'" 使用了 '+htmlEscape(src)+'，允许 eval() 会降低安全性'});}
       if(src==='*'&&dirName!=='img-src'&&dirName!=='media-src'&&dirName!=='connect-src'){
@@ -41,15 +42,15 @@ validateBtn.addEventListener('click',function(){
       }
       if(src.indexOf("'nonce-")===0&&src.length<=8){issues.push({level:'error',msg:'指令 "'+htmlEscape(dirName)+'" 的 nonce 值无效: '+htmlEscape(src)});}
       if(src.indexOf("'sha")===0&&src.length<=7){issues.push({level:'error',msg:'指令 "'+htmlEscape(dirName)+'" 的 hash 值无效: '+htmlEscape(src)});}
-      if(src.indexOf("'")===0&&knownSources.indexOf(src)===-1&&src.indexOf("'nonce-")!==0&&src.indexOf("'sha")!==0){issues.push({level:'info',msg:'未知的特殊源: '+htmlEscape(src)});}
+      if(src.indexOf("'")===0&&knownSources.indexOf(src)===-1&&src.indexOf("'nonce-")!==0&&src.indexOf("'sha")!==0){issues.push({level:'info',msg: t('ui.7','未知的特殊源: ')+htmlEscape(src)});}
     }
     if(dirName==='script-src'||dirName==='default-src'){
       var hasNonceOrHash=sources.some(function(s){return s.indexOf("'nonce-")===0||s.indexOf("'sha")===0;});
       var hasStrictDynamic=sources.indexOf("'strict-dynamic'")>=0;
-      if(hasStrictDynamic&&!hasNonceOrHash&&sources.indexOf("'unsafe-inline'")===-1){issues.push({level:'info',msg:'strict-dynamic 需要 nonce 或 hash 配合使用'});}
+      if(hasStrictDynamic&&!hasNonceOrHash&&sources.indexOf("'unsafe-inline'")===-1){issues.push({level:'info',msg: t('ui.6','strict-dynamic 需要 nonce 或 hash 配合使用')});}
     }
   }
-  if(directiveCount===0){issues.push({level:'error',msg:'未解析到任何 CSP 指令'});}
+  if(directiveCount===0){issues.push({level:'error',msg: t('ui.5','未解析到任何 CSP 指令')});}
   var errors=issues.filter(function(i){return i.level==='error';}).length;
   var warnings=issues.filter(function(i){return i.level==='warning';}).length;
   var infos=issues.filter(function(i){return i.level==='info';}).length;
@@ -61,12 +62,12 @@ validateBtn.addEventListener('click',function(){
     issuesHtml+='<div class="issue-row"><span class="issue-level '+lvlCls+'">'+lvl+'</span><span class="issue-msg">'+issues[i].msg+'</span></div>';
   }
   issuesList.innerHTML=issuesHtml||'<div style="padding:8px;color:var(--color-success);font-weight:600;">✅ 未发现明显问题</div>';
-  parsedPolicy.innerHTML='已解析 '+directiveCount+' 条指令';
-  outputText.textContent=errors>0?'验证失败: '+errors+' 个错误':'验证通过';
+  parsedPolicy.innerHTML = t('ui.4','已解析 ')+directiveCount+ t('ui.3',' 条指令');
+  outputText.textContent=errors>0?t('ui.2','验证失败: ') +errors+' 个错误':'验证通过';
   resultCard.style.display='block';
   setStatus(errors>0?'发现错误':'验证完成');
 });
 clearBtn.addEventListener('click',function(){cspInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');cspInput.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

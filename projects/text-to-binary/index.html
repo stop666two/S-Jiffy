@@ -18,20 +18,21 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或二进制..." style="min-height:100px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="toBinaryBtn" class="btn btn-primary">文本 → 二进制</button>
-      <button id="toTextBtn" class="btn btn-secondary">二进制 → 文本</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="toBinaryBtn" class="btn btn-primary" data-i18n="ui.1">文本 → 二进制</button>
+      <button id="toTextBtn" class="btn btn-secondary" data-i18n="ui.2">二进制 → 文本</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputEl = document.getElementById('inputText');
@@ -48,7 +49,7 @@
           result.push(code.toString(2).padStart(8, '0'));
         }
         outputEl.textContent = result.join(' ');
-        setStatus('已转换 ' + text.length + ' 个字符');
+        setStatus(t('ui.converted','已转换 ') + text.length + t('ui.3',' 个字符'));
       });
 
       document.getElementById('toTextBtn').addEventListener('click', function() {
@@ -71,7 +72,7 @@
           result += String.fromCharCode(code);
         }
         outputEl.textContent = result;
-        setStatus('已转换 ' + (clean.length / 8) + ' 字节');
+        setStatus(t('ui.converted','已转换 ') + (clean.length / 8) + t('ui.bytes',' 字节'));
       });
 
       clearBtn.addEventListener('click', function() {
@@ -82,7 +83,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

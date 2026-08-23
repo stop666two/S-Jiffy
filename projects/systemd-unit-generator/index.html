@@ -28,57 +28,58 @@
     <div class="card">
       <div class="form-grid">
         <div class="field">
-          <label>服务名</label>
+          <label data-i18n="ui.1">服务名</label>
           <input id="serviceName" class="input js-focus-input" placeholder="如 my-service">
         </div>
         <div class="field">
-          <label>描述</label>
+          <label data-i18n="ui.desc">描述</label>
           <input id="description" class="input" placeholder="如 My background service">
         </div>
         <div class="field full">
-          <label>启动命令 ExecStart</label>
+          <label data-i18n="ui.2">启动命令 ExecStart</label>
           <input id="execStart" class="input" placeholder="如 /usr/bin/myapp --config /etc/myapp.conf">
         </div>
         <div class="field">
-          <label>工作目录</label>
+          <label data-i18n="ui.3">工作目录</label>
           <input id="workingDir" class="input" placeholder="如 /opt/myapp">
         </div>
         <div class="field">
-          <label>运行用户</label>
+          <label data-i18n="ui.4">运行用户</label>
           <input id="user" class="input" placeholder="如 www-data">
         </div>
         <div class="field">
-          <label>重启策略</label>
+          <label data-i18n="ui.5">重启策略</label>
           <select id="restartPolicy" class="input">
-            <option value="no">no（不自动重启）</option>
-            <option value="on-failure" selected>on-failure（失败时重启）</option>
-            <option value="always">always（始终重启）</option>
+            <option value="no" data-i18n="ui.6">no（不自动重启）</option>
+            <option value="on-failure" selected data-i18n="ui.7">on-failure（失败时重启）</option>
+            <option value="always" data-i18n="ui.8">always（始终重启）</option>
           </select>
         </div>
         <div class="field">
-          <label>重启间隔 RestartSec</label>
+          <label data-i18n="ui.9">重启间隔 RestartSec</label>
           <input id="restartSec" class="input" value="5" placeholder="秒，默认 5">
         </div>
         <div class="field full">
-          <label>环境变量（每行一条 KEY=value）</label>
+          <label data-i18n="ui.10">环境变量（每行一条 KEY=value）</label>
           <textarea id="envVars" class="input textarea" placeholder="NODE_ENV=production&#10;PORT=8080"></textarea>
         </div>
       </div>
       <div class="actions">
-        <button id="generateBtn" class="btn btn-primary">生成单元文件</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.11">生成单元文件</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var nameInput = document.getElementById('serviceName');
@@ -114,8 +115,8 @@
           var line = lines[i].trim();
           if (!line) continue;
           var eq = line.indexOf('=');
-          if (eq <= 0) { setStatus('环境变量第 ' + (i + 1) + ' 行格式应为 KEY=value', 'error'); return null; }
-          if (/^\s/.test(line) || /\s$/.test(line)) { setStatus('环境变量第 ' + (i + 1) + ' 行含首尾空格', 'error'); return null; }
+          if (eq <= 0) { setStatus(t('ui.14','环境变量第 ') + (i + 1) + t('ui.15',' 行格式应为 KEY=value'), 'error'); return null; }
+          if (/^\s/.test(line) || /\s$/.test(line)) { setStatus(t('ui.14','环境变量第 ') + (i + 1) + t('ui.13',' 行含首尾空格'), 'error'); return null; }
           envLines.push(line);
         }
 
@@ -139,7 +140,7 @@
         var unit = buildUnit();
         if (unit === null) { output.textContent = ''; return; }
         output.textContent = unit;
-        setStatus('单元文件已生成');
+        setStatus(t('ui.12','单元文件已生成'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {

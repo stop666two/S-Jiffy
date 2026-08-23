@@ -23,7 +23,7 @@
     <p class="tool-desc" data-i18n="desc">选择语言并填写函数信息，自动生成 JSDoc / Python docstring / Javadoc 格式的注释模板。</p>
     <div class="card">
       <div class="form-row">
-        <div class="field-label" style="margin-bottom:6px;">注释语言</div>
+        <div class="field-label" style="margin-bottom:6px;" data-i18n="ui.1">注释语言</div>
         <div class="lang-row">
           <label><input type="radio" name="lang" value="jsdoc" checked> JavaScript (JSDoc)</label>
           <label><input type="radio" name="lang" value="python"> Python (docstring)</label>
@@ -31,32 +31,33 @@
         </div>
       </div>
       <div class="form-row">
-        <label for="fnName" class="field-label">函数名</label>
+        <label for="fnName" class="field-label" data-i18n="ui.2">函数名</label>
         <input id="fnName" class="input js-focus-input" placeholder="myFunction">
       </div>
       <div class="form-row">
-        <label for="paramList" class="field-label">参数列表（每行一个，格式：名称:类型:描述，类型和描述可省略）</label>
+        <label for="paramList" class="field-label" data-i18n="ui.3">参数列表（每行一个，格式：名称:类型:描述，类型和描述可省略）</label>
         <textarea id="paramList" class="input textarea" style="min-height:110px;" placeholder="name:string:用户名&#10;age:number&#10;options"></textarea>
       </div>
       <div class="form-row">
-        <label for="retValue" class="field-label">返回值（填写类型或说明，如 string / true 表示成功）</label>
+        <label for="retValue" class="field-label" data-i18n="ui.4">返回值（填写类型或说明，如 string / true 表示成功）</label>
         <input id="retValue" class="input" placeholder="string">
       </div>
       <div class="form-row">
-        <label for="fnDesc" class="field-label">函数描述</label>
+        <label for="fnDesc" class="field-label" data-i18n="ui.5">函数描述</label>
         <textarea id="fnDesc" class="input textarea" style="min-height:70px;" placeholder="计算两个数字之和"></textarea>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var langEls = document.getElementsByName('lang');
@@ -87,11 +88,11 @@
           var descParts = parts.slice(2);
           var desc = descParts.length ? descParts.join(':').trim() : '';
           if (!name) {
-            errors.push('第 ' + (i + 1) + ' 行参数名缺失');
+            errors.push(t('ui.nth','第 ') + (i + 1) + t('ui.7',' 行参数名缺失'));
             continue;
           }
           if (/\s/.test(name)) {
-            errors.push('第 ' + (i + 1) + ' 行参数名含空格');
+            errors.push(t('ui.nth','第 ') + (i + 1) + t('ui.6',' 行参数名含空格'));
             continue;
           }
           params.push({ name: name, type: type, desc: desc });
@@ -175,7 +176,7 @@
         }
         outputEl.textContent = text;
         if (!parsed.errors.length) {
-          setStatus('已生成 ' + (lang === 'python' ? 'Python docstring' : lang === 'javadoc' ? 'Javadoc 注释' : 'JSDoc 注释'));
+          setStatus(t('ui.generated','已生成 ') + (lang === 'python' ? 'Python docstring' : lang === 'javadoc' ? 'Javadoc 注释' : 'JSDoc 注释'));
         }
       }
 
@@ -191,7 +192,7 @@
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       generate();

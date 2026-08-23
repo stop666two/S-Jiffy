@@ -28,37 +28,38 @@
 <div class="clock-display" id="clockDisplay">--:--:--</div>
 </div>
 <div class="card">
-<div class="setting-row"><label>响铃时间</label><input id="timeInput" class="input" type="time" value="06:00:00" step="1" style="max-width:180px;"></div>
-<div class="setting-row"><label>铃声</label><select id="ringSelect">
-<option value="dingdong">叮咚</option>
-<option value="bird">鸟鸣</option>
-</select><button id="previewBtn" class="btn btn-secondary" style="height:48px;min-width:80px;">试听</button></div>
-<div class="setting-row"><label>响铃时长</label><select id="durationSelect">
-<option value="10">10 秒</option>
-<option value="30">30 秒</option>
-<option value="60" selected>1 分钟</option>
-<option value="120">2 分钟</option>
-<option value="180">3 分钟</option>
-<option value="300">5 分钟</option>
-<option value="600">10 分钟</option>
-<option value="0">一直响</option>
+<div class="setting-row"><label data-i18n="ui.1">响铃时间</label><input id="timeInput" class="input" type="time" value="06:00:00" step="1" style="max-width:180px;"></div>
+<div class="setting-row"><label data-i18n="ui.2">铃声</label><select id="ringSelect">
+<option value="dingdong" data-i18n="ui.3">叮咚</option>
+<option value="bird" data-i18n="ui.4">鸟鸣</option>
+</select><button id="previewBtn" class="btn btn-secondary" style="height:48px;min-width:80px;" data-i18n="ui.5">试听</button></div>
+<div class="setting-row"><label data-i18n="ui.6">响铃时长</label><select id="durationSelect">
+<option value="10" data-i18n="ui.7">10 秒</option>
+<option value="30" data-i18n="ui.8">30 秒</option>
+<option value="60" selected data-i18n="ui.9">1 分钟</option>
+<option value="120" data-i18n="ui.10">2 分钟</option>
+<option value="180" data-i18n="ui.11">3 分钟</option>
+<option value="300" data-i18n="ui.12">5 分钟</option>
+<option value="600" data-i18n="ui.13">10 分钟</option>
+<option value="0" data-i18n="ui.14">一直响</option>
 </select></div>
-<div class="setting-row"><label>整点报时</label><label style="display:flex;align-items:center;gap:6px;min-width:0;"><input id="chimeCheck" type="checkbox"> 每小时整点播放提示音</label></div>
-<div class="setting-row"><button id="setBtn" class="btn btn-primary">设置闹钟</button><button id="cancelBtn" class="btn btn-secondary">取消闹钟</button></div>
-<div class="alarm-status" id="alarmStatus">未设置闹钟</div>
+<div class="setting-row"><label data-i18n="ui.15">整点报时</label><label style="display:flex;align-items:center;gap:6px;min-width:0;"><input id="chimeCheck" type="checkbox"> 每小时整点播放提示音</label></div>
+<div class="setting-row"><button id="setBtn" class="btn btn-primary" data-i18n="ui.16">设置闹钟</button><button id="cancelBtn" class="btn btn-secondary" data-i18n="ui.17">取消闹钟</button></div>
+<div class="alarm-status" id="alarmStatus" data-i18n="ui.18">未设置闹钟</div>
 </div>
 <div class="card">
-<p class="opt-hint">设置闹钟后可将本窗口最小化或切换到其他页面，到点仍会提醒。</p>
-<p class="opt-hint">闹钟全部在本地运行，断网后依然正常，响铃前请勿更换铃声。</p>
-<p class="opt-hint">响铃音量取决于设备的扬声器或耳机音量设置。</p>
+<p class="opt-hint" data-i18n="ui.19">设置闹钟后可将本窗口最小化或切换到其他页面，到点仍会提醒。</p>
+<p class="opt-hint" data-i18n="ui.20">闹钟全部在本地运行，断网后依然正常，响铃前请勿更换铃声。</p>
+<p class="opt-hint" data-i18n="ui.21">响铃音量取决于设备的扬声器或耳机音量设置。</p>
 </div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <div class="alarm-overlay" id="alarmOverlay">
-<div class="big-text">时间到了！</div>
+<div class="big-text" data-i18n="ui.22">时间到了！</div>
 <div class="ring-time" id="ringTimeText"></div>
-<button class="stop-btn" id="stopRingBtn">停止闹钟</button>
+<button class="stop-btn" id="stopRingBtn" data-i18n="ui.23">停止闹钟</button>
 </div>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
 var clockDisplay=document.getElementById('clockDisplay'),clockDate=document.getElementById('clockDate');
@@ -101,7 +102,7 @@ ringing=true;
 ringDeadline=0;
 var dur=parseInt(durationSelect.value,10)||0;
 if(dur>0)ringDeadline=Date.now()+dur*1000;
-alarmStatus.textContent='闹钟响铃中，点击停止或等待结束';
+alarmStatus.textContent = t('ui.34','闹钟响铃中，点击停止或等待结束');
 alarmStatus.className='alarm-status ring';
 ringTimeText.textContent=timeInput.value||'';
 alarmOverlay.classList.add('open');
@@ -116,7 +117,7 @@ if(ringTimer){clearTimeout(ringTimer);ringTimer=null;}
 stopAll();
 alarmOverlay.classList.remove('open');
 nextRingKey='';
-alarmStatus.textContent='闹钟已停止，如需再次提醒请重新设置';
+alarmStatus.textContent = t('ui.33','闹钟已停止，如需再次提醒请重新设置');
 alarmStatus.className='alarm-status';}
 
 function parseTime(v){
@@ -140,22 +141,22 @@ if(!sameDay)target.setDate(target.getDate()+1);
 nextRingKey=target.getFullYear()+'-'+(target.getMonth()+1)+'-'+target.getDate();
 var remain=Math.round((target.getTime()-now.getTime())/1000);
 var h=Math.floor(remain/3600),m=Math.floor((remain%3600)/60),s=remain%60;
-alarmStatus.textContent='已设置 '+timeInput.value+' 响铃'+(sameDay?'（还有 '+pad(h)+':'+pad(m)+':'+pad(s)+'）':'（已过今日该时刻，明日响铃）');
+alarmStatus.textContent = t('ui.32','已设置 ')+timeInput.value+ t('ui.31',' 响铃')+(sameDay?t('ui.30','（还有 ') +pad(h)+':'+pad(m)+':'+pad(s)+'）':'（已过今日该时刻，明日响铃）');
 alarmStatus.className='alarm-status on';
-setStatus('闹钟已设置');}
+setStatus(t('ui.29','闹钟已设置'));}
 function cancelAlarm(){
 alarmSec=-1;
 nextRingKey='';
 if(ringing)stopRing();
-alarmStatus.textContent='未设置闹钟';
+alarmStatus.textContent = t('ui.18','未设置闹钟');
 alarmStatus.className='alarm-status';
-setStatus('闹钟已取消');}
+setStatus(t('ui.28','闹钟已取消'));}
 
 function tick(){
 var now=new Date();
 clockDisplay.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
-var week=['日','一','二','三','四','五','六'];
-clockDate.textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 星期'+week[now.getDay()];
+var week=[ t('ui.27','日'), t('ui.one','一'), t('ui.two','二'), t('ui.three','三'), t('ui.four','四'), t('ui.five','五'), t('ui.six','六')];
+clockDate.textContent=now.getFullYear()+ t('ui.year','年')+(now.getMonth()+1)+ t('ui.month','月')+now.getDate()+ t('ui.26','日 星期')+week[now.getDay()];
 if(alarmSec>=0&&!ringing&&nextRingKey){
 var nowSec=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
 var key=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
@@ -169,8 +170,8 @@ if(ringing&&ringDeadline>0&&Date.now()>=ringDeadline)stopRing();}
 
 setBtn.addEventListener('click',function(){ensureCtx();setAlarm();});
 cancelBtn.addEventListener('click',cancelAlarm);
-document.getElementById('previewBtn').addEventListener('click',function(){ensureCtx();playOnce();setStatus('试听中…');});
-stopRingBtn.addEventListener('click',function(){stopRing();setStatus('闹钟已停止');});
+document.getElementById('previewBtn').addEventListener('click',function(){ensureCtx();playOnce();setStatus(t('ui.25','试听中…'));});
+stopRingBtn.addEventListener('click',function(){stopRing();setStatus(t('ui.24','闹钟已停止'));});
 chimeCheck.addEventListener('change',function(){chimeEnabled=chimeCheck.checked;setStatus(chimeEnabled?'整点报时已开启':'整点报时已关闭');});
 setInterval(tick,1000);
 tick();

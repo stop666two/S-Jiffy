@@ -25,24 +25,25 @@
     <div class="card">
       <input id="passwordInput" class="input js-focus-input" type="password" placeholder="输入密码..." autocomplete="off" style="font-size:16px;letter-spacing:2px;">
       <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%;background:var(--color-border);"></div></div>
-      <div style="text-align:right;font-size:var(--font-size-sm);color:var(--color-text-secondary);"><span id="scoreText">等待输入</span></div>
+      <div style="text-align:right;font-size:var(--font-size-sm);color:var(--color-text-secondary);"><span id="scoreText" data-i18n="ui.1">等待输入</span></div>
     </div>
     <div class="info-grid">
-      <div class="info-item"><label>长度</label><span id="infoLength">0</span></div>
-      <div class="info-item"><label>字符集大小</label><span id="infoCharset">0</span></div>
-      <div class="info-item"><label>熵值 (bits)</label><span id="infoEntropy">0</span></div>
-      <div class="info-item"><label>破解时间 (离线)</label><span id="infoCrackTime">-</span></div>
-      <div class="info-item"><label>包含小写</label><span id="infoLower">否</span></div>
-      <div class="info-item"><label>包含大写</label><span id="infoUpper">否</span></div>
-      <div class="info-item"><label>包含数字</label><span id="infoDigit">否</span></div>
-      <div class="info-item"><label>包含符号</label><span id="infoSymbol">否</span></div>
+      <div class="info-item"><label data-i18n="ui.2">长度</label><span id="infoLength">0</span></div>
+      <div class="info-item"><label data-i18n="ui.3">字符集大小</label><span id="infoCharset">0</span></div>
+      <div class="info-item"><label data-i18n="ui.4">熵值 (bits)</label><span id="infoEntropy">0</span></div>
+      <div class="info-item"><label data-i18n="ui.5">破解时间 (离线)</label><span id="infoCrackTime">-</span></div>
+      <div class="info-item"><label data-i18n="ui.6">包含小写</label><span id="infoLower" data-i18n="ui.no">否</span></div>
+      <div class="info-item"><label data-i18n="ui.7">包含大写</label><span id="infoUpper" data-i18n="ui.no">否</span></div>
+      <div class="info-item"><label data-i18n="ui.8">包含数字</label><span id="infoDigit" data-i18n="ui.no">否</span></div>
+      <div class="info-item"><label data-i18n="ui.9">包含符号</label><span id="infoSymbol" data-i18n="ui.no">否</span></div>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('passwordInput');
     var fillEl = document.getElementById('strengthFill');
@@ -72,11 +73,11 @@
         var guessesPerSec = 10000000000;
         var seconds = Math.pow(2, entropy) / guessesPerSec;
         if (seconds < 1) { crackTime = '瞬间'; }
-        else if (seconds < 60) { crackTime = Math.ceil(seconds) + ' 秒'; }
-        else if (seconds < 3600) { crackTime = Math.ceil(seconds / 60) + ' 分钟'; }
-        else if (seconds < 86400) { crackTime = Math.ceil(seconds / 3600) + ' 小时'; }
-        else if (seconds < 31536000) { crackTime = Math.ceil(seconds / 86400) + ' 天'; }
-        else if (seconds < 315360000) { crackTime = Math.ceil(seconds / 31536000) + ' 年'; }
+        else if (seconds < 60) { crackTime = Math.ceil(seconds) + t('ui.second',' 秒'); }
+        else if (seconds < 3600) { crackTime = Math.ceil(seconds / 60) + t('ui.minute',' 分钟'); }
+        else if (seconds < 86400) { crackTime = Math.ceil(seconds / 3600) + t('ui.hour',' 小时'); }
+        else if (seconds < 31536000) { crackTime = Math.ceil(seconds / 86400) + t('ui.day',' 天'); }
+        else if (seconds < 315360000) { crackTime = Math.ceil(seconds / 31536000) + t('ui.year',' 年'); }
         else { crackTime = '∞ (极强)'; }
       } else { crackTime = '-'; }
       var score = 0;
@@ -103,10 +104,10 @@
       infoDigit.textContent = r.hasDigit ? '是' : '否';
       infoSymbol.textContent = r.hasSymbol ? '是' : '否';
       fillEl.style.width = r.score + '%';
-      if (r.score < 30) { fillEl.style.background = '#9F2F2D'; scoreEl.textContent = '弱 - ' + r.score + '/100'; }
-      else if (r.score < 60) { fillEl.style.background = '#B8860B'; scoreEl.textContent = '中等 - ' + r.score + '/100'; }
-      else if (r.score < 80) { fillEl.style.background = '#346538'; scoreEl.textContent = '强 - ' + r.score + '/100'; }
-      else { fillEl.style.background = '#1B5E20'; scoreEl.textContent = '非常强 - ' + r.score + '/100'; }
+      if (r.score < 30) { fillEl.style.background = '#9F2F2D'; scoreEl.textContent = t('ui.13','弱 - ') + r.score + '/100'; }
+      else if (r.score < 60) { fillEl.style.background = '#B8860B'; scoreEl.textContent = t('ui.12','中等 - ') + r.score + '/100'; }
+      else if (r.score < 80) { fillEl.style.background = '#346538'; scoreEl.textContent = t('ui.11','强 - ') + r.score + '/100'; }
+      else { fillEl.style.background = '#1B5E20'; scoreEl.textContent = t('ui.10','非常强 - ') + r.score + '/100'; }
     }
     inputEl.addEventListener('input', update);
     update();

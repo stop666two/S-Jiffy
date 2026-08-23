@@ -23,26 +23,27 @@
     <p class="tool-desc" data-i18n="desc">对一组数字计算总和、计数、均值、中位数、众数、最值、极差、方差和标准差。</p>
     <div class="card">
       <div class="sc-row">
-        <div class="field" style="flex:2;"><label for="inputVal">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 15, 18, 20, 22, 25, 30" placeholder="例如 1, 2, 3, 4, 5"></div>
+        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 15, 18, 20, 22, 25, 30" placeholder="例如 1, 2, 3, 4, 5"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
       <div class="stat-grid" id="statGrid">
-        <div class="stat-item"><div class="label">总和 (Sum)</div><div class="value" id="sumVal">-</div></div>
-        <div class="stat-item"><div class="label">计数 (Count)</div><div class="value" id="countVal">-</div></div>
-        <div class="stat-item"><div class="label">均值 (Mean)</div><div class="value" id="meanVal">-</div></div>
-        <div class="stat-item"><div class="label">中位数 (Median)</div><div class="value" id="medianVal">-</div></div>
-        <div class="stat-item"><div class="label">众数 (Mode)</div><div class="value" id="modeVal">-</div></div>
-        <div class="stat-item"><div class="label">最小值</div><div class="value" id="minVal">-</div></div>
-        <div class="stat-item"><div class="label">最大值</div><div class="value" id="maxVal">-</div></div>
-        <div class="stat-item"><div class="label">极差 (Range)</div><div class="value" id="rangeVal">-</div></div>
-        <div class="stat-item"><div class="label">方差 (Variance)</div><div class="value" id="varVal">-</div></div>
-        <div class="stat-item"><div class="label">标准差 (StdDev)</div><div class="value" id="stdVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.2">总和 (Sum)</div><div class="value" id="sumVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.3">计数 (Count)</div><div class="value" id="countVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.4">均值 (Mean)</div><div class="value" id="meanVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.5">中位数 (Median)</div><div class="value" id="medianVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.6">众数 (Mode)</div><div class="value" id="modeVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.7">最小值</div><div class="value" id="minVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.8">最大值</div><div class="value" id="maxVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.9">极差 (Range)</div><div class="value" id="rangeVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.10">方差 (Variance)</div><div class="value" id="varVal">-</div></div>
+        <div class="stat-item"><div class="label" data-i18n="ui.11">标准差 (StdDev)</div><div class="value" id="stdVal">-</div></div>
       </div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var genBtn = document.getElementById('genBtn');
@@ -108,11 +109,11 @@
       document.getElementById('stdVal').textContent = stddev.toFixed(4);
 
       outputEl.textContent = 'Sum=' + sum.toFixed(4) + ', Count=' + count + ', Mean=' + mean.toFixed(4) + ', Median=' + median.toFixed(4) + ', Mode=' + mode + ', Min=' + min + ', Max=' + max + ', Range=' + range.toFixed(4) + ', Var=' + variance.toFixed(4) + ', StdDev=' + stddev.toFixed(4);
-      setStatus('统计完成');
+      setStatus(t('ui.12','统计完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

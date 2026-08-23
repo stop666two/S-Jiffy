@@ -36,87 +36,88 @@
       <div class="control-row">
         <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索 PRAGMA 名称或说明，如 journal / 缓存 / 外键">
         <select id="catSelect" class="input cat-select">
-          <option value="">全部分类</option>
+          <option value="" data-i18n="ui.1">全部分类</option>
         </select>
       </div>
-      <p class="hint">点击任意卡片复制该 PRAGMA 语句。</p>
+      <p class="hint" data-i18n="ui.2">点击任意卡片复制该 PRAGMA 语句。</p>
       <p class="result-count" id="resultCount"></p>
       <div class="p-list" id="pList"></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var DATA = [
-      { cat: '表', name: 'PRAGMA table_info(table)', param: 'table：表名', returns: '列 cid、name、type、notnull、dflt_value、pk', desc: '返回表的列定义信息，常用于动态获取表结构。' },
-      { cat: '表', name: 'PRAGMA table_list', param: '无', returns: 'schema、name、type、ncol、wr、strict', desc: '列出数据库中的表与视图（SQLite 3.37+）。' },
-      { cat: '表', name: 'PRAGMA database_list', param: '无', returns: 'seq、name、file', desc: '列出已连接的数据库（main / temp / attached）。' },
-      { cat: '表', name: 'PRAGMA foreign_key_list(table)', param: 'table：表名', returns: 'id、seq、table、from、to、on_update、on_delete、match', desc: '返回表的外键定义。' },
-      { cat: '表', name: 'PRAGMA foreign_key_check', param: '可选 table', returns: '违反外键约束的行', desc: '检查整个数据库（或指定表）是否存在外键违规。' },
+      { cat: '表', name: 'PRAGMA table_info(table)', param: 'table：表名', returns: '列 cid、name、type、notnull、dflt_value、pk', desc: t('ui.58','返回表的列定义信息，常用于动态获取表结构。') },
+      { cat: '表', name: 'PRAGMA table_list', param: '无', returns: 'schema、name、type、ncol、wr、strict', desc: t('ui.57','列出数据库中的表与视图（SQLite 3.37+）。') },
+      { cat: '表', name: 'PRAGMA database_list', param: '无', returns: 'seq、name、file', desc: t('ui.56','列出已连接的数据库（main / temp / attached）。') },
+      { cat: '表', name: 'PRAGMA foreign_key_list(table)', param: 'table：表名', returns: 'id、seq、table、from、to、on_update、on_delete、match', desc: t('ui.55','返回表的外键定义。') },
+      { cat: '表', name: 'PRAGMA foreign_key_check', param: '可选 table', returns: '违反外键约束的行', desc: t('ui.54','检查整个数据库（或指定表）是否存在外键违规。') },
 
-      { cat: '索引', name: 'PRAGMA index_list(table)', param: 'table：表名', returns: 'seq、name、unique、origin、partial', desc: '返回表上所有索引的列表。' },
-      { cat: '索引', name: 'PRAGMA index_info(index)', param: 'index：索引名', returns: 'seqno、cid、name', desc: '返回索引所覆盖的列。' },
-      { cat: '索引', name: 'PRAGMA index_xinfo(index)', param: 'index：索引名', returns: '含 key 标志的完整列信息', desc: '返回索引的完整列信息，含排序与 key 标志。' },
+      { cat: '索引', name: 'PRAGMA index_list(table)', param: 'table：表名', returns: 'seq、name、unique、origin、partial', desc: t('ui.53','返回表上所有索引的列表。') },
+      { cat: '索引', name: 'PRAGMA index_info(index)', param: 'index：索引名', returns: 'seqno、cid、name', desc: t('ui.52','返回索引所覆盖的列。') },
+      { cat: '索引', name: 'PRAGMA index_xinfo(index)', param: 'index：索引名', returns: '含 key 标志的完整列信息', desc: t('ui.51','返回索引的完整列信息，含排序与 key 标志。') },
 
-      { cat: '查询', name: 'PRAGMA integrity_check', param: '可选 N：检查行数', returns: 'ok 或错误详情', desc: '完整校验数据库完整性（索引、内容、页面），全量检查较慢。' },
-      { cat: '查询', name: 'PRAGMA quick_check', param: '可选 N：检查行数', returns: 'ok 或错误详情', desc: '只校验索引与内容、跳过页面校验，比 integrity_check 快。' },
-      { cat: '查询', name: 'PRAGMA query_only', param: '0 / 1', returns: '当前值', desc: '设为 1 后数据库只读，拒绝任何写操作。' },
-      { cat: '查询', name: 'PRAGMA case_sensitive_like', param: '0 / 1', returns: '当前值', desc: '设置 LIKE 是否区分大小写，默认 ASCII 范围内不区分。' },
-      { cat: '查询', name: 'PRAGMA full_column_names', param: '0 / 1', returns: '当前值', desc: '设置查询结果列名是否包含表名前缀。' },
-      { cat: '查询', name: 'PRAGMA short_column_names', param: '0 / 1', returns: '当前值', desc: '设置查询结果列名只取列名本身。' },
-      { cat: '查询', name: 'PRAGMA reverse_unordered_selects', param: '0 / 1', returns: '当前值', desc: '设为 1 时对无 ORDER BY 的查询结果逆序返回，便于暴露排序依赖。' },
-      { cat: '查询', name: 'PRAGMA recursive_triggers', param: '0 / 1', returns: '当前值', desc: '启用 / 禁用递归触发器，默认关闭。' },
+      { cat: '查询', name: 'PRAGMA integrity_check', param: '可选 N：检查行数', returns: 'ok 或错误详情', desc: t('ui.50','完整校验数据库完整性（索引、内容、页面），全量检查较慢。') },
+      { cat: '查询', name: 'PRAGMA quick_check', param: '可选 N：检查行数', returns: 'ok 或错误详情', desc: t('ui.49','只校验索引与内容、跳过页面校验，比 integrity_check 快。') },
+      { cat: '查询', name: 'PRAGMA query_only', param: '0 / 1', returns: '当前值', desc: t('ui.48','设为 1 后数据库只读，拒绝任何写操作。') },
+      { cat: '查询', name: 'PRAGMA case_sensitive_like', param: '0 / 1', returns: '当前值', desc: t('ui.47','设置 LIKE 是否区分大小写，默认 ASCII 范围内不区分。') },
+      { cat: '查询', name: 'PRAGMA full_column_names', param: '0 / 1', returns: '当前值', desc: t('ui.46','设置查询结果列名是否包含表名前缀。') },
+      { cat: '查询', name: 'PRAGMA short_column_names', param: '0 / 1', returns: '当前值', desc: t('ui.45','设置查询结果列名只取列名本身。') },
+      { cat: '查询', name: 'PRAGMA reverse_unordered_selects', param: '0 / 1', returns: '当前值', desc: t('ui.44','设为 1 时对无 ORDER BY 的查询结果逆序返回，便于暴露排序依赖。') },
+      { cat: '查询', name: 'PRAGMA recursive_triggers', param: '0 / 1', returns: '当前值', desc: t('ui.43','启用 / 禁用递归触发器，默认关闭。') },
 
-      { cat: '缓存', name: 'PRAGMA cache_size', param: '负数按 KB，正数按页', returns: '当前缓存大小（页）', desc: '设置每连接的页缓存大小，-2000 表示 2MB。' },
-      { cat: '缓存', name: 'PRAGMA page_size', param: '512 ~ 65536（2 的幂）', returns: '当前页大小（字节）', desc: '数据库页大小，需在首次建库前设置，默认 4096。' },
-      { cat: '缓存', name: 'PRAGMA max_page_count', param: '页数', returns: '当前上限', desc: '限制数据库文件的最大页数。' },
-      { cat: '缓存', name: 'PRAGMA freelist_count', param: '无', returns: '空闲页数量', desc: '返回 freelist 中可回收的空闲页数。' },
-      { cat: '缓存', name: 'PRAGMA page_count', param: '无', returns: '总页数', desc: '返回数据库文件的总页数。' },
-      { cat: '缓存', name: 'PRAGMA mmap_size', param: '字节数', returns: '当前值', desc: '设置内存映射 I/O 的最大字节数，可显著提升读性能。' },
-      { cat: '缓存', name: 'PRAGMA default_cache_size', param: '页数', returns: '当前值', desc: '设置后续连接的默认页缓存大小（持久化到数据库文件）。' },
-      { cat: '缓存', name: 'PRAGMA cache_spill', param: '0 / 1', returns: '当前值', desc: '设为 0 时允许事务内缓存溢出而不写盘，风险自担。' },
+      { cat: '缓存', name: 'PRAGMA cache_size', param: '负数按 KB，正数按页', returns: '当前缓存大小（页）', desc: t('ui.42','设置每连接的页缓存大小，-2000 表示 2MB。') },
+      { cat: '缓存', name: 'PRAGMA page_size', param: '512 ~ 65536（2 的幂）', returns: '当前页大小（字节）', desc: t('ui.41','数据库页大小，需在首次建库前设置，默认 4096。') },
+      { cat: '缓存', name: 'PRAGMA max_page_count', param: '页数', returns: '当前上限', desc: t('ui.40','限制数据库文件的最大页数。') },
+      { cat: '缓存', name: 'PRAGMA freelist_count', param: '无', returns: '空闲页数量', desc: t('ui.39','返回 freelist 中可回收的空闲页数。') },
+      { cat: '缓存', name: 'PRAGMA page_count', param: '无', returns: '总页数', desc: t('ui.38','返回数据库文件的总页数。') },
+      { cat: '缓存', name: 'PRAGMA mmap_size', param: '字节数', returns: '当前值', desc: t('ui.37','设置内存映射 I/O 的最大字节数，可显著提升读性能。') },
+      { cat: '缓存', name: 'PRAGMA default_cache_size', param: '页数', returns: '当前值', desc: t('ui.36','设置后续连接的默认页缓存大小（持久化到数据库文件）。') },
+      { cat: '缓存', name: 'PRAGMA cache_spill', param: '0 / 1', returns: '当前值', desc: t('ui.35','设为 0 时允许事务内缓存溢出而不写盘，风险自担。') },
 
-      { cat: '日志', name: 'PRAGMA journal_mode', param: 'DELETE / TRUNCATE / PERSIST / MEMORY / WAL / OFF', returns: '生效模式', desc: '设置日志模式，WAL 模式并发读写性能最佳。' },
-      { cat: '日志', name: 'PRAGMA journal_size_limit', param: '字节数', returns: '当前值', desc: '限制回滚日志文件的大小，超过即截断。' },
-      { cat: '日志', name: 'PRAGMA wal_autocheckpoint', param: '页数（默认 1000）', returns: '当前值', desc: '设置 WAL 自动检查点阈值，0 表示禁用自动检查点。' },
-      { cat: '日志', name: 'PRAGMA wal_checkpoint', param: 'PASSIVE / FULL / RESTART / TRUNCATE', returns: 'busy、log、checkpointed', desc: '手动执行 WAL 检查点，把 WAL 内容合并回主库。' },
+      { cat: '日志', name: 'PRAGMA journal_mode', param: 'DELETE / TRUNCATE / PERSIST / MEMORY / WAL / OFF', returns: '生效模式', desc: t('ui.34','设置日志模式，WAL 模式并发读写性能最佳。') },
+      { cat: '日志', name: 'PRAGMA journal_size_limit', param: '字节数', returns: '当前值', desc: t('ui.33','限制回滚日志文件的大小，超过即截断。') },
+      { cat: '日志', name: 'PRAGMA wal_autocheckpoint', param: '页数（默认 1000）', returns: '当前值', desc: t('ui.32','设置 WAL 自动检查点阈值，0 表示禁用自动检查点。') },
+      { cat: '日志', name: 'PRAGMA wal_checkpoint', param: 'PASSIVE / FULL / RESTART / TRUNCATE', returns: 'busy、log、checkpointed', desc: t('ui.31','手动执行 WAL 检查点，把 WAL 内容合并回主库。') },
 
-      { cat: '同步', name: 'PRAGMA synchronous', param: '0 OFF / 1 NORMAL / 2 FULL / 3 EXTRA', returns: '当前值', desc: '设置磁盘同步策略：NORMAL 性能与安全平衡，FULL 最安全。' },
-      { cat: '同步', name: 'PRAGMA locking_mode', param: 'NORMAL / EXCLUSIVE', returns: '当前模式', desc: 'EXCLUSIVE 模式持有锁直到连接关闭，减少锁竞争。' },
-      { cat: '同步', name: 'PRAGMA secure_delete', param: '0 / 1 / FAST', returns: '当前值', desc: '删除时是否用零覆盖内容，防止数据残留恢复。' },
-      { cat: '同步', name: 'PRAGMA busy_timeout', param: '毫秒数', returns: '当前值', desc: '表锁冲突时等待的毫秒数，超时返回 SQLITE_BUSY。' },
+      { cat: '同步', name: 'PRAGMA synchronous', param: '0 OFF / 1 NORMAL / 2 FULL / 3 EXTRA', returns: '当前值', desc: t('ui.30','设置磁盘同步策略：NORMAL 性能与安全平衡，FULL 最安全。') },
+      { cat: '同步', name: 'PRAGMA locking_mode', param: 'NORMAL / EXCLUSIVE', returns: '当前模式', desc: t('ui.29','EXCLUSIVE 模式持有锁直到连接关闭，减少锁竞争。') },
+      { cat: '同步', name: 'PRAGMA secure_delete', param: '0 / 1 / FAST', returns: '当前值', desc: t('ui.28','删除时是否用零覆盖内容，防止数据残留恢复。') },
+      { cat: '同步', name: 'PRAGMA busy_timeout', param: '毫秒数', returns: '当前值', desc: t('ui.27','表锁冲突时等待的毫秒数，超时返回 SQLITE_BUSY。') },
 
-      { cat: '内存', name: 'PRAGMA temp_store', param: '0 DEFAULT / 1 FILE / 2 MEMORY', returns: '当前值', desc: '临时表与索引的存放位置，MEMORY 更快但不持久。' },
-      { cat: '内存', name: 'PRAGMA temp_store_directory', param: '目录路径', returns: '当前目录', desc: '设置临时数据库文件的存放目录（已废弃）。' },
-      { cat: '内存', name: 'PRAGMA hard_heap_limit', param: '字节数', returns: '当前值', desc: '设置硬性堆内存上限，超过后分配失败。' },
-      { cat: '内存', name: 'PRAGMA soft_heap_limit', param: '字节数', returns: '当前值', desc: '设置软性堆内存上限，超过时尽量释放缓存。' },
-      { cat: '内存', name: 'PRAGMA threads', param: '线程数', returns: '当前值', desc: '设置辅助线程池大小（默认为 CPU 核数的一半）。' },
+      { cat: '内存', name: 'PRAGMA temp_store', param: '0 DEFAULT / 1 FILE / 2 MEMORY', returns: '当前值', desc: t('ui.26','临时表与索引的存放位置，MEMORY 更快但不持久。') },
+      { cat: '内存', name: 'PRAGMA temp_store_directory', param: '目录路径', returns: '当前目录', desc: t('ui.25','设置临时数据库文件的存放目录（已废弃）。') },
+      { cat: '内存', name: 'PRAGMA hard_heap_limit', param: '字节数', returns: '当前值', desc: t('ui.24','设置硬性堆内存上限，超过后分配失败。') },
+      { cat: '内存', name: 'PRAGMA soft_heap_limit', param: '字节数', returns: '当前值', desc: t('ui.23','设置软性堆内存上限，超过时尽量释放缓存。') },
+      { cat: '内存', name: 'PRAGMA threads', param: '线程数', returns: '当前值', desc: t('ui.22','设置辅助线程池大小（默认为 CPU 核数的一半）。') },
 
-      { cat: '其他', name: 'PRAGMA foreign_keys', param: '0 / 1', returns: '当前值', desc: '启用外键约束（默认关闭，每个连接需单独设置）。' },
-      { cat: '其他', name: 'PRAGMA defer_foreign_keys', param: '0 / 1', returns: '当前值', desc: '事务内延迟外键检查到提交时执行。' },
-      { cat: '其他', name: 'PRAGMA user_version', param: '整数', returns: '当前值', desc: '用户自定义版本号，常用于 schema 迁移管理。' },
-      { cat: '其他', name: 'PRAGMA application_id', param: '整数', returns: '当前值', desc: '应用标识，写入文件头部供外部程序识别。' },
-      { cat: '其他', name: 'PRAGMA schema_version', param: '整数', returns: '当前值', desc: 'schema 版本号，结构变更时自动递增。' },
-      { cat: '其他', name: 'PRAGMA compile_options', param: '无', returns: '编译选项列表', desc: '返回 SQLite 编译时的选项（启用哪些特性）。' },
-      { cat: '其他', name: 'PRAGMA auto_vacuum', param: '0 NONE / 1 FULL / 2 INCREMENTAL', returns: '当前值', desc: '设置自动清理模式，释放删除产生的空洞空间。' },
-      { cat: '其他', name: 'PRAGMA incremental_vacuum', param: '页数', returns: '无', desc: '在 INCREMENTAL 模式下按页逐步执行清理。' },
-      { cat: '其他', name: 'PRAGMA encoding', param: 'UTF-8 / UTF-16le / UTF-16be', returns: '当前编码', desc: '数据库文本编码，需在首次建库前设置。' },
-      { cat: '其他', name: 'PRAGMA ignore_check_constraints', param: '0 / 1', returns: '当前值', desc: '设为 1 时跳过 CHECK 约束检查。' },
-      { cat: '其他', name: 'PRAGMA writable_schema', param: '0 / 1', returns: '当前值', desc: '设为 1 允许修改 sqlite_schema 表（危险操作）。' },
-      { cat: '其他', name: 'PRAGMA trusted_schema', param: '0 / 1', returns: '当前值', desc: '设为 0 时禁用 sqlite_schema 中的表达式信任（防御注入）。' },
-      { cat: '其他', name: 'PRAGMA cell_size_check', param: '0 / 1', returns: '当前值', desc: '设为 1 时对页面单元做额外完整性校验。' },
-      { cat: '其他', name: 'PRAGMA read_uncommitted', param: '0 / 1', returns: '当前值', desc: '允许在共享缓存模式下读取未提交的数据。' },
-      { cat: '其他', name: 'PRAGMA data_version', param: '无', returns: '版本号', desc: '返回数据变更版本号，用于检测其他连接是否写入。' },
-      { cat: '其他', name: 'PRAGMA count_changes', param: '0 / 1', returns: '当前值', desc: '让 INSERT/UPDATE/DELETE 返回受影响行数（已废弃）。' },
-      { cat: '其他', name: 'PRAGMA legacy_file_format', param: '0 / 1', returns: '当前值', desc: '控制 3.7 之前旧格式文件的支持（已废弃）。' }
+      { cat: '其他', name: 'PRAGMA foreign_keys', param: '0 / 1', returns: '当前值', desc: t('ui.21','启用外键约束（默认关闭，每个连接需单独设置）。') },
+      { cat: '其他', name: 'PRAGMA defer_foreign_keys', param: '0 / 1', returns: '当前值', desc: t('ui.20','事务内延迟外键检查到提交时执行。') },
+      { cat: '其他', name: 'PRAGMA user_version', param: '整数', returns: '当前值', desc: t('ui.19','用户自定义版本号，常用于 schema 迁移管理。') },
+      { cat: '其他', name: 'PRAGMA application_id', param: '整数', returns: '当前值', desc: t('ui.18','应用标识，写入文件头部供外部程序识别。') },
+      { cat: '其他', name: 'PRAGMA schema_version', param: '整数', returns: '当前值', desc: t('ui.17','schema 版本号，结构变更时自动递增。') },
+      { cat: '其他', name: 'PRAGMA compile_options', param: '无', returns: '编译选项列表', desc: t('ui.16','返回 SQLite 编译时的选项（启用哪些特性）。') },
+      { cat: '其他', name: 'PRAGMA auto_vacuum', param: '0 NONE / 1 FULL / 2 INCREMENTAL', returns: '当前值', desc: t('ui.15','设置自动清理模式，释放删除产生的空洞空间。') },
+      { cat: '其他', name: 'PRAGMA incremental_vacuum', param: '页数', returns: '无', desc: t('ui.14','在 INCREMENTAL 模式下按页逐步执行清理。') },
+      { cat: '其他', name: 'PRAGMA encoding', param: 'UTF-8 / UTF-16le / UTF-16be', returns: '当前编码', desc: t('ui.13','数据库文本编码，需在首次建库前设置。') },
+      { cat: '其他', name: 'PRAGMA ignore_check_constraints', param: '0 / 1', returns: '当前值', desc: t('ui.12','设为 1 时跳过 CHECK 约束检查。') },
+      { cat: '其他', name: 'PRAGMA writable_schema', param: '0 / 1', returns: '当前值', desc: t('ui.11','设为 1 允许修改 sqlite_schema 表（危险操作）。') },
+      { cat: '其他', name: 'PRAGMA trusted_schema', param: '0 / 1', returns: '当前值', desc: t('ui.10','设为 0 时禁用 sqlite_schema 中的表达式信任（防御注入）。') },
+      { cat: '其他', name: 'PRAGMA cell_size_check', param: '0 / 1', returns: '当前值', desc: t('ui.9','设为 1 时对页面单元做额外完整性校验。') },
+      { cat: '其他', name: 'PRAGMA read_uncommitted', param: '0 / 1', returns: '当前值', desc: t('ui.8','允许在共享缓存模式下读取未提交的数据。') },
+      { cat: '其他', name: 'PRAGMA data_version', param: '无', returns: '版本号', desc: t('ui.7','返回数据变更版本号，用于检测其他连接是否写入。') },
+      { cat: '其他', name: 'PRAGMA count_changes', param: '0 / 1', returns: '当前值', desc: t('ui.6','让 INSERT/UPDATE/DELETE 返回受影响行数（已废弃）。') },
+      { cat: '其他', name: 'PRAGMA legacy_file_format', param: '0 / 1', returns: '当前值', desc: t('ui.5','控制 3.7 之前旧格式文件的支持（已废弃）。') }
     ];
 
     var CATS = [];
@@ -158,7 +159,7 @@
         }
         items.push(d);
       }
-      resultCount.textContent = '共 ' + items.length + ' / ' + DATA.length + ' 条 PRAGMA';
+      resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 条 PRAGMA');
       if (items.length === 0) {
         pList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的 PRAGMA，换个关键词试试。</p>';
         return;
@@ -182,7 +183,7 @@
             currentStmt = stmt;
             outputText.textContent = stmt;
             copyToClipboard(stmt, copyBtn);
-            setStatus('已复制 PRAGMA 语句');
+            setStatus(t('ui.3','已复制 PRAGMA 语句'));
           };
         })(cards[k]);
       }

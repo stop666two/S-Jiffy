@@ -15,17 +15,18 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">颜色混合器</h1><p class="tool-desc" data-i18n="desc">按百分比混合两种颜色，实时预览混合结果。</p>
 <div class="card">
-<div class="swatch-row"><label style="font-size:var(--font-size-sm);">颜色 A</label><input id="colorA" type="color" value="#e74c3c"><span id="hexA" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">#e74c3c</span></div>
-<div class="swatch-row"><label style="font-size:var(--font-size-sm);">颜色 B</label><input id="colorB" type="color" value="#3498db"><span id="hexB" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">#3498db</span></div>
+<div class="swatch-row"><label style="font-size:var(--font-size-sm);" data-i18n="ui.1">颜色 A</label><input id="colorA" type="color" value="#e74c3c"><span id="hexA" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">#e74c3c</span></div>
+<div class="swatch-row"><label style="font-size:var(--font-size-sm);" data-i18n="ui.2">颜色 B</label><input id="colorB" type="color" value="#3498db"><span id="hexB" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">#3498db</span></div>
 </div>
 <div class="card">
-<div class="mix-row"><label>混合：颜色 A</label><input id="blendSlider" type="range" min="0" max="100" value="50" style="flex:1;"><span id="blendPct" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">50%</span></div>
+<div class="mix-row"><label data-i18n="ui.3">混合：颜色 A</label><input id="blendSlider" type="range" min="0" max="100" value="50" style="flex:1;"><span id="blendPct" style="font-family:var(--font-mono);font-size:var(--font-size-sm);">50%</span></div>
 <div id="mixPreview" class="mix-preview"></div>
-<div class="mix-result-row"><span class="val" style="font-weight:600;">结果:</span><span class="val" id="resultHex">—</span><span class="val" id="resultRgb">—</span><span class="val" id="resultHsl">—</span></div>
+<div class="mix-result-row"><span class="val" style="font-weight:600;" data-i18n="ui.4">结果:</span><span class="val" id="resultHex">—</span><span class="val" id="resultRgb">—</span><span class="val" id="resultHsl">—</span></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
 <script>
 (function(){var cA=document.getElementById('colorA'),cB=document.getElementById('colorB'),hA=document.getElementById('hexA'),hB=document.getElementById('hexB');
@@ -50,6 +51,6 @@ o.textContent=hex;}
 
 cA.addEventListener('input',mix);cB.addEventListener('input',mix);
 sl.addEventListener('input',mix);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 mix();})();
 </script></body></html>

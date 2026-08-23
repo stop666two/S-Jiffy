@@ -19,19 +19,20 @@
     <p class="tool-desc" data-i18n="desc">生成数字 PIN 码，支持长度设置、禁止重复和连续数字选项。</p>
     <div class="card">
       <div class="pp-row">
-        <div class="field"><label for="lenVal">长度</label><input id="lenVal" class="input" type="number" value="6" min="4" max="12"></div>
-        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="lenVal" data-i18n="ui.1">长度</label><input id="lenVal" class="input" type="number" value="6" min="4" max="12"></div>
+        <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
       </div>
       <div class="pp-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="noRepeatChk" type="checkbox"> 禁止重复数字</label>
         <label style="display:flex;align-items:center;gap:8px;"><input id="noSeqChk" type="checkbox"> 禁止连续数字</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var lenEl = document.getElementById('lenVal');
     var countEl = document.getElementById('countVal');
@@ -90,15 +91,15 @@
       var result = [];
       for (var i = 0; i < count; i++) {
         var pin = generatePIN(len, noRepeat, noSeq);
-        if (pin === null) { result.push('生成失败'); break; }
+        if (pin === null) { result.push(t('ui.3','生成失败')); break; }
         result.push(pin);
       }
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + result.length + ' 个 PIN 码');
+      setStatus(t('ui.generated','已生成 ') + result.length + t('ui.2',' 个 PIN 码'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

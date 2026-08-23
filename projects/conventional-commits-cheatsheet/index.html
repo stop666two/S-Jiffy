@@ -32,27 +32,27 @@
     <h1 data-i18n="h1">Conventional Commits 速查</h1>
     <p class="tool-desc" data-i18n="desc">Conventional Commits 规范类型表速查：搜索过滤、点击示例复制，附完整示例 commit。</p>
     <div class="card">
-      <label for="searchInput" class="field-label">搜索类型或含义（输入后过滤）</label>
+      <label for="searchInput" class="field-label" data-i18n="ui.1">搜索类型或含义（输入后过滤）</label>
       <input id="searchInput" class="input js-focus-input" placeholder="feat / 修复 / perf">
       <table class="cc-table" id="ccTable">
-        <thead><tr><th style="width:110px;">类型</th><th style="width:240px;">含义</th><th>示例（点击复制）</th></tr></thead>
+        <thead><tr><th style="width:110px;" data-i18n="ui.2">类型</th><th style="width:240px;" data-i18n="ui.3">含义</th><th data-i18n="ui.4">示例（点击复制）</th></tr></thead>
         <tbody id="ccBody"></tbody>
       </table>
       <div class="match-count" id="matchCount"></div>
     </div>
     <div class="card">
-      <h3 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:10px;">提交格式规则</h3>
+      <h3 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:10px;" data-i18n="ui.5">提交格式规则</h3>
       <div class="rules-box">
         <p><code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</code> —— type 必填，scope（影响范围）可选，subject 用祈使句、小写开头、不超过 50 字符</p>
-        <p>破坏性变更：在 type 后加 <code>!</code>（如 <code>feat!</code>），或在 footer 中写明 <code>BREAKING CHANGE: 描述</code></p>
+        <p>破坏性变更：在 type 后加 <code>!</code>（如 <code>feat!</code>），或在 footer 中写明 <code data-i18n="ui.6">BREAKING CHANGE: 描述</code></p>
         <p>footer 用于附加说明：关联 issue（<code>Refs #123</code>）、协同作者（<code>Co-authored-by: name &lt;email&gt;</code>）等</p>
-        <p>每条 commit 只做一件事：一次提交只包含一个逻辑变更</p>
+        <p data-i18n="ui.7">每条 commit 只做一件事：一次提交只包含一个逻辑变更</p>
       </div>
     </div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="font-size:var(--font-size-base);font-weight:600;">完整示例 commit</h3>
-        <button class="btn btn-secondary copy-mini" id="exampleCopyBtn">复制全部示例</button>
+        <h3 style="font-size:var(--font-size-base);font-weight:600;" data-i18n="ui.8">完整示例 commit</h3>
+        <button class="btn btn-secondary copy-mini" id="exampleCopyBtn" data-i18n="ui.9">复制全部示例</button>
       </div>
       <div class="full-example">
         <pre id="exampleBlock">feat(auth): add login page
@@ -73,9 +73,10 @@ Reduce average latency by 30%.</pre>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var TYPES = [
@@ -109,12 +110,12 @@ Reduce average latency by 30%.</pre>
           html += '<tr><td class="cc-type">' + htmlEscape(t.type) + '</td><td>' + htmlEscape(t.meaning) + '</td><td><button class="ex-btn" data-ex="' + htmlEscape(t.example) + '">' + htmlEscape(t.example) + '</button></td></tr>';
         }
         bodyEl.innerHTML = html;
-        countEl.textContent = '共 ' + TYPES.length + ' 种类型，当前匹配 ' + matched + ' 项';
+        countEl.textContent = t('ui.total','共 ') + TYPES.length + t('ui.11',' 种类型，当前匹配 ') + matched + t('ui.items',' 项');
         var buttons = bodyEl.querySelectorAll('.ex-btn');
         for (var j = 0; j < buttons.length; j++) {
           buttons[j].addEventListener('click', function () {
             copyToClipboard(this.getAttribute('data-ex'), this);
-            setStatus('示例已复制');
+            setStatus(t('ui.10','示例已复制'));
           });
         }
       }
@@ -126,7 +127,7 @@ Reduce average latency by 30%.</pre>
       exampleCopyBtn.addEventListener('click', function () {
         var text = exampleBlockEl.textContent.trim();
         copyToClipboard(text, exampleCopyBtn);
-        setStatus('示例已复制');
+        setStatus(t('ui.10','示例已复制'));
       });
 
       renderTable('');

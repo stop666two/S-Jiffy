@@ -19,17 +19,18 @@
     <p class="tool-desc" data-i18n="desc">在指定范围内生成随机浮点数，可设置精度和数量。使用密码学安全随机数。</p>
     <div class="card">
       <div class="rf-row">
-        <div class="field"><label for="minVal">最小值</label><input id="minVal" class="input" type="number" value="0" step="any"></div>
-        <div class="field"><label for="maxVal">最大值</label><input id="maxVal" class="input" type="number" value="1" step="any"></div>
-        <div class="field"><label for="precVal">小数位数</label><input id="precVal" class="input" type="number" value="4" min="0" max="15"></div>
-        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="minVal" data-i18n="ui.1">最小值</label><input id="minVal" class="input" type="number" value="0" step="any"></div>
+        <div class="field"><label for="maxVal" data-i18n="ui.2">最大值</label><input id="maxVal" class="input" type="number" value="1" step="any"></div>
+        <div class="field"><label for="precVal" data-i18n="ui.3">小数位数</label><input id="precVal" class="input" type="number" value="4" min="0" max="15"></div>
+        <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var minEl = document.getElementById('minVal');
     var maxEl = document.getElementById('maxVal');
@@ -64,11 +65,11 @@
         result.push(val.toFixed(prec));
       }
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + count + ' 个随机浮点数');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.4',' 个随机浮点数'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

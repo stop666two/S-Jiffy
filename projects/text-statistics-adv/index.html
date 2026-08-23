@@ -16,21 +16,22 @@
 <main class="tool-workspace"><h1 data-i18n="h1">高级文本统计</h1><p class="tool-desc" data-i18n="desc">音节数、Flesch 可读性评分、年级水平、词频分析。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴你的文本..." style="min-height:180px;"></textarea></div>
 <div class="adv-stat-grid">
-<div class="adv-stat-item"><div class="num" id="charCount">0</div><div class="label">字符数</div></div>
-<div class="adv-stat-item"><div class="num" id="wordCount">0</div><div class="label">单词数</div></div>
-<div class="adv-stat-item"><div class="num" id="sentenceCount">0</div><div class="label">句子数</div></div>
-<div class="adv-stat-item"><div class="num" id="syllableCount">0</div><div class="label">音节数</div></div>
-<div class="adv-stat-item"><div class="num" id="fleschScore">0</div><div class="label">Flesch 阅读指数</div></div>
-<div class="adv-stat-item"><div class="num" id="gradeLevel">0</div><div class="label">年级水平</div></div>
-<div class="adv-stat-item"><div class="num" id="avgWordLen">0</div><div class="label">平均词长</div></div>
-<div class="adv-stat-item"><div class="num" id="readingTime">0</div><div class="label">阅读时间（分钟）</div></div>
-<div class="adv-stat-item"><div class="num" id="lexicalDensity">0%</div><div class="label">词汇密度</div></div>
-<div class="adv-stat-item"><div class="num" id="complexWords">0%</div><div class="label">复杂词比例</div></div>
+<div class="adv-stat-item"><div class="num" id="charCount">0</div><div class="label" data-i18n="ui.1">字符数</div></div>
+<div class="adv-stat-item"><div class="num" id="wordCount">0</div><div class="label" data-i18n="ui.2">单词数</div></div>
+<div class="adv-stat-item"><div class="num" id="sentenceCount">0</div><div class="label" data-i18n="ui.3">句子数</div></div>
+<div class="adv-stat-item"><div class="num" id="syllableCount">0</div><div class="label" data-i18n="ui.4">音节数</div></div>
+<div class="adv-stat-item"><div class="num" id="fleschScore">0</div><div class="label" data-i18n="ui.5">Flesch 阅读指数</div></div>
+<div class="adv-stat-item"><div class="num" id="gradeLevel">0</div><div class="label" data-i18n="ui.6">年级水平</div></div>
+<div class="adv-stat-item"><div class="num" id="avgWordLen">0</div><div class="label" data-i18n="ui.7">平均词长</div></div>
+<div class="adv-stat-item"><div class="num" id="readingTime">0</div><div class="label" data-i18n="ui.8">阅读时间（分钟）</div></div>
+<div class="adv-stat-item"><div class="num" id="lexicalDensity">0%</div><div class="label" data-i18n="ui.9">词汇密度</div></div>
+<div class="adv-stat-item"><div class="num" id="complexWords">0%</div><div class="label" data-i18n="ui.10">复杂词比例</div></div>
 </div>
-<div class="card"><h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);">词频</h2><div id="freqContainer"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本以查看词频</p></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="card"><h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);" data-i18n="ui.11">词频</h2><div id="freqContainer"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);" data-i18n="ui.12">输入文本以查看词频</p></div></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var i=document.getElementById('inputText');
 var el={cc:document.getElementById('charCount'),wc:document.getElementById('wordCount'),sc:document.getElementById('sentenceCount'),sy:document.getElementById('syllableCount'),fr:document.getElementById('fleschScore'),gl:document.getElementById('gradeLevel'),aw:document.getElementById('avgWordLen'),rt:document.getElementById('readingTime'),ld:document.getElementById('lexicalDensity'),cw:document.getElementById('complexWords')};
@@ -73,6 +74,6 @@ h+='</tbody></table>';freqC.innerHTML=h;
 o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;
 }
 i.addEventListener('input',update);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 update();})();
 </script></body></html>

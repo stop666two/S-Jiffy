@@ -36,14 +36,14 @@
           <option value="DELETE">DELETE</option>
         </select>
         <input id="urlInput" class="input js-focus-input" placeholder="https://api.example.com/data" style="flex:1;">
-        <button id="sendBtn" class="btn btn-primary">发送请求</button>
+        <button id="sendBtn" class="btn btn-primary" data-i18n="ui.1">发送请求</button>
       </div>
     </div>
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">请求头</label>
-        <button id="addHeaderBtn" class="btn btn-secondary" style="height:32px;min-width:auto;padding:0 12px;">+ 添加</button>
+        <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);" data-i18n="ui.2">请求头</label>
+        <button id="addHeaderBtn" class="btn btn-secondary" style="height:32px;min-width:auto;padding:0 12px;" data-i18n="ui.3">+ 添加</button>
       </div>
       <div id="headersContainer"></div>
     </div>
@@ -57,11 +57,12 @@
       <div id="respHeaders" style="margin-top:8px;"></div>
       <div id="respBody" style="margin-top:8px;"></div>
       <span id="outputText" style="display:none;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var urlInput = document.getElementById('urlInput');
@@ -134,7 +135,7 @@
         var startTime = Date.now();
         responseHeader.innerHTML = '';
         respHeaders.textContent = '';
-        respBody.textContent = '发送中...';
+        respBody.textContent = t('ui.6','发送中...');
         setStatus('');
 
         fetch(url, {
@@ -160,10 +161,10 @@
         .then(function (text) {
           respBody.textContent = text;
           outputText.textContent += '\n' + text;
-          setStatus('请求完成');
+          setStatus(t('ui.5','请求完成'));
         })
         .catch(function (err) {
-          respBody.textContent = '请求失败: ' + err.message;
+          respBody.textContent = t('ui.4','请求失败: ') + err.message;
           responseHeader.innerHTML = '<span style="color:var(--color-error);">错误</span>';
           setStatus('请求失败', 'error');
         });
@@ -171,7 +172,7 @@
 
       copyBtn.addEventListener('click', function () {
         var t = responseHeader.textContent + '\n' + respHeaders.textContent + '\n' + respBody.textContent;
-        if (t.trim()) { copyToClipboard(t, this); setStatus('已复制'); }
+        if (t.trim()) { copyToClipboard(t, this); setStatus(t('ui.copied','已复制')); }
       });
 
       urlInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') sendBtn.click(); });

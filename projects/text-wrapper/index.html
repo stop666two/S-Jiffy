@@ -19,21 +19,22 @@
     <p class="tool-desc" data-i18n="desc">将文本按指定宽度换行，支持单词截断和缩进选项。</p>
     <div class="card">
       <div class="tw-row">
-        <div class="field" style="flex:2;"><label for="inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:80px;">This is a long text that needs to be wrapped at a specified column width for better readability.</textarea></div>
+        <div class="field" style="flex:2;"><label for="inputText" data-i18n="ui.inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:80px;">This is a long text that needs to be wrapped at a specified column width for better readability.</textarea></div>
       </div>
       <div class="tw-row">
-        <div class="field"><label for="widthVal">换行宽度</label><input id="widthVal" class="input" type="number" value="30" min="1" max="200"></div>
-        <div class="field"><label for="indentVal">缩进空格数</label><input id="indentVal" class="input" type="number" value="0" min="0" max="20"></div>
+        <div class="field"><label for="widthVal" data-i18n="ui.1">换行宽度</label><input id="widthVal" class="input" type="number" value="30" min="1" max="200"></div>
+        <div class="field"><label for="indentVal" data-i18n="ui.2">缩进空格数</label><input id="indentVal" class="input" type="number" value="0" min="0" max="20"></div>
       </div>
       <div class="tw-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="breakWordChk" type="checkbox"> 允许单词内断行</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">换行</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.3">换行</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputText');
     var widthEl = document.getElementById('widthVal');
@@ -81,11 +82,11 @@
       if (currentLine) lines.push(indentStr + currentLine);
 
       outputEl.textContent = lines.join('\n');
-      setStatus('换行完成，共 ' + lines.length + ' 行');
+      setStatus(t('ui.4','换行完成，共 ') + lines.length + t('ui.rows',' 行'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

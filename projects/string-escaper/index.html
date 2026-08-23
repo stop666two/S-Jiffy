@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">多语言字符串转义</h1><p class="tool-desc" data-i18n="desc">将文本转义为 JavaScript / Python / Java / PHP / SQL 等语言格式</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入需要转义的文本..." style="min-height:80px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="escapeBtn" class="btn btn-primary">转义</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="escapeBtn" class="btn btn-primary" data-i18n="ui.1">转义</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="escapeResults"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var inputText=document.getElementById('inputText'),escapeBtn=document.getElementById('escapeBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),escapeResults=document.getElementById('escapeResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var languages=[
@@ -20,8 +21,8 @@ var languages=[
 {id:'java',name:'Java',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\x00/g,'\\0');}},
 {id:'php',name:'PHP',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/\$/g,'\\$');}},
 {id:'sql',name:'SQL (MySQL)',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\x00/g,'\\0').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\x1a/g,'\\Z');}},
-{id:'html',name:'HTML 实体',escape:function(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}},
-{id:'url',name:'URL 编码',escape:function(s){return encodeURIComponent(s);}},
+{id:'html',name: t('ui.4','HTML 实体'),escape:function(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}},
+{id:'url',name: t('ui.3','URL 编码'),escape:function(s){return encodeURIComponent(s);}},
 {id:'yaml',name:'YAML',escape:function(s){if(/[:\-#{}[\],&*?|<>=!%@`]/.test(s)||/^[0-9]/.test(s)||/["']/.test(s))return'"'+s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n')+'"';return s;}},
 {id:'xml',name:'XML',escape:function(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}},
 {id:'csharp',name:'C#',escape:function(s){return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t');}},
@@ -36,9 +37,9 @@ escapeBtn.addEventListener('click',function(){
   }
   escapeResults.innerHTML=html;resultCard.style.display='block';
   outputText.textContent=languages[0].escape(txt);
-  setStatus('转义完成');
+  setStatus(t('ui.2','转义完成'));
 });
 clearBtn.addEventListener('click',function(){inputText.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');inputText.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

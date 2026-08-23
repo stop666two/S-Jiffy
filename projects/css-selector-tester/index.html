@@ -23,11 +23,11 @@
     <p class="tool-desc" data-i18n="desc">测试 CSS 选择器在 HTML 中的匹配结果</p>
 
     <div class="card">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">CSS 选择器</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.1">CSS 选择器</label>
       <div style="display:flex; gap:12px;">
         <input id="selectorInput" class="input js-focus-input" placeholder=".class, #id, div > p" style="font-family:var(--font-mono);flex:1;">
-        <button id="testBtn" class="btn btn-primary">测试</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="testBtn" class="btn btn-primary" data-i18n="ui.test">测试</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
 
@@ -38,16 +38,17 @@
 
     <div class="output-box" style="min-height:100px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
 
     <div id="previewBox" class="card" style="margin-top:var(--space-3);display:none;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;">HTML 预览（高亮为匹配项）</label>
+      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.2">HTML 预览（高亮为匹配项）</label>
       <div id="htmlPreview" class="html-preview"></div>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var selectorInput = document.getElementById('selectorInput');
@@ -78,7 +79,7 @@
           var totalEls = body.querySelectorAll('*').length;
           var matchCount = matched.length;
 
-          outputText.textContent = '匹配结果: ' + matchCount + ' / ' + totalEls + ' 个元素';
+          outputText.textContent = t('ui.6','匹配结果: ') + matchCount + ' / ' + totalEls + t('ui.5',' 个元素');
 
           if (matchCount > 0) {
             outputText.textContent += '\n\n匹配的元素:';
@@ -135,11 +136,11 @@
             previewContent += buildHighlightedHTML(tempBody.childNodes[ci2]);
           }
           htmlPreview.innerHTML = previewContent;
-          setStatus('测试完成');
+          setStatus(t('ui.4','测试完成'));
 
         } catch (e) {
           outputText.textContent = '';
-          setStatus('选择器语法错误: ' + e.message, 'error');
+          setStatus(t('ui.3','选择器语法错误: ') + e.message, 'error');
         }
       });
 
@@ -154,7 +155,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus(t('ui.copied','已复制')); }
       });
     })();
   </script>

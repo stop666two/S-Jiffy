@@ -23,30 +23,31 @@
     <div class="card">
       <div class="eta-grid">
         <div class="eta-row">
-          <div class="field"><label for="etaAmount">总量 (Amount)</label><input id="etaAmount" class="input" type="number" value="1000"></div>
-          <div class="field"><label for="etaRate">速率 (Rate/单位时间)</label><input id="etaRate" class="input" type="number" value="50"></div>
-          <div class="field"><label for="etaUnit">时间单位</label>
+          <div class="field"><label for="etaAmount" data-i18n="ui.1">总量 (Amount)</label><input id="etaAmount" class="input" type="number" value="1000"></div>
+          <div class="field"><label for="etaRate" data-i18n="ui.2">速率 (Rate/单位时间)</label><input id="etaRate" class="input" type="number" value="50"></div>
+          <div class="field"><label for="etaUnit" data-i18n="ui.3">时间单位</label>
             <select id="etaUnit" class="input">
-              <option value="seconds">秒</option>
-              <option value="minutes" selected>分钟</option>
-              <option value="hours">小时</option>
-              <option value="days">天</option>
+              <option value="seconds" data-i18n="ui.second">秒</option>
+              <option value="minutes" selected data-i18n="ui.minute">分钟</option>
+              <option value="hours" data-i18n="ui.hour">小时</option>
+              <option value="days" data-i18n="ui.day">天</option>
             </select>
           </div>
         </div>
-        <div><button id="calcBtn" class="btn btn-primary">计算 ETA</button></div>
+        <div><button id="calcBtn" class="btn btn-primary" data-i18n="ui.4">计算 ETA</button></div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var etaAmount = document.getElementById('etaAmount');
@@ -60,7 +61,7 @@
         var amount = parseFloat(etaAmount.value);
         var rate = parseFloat(etaRate.value);
         if (isNaN(amount) || isNaN(rate) || rate <= 0) {
-          outputEl.textContent = '请输入有效的正数';
+          outputEl.textContent = t('ui.5','请输入有效的正数');
           setStatus('', 'error');
           return;
         }
@@ -88,11 +89,11 @@
 
         var result = (raw).toFixed(2);
         var human = '';
-        if (raw >= 86400 && unit === 'seconds') human = (raw / 86400).toFixed(2) + ' 天';
-        else if (raw >= 3600 && unit === 'seconds') human = (raw / 3600).toFixed(2) + ' 小时';
-        else if (raw >= 3600 && unit === 'minutes') human = (raw / 60).toFixed(2) + ' 小时';
-        else if (raw >= 1440 && unit === 'minutes') human = (raw / 1440).toFixed(2) + ' 天';
-        else if (raw >= 24 && unit === 'hours') human = (raw / 24).toFixed(2) + ' 天';
+        if (raw >= 86400 && unit === 'seconds') human = (raw / 86400).toFixed(2) + t('ui.day',' 天');
+        else if (raw >= 3600 && unit === 'seconds') human = (raw / 3600).toFixed(2) + t('ui.hour',' 小时');
+        else if (raw >= 3600 && unit === 'minutes') human = (raw / 60).toFixed(2) + t('ui.hour',' 小时');
+        else if (raw >= 1440 && unit === 'minutes') human = (raw / 1440).toFixed(2) + t('ui.day',' 天');
+        else if (raw >= 24 && unit === 'hours') human = (raw / 24).toFixed(2) + t('ui.day',' 天');
         else human = result + ' ' + unitLabel;
 
         outputEl.textContent = amount + ' ÷ ' + rate + ' = ' + human;
@@ -101,7 +102,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
     })();
   </script>

@@ -23,28 +23,29 @@
     <div class="card">
       <div class="wg-grid">
         <div class="wg-row">
-          <div class="field"><label for="inputKg">千克 (kg)</label><input id="inputKg" class="input" type="number" value="100"></div>
-          <div class="field"><label for="inputG">克 (g)</label><input id="inputG" class="input" type="number" value="100000"></div>
+          <div class="field"><label for="inputKg" data-i18n="ui.1">千克 (kg)</label><input id="inputKg" class="input" type="number" value="100"></div>
+          <div class="field"><label for="inputG" data-i18n="ui.2">克 (g)</label><input id="inputG" class="input" type="number" value="100000"></div>
         </div>
         <div class="wg-row">
-          <div class="field"><label for="inputLb">磅 (lb)</label><input id="inputLb" class="input" type="number" value="220.46"></div>
-          <div class="field"><label for="inputOz">盎司 (oz)</label><input id="inputOz" class="input" type="number" value="3527.4"></div>
+          <div class="field"><label for="inputLb" data-i18n="ui.3">磅 (lb)</label><input id="inputLb" class="input" type="number" value="220.46"></div>
+          <div class="field"><label for="inputOz" data-i18n="ui.4">盎司 (oz)</label><input id="inputOz" class="input" type="number" value="3527.4"></div>
         </div>
         <div class="wg-row">
-          <div class="field"><label for="inputTon">公吨 (ton)</label><input id="inputTon" class="input" type="number" value="0.1"></div>
+          <div class="field"><label for="inputTon" data-i18n="ui.5">公吨 (ton)</label><input id="inputTon" class="input" type="number" value="0.1"></div>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputKg = document.getElementById('inputKg');
@@ -78,7 +79,7 @@
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       fromKg(100);

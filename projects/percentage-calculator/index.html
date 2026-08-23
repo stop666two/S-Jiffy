@@ -24,35 +24,36 @@
     <div class="card">
       <div class="pc-form">
         <div class="pc-row">
-          <div class="field"><label for="pctA">数值 A</label><input id="pctA" class="input" type="number" value="20"></div>
+          <div class="field"><label for="pctA" data-i18n="ui.1">数值 A</label><input id="pctA" class="input" type="number" value="20"></div>
           <div class="op">%</div>
-          <div class="field"><label for="pctB">数值 B</label><input id="pctB" class="input" type="number" value="200"></div>
-          <div><button id="pctOfBtn" class="btn btn-primary">求 A 是 B 的 ?%</button></div>
+          <div class="field"><label for="pctB" data-i18n="ui.2">数值 B</label><input id="pctB" class="input" type="number" value="200"></div>
+          <div><button id="pctOfBtn" class="btn btn-primary" data-i18n="ui.3">求 A 是 B 的 ?%</button></div>
         </div>
         <div class="pc-row">
-          <div class="field"><label for="pctX">百分比</label><input id="pctX" class="input" type="number" value="15"></div>
+          <div class="field"><label for="pctX" data-i18n="ui.4">百分比</label><input id="pctX" class="input" type="number" value="15"></div>
           <div class="op">% of</div>
-          <div class="field"><label for="pctY">数值</label><input id="pctY" class="input" type="number" value="300"></div>
-          <div><button id="pctWhatBtn" class="btn btn-primary">求 X% of Y = ?</button></div>
+          <div class="field"><label for="pctY" data-i18n="ui.number">数值</label><input id="pctY" class="input" type="number" value="300"></div>
+          <div><button id="pctWhatBtn" class="btn btn-primary" data-i18n="ui.5">求 X% of Y = ?</button></div>
         </div>
         <div class="pc-row">
-          <div class="field"><label for="pctOld">原值</label><input id="pctOld" class="input" type="number" value="100"></div>
+          <div class="field"><label for="pctOld" data-i18n="ui.6">原值</label><input id="pctOld" class="input" type="number" value="100"></div>
           <div class="op">→</div>
-          <div class="field"><label for="pctNew">新值</label><input id="pctNew" class="input" type="number" value="150"></div>
-          <div><button id="pctChangeBtn" class="btn btn-primary">求变化率</button></div>
+          <div class="field"><label for="pctNew" data-i18n="ui.7">新值</label><input id="pctNew" class="input" type="number" value="150"></div>
+          <div><button id="pctChangeBtn" class="btn btn-primary" data-i18n="ui.8">求变化率</button></div>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var pctA = document.getElementById('pctA');
@@ -70,9 +71,9 @@
       pctOfBtn.addEventListener('click', function () {
         var a = parseFloat(pctA.value);
         var b = parseFloat(pctB.value);
-        if (b === 0) { outputEl.textContent = '除数不能为 0'; setStatus('', 'error'); return; }
+        if (b === 0) { outputEl.textContent = t('ui.13','除数不能为 0'); setStatus('', 'error'); return; }
         var result = (a / b) * 100;
-        outputEl.textContent = a + ' 是 ' + b + ' 的 ' + result.toFixed(2) + '%';
+        outputEl.textContent = a + t('ui.yes',' 是 ') + b + t('ui.12',' 的 ') + result.toFixed(2) + '%';
         setStatus('');
       });
 
@@ -87,16 +88,16 @@
       pctChangeBtn.addEventListener('click', function () {
         var oldVal = parseFloat(pctOld.value);
         var newVal = parseFloat(pctNew.value);
-        if (oldVal === 0) { outputEl.textContent = '原值不能为 0'; setStatus('', 'error'); return; }
+        if (oldVal === 0) { outputEl.textContent = t('ui.11','原值不能为 0'); setStatus('', 'error'); return; }
         var change = ((newVal - oldVal) / oldVal) * 100;
         var sign = change >= 0 ? '增长' : '下降';
-        outputEl.textContent = '从 ' + oldVal + ' 到 ' + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
+        outputEl.textContent = t('ui.10','从 ') + oldVal + t('ui.9',' 到 ') + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
         setStatus('');
       });
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
     })();
   </script>

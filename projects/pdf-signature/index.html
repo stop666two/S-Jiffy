@@ -19,25 +19,26 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">数字签名解析</h1>
-    <p class="tool-desc" data-i18n="desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;">⚠ 需 HTTPS/localhost 环境</span></p>
+    <p class="tool-desc" data-i18n="desc">粘贴 PEM 格式的公钥或证书，查看密钥类型、算法、模数等信息（基于 Web Crypto API，纯前端解析）。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
     <div class="card">
-      <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;">粘贴 PEM 公钥 / 证书</label>
+      <label style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:8px;" data-i18n="ui.2">粘贴 PEM 公钥 / 证书</label>
       <textarea id="pemInput" class="input textarea pem-area js-focus-input" placeholder="-----BEGIN PUBLIC KEY-----&#10;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...&#10;-----END PUBLIC KEY-----" style="min-height:160px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="parseBtn" class="btn btn-primary">解析</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var pemEl = document.getElementById('pemInput');
@@ -159,36 +160,36 @@
               crypto.subtle.exportKey('spki', key).then(function(exported) {
                 var view = new Uint8Array(exported);
                 var size = view.length;
-                outputEl.textContent = '类型: ' + label + '\n'
-                  + '算法: ' + key.algorithm.name + '\n'
-                  + '密钥长度: ' + (size * 8) + ' bits (' + size + ' bytes)\n'
-                  + (key.algorithm.modulusLength ? '模数长度: ' + key.algorithm.modulusLength + ' bits\n' : '')
-                  + (key.algorithm.namedCurve ? '曲线: ' + key.algorithm.namedCurve + '\n' : '')
+                outputEl.textContent = t('ui.5','类型: ') + label + '\n'
+                  + t('ui.13','算法: ') + key.algorithm.name + '\n'
+                  + t('ui.12','密钥长度: ') + (size * 8) + ' bits (' + size + ' bytes)\n'
+                  + (key.algorithm.modulusLength ? t('ui.11','模数长度: ') + key.algorithm.modulusLength + ' bits\n' : '')
+                  + (key.algorithm.namedCurve ? t('ui.10','曲线: ') + key.algorithm.namedCurve + '\n' : '')
                   + '\n--- 格式化 PEM ---\n' + (formatted || '') + '\n'
                   + '\n--- 原始数据 ---\n'
                   + 'Hex: ' + Array.from(view.slice(0, 32)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '...\n'
-                  + 'Base64 长度: ' + btoa(String.fromCharCode.apply(null, view)).length + ' chars';
-                setStatus('解析成功：' + label);
+                  + t('ui.9','Base64 长度: ') + btoa(String.fromCharCode.apply(null, view)).length + ' chars';
+                setStatus(t('ui.8','解析成功：') + label);
               });
             } else {
               // Fallback: show PEM structure info
               var raw = new Uint8Array(ab);
-              outputEl.textContent = '类型: ' + label + '\n'
-                + '原始字节数: ' + raw.length + '\n'
-                + '前 16 字节 Hex: ' + Array.from(raw.slice(0, 16)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '\n'
+              outputEl.textContent = t('ui.5','类型: ') + label + '\n'
+                + t('ui.4','原始字节数: ') + raw.length + '\n'
+                + t('ui.7','前 16 字节 Hex: ') + Array.from(raw.slice(0, 16)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(' ') + '\n'
                 + '算法: 无法自动识别（可能不是 RSA/EC 密钥）\n'
                 + '\n--- 格式化 PEM ---\n' + (formatted || pem);
-              setStatus('已解析（部分信息）');
+              setStatus(t('ui.6','已解析（部分信息）'));
             }
           }).catch(function(err) {
-            outputEl.textContent = '类型: ' + label + '\n'
-              + '原始字节数: ' + (new Uint8Array(ab)).length + '\n'
-              + '解析失败: ' + err.message + '\n'
+            outputEl.textContent = t('ui.5','类型: ') + label + '\n'
+              + t('ui.4','原始字节数: ') + (new Uint8Array(ab)).length + '\n'
+              + t('ui.3','解析失败: ') + err.message + '\n'
               + '\n--- 格式化 PEM ---\n' + (formatted || pem);
             setStatus('解析出错', 'error');
           });
         } catch (e) {
-          outputEl.textContent = '解析失败: ' + e.message;
+          outputEl.textContent = t('ui.3','解析失败: ') + e.message;
           setStatus('解析失败', 'error');
         }
       });
@@ -201,7 +202,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
     })();
   if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>

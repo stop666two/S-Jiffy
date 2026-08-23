@@ -17,26 +17,27 @@
 <main class="tool-workspace"><h1 data-i18n="h1">秒表计时器</h1><p class="tool-desc" data-i18n="desc">带预设的倒计时器，以及支持计圈记录的秒表。</p>
 <div class="card">
 <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);">
-<select id="modeSelect" class="input" style="width:auto;"><option value="stopwatch">秒表</option><option value="timer">倒计时</option></select>
+<select id="modeSelect" class="input" style="width:auto;"><option value="stopwatch" data-i18n="ui.1">秒表</option><option value="timer" data-i18n="ui.2">倒计时</option></select>
 <div id="timerInputs" style="display:flex;gap:8px;align-items:center;">
-<input id="minInput" class="input" type="number" value="5" min="1" style="width:110px;"><label style="font-size:var(--font-size-sm);">分钟</label>
-<input id="secInput" class="input" type="number" value="0" min="0" max="59" style="width:110px;"><label style="font-size:var(--font-size-sm);">秒</label>
+<input id="minInput" class="input" type="number" value="5" min="1" style="width:110px;"><label style="font-size:var(--font-size-sm);" data-i18n="ui.minute">分钟</label>
+<input id="secInput" class="input" type="number" value="0" min="0" max="59" style="width:110px;"><label style="font-size:var(--font-size-sm);" data-i18n="ui.second">秒</label>
 </div>
 </div>
-<div class="preset-grid" id="presetGrid"><button class="preset-btn" data-min="1">1 分钟</button><button class="preset-btn" data-min="3">3 分钟</button><button class="preset-btn" data-min="5">5 分钟</button><button class="preset-btn" data-min="10">10 分钟</button><button class="preset-btn" data-min="15">15 分钟</button><button class="preset-btn" data-min="30">30 分钟</button></div>
+<div class="preset-grid" id="presetGrid"><button class="preset-btn" data-min="1" data-i18n="ui.3">1 分钟</button><button class="preset-btn" data-min="3" data-i18n="ui.4">3 分钟</button><button class="preset-btn" data-min="5" data-i18n="ui.5">5 分钟</button><button class="preset-btn" data-min="10" data-i18n="ui.6">10 分钟</button><button class="preset-btn" data-min="15" data-i18n="ui.7">15 分钟</button><button class="preset-btn" data-min="30" data-i18n="ui.8">30 分钟</button></div>
 <div class="time-display" id="display">00:00.0</div>
-<div class="time-sub" id="statusSub">准备</div>
+<div class="time-sub" id="statusSub" data-i18n="ui.9">准备</div>
 <div class="time-btns">
-<button id="startBtn" class="btn btn-primary">开始</button>
-<button id="pauseBtn" class="btn btn-secondary">暂停</button>
-<button id="lapBtn" class="btn btn-secondary" id="lapBtn">计圈</button>
-<button id="resetBtn" class="btn btn-secondary">重置</button>
+<button id="startBtn" class="btn btn-primary" data-i18n="ui.10">开始</button>
+<button id="pauseBtn" class="btn btn-secondary" data-i18n="ui.11">暂停</button>
+<button id="lapBtn" class="btn btn-secondary" id="lapBtn" data-i18n="ui.12">计圈</button>
+<button id="resetBtn" class="btn btn-secondary" data-i18n="ui.13">重置</button>
 </div>
 </div>
-<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">计圈记录</h3><div class="lap-list" id="lapList"><div style="color:var(--color-text-disabled);">暂无计圈记录</div></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);" data-i18n="ui.14">计圈记录</h3><div class="lap-list" id="lapList"><div style="color:var(--color-text-disabled);" data-i18n="ui.15">暂无计圈记录</div></div></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var dp=document.getElementById('display'),sub=document.getElementById('statusSub'),ms=document.getElementById('modeSelect');
 var mi=document.getElementById('minInput'),si=document.getElementById('secInput'),ti=document.getElementById('timerInputs');
@@ -49,15 +50,15 @@ function fmt2(ms){if(ms<60000)return(ms/1000).toFixed(1)+'s';var m=Math.floor(ms
 
 function tick(){if(!running)return;
 var now=Date.now();if(ms.value==='timer'){var remaining=Math.max(0,targetMs-(now-startTime));elapsed=remaining;
-if(remaining<=0){running=false;elapsed=0;dp.textContent='00:00.0';sub.textContent='时间到！';clearInterval(timerId);return;}}else{elapsed=now-startTime;}
+if(remaining<=0){running=false;elapsed=0;dp.textContent='00:00.0';sub.textContent = t('ui.18','时间到！');clearInterval(timerId);return;}}else{elapsed=now-startTime;}
 dp.textContent=fmt(elapsed);o.textContent=dp.textContent;}
 
 function startTimer(){if(running)return;if(ms.value==='timer'){var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus('请设置有效时间','error');return;}
 targetMs=total;startTime=Date.now();elapsed=total;}else{startTime=Date.now()-elapsed;}
-running=true;sub.textContent='运行中...';clearInterval(timerId);timerId=setInterval(tick,100);}
+running=true;sub.textContent = t('ui.17','运行中...');clearInterval(timerId);timerId=setInterval(tick,100);}
 
-function pauseTimer(){if(!running)return;running=false;clearInterval(timerId);sub.textContent='已暂停';}
-function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent='准备';ll.innerHTML='<div style="color:var(--color-text-disabled);">暂无计圈记录</div>';o.textContent='';}
+function pauseTimer(){if(!running)return;running=false;clearInterval(timerId);sub.textContent = t('ui.16','已暂停');}
+function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent = t('ui.9','准备');ll.innerHTML='<div style="color:var(--color-text-disabled);">暂无计圈记录</div>';o.textContent='';}
 function recordLap(){if(!running||ms.value!=='stopwatch')return;var now=elapsed;var lapTime=now-lastLap;laps.push({total:now,split:lapTime});lastLap=now;
 var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>第 '+(i+1)+' 圈</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
 ll.innerHTML=h;o.textContent=fmt(elapsed);}
@@ -66,6 +67,6 @@ st.addEventListener('click',startTimer);pa.addEventListener('click',pauseTimer);
 ms.addEventListener('change',function(){resetTimer();ti.style.display=ms.value==='timer'?'flex':'none';lb.style.display=ms.value==='timer'?'none':'inline-flex';});
 lb.style.display='none';ti.style.display='flex';
 var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){mi.value=this.dataset.min;si.value='0';ms.value='timer';ti.style.display='flex';lb.style.display='none';resetTimer();});}
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

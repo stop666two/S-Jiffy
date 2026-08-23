@@ -6,31 +6,32 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">CSP 策略构建器</h1><p class="tool-desc" data-i18n="desc">可视化构建 Content Security Policy 策略字符串</p>
 <div class="card" id="builderArea"></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="generateBtn" class="btn btn-primary">生成策略</button><button id="resetBtn" class="btn btn-secondary">重置</button></div>
-<div class="output-box"><span id="outputText" style="white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.1">生成策略</button><button id="resetBtn" class="btn btn-secondary" data-i18n="ui.2">重置</button></div>
+<div class="output-box"><span id="outputText" style="white-space:pre-wrap;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var directives=[
-{name:'default-src',desc:'默认资源加载源',sources:["'self'","'none'"],custom:true},
-{name:'script-src',desc:'JavaScript 脚本源',sources:["'self'","'unsafe-inline'","'unsafe-eval'","'strict-dynamic'","'nonce'"],hasNonce:true,hasHash:true,custom:true},
-{name:'style-src',desc:'CSS 样式源',sources:["'self'","'unsafe-inline'","'strict-dynamic'"],hasNonce:true,hasHash:true,custom:true},
-{name:'img-src',desc:'图片源',sources:["'self'","data:","blob:"],custom:true},
-{name:'connect-src',desc:'API/XHR/WebSocket 连接源',sources:["'self'"],custom:true},
-{name:'font-src',desc:'字体源',sources:["'self'","data:"],custom:true},
-{name:'frame-src',desc:'iframe 嵌入源',sources:["'self'","'none'"],custom:true},
-{name:'frame-ancestors',desc:'允许嵌入的父页面',sources:["'self'","'none'"],custom:true},
+{name:'default-src',desc: t('ui.19','默认资源加载源'),sources:["'self'","'none'"],custom:true},
+{name:'script-src',desc: t('ui.18','JavaScript 脚本源'),sources:["'self'","'unsafe-inline'","'unsafe-eval'","'strict-dynamic'","'nonce'"],hasNonce:true,hasHash:true,custom:true},
+{name:'style-src',desc: t('ui.17','CSS 样式源'),sources:["'self'","'unsafe-inline'","'strict-dynamic'"],hasNonce:true,hasHash:true,custom:true},
+{name:'img-src',desc: t('ui.16','图片源'),sources:["'self'","data:","blob:"],custom:true},
+{name:'connect-src',desc: t('ui.15','API/XHR/WebSocket 连接源'),sources:["'self'"],custom:true},
+{name:'font-src',desc: t('ui.14','字体源'),sources:["'self'","data:"],custom:true},
+{name:'frame-src',desc: t('ui.13','iframe 嵌入源'),sources:["'self'","'none'"],custom:true},
+{name:'frame-ancestors',desc: t('ui.12','允许嵌入的父页面'),sources:["'self'","'none'"],custom:true},
 {name:'object-src',desc:'<object>/<embed>/<applet> 源',sources:["'self'","'none'"],custom:true},
-{name:'media-src',desc:'音视频源',sources:["'self'"],custom:true},
-{name:'manifest-src',desc:'Web App Manifest 源',sources:["'self'"],custom:true},
-{name:'worker-src',desc:'Web Worker / Service Worker 源',sources:["'self'","blob:"],custom:true},
+{name:'media-src',desc: t('ui.11','音视频源'),sources:["'self'"],custom:true},
+{name:'manifest-src',desc: t('ui.10','Web App Manifest 源'),sources:["'self'"],custom:true},
+{name:'worker-src',desc: t('ui.9','Web Worker / Service Worker 源'),sources:["'self'","blob:"],custom:true},
 {name:'base-uri',desc:'<base> 标签允许的 URL',sources:["'self'","'none'"],custom:true},
-{name:'form-action',desc:'表单提交目标',sources:["'self'","'none'"],custom:true},
-{name:'report-uri',desc:'报告违规的 URL（已弃用，推荐 report-to）',custom:true,noPresets:true},
-{name:'report-to',desc:'报告端点组名',custom:true,noPresets:true},
-{name:'upgrade-insecure-requests',desc:'将 HTTP 自动升级为 HTTPS',flag:true},
-{name:'block-all-mixed-content',desc:'阻止混合内容加载',flag:true}
+{name:'form-action',desc: t('ui.8','表单提交目标'),sources:["'self'","'none'"],custom:true},
+{name:'report-uri',desc: t('ui.7','报告违规的 URL（已弃用，推荐 report-to）'),custom:true,noPresets:true},
+{name:'report-to',desc: t('ui.6','报告端点组名'),custom:true,noPresets:true},
+{name:'upgrade-insecure-requests',desc: t('ui.5','将 HTTP 自动升级为 HTTPS'),flag:true},
+{name:'block-all-mixed-content',desc: t('ui.4','阻止混合内容加载'),flag:true}
 ];
 var builderArea=document.getElementById('builderArea'),generateBtn=document.getElementById('generateBtn'),resetBtn=document.getElementById('resetBtn'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var state={};
@@ -118,7 +119,7 @@ function updateOutput(){
     else parts.push(d.name);
   }
   outputText.textContent=parts.join('; ');
-  setStatus(parts.length+' 条指令');
+  setStatus(parts.length+ t('ui.3',' 条指令'));
 }
 generateBtn.addEventListener('click',updateOutput);
 resetBtn.addEventListener('click',function(){
@@ -132,6 +133,6 @@ resetBtn.addEventListener('click',function(){
   outputText.textContent='';setStatus('');
 });
 initBuilder();
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

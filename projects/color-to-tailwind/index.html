@@ -11,15 +11,16 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">颜色 → Tailwind 色阶</h1><p class="tool-desc" data-i18n="desc">根据颜色值生成 Tailwind 色阶系统</p>
 <div class="card" style="display:flex;gap:16px;align-items:end;flex-wrap:wrap;">
-  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">颜色值</label><input id="colorInput" class="input" placeholder="#3b82f6" value="#3b82f6" style="width:160px;height:44px;"></div>
-  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">色相名称</label><input id="nameInput" class="input" placeholder="primary" value="primary" style="width:140px;height:44px;"></div>
-  <button id="generateBtn" class="btn btn-primary">生成色阶</button>
+  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">颜色值</label><input id="colorInput" class="input" placeholder="#3b82f6" value="#3b82f6" style="width:160px;height:44px;"></div>
+  <div><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.2">色相名称</label><input id="nameInput" class="input" placeholder="primary" value="primary" style="width:140px;height:44px;"></div>
+  <button id="generateBtn" class="btn btn-primary" data-i18n="ui.3">生成色阶</button>
 </div>
 <div id="swatchArea" style="margin-bottom:24px;"></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var colorInput = document.getElementById('colorInput');
@@ -122,14 +123,14 @@
       output += '},';
       swatchArea.innerHTML = swatchHtml;
       outputEl.textContent = output;
-      setStatus('色阶生成完成');
+      setStatus(t('ui.5','色阶生成完成'));
     } catch (e) {
-      setStatus('生成出错: ' + e.message, 'error');
+      setStatus(t('ui.4','生成出错: ') + e.message, 'error');
     }
   }
 
   document.getElementById('generateBtn').addEventListener('click', generate);
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
   colorInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
   nameInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
 })();

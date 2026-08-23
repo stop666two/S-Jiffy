@@ -35,19 +35,20 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","items":[1,2,3],"nested":{"a":1}}' style="min-height:150px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button id="viewBtn" class="btn btn-primary">查看树形</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="viewBtn" class="btn btn-primary" data-i18n="ui.1">查看树形</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="输出Container">
       <div id="treeContainer"></div>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -159,8 +160,8 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         var raw = treeEl.textContent;
         if (raw && raw.trim()) {
-          try { var pretty = JSON.stringify(JSON.parse(inputEl.value.trim()), null, 2); copyToClipboard(pretty, this); setStatus('已复制格式化 JSON'); }
-          catch (e) { copyToClipboard(raw, this); setStatus('已复制'); }
+          try { var pretty = JSON.stringify(JSON.parse(inputEl.value.trim()), null, 2); copyToClipboard(pretty, this); setStatus(t('ui.2','已复制格式化 JSON')); }
+          catch (e) { copyToClipboard(raw, this); setStatus(t('ui.copied','已复制')); }
         }
       });
     })();

@@ -12,14 +12,15 @@
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本，自动提取关键词..." style="min-height:180px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:8px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;">
 <input id="topN" class="input" type="number" value="20" min="1" max="100" style="width:110px;" title="提取数量">
-<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">个</span>
+<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.count">个</span>
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="skipStopwords" type="checkbox" checked> 过滤停用词</label>
-<button id="extractBtn" class="btn btn-primary">提取</button></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<button id="extractBtn" class="btn btn-primary" data-i18n="ui.1">提取</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 <div class="keyword-list" id="keywordList"></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var i=document.getElementById('inputText'),o=document.getElementById('outputText'),kl=document.getElementById('keywordList');
 var nInput=document.getElementById('topN'),sw=document.getElementById('skipStopwords');
@@ -37,13 +38,13 @@ document.getElementById('extractBtn').addEventListener('click',function(){
   var lines=[];var tags=[];
   sorted.forEach(function(w,i){
     var pct=(freq[w]/total*100).toFixed(1);
-    lines.push((i+1)+'. '+w+' ('+freq[w]+'次, '+pct+'%)');
+    lines.push((i+1)+'. '+w+' ('+freq[w]+ t('ui.4','次, ')+pct+'%)');
     tags.push('<span class="keyword-tag">'+esc(w)+' <span class="freq">'+freq[w]+'</span></span>');
   });
   o.textContent=lines.join('\n');
   kl.innerHTML=tags.join('');
-  setStatus('共提取 '+sorted.length+' 个关键词');
+  setStatus(t('ui.3','共提取 ') +sorted.length+ t('ui.2',' 个关键词'));
 });
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 })();</script>
 </body></html>

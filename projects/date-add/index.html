@@ -18,18 +18,19 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">日期加减计算</h1><p class="tool-desc" data-i18n="desc">在日期上增加或减少天、周、月、年。</p>
 <div class="card">
-<div class="date-row"><div class="field"><label>开始日期</label><input id="startDate" class="input" type="date"></div>
-<div class="field"><label>操作</label><select id="opSelect" class="input" style="width:auto;"><option value="add">增加</option><option value="subtract">减少</option></select></div>
-<div class="field"><label>数量</label><input id="amountInput" class="input" type="number" value="7" min="1" style="width:110px;"></div>
-<div class="field"><label>单位</label><select id="unitSelect" class="input" style="width:auto;"><option value="days">天</option><option value="weeks">周</option><option value="months">月</option><option value="years">年</option></select></div>
-<button id="calcBtn" class="btn btn-primary">计算</button>
+<div class="date-row"><div class="field"><label data-i18n="ui.1">开始日期</label><input id="startDate" class="input" type="date"></div>
+<div class="field"><label data-i18n="ui.2">操作</label><select id="opSelect" class="input" style="width:auto;"><option value="add" data-i18n="ui.3">增加</option><option value="subtract" data-i18n="ui.4">减少</option></select></div>
+<div class="field"><label data-i18n="ui.quantity">数量</label><input id="amountInput" class="input" type="number" value="7" min="1" style="width:110px;"></div>
+<div class="field"><label data-i18n="ui.5">单位</label><select id="unitSelect" class="input" style="width:auto;"><option value="days" data-i18n="ui.day">天</option><option value="weeks" data-i18n="ui.week">周</option><option value="months" data-i18n="ui.month">月</option><option value="years" data-i18n="ui.year">年</option></select></div>
+<button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button>
 </div>
-<div class="date-presets"><button class="preset-btn" data-days="7">+1 周</button><button class="preset-btn" data-days="14">+2 周</button><button class="preset-btn" data-days="30">+1 月</button><button class="preset-btn" data-days="90">+3 月</button><button class="preset-btn" data-days="180">+6 月</button><button class="preset-btn" data-days="365">+1 年</button><button class="preset-btn" data-days="-7">-1 周</button><button class="preset-btn" data-days="-30">-1 月</button></div>
+<div class="date-presets"><button class="preset-btn" data-days="7" data-i18n="ui.6">+1 周</button><button class="preset-btn" data-days="14" data-i18n="ui.7">+2 周</button><button class="preset-btn" data-days="30" data-i18n="ui.8">+1 月</button><button class="preset-btn" data-days="90" data-i18n="ui.9">+3 月</button><button class="preset-btn" data-days="180" data-i18n="ui.10">+6 月</button><button class="preset-btn" data-days="365" data-i18n="ui.11">+1 年</button><button class="preset-btn" data-days="-7" data-i18n="ui.12">-1 周</button><button class="preset-btn" data-days="-30" data-i18n="ui.13">-1 月</button></div>
 </div>
 <div class="card"><div class="result-grid" id="resultGrid"></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var sd=document.getElementById('startDate'),op=document.getElementById('opSelect'),am=document.getElementById('amountInput'),un=document.getElementById('unitSelect'),rg=document.getElementById('resultGrid'),o=document.getElementById('outputText');
 sd.value=new Date().toISOString().slice(0,10);
@@ -54,6 +55,6 @@ o.textContent=result.toISOString().slice(0,10);}
 
 document.getElementById('calcBtn').addEventListener('click',calc);
 var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){var d=parseInt(this.dataset.days);am.value=Math.abs(d);op.value=d>0?'add':'subtract';un.value='days';calc();});}
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 calc();})();
 </script></body></html>

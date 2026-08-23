@@ -53,43 +53,44 @@
     <div class="card">
       <div class="query-row">
         <input id="charInput" class="input js-focus-input" type="text" maxlength="4" placeholder="输入汉字，如：恩 江 森">
-        <button id="queryBtn" class="btn btn-primary">查询</button>
+        <button id="queryBtn" class="btn btn-primary" data-i18n="ui.query">查询</button>
       </div>
-      <div class="note-tip">一次查询一个汉字；多字输入时仅取第一个字符。</div>
+      <div class="note-tip" data-i18n="ui.1">一次查询一个汉字；多字输入时仅取第一个字符。</div>
     </div>
     <div class="card" id="resultCard" style="display:none">
       <div class="info-grid">
-        <div class="info-key">查询汉字</div>
+        <div class="info-key" data-i18n="ui.2">查询汉字</div>
         <div class="info-val" id="resChar"></div>
-        <div class="info-key">偏旁部首</div>
+        <div class="info-key" data-i18n="ui.3">偏旁部首</div>
         <div class="info-val sub" id="resRadical"></div>
-        <div class="info-key">偏旁笔画</div>
+        <div class="info-key" data-i18n="ui.4">偏旁笔画</div>
         <div class="info-val" id="resStrokes"></div>
-        <div class="info-key">文字结构</div>
+        <div class="info-key" data-i18n="ui.5">文字结构</div>
         <div class="info-val" id="resStructure"></div>
       </div>
     </div>
     <div class="card help-txt">
-      <h4>偏旁与部首的区别</h4>
-      <p>偏旁与部首常被混用，但二者的职责并不相同：</p>
+      <h4 data-i18n="ui.6">偏旁与部首的区别</h4>
+      <p data-i18n="ui.7">偏旁与部首常被混用，但二者的职责并不相同：</p>
       <ul>
         <li>偏旁：合体字中承担表意或表音作用的组成部件，是造字与识字的单位，如「江」中的氵（表意）与工（表音）。</li>
         <li>部首：字典辞书按字形特征归类的检索类目，主要服务于查字，如《新华字典》将汉字归入 189 个部首。</li>
-        <li>包含关系：部首都是偏旁，但偏旁不都是部首；同一偏旁在不同字典中可能归入不同部首。</li>
-        <li>独体字无法拆分出偏旁，通常以自身作为部首，如「日」「木」。</li>
+        <li data-i18n="ui.8">包含关系：部首都是偏旁，但偏旁不都是部首；同一偏旁在不同字典中可能归入不同部首。</li>
+        <li data-i18n="ui.9">独体字无法拆分出偏旁，通常以自身作为部首，如「日」「木」。</li>
       </ul>
-      <h4>结构类型说明</h4>
+      <h4 data-i18n="ui.10">结构类型说明</h4>
       <ul>
-        <li>左右结构（江）、上下结构（恩）、左中右结构（树）、上中下结构（意）。</li>
-        <li>半包围结构（建）、全包围结构（国）、品字结构（晶）、独体结构（木）。</li>
+        <li data-i18n="ui.11">左右结构（江）、上下结构（恩）、左中右结构（树）、上中下结构（意）。</li>
+        <li data-i18n="ui.12">半包围结构（建）、全包围结构（国）、品字结构（晶）、独体结构（木）。</li>
       </ul>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var STRUCT_NAMES = { a: '左右结构', b: '上下结构', c: '独体结构', d: '半包围结构', e: '全包围结构', f: '品字结构', g: '上中下结构', h: '左中右结构' };
@@ -133,7 +134,7 @@
         resultCard.style.display = 'block';
         resChar.textContent = info.c;
         resRadical.textContent = info.r;
-        resStrokes.textContent = info.n + ' 画';
+        resStrokes.textContent = info.n + t('ui.16',' 画');
         resStructure.textContent = info.s;
       }
 
@@ -143,11 +144,11 @@
         var c = raw.charAt(0);
         if (!charMap[c]) {
           resultCard.style.display = 'none';
-          setStatus('未收录该字「' + c + '」，可换用常用汉字查询', 'error');
+          setStatus(t('ui.15','未收录该字「') + c + t('ui.14','」，可换用常用汉字查询'), 'error');
           return;
         }
         renderResult({ c: c, r: charMap[c].r, n: charMap[c].n, s: charMap[c].s });
-        setStatus('查询完成');
+        setStatus(t('ui.13','查询完成'));
       }
 
       queryBtn.addEventListener('click', doQuery);

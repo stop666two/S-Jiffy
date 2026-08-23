@@ -28,46 +28,47 @@
     <div class="card">
       <div class="color-row">
         <div class="field">
-          <label>左侧标签文字</label>
+          <label data-i18n="ui.1">左侧标签文字</label>
           <input id="badgeLabel" class="input js-focus-input" value="build">
         </div>
         <div class="field">
-          <label>右侧值文字</label>
+          <label data-i18n="ui.2">右侧值文字</label>
           <input id="badgeValue" class="input" value="passing">
         </div>
       </div>
       <div class="color-row">
         <div class="field">
-          <label>左侧颜色</label>
+          <label data-i18n="ui.3">左侧颜色</label>
           <input id="labelColor" type="color" value="#555555">
         </div>
         <div class="field">
-          <label>右侧颜色</label>
+          <label data-i18n="ui.4">右侧颜色</label>
           <input id="valueColor" type="color" value="#4c1">
         </div>
         <div class="field">
-          <label>样式</label>
+          <label data-i18n="ui.5">样式</label>
           <select id="badgeStyle" class="input">
-            <option value="flat" selected>flat（扁平）</option>
-            <option value="plastic">plastic（立体）</option>
+            <option value="flat" selected data-i18n="ui.6">flat（扁平）</option>
+            <option value="plastic" data-i18n="ui.7">plastic（立体）</option>
           </select>
         </div>
       </div>
       <div class="preview-box" id="previewBox"></div>
       <div class="actions">
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>
     (function () {
@@ -138,7 +139,7 @@
         preview.innerHTML = svg;
         var md = '![badge](data:image/svg+xml;utf8,' + encodeURIComponent(svg) + ')';
         output.textContent = 'SVG 代码：\n\n' + svg + '\n\nMarkdown 嵌入语法：\n\n' + md;
-        setStatus('徽章已生成，实时预览见上方');
+        setStatus(t('ui.8','徽章已生成，实时预览见上方'));
       }
 
       var inputs = [labelInput, valueInput, labelColor, valueColor, styleSelect];

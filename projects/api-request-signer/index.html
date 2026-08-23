@@ -36,24 +36,25 @@
       </div>
       <div class="form-row">
         <input id="tsInput" class="input" placeholder="时间戳（Unix 秒）">
-        <button class="btn btn-secondary" id="nowBtn">填入当前时间</button>
+        <button class="btn btn-secondary" id="nowBtn" data-i18n="ui.1">填入当前时间</button>
       </div>
       <div class="form-row">
         <input id="secretInput" class="input" type="password" placeholder="共享密钥 Secret Key">
-        <button class="btn btn-primary" id="signBtn">生成签名</button>
+        <button class="btn btn-primary" id="signBtn" data-i18n="ui.2">生成签名</button>
       </div>
       <div class="form-hint">签名规则：message = 方法 + 路径 + 时间戳，Authorization 头格式：HMAC &lt;timestamp&gt;:&lt;hex&gt;。浏览器签名需 HTTPS 或 localhost 环境。</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var output = document.getElementById('outputText');
@@ -104,16 +105,16 @@
         }
         var message = method + path + ts;
         var enc = new TextEncoder();
-        setStatus('正在计算 HMAC-SHA256 签名…');
+        setStatus(t('ui.7','正在计算 HMAC-SHA256 签名…'));
         window.crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
           .then(function (key) {
             return window.crypto.subtle.sign('HMAC', key, enc.encode(message));
           })
           .then(function (sig) {
             var hex = toHex(sig);
-            current = '待签名原文：' + message + '\n\n签名 hex：' + hex + '\n\nAuthorization 请求头：\nAuthorization: HMAC ' + ts + ':' + hex;
+            current = t('ui.6','待签名原文：') + message + '\n\n签名 hex：' + hex + '\n\nAuthorization 请求头：\nAuthorization: HMAC ' + ts + ':' + hex;
             output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
-            setStatus('签名已生成');
+            setStatus(t('ui.5','签名已生成'));
           })
           .catch(function () {
             output.innerHTML = '';
@@ -125,12 +126,12 @@
       document.getElementById('signBtn').addEventListener('click', doSign);
       document.getElementById('nowBtn').addEventListener('click', function () {
         fillNow();
-        setStatus('已填入当前时间戳');
+        setStatus(t('ui.4','已填入当前时间戳'));
       });
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制签名结果');
+        setStatus(t('ui.3','已复制签名结果'));
       });
       fillNow();
     })();

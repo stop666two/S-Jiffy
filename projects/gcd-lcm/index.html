@@ -19,14 +19,15 @@
     <p class="tool-desc" data-i18n="desc">计算多个数的最大公约数和最小公倍数，并显示质因数分解。</p>
     <div class="card">
       <div class="gl-row">
-        <div class="field" style="flex:2;"><label for="inputVal">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 18, 24" placeholder="例如 12, 18, 24"></div>
+        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 18, 24" placeholder="例如 12, 18, 24"></div>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var inputEl = document.getElementById('inputVal');
     var genBtn = document.getElementById('genBtn');
@@ -91,8 +92,8 @@
         l = lcm(l, nums[i]);
       }
 
-      var output = '数字: ' + nums.join(', ') + '\n';
-      output += '共 ' + nums.length + ' 个数字\n';
+      var output = t('ui.2','数字: ') + nums.join(', ') + '\n';
+      output += t('ui.total','共 ') + nums.length + ' 个数字\n';
       output += '\n最大公约数 (GCD): ' + g + '\n';
       output += '最小公倍数 (LCM): ' + l + '\n';
 
@@ -113,11 +114,11 @@
       }
 
       outputEl.textContent = output;
-      setStatus('计算完成');
+      setStatus(t('ui.calcDone','计算完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

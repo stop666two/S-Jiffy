@@ -34,25 +34,26 @@
     <p class="tool-desc" data-i18n="desc">粘贴 nginx access log（combined 格式），统计请求、IP、状态码与错误列表。</p>
     <div class="card">
       <div class="field">
-        <label>nginx access log（每行一条）</label>
+        <label data-i18n="ui.1">nginx access log（每行一条）</label>
         <textarea id="logText" class="input textarea js-focus-input" placeholder="127.0.0.1 - - [21/Aug/2026:10:00:00 +0800] &quot;GET /index.html HTTP/1.1&quot; 200 612"></textarea>
       </div>
       <div class="actions">
-        <button id="analyzeBtn" class="btn btn-primary">开始分析</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="analyzeBtn" class="btn btn-primary" data-i18n="ui.2">开始分析</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
       <div id="resultTables"></div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var LINE_RE = /^(\S+) - (\S+) \[(.*?)\] "(\S+) (\S+) (\S+)" (\d{3}) (\d+)/;
@@ -159,16 +160,16 @@
           + '<div class="stat-card"><div class="v">' + statusKeys.length + '</div><div class="l">状态码种类</div></div>'
           + '<div class="stat-card"><div class="v">' + errors.length + '</div><div class="l">4xx / 5xx 错误</div></div>'
           + '</div>'
-          + '<div class="tbl-title">状态码分布</div>' + tableHtml(['状态码', '次数', '占比'], statusRows, statusClass)
-          + '<div class="tbl-title">TOP 10 IP</div>' + tableHtml(['排名', 'IP', '次数', '占比'], ipRows, statusClass)
-          + '<div class="tbl-title">TOP 10 路径</div>' + tableHtml(['排名', '路径', '次数'], pathRows, statusClass)
-          + '<div class="tbl-title">错误列表（4xx / 5xx，最多 200 条）</div>' + tableHtml(['时间', 'IP', '状态', '请求'], errorRows, errClass);
+          + '<div class="tbl-title">状态码分布</div>' + tableHtml([ t('ui.18','状态码'), t('ui.14','次数'), t('ui.17','占比')], statusRows, statusClass)
+          + '<div class="tbl-title">TOP 10 IP</div>' + tableHtml([ t('ui.16','排名'), 'IP', t('ui.14','次数'), t('ui.17','占比')], ipRows, statusClass)
+          + '<div class="tbl-title">TOP 10 路径</div>' + tableHtml([ t('ui.16','排名'), t('ui.15','路径'), t('ui.14','次数')], pathRows, statusClass)
+          + '<div class="tbl-title">错误列表（4xx / 5xx，最多 200 条）</div>' + tableHtml([ t('ui.13','时间'), 'IP', t('ui.12','状态'), t('ui.11','请求')], errorRows, errClass);
 
         var report = '日志分析报告\n';
-        report += '总请求数：' + total + '\n';
-        report += '独立 IP：' + ipCount + '\n';
-        report += '4xx / 5xx 错误：' + errors.length + '\n';
-        if (unparsed > 0) report += '无法解析的行：' + unparsed + '\n';
+        report += t('ui.10','总请求数：') + total + '\n';
+        report += t('ui.9','独立 IP：') + ipCount + '\n';
+        report += t('ui.8','4xx / 5xx 错误：') + errors.length + '\n';
+        if (unparsed > 0) report += t('ui.7','无法解析的行：') + unparsed + '\n';
         report += '\n状态码分布：\n';
         for (var s2 = 0; s2 < statusKeys.length; s2++) {
           report += statusKeys[s2] + ': ' + statusMap[statusKeys[s2]] + '\n';
@@ -191,9 +192,9 @@
 
         output.textContent = report;
         if (unparsed > 0) {
-          setStatus('分析完成，有 ' + unparsed + ' 行无法解析（格式不符）', 'error');
+          setStatus(t('ui.6','分析完成，有 ') + unparsed + t('ui.5',' 行无法解析（格式不符）'), 'error');
         } else {
-          setStatus('分析完成，共 ' + total + ' 条请求');
+          setStatus(t('ui.4','分析完成，共 ') + total + t('ui.3',' 条请求'));
         }
       }
 

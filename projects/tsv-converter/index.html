@@ -13,17 +13,18 @@
 <main class="tool-workspace"><h1 data-i18n="h1">TSV 转换器</h1><p class="tool-desc" data-i18n="desc">在制表符分隔（TSV）、逗号分隔（CSV）和 JSON 格式之间互相转换。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 TSV、CSV 或 JSON 数据..." style="min-height:150px;"></textarea></div>
 <div class="format-opt">
-<label>输入格式</label>
-<select id="inFormat" class="input" style="width:auto;"><option value="auto">自动检测</option><option value="tsv">TSV</option><option value="csv">CSV</option><option value="json">JSON</option></select>
+<label data-i18n="ui.1">输入格式</label>
+<select id="inFormat" class="input" style="width:auto;"><option value="auto" data-i18n="ui.2">自动检测</option><option value="tsv">TSV</option><option value="csv">CSV</option><option value="json">JSON</option></select>
 </div>
 <div class="output-format"><label><input type="radio" name="outFmt" value="tsv" checked> TSV</label><label><input type="radio" name="outFmt" value="csv"> CSV</label><label><input type="radio" name="outFmt" value="json"> JSON</label><label><input type="radio" name="outFmt" value="markdown"> Markdown</label></div>
 <div style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;">
-<button id="convertBtn" class="btn btn-primary">转换</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var i=document.getElementById('inputText'),o=document.getElementById('outputText'),inf=document.getElementById('inFormat');
 
@@ -52,10 +53,10 @@ rows.push(rw);}}catch(e){setStatus('无效 JSON','error');return;}}else{rows=par
 if(rows.length<2){setStatus('需要表头和数据行','error');return;}
 var fmt=document.querySelector('input[name="outFmt"]:checked').value;
 var result='';switch(fmt){case'tsv':result=toTSV(rows);break;case'csv':result=toCSV(rows);break;case'json':result=toJSON(rows);break;case'markdown':result=toMarkdown(rows);break;}
-o.textContent=result;setStatus('已转换 '+(rows.length-1)+' 行');}
+o.textContent=result;setStatus(t('ui.converted','已转换 ') +(rows.length-1)+ t('ui.rows',' 行'));}
 
 document.getElementById('convertBtn').addEventListener('click',convert);
 document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';setStatus('');i.focus();});
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

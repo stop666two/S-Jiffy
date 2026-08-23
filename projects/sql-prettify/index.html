@@ -18,19 +18,20 @@
       <textarea id="inputSql" class="input textarea js-focus-input" placeholder="输入 SQL 语句..." style="min-height:150px;">select u.id, u.name, count(o.id) as order_count from users u join orders o on u.id = o.user_id where u.status = 'active' and o.created_at > '2024-01-01' group by u.id, u.name having count(o.id) > 5 order by order_count desc limit 10;</textarea>
     </div>
     <div style="display:flex; gap:12px; margin-bottom:var(--space-3);">
-      <button id="formatBtn" class="btn btn-primary">格式化</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var inputSql = document.getElementById('inputSql');
@@ -105,7 +106,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
     })();
   </script>

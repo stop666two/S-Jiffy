@@ -6,12 +6,13 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">X.509 证书解析</h1><p class="tool-desc" data-i18n="desc">解析 PEM 格式 X.509 数字证书，查看主题、签发者、有效期、算法等信息</p>
 <div class="card"><textarea id="certInput" class="input textarea js-focus-input" placeholder="-----BEGIN CERTIFICATE-----&#10;MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw..." style="min-height:140px;font-size:13px;"></textarea></div>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary">解析</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="certInfo"></div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var certInput=document.getElementById('certInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),certInfo=document.getElementById('certInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 function parseASN1Length(bytes,offset){
@@ -94,9 +95,9 @@ parseBtn.addEventListener('click',function(){
   html+='<div style="margin-top:var(--space-1);font-size:var(--font-size-sm);color:var(--color-text-secondary);">注意：精确解析需要完整的 ASN.1 解码库。以上为基本信息提取。</div>';
   certInfo.innerHTML=html;resultCard.style.display='block';
   outputText.textContent='X.509 证书 ('+bytes.length+' 字节)';
-  setStatus('解析完成');
+  setStatus(t('ui.1','解析完成'));
 });
 clearBtn.addEventListener('click',function(){certInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');certInput.focus();});
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();</script>
 </body></html>

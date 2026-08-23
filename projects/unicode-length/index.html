@@ -33,14 +33,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -131,7 +132,7 @@
         if (combiningCount > 0) {
           html.push('<span class="bad">包含 ' + combiningCount + ' 个组合标记</span>，与前面的字符组合显示为一个字形（grapheme cluster），按码点统计会多于视觉字符数。<br>');
         } else {
-          html.push('不含组合标记，码点数与视觉字符数一致。');
+          html.push(t('ui.4','不含组合标记，码点数与视觉字符数一致。'));
         }
         html.push('</div>');
         html.push('<div style="overflow-x:auto;"><table class="ul-tbl"><thead><tr><th>#</th><th>字符</th><th>码点</th><th>UTF-8 字节数</th><th>说明</th></tr></thead><tbody>');
@@ -142,9 +143,9 @@
         }
         html.push('</tbody></table></div>');
         outputEl.innerHTML = html.join('');
-        lastPlain = '码点数：' + chars.length + '\nUTF-16 长度：' + text.length + '\nUTF-8 字节数：' + totalBytes +
+        lastPlain = t('ui.3','码点数：') + chars.length + '\nUTF-16 长度：' + text.length + '\nUTF-8 字节数：' + totalBytes +
           '\n代理对字符：' + surrogateCount + '\n组合标记：' + combiningCount;
-        setStatus('已分析 ' + chars.length + ' 个码点');
+        setStatus(t('ui.2','已分析 ') + chars.length + t('ui.1',' 个码点'));
       }
 
       inputEl.addEventListener('input', render);

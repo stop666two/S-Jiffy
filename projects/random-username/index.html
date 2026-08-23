@@ -19,13 +19,13 @@
     <p class="tool-desc" data-i18n="desc">组合形容词和名词生成随机用户名，支持数字、分隔符和长度控制。</p>
     <div class="card">
       <div class="ru-row">
-        <div class="field"><label for="countVal">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
-        <div class="field"><label for="sepVal">分隔符</label>
+        <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="sepVal" data-i18n="ui.separator">分隔符</label>
           <select id="sepVal" class="input" style="width:auto;min-width:80px;">
-            <option value="">无</option>
-            <option value="_" selected>下划线 _</option>
-            <option value="-">连字符 -</option>
-            <option value=".">点号 .</option>
+            <option value="" data-i18n="ui.none">无</option>
+            <option value="_" selected data-i18n="ui.1">下划线 _</option>
+            <option value="-" data-i18n="ui.2">连字符 -</option>
+            <option value="." data-i18n="ui.3">点号 .</option>
           </select>
         </div>
       </div>
@@ -33,12 +33,13 @@
         <label style="display:flex;align-items:center;gap:8px;"><input id="numChk" type="checkbox" checked> 追加数字</label>
         <label style="display:flex;align-items:center;gap:8px;"><input id="capChk" type="checkbox" checked> 首字母大写</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var countEl = document.getElementById('countVal');
     var sepEl = document.getElementById('sepVal');
@@ -86,11 +87,11 @@
         result.push(username);
       }
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + count + ' 个用户名');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.4',' 个用户名'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

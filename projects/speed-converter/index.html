@@ -23,25 +23,26 @@
     <div class="card">
       <div class="sp-grid">
         <div class="sp-row">
-          <div class="field"><label for="kmh">公里/时 (km/h)</label><input id="kmh" class="input" type="number" value="100"></div>
-          <div class="field"><label for="mph">英里/时 (mph)</label><input id="mph" class="input" type="number" value="62.14"></div>
+          <div class="field"><label for="kmh" data-i18n="ui.1">公里/时 (km/h)</label><input id="kmh" class="input" type="number" value="100"></div>
+          <div class="field"><label for="mph" data-i18n="ui.2">英里/时 (mph)</label><input id="mph" class="input" type="number" value="62.14"></div>
         </div>
         <div class="sp-row">
-          <div class="field"><label for="knot">节 (knot)</label><input id="knot" class="input" type="number" value="53.99"></div>
-          <div class="field"><label for="ms">米/秒 (m/s)</label><input id="ms" class="input" type="number" value="27.78"></div>
+          <div class="field"><label for="knot" data-i18n="ui.3">节 (knot)</label><input id="knot" class="input" type="number" value="53.99"></div>
+          <div class="field"><label for="ms" data-i18n="ui.4">米/秒 (m/s)</label><input id="ms" class="input" type="number" value="27.78"></div>
         </div>
       </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var kmh = document.getElementById('kmh');
@@ -75,7 +76,7 @@
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       fromKmh(100);

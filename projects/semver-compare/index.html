@@ -31,18 +31,19 @@
         <input id="versionA" class="input js-focus-input" placeholder="1.2.3" value="1.2.3">
         <span style="font-size:var(--font-size-lg);color:var(--color-text-secondary);">vs</span>
         <input id="versionB" class="input" placeholder="1.3.0" value="1.3.0">
-        <button id="compareBtn" class="btn btn-primary">比较</button>
-        <button id="swapBtn" class="btn btn-secondary">互换</button>
+        <button id="compareBtn" class="btn btn-primary" data-i18n="ui.1">比较</button>
+        <button id="swapBtn" class="btn btn-secondary" data-i18n="ui.2">互换</button>
       </div>
     </div>
 
     <div class="output-box" style="min-height:120px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var versionA = document.getElementById('versionA');
@@ -141,7 +142,7 @@
       });
 
       copyBtn.addEventListener('click', function () {
-        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus('已复制'); }
+        if (outputText.textContent.trim()) { copyToClipboard(outputText.textContent, this); setStatus(t('ui.copied','已复制')); }
       });
 
       versionA.addEventListener('keydown', function (e) { if (e.key === 'Enter') compareBtn.click(); });

@@ -23,27 +23,28 @@
     <p class="tool-desc" data-i18n="desc">粘贴 HTML 片段并指定目标特征，为每个匹配元素生成最短唯一 CSS 选择器。</p>
     <div class="card">
       <div class="field-row" style="align-items:flex-start;">
-        <label>HTML 片段</label>
+        <label data-i18n="ui.1">HTML 片段</label>
         <textarea id="htmlInput" class="input textarea js-focus-input" placeholder="粘贴 HTML 代码片段…" style="min-height:220px;"></textarea>
       </div>
       <div class="field-row">
-        <label>目标特征</label>
+        <label data-i18n="ui.2">目标特征</label>
         <input id="targetInput" class="input" type="text" placeholder="标签名或 class，如 button / .btn / div.item">
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="findBtn">生成选择器</button>
+        <button class="btn btn-primary" id="findBtn" data-i18n="ui.3">生成选择器</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var htmlInput = document.getElementById('htmlInput');
@@ -155,14 +156,14 @@
           if (ok) matches.push(el);
         }
         if (!matches.length) {
-          outputText.textContent = '未找到匹配「' + target + '」的元素';
+          outputText.textContent = t('ui.8','未找到匹配「') + target + t('ui.7','」的元素');
           setStatus('未找到匹配元素', 'error');
           return;
         }
         var MAX = 50;
         var shown = matches.length > MAX ? matches.slice(0, MAX) : matches;
         var htmlOut = '<div style="font-size:var(--font-size-base);margin-bottom:var(--space-1);">共命中 <b>' + matches.length +
-          '</b> 个元素' + (matches.length > MAX ? '，仅显示前 ' + MAX + ' 个' : '') + '</div>';
+          '</b> 个元素' + (matches.length > MAX ? t('ui.6','，仅显示前 ') + MAX + ' 个' : '') + '</div>';
         for (var m = 0; m < shown.length; m++) {
           var res = uniqueSelector(shown[m]);
           htmlOut += '<div class="finder-row">' +
@@ -172,14 +173,14 @@
             '</div>';
         }
         outputText.innerHTML = htmlOut;
-        setStatus('已为 ' + shown.length + ' 个元素生成唯一选择器');
+        setStatus(t('ui.5','已为 ') + shown.length + t('ui.4',' 个元素生成唯一选择器'));
       }
 
       document.getElementById('findBtn').addEventListener('click', find);
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!outputText.textContent) return;
         copyToClipboard(outputText.textContent, this);
-        setStatus('已复制');
+        setStatus(t('ui.copied','已复制'));
       });
       targetInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') find();

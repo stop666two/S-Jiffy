@@ -60,51 +60,52 @@
       <div id="manualPanel">
         <div class="form-grid">
           <div class="form-item">
-            <label for="widthInput">原始宽度（px）</label>
+            <label for="widthInput" data-i18n="ui.1">原始宽度（px）</label>
             <input id="widthInput" class="input js-focus-input" type="number" min="1" value="1920">
           </div>
           <div class="form-item">
-            <label for="heightInput">原始高度（px）</label>
+            <label for="heightInput" data-i18n="ui.2">原始高度（px）</label>
             <input id="heightInput" class="input" type="number" min="1" value="1080">
           </div>
           <div class="form-item">
-            <label for="targetWidthInput">目标宽度（px）</label>
+            <label for="targetWidthInput" data-i18n="ui.3">目标宽度（px）</label>
             <input id="targetWidthInput" class="input" type="number" min="1" value="800">
           </div>
           <div class="form-item">
-            <label for="bppSelect">每像素字节数</label>
+            <label for="bppSelect" data-i18n="ui.4">每像素字节数</label>
             <select id="bppSelect" class="input">
-              <option value="3">3 字节（RGB 无透明）</option>
-              <option value="4" selected>4 字节（RGBA 含透明）</option>
+              <option value="3" data-i18n="ui.5">3 字节（RGB 无透明）</option>
+              <option value="4" selected data-i18n="ui.6">4 字节（RGBA 含透明）</option>
             </select>
           </div>
           <div class="form-item">
-            <label for="compSelect">压缩率估算</label>
+            <label for="compSelect" data-i18n="ui.7">压缩率估算</label>
             <select id="compSelect" class="input">
-              <option value="1">无压缩（原始位图）</option>
-              <option value="0.25">高质量 JPEG（约 1/4）</option>
-              <option value="0.12">中等质量 JPEG（约 1/8）</option>
-              <option value="0.06">低质量 JPEG（约 1/16）</option>
-              <option value="0.6">PNG 压缩（约 0.6）</option>
+              <option value="1" data-i18n="ui.8">无压缩（原始位图）</option>
+              <option value="0.25" data-i18n="ui.9">高质量 JPEG（约 1/4）</option>
+              <option value="0.12" data-i18n="ui.10">中等质量 JPEG（约 1/8）</option>
+              <option value="0.06" data-i18n="ui.11">低质量 JPEG（约 1/16）</option>
+              <option value="0.6" data-i18n="ui.12">PNG 压缩（约 0.6）</option>
             </select>
           </div>
         </div>
       </div>
       <div id="uploadPanel" style="display:none;">
         <input id="fileInput" type="file" accept="image/*" style="margin-bottom:var(--space-1);">
-        <div class="file-hint" id="fileInfo">选择本地图片后自动读取真实尺寸与文件大小，并填入上方参数。</div>
+        <div class="file-hint" id="fileInfo" data-i18n="ui.13">选择本地图片后自动读取真实尺寸与文件大小，并填入上方参数。</div>
       </div>
     </div>
     <div id="resultBox" class="output-box" style="margin-top:var(--space-2);">
       <span id="outputText" style="display:block;padding-right:60px;white-space:pre-line;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var widthEl = document.getElementById('widthInput');
@@ -147,10 +148,10 @@
         var scale = tw / w;
         var th = Math.round(h * scale);
         var lines = [];
-        lines.push('原始尺寸：' + Math.round(w) + ' × ' + Math.round(h) + ' px');
+        lines.push(t('ui.27','原始尺寸：') + Math.round(w) + ' × ' + Math.round(h) + ' px');
         if (originalInfo) lines.push(originalInfo);
-        lines.push('缩放比例：' + (scale * 100).toFixed(1) + '%（' + (scale > 1 ? '放大' : scale < 1 ? '缩小' : '不变') + '）');
-        lines.push('目标尺寸：' + Math.round(tw) + ' × ' + th + ' px');
+        lines.push(t('ui.26','缩放比例：') + (scale * 100).toFixed(1) + '%（' + (scale > 1 ? '放大' : scale < 1 ? '缩小' : '不变') + '）');
+        lines.push(t('ui.25','目标尺寸：') + Math.round(tw) + ' × ' + th + ' px');
         lines.push('');
         var dprs = [1, 2, 3];
         for (var i = 0; i < dprs.length; i++) {
@@ -159,20 +160,20 @@
           var ph = Math.round(th * d);
           var px = pw * ph;
           var bytes = px * bpp * comp;
-          lines.push(d + 'x 实际像素需求：' + pw + ' × ' + ph + ' px（' + px.toLocaleString() + ' 像素）');
-          lines.push(d + 'x 文件大小估算：约 ' + fmtBytes(bytes) + '');
+          lines.push(d + t('ui.24','x 实际像素需求：') + pw + ' × ' + ph + ' px（' + px.toLocaleString() + t('ui.23',' 像素）'));
+          lines.push(d + t('ui.22','x 文件大小估算：约 ') + fmtBytes(bytes) + '');
         }
         lines.push('');
-        lines.push('估算依据：每像素 ' + bpp + ' 字节 × 压缩率 ' + comp + '，实际文件大小以图片内容为准。');
+        lines.push(t('ui.21','估算依据：每像素 ') + bpp + t('ui.20',' 字节 × 压缩率 ') + comp + t('ui.19','，实际文件大小以图片内容为准。'));
         outputEl.textContent = lines.join('\n');
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       function setMode(mode) {
         manualPanel.style.display = mode === 'manual' ? 'block' : 'none';
         uploadPanel.style.display = mode === 'upload' ? 'block' : 'none';
         if (mode === 'upload') {
-          setStatus('请选择一张本地图片');
+          setStatus(t('ui.18','请选择一张本地图片'));
         } else {
           originalInfo = '';
           calc();
@@ -190,7 +191,7 @@
       fileInput.addEventListener('change', function () {
         var file = fileInput.files && fileInput.files[0];
         if (!file) return;
-        originalInfo = '文件大小：' + fmtBytes(file.size) + '（' + file.name + '）';
+        originalInfo = t('ui.17','文件大小：') + fmtBytes(file.size) + '（' + file.name + '）';
         var url = (window.URL || window.webkitURL).createObjectURL(file);
         var img = new Image();
         img.onload = function () {
@@ -198,7 +199,7 @@
           heightEl.value = String(img.naturalHeight);
           targetWidthEl.value = String(img.naturalWidth);
           (window.URL || window.webkitURL).revokeObjectURL(url);
-          fileInfo.innerHTML = '已读取：' + htmlEscape(file.name) + '，真实尺寸 ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px，文件大小 ' + fmtBytes(file.size) + '。<br>上方参数已自动填入，可修改目标宽度后查看估算。';
+          fileInfo.innerHTML = t('ui.16','已读取：') + htmlEscape(file.name) + t('ui.15','，真实尺寸 ') + img.naturalWidth + ' × ' + img.naturalHeight + t('ui.14',' px，文件大小 ') + fmtBytes(file.size) + '。<br>上方参数已自动填入，可修改目标宽度后查看估算。';
           calc();
         };
         img.onerror = function () {
@@ -217,7 +218,7 @@
       copyBtn.addEventListener('click', function () {
         if (outputEl.textContent) {
           copyToClipboard(outputEl.textContent, copyBtn);
-          setStatus('已复制到剪贴板');
+          setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
       });
 

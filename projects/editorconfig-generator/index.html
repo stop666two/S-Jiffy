@@ -29,14 +29,14 @@
       <label class="toggle-row"><input type="checkbox" id="root" class="js-focus-input" checked> root = true（作为项目根配置）</label>
       <div class="form-grid">
         <div class="field">
-          <label>缩进风格</label>
+          <label data-i18n="ui.1">缩进风格</label>
           <select id="indentStyle" class="input">
-            <option value="space" selected>空格 space</option>
-            <option value="tab">制表符 tab</option>
+            <option value="space" selected data-i18n="ui.2">空格 space</option>
+            <option value="tab" data-i18n="ui.3">制表符 tab</option>
           </select>
         </div>
         <div class="field">
-          <label>缩进宽度</label>
+          <label data-i18n="ui.4">缩进宽度</label>
           <select id="indentWidth" class="input">
             <option value="2" selected>2</option>
             <option value="4">4</option>
@@ -44,14 +44,14 @@
           </select>
         </div>
         <div class="field">
-          <label>换行符</label>
+          <label data-i18n="ui.5">换行符</label>
           <select id="endOfLine" class="input">
             <option value="lf" selected>LF（Unix / macOS）</option>
             <option value="crlf">CRLF（Windows）</option>
           </select>
         </div>
         <div class="field">
-          <label>字符集</label>
+          <label data-i18n="ui.6">字符集</label>
           <select id="charset" class="input">
             <option value="utf-8" selected>utf-8</option>
             <option value="utf-8-bom">utf-8-bom</option>
@@ -62,20 +62,21 @@
       <label class="toggle-row"><input type="checkbox" id="trimWs" checked> trim_trailing_whitespace（去除行尾空白）</label>
       <label class="toggle-row"><input type="checkbox" id="mdException"> 添加 [*.md] 例外（Markdown 保留行尾空格）</label>
       <div class="actions">
-        <button id="generateBtn" class="btn btn-primary">生成 .editorconfig</button>
-        <button id="clearBtn" class="btn btn-secondary">清空</button>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.7">生成 .editorconfig</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var output = document.getElementById('outputText');
@@ -109,7 +110,7 @@
 
       document.getElementById('generateBtn').addEventListener('click', function () {
         output.textContent = buildConfig();
-        setStatus('.editorconfig 已生成');
+        setStatus(t('ui.8','.editorconfig 已生成'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {

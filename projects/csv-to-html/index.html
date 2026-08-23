@@ -13,15 +13,16 @@
 <main class="tool-workspace"><h1 data-i18n="h1">CSV → HTML 表格</h1><p class="tool-desc" data-i18n="desc">将 CSV 文本数据转换为可视化的 HTML 表格。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="name,age,email&#10;Alice,30,alice@example.com&#10;Bob,25,bob@example.com" style="min-height:140px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;">
-<button id="convertBtn" class="btn btn-primary">转换</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="hasHeader" type="checkbox" checked> 首行为表头</label>
 <input id="delimiterInput" class="input" value="," style="width:60px;" placeholder="分隔符" title="分隔符">
 </div>
 <div id="tableContainer" class="table-wrap card"></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var i=document.getElementById('inputText'),o=document.getElementById('outputText'),tc=document.getElementById('tableContainer');
 var hdr=document.getElementById('hasHeader'),delim=document.getElementById('delimiterInput');
@@ -50,9 +51,9 @@ document.getElementById('convertBtn').addEventListener('click',function(){
   }
   html+='</tbody></table>';
   tc.innerHTML=html;
-  o.textContent='表格已生成，共 '+(data.length-start)+' 行数据';
+  o.textContent = t('ui.2','表格已生成，共 ')+(data.length-start)+ t('ui.1',' 行数据');
   setStatus('');
 });
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 })();</script>
 </body></html>

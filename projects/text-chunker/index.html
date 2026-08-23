@@ -29,22 +29,23 @@
       <div class="chunk-controls">
         <input id="sizeInput" type="text" class="input" placeholder="每块数量（字符/行）">
         <select id="modeSelect" class="input">
-          <option value="char">按字符硬切</option>
-          <option value="line">按行分组</option>
-          <option value="para">按段落（空行分隔）</option>
+          <option value="char" data-i18n="ui.1">按字符硬切</option>
+          <option value="line" data-i18n="ui.2">按行分组</option>
+          <option value="para" data-i18n="ui.3">按段落（空行分隔）</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -131,7 +132,7 @@
         }
         html.push('</div>');
         outputEl.innerHTML = html.join('');
-        setStatus('共切分为 ' + list.length + ' 块');
+        setStatus(t('ui.5','共切分为 ') + list.length + t('ui.4',' 块'));
       }
 
       function copyOne(idx, btnEl) {

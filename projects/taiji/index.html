@@ -35,27 +35,28 @@
     <div class="card zen-card">
       <div class="stage" id="stage">
         <canvas id="taijiCanvas" role="img" aria-label="旋转的太极图"></canvas>
-        <div class="zen-line">阴阳相生 · 动静互见</div>
+        <div class="zen-line" data-i18n="ui.1">阴阳相生 · 动静互见</div>
       </div>
       <div class="ctl-row">
         <div class="ctl-group">
-          <label>转速</label>
+          <label data-i18n="ui.2">转速</label>
           <div class="speed-row">
             <input type="range" id="speedSlider" min="0" max="10" step="0.1" value="2">
-            <span class="speed-val" id="speedVal">2 转/秒</span>
+            <span class="speed-val" id="speedVal" data-i18n="ui.3">2 转/秒</span>
           </div>
         </div>
-        <button id="dirBtn" class="btn zen-btn">方向：顺时针</button>
-        <button id="autoBtn" class="btn zen-btn">自动变速：关</button>
+        <button id="dirBtn" class="btn zen-btn" data-i18n="ui.4">方向：顺时针</button>
+        <button id="autoBtn" class="btn zen-btn" data-i18n="ui.5">自动变速：关</button>
       </div>
       <p class="zen-note">滑动调节旋转速度，可切换方向，开启自动变速后转速会在 0 与设定值之间来回变化。移动鼠标，金色微粒随之飘散。</p>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var canvas = document.getElementById('taijiCanvas');
@@ -172,9 +173,9 @@
         if (auto) {
           autoPhase += dt * 0.6;
           eff = base * (0.5 + 0.5 * Math.sin(autoPhase));
-          speedVal.textContent = base.toFixed(1) + ' 转/秒 · 自动';
+          speedVal.textContent = base.toFixed(1) + t('ui.10',' 转/秒 · 自动');
         } else {
-          speedVal.textContent = base.toFixed(1) + ' 转/秒';
+          speedVal.textContent = base.toFixed(1) + t('ui.9',' 转/秒');
         }
         angle += dir * eff * Math.PI * 2 * dt;
         drawTaiji();
@@ -200,18 +201,18 @@
       }, { passive: true });
 
       speedSlider.addEventListener('input', function () {
-        if (!auto) speedVal.textContent = (parseFloat(speedSlider.value) || 0).toFixed(1) + ' 转/秒';
+        if (!auto) speedVal.textContent = (parseFloat(speedSlider.value) || 0).toFixed(1) + t('ui.9',' 转/秒');
       });
 
       dirBtn.addEventListener('click', function () {
         dir = -dir;
-        dirBtn.textContent = '方向：' + (dir === 1 ? '顺时针' : '逆时针');
-        setStatus('旋转方向已切换');
+        dirBtn.textContent = t('ui.8','方向：') + (dir === 1 ? '顺时针' : '逆时针');
+        setStatus(t('ui.7','旋转方向已切换'));
       });
 
       autoBtn.addEventListener('click', function () {
         auto = !auto;
-        autoBtn.textContent = '自动变速：' + (auto ? '开' : '关');
+        autoBtn.textContent = t('ui.6','自动变速：') + (auto ? '开' : '关');
         autoBtn.className = 'btn zen-btn' + (auto ? ' on' : '');
         setStatus(auto ? '已开启自动变速' : '已关闭自动变速');
       });

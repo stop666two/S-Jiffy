@@ -24,14 +24,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('logInput');
@@ -125,58 +126,58 @@
         if (score < 60) score = 60;
 
         var lines = [];
-        lines.push('Git 仓库健康检查报告');
+        lines.push(t('ui.28','Git 仓库健康检查报告'));
         lines.push('');
-        lines.push('总提交数：' + total);
-        lines.push('活跃作者：' + authors.length + ' 位');
-        lines.push('时间跨度：' + (minDate ? fmtDate(minDate) : '未知') + ' ~ ' + (maxDate ? fmtDate(maxDate) : '未知') + '（' + (spanDays > 0 ? spanDays : '未知') + ' 天）');
-        lines.push('每日平均提交：' + (spanDays > 0 ? avg.toFixed(2) : '无法计算（时间跨度未知）'));
-        lines.push('最近 30 天提交：' + last30 + ' 条');
+        lines.push(t('ui.27','总提交数：') + total);
+        lines.push(t('ui.26','活跃作者：') + authors.length + t('ui.25',' 位'));
+        lines.push(t('ui.24','时间跨度：') + (minDate ? fmtDate(minDate) : '未知') + ' ~ ' + (maxDate ? fmtDate(maxDate) : '未知') + '（' + (spanDays > 0 ? spanDays : '未知') + t('ui.23',' 天）'));
+        lines.push(t('ui.22','每日平均提交：') + (spanDays > 0 ? avg.toFixed(2) : '无法计算（时间跨度未知）'));
+        lines.push(t('ui.21','最近 30 天提交：') + last30 + t('ui.20',' 条'));
         lines.push('');
-        lines.push('作者提交分布：');
+        lines.push(t('ui.19','作者提交分布：'));
         for (var a = 0; a < authors.length; a++) {
           var cnt = authorMap[authors[a]];
-          lines.push('  ' + authors[a] + ': ' + cnt + ' 条（' + Math.round(cnt * 100 / total) + '%）');
+          lines.push('  ' + authors[a] + ': ' + cnt + t('ui.13',' 条（') + Math.round(cnt * 100 / total) + '%）');
         }
         lines.push('');
-        lines.push('提交消息长度分布（共 ' + total + ' 条，平均 ' + avgLen.toFixed(1) + ' 字）：');
-        lines.push('  <20 字：' + msgBuckets.short + ' 条（' + Math.round(msgBuckets.short * 100 / total) + '%）' + (shortRatio > 0.3 ? ' ← 偏短' : ''));
-        lines.push('  20-49 字：' + msgBuckets.mid + ' 条（' + Math.round(msgBuckets.mid * 100 / total) + '%）');
-        lines.push('  50-99 字：' + msgBuckets.long + ' 条（' + Math.round(msgBuckets.long * 100 / total) + '%）');
-        lines.push('  >=100 字：' + msgBuckets.xlong + ' 条（' + Math.round(msgBuckets.xlong * 100 / total) + '%）');
+        lines.push(t('ui.18','提交消息长度分布（共 ') + total + t('ui.17',' 条，平均 ') + avgLen.toFixed(1) + t('ui.16',' 字）：'));
+        lines.push('  <20 字：' + msgBuckets.short + t('ui.13',' 条（') + Math.round(msgBuckets.short * 100 / total) + '%）' + (shortRatio > 0.3 ? ' ← 偏短' : ''));
+        lines.push(t('ui.15','  20-49 字：') + msgBuckets.mid + t('ui.13',' 条（') + Math.round(msgBuckets.mid * 100 / total) + '%）');
+        lines.push(t('ui.14','  50-99 字：') + msgBuckets.long + t('ui.13',' 条（') + Math.round(msgBuckets.long * 100 / total) + '%）');
+        lines.push('  >=100 字：' + msgBuckets.xlong + t('ui.13',' 条（') + Math.round(msgBuckets.xlong * 100 / total) + '%）');
         if (invalidDate > 0) {
           lines.push('');
-          lines.push('提示：' + invalidDate + ' 条记录日期无法识别（应使用 --date=short 输出 YYYY-MM-DD）');
+          lines.push(t('ui.11','提示：') + invalidDate + t('ui.12',' 条记录日期无法识别（应使用 --date=short 输出 YYYY-MM-DD）'));
         }
         if (malformed > 0) {
-          lines.push('提示：' + malformed + ' 行未按 哈希|作者|日期|消息 格式解析，已忽略');
+          lines.push(t('ui.11','提示：') + malformed + t('ui.10',' 行未按 哈希|作者|日期|消息 格式解析，已忽略'));
         }
         lines.push('');
         var label = score >= 90 ? '优秀' : score >= 80 ? '良好' : score >= 70 ? '一般' : '需改进';
-        lines.push('健康评分：' + score + ' / 100（' + label + '）');
+        lines.push(t('ui.9','健康评分：') + score + ' / 100（' + label + '）');
         lines.push('');
-        lines.push('改进建议：');
+        lines.push(t('ui.8','改进建议：'));
         var advice = [];
         if (shortRatio > 0.3) {
-          advice.push('提交消息偏短（' + msgBuckets.short + ' 条小于 20 字），建议遵循 Conventional Commits 规范（type(scope): subject）');
+          advice.push(t('ui.7','提交消息偏短（') + msgBuckets.short + ' 条小于 20 字），建议遵循 Conventional Commits 规范（type(scope): subject）');
         }
         if (authors.length === 1) {
-          advice.push('仓库仅 1 位活跃作者，建议引入代码审查与多人协作，降低单点风险');
+          advice.push(t('ui.6','仓库仅 1 位活跃作者，建议引入代码审查与多人协作，降低单点风险'));
         }
         if (last30 === 0) {
-          advice.push('最近 30 天没有提交，仓库活跃度偏低，建议保持定期提交节奏');
+          advice.push(t('ui.5','最近 30 天没有提交，仓库活跃度偏低，建议保持定期提交节奏'));
         }
         if (spanDays > 0 && avg < 0.5) {
-          advice.push('提交频率偏低（平均约 ' + (avg > 0 ? Math.round(1 / avg) : 0) + ' 天/次），建议将工作拆分为更小的提交单元');
+          advice.push(t('ui.4','提交频率偏低（平均约 ') + (avg > 0 ? Math.round(1 / avg) : 0) + t('ui.3',' 天/次），建议将工作拆分为更小的提交单元'));
         }
         if (!advice.length) {
-          advice.push('未发现明显问题，继续保持当前提交习惯');
+          advice.push(t('ui.2','未发现明显问题，继续保持当前提交习惯'));
         }
         for (var v = 0; v < advice.length; v++) {
           lines.push((v + 1) + '. ' + advice[v]);
         }
         outputEl.textContent = lines.join('\n');
-        setStatus('已生成健康报告');
+        setStatus(t('ui.1','已生成健康报告'));
       }
 
       function fmtDate(d) {
@@ -189,7 +190,7 @@
         var text = outputEl.textContent;
         if (!text) { setStatus('暂无内容可复制', 'error'); return; }
         copyToClipboard(text, copyBtn);
-        setStatus('已复制到剪贴板');
+        setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });
 
       analyze();

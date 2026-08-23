@@ -31,21 +31,22 @@
       <div class="holiday-controls">
         <input id="yearInput" type="number" min="2024" max="2027" class="input js-focus-input" placeholder="年份 2024-2027">
         <select id="viewSelect" class="input">
-          <option value="holiday">法定节假日</option>
-          <option value="workday">调休上班日</option>
+          <option value="holiday" data-i18n="ui.1">法定节假日</option>
+          <option value="workday" data-i18n="ui.2">调休上班日</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var yearInput = document.getElementById('yearInput');
@@ -55,25 +56,25 @@
 
     var data = {
       2024: [
-        { name: '元旦', start: '2023-12-30', end: '2024-01-01', work: [] },
-        { name: '春节', start: '2024-02-10', end: '2024-02-17', work: ['2024-02-04', '2024-02-18'] },
-        { name: '清明节', start: '2024-04-04', end: '2024-04-06', work: ['2024-04-07'] },
-        { name: '劳动节', start: '2024-05-01', end: '2024-05-05', work: ['2024-04-28', '2024-05-11'] },
-        { name: '端午节', start: '2024-06-08', end: '2024-06-10', work: [] },
-        { name: '中秋节', start: '2024-09-15', end: '2024-09-17', work: ['2024-09-14'] },
-        { name: '国庆节', start: '2024-10-01', end: '2024-10-07', work: ['2024-09-29', '2024-10-12'] }
+        { name: t('ui.13','元旦'), start: '2023-12-30', end: '2024-01-01', work: [] },
+        { name: t('ui.9','春节'), start: '2024-02-10', end: '2024-02-17', work: ['2024-02-04', '2024-02-18'] },
+        { name: t('ui.12','清明节'), start: '2024-04-04', end: '2024-04-06', work: ['2024-04-07'] },
+        { name: t('ui.11','劳动节'), start: '2024-05-01', end: '2024-05-05', work: ['2024-04-28', '2024-05-11'] },
+        { name: t('ui.10','端午节'), start: '2024-06-08', end: '2024-06-10', work: [] },
+        { name: t('ui.15','中秋节'), start: '2024-09-15', end: '2024-09-17', work: ['2024-09-14'] },
+        { name: t('ui.14','国庆节'), start: '2024-10-01', end: '2024-10-07', work: ['2024-09-29', '2024-10-12'] }
       ],
       2025: [
-        { name: '元旦', start: '2025-01-01', end: '2025-01-01', work: [] },
-        { name: '春节', start: '2025-01-28', end: '2025-02-04', work: ['2025-01-26', '2025-02-08'] },
-        { name: '清明节', start: '2025-04-04', end: '2025-04-06', work: [] },
-        { name: '劳动节', start: '2025-05-01', end: '2025-05-05', work: ['2025-04-27'] },
-        { name: '端午节', start: '2025-05-31', end: '2025-06-02', work: [] },
-        { name: '国庆中秋', start: '2025-10-01', end: '2025-10-08', work: ['2025-09-28', '2025-10-11'] }
+        { name: t('ui.13','元旦'), start: '2025-01-01', end: '2025-01-01', work: [] },
+        { name: t('ui.9','春节'), start: '2025-01-28', end: '2025-02-04', work: ['2025-01-26', '2025-02-08'] },
+        { name: t('ui.12','清明节'), start: '2025-04-04', end: '2025-04-06', work: [] },
+        { name: t('ui.11','劳动节'), start: '2025-05-01', end: '2025-05-05', work: ['2025-04-27'] },
+        { name: t('ui.10','端午节'), start: '2025-05-31', end: '2025-06-02', work: [] },
+        { name: t('ui.8','国庆中秋'), start: '2025-10-01', end: '2025-10-08', work: ['2025-09-28', '2025-10-11'] }
       ],
       2026: [
-        { name: '春节', start: '2026-02-15', end: '2026-02-23', work: [] },
-        { name: '国庆中秋', start: '2026-10-01', end: '2026-10-08', work: [] }
+        { name: t('ui.9','春节'), start: '2026-02-15', end: '2026-02-23', work: [] },
+        { name: t('ui.8','国庆中秋'), start: '2026-10-01', end: '2026-10-08', work: [] }
       ],
       2027: []
     };
@@ -110,9 +111,9 @@
             var h = list[i];
             var days = daysBetween(h.start, h.end);
             var workTxt = h.work.length ? htmlEscape(h.work.join('、')) : '无';
-            html += '<tr data-copy="' + htmlEscape(h.start + ' 至 ' + h.end) + '" title="点击复制日期">';
+            html += '<tr data-copy="' + htmlEscape(h.start + t('ui.7',' 至 ') + h.end) + '" title="点击复制日期">';
             html += '<td class="holiday-name">' + htmlEscape(h.name) + '</td>';
-            html += '<td>' + htmlEscape(h.start + ' 至 ' + h.end) + '</td>';
+            html += '<td>' + htmlEscape(h.start + t('ui.7',' 至 ') + h.end) + '</td>';
             html += '<td>' + htmlEscape('' + days) + ' 天</td>';
             html += '<td>' + workTxt + '</td>';
             html += '</tr>';
@@ -120,7 +121,7 @@
           html += '</tbody></table>';
           copyText = y + ' 年法定节假日：\n';
           for (var j = 0; j < list.length; j++) {
-            copyText += list[j].name + '：' + list[j].start + ' 至 ' + list[j].end + '（' + daysBetween(list[j].start, list[j].end) + ' 天）\n';
+            copyText += list[j].name + '：' + list[j].start + t('ui.7',' 至 ') + list[j].end + '（' + daysBetween(list[j].start, list[j].end) + ' 天）\n';
           }
         }
       } else {
@@ -131,7 +132,7 @@
           }
         }
         if (!items.length) {
-          html = '<div class="holiday-none">' + (list.length ? y + ' 年暂无已公布的调休上班日' : '暂无 ' + y + ' 年数据') + '</div>';
+          html = '<div class="holiday-none">' + (list.length ? y + ' 年暂无已公布的调休上班日' : t('ui.6','暂无 ') + y + t('ui.5',' 年数据')) + '</div>';
         } else {
           html = '<table class="holiday-table"><thead><tr><th>调休上班日</th><th>为哪个节日调休</th></tr></thead><tbody>';
           for (var m = 0; m < items.length; m++) {
@@ -159,7 +160,7 @@
       copyBtn.onclick = function () {
         if (copyText) { copyToClipboard(copyText.replace(/\n$/, ''), copyBtn); }
       };
-      if (copyText) { setStatus('已加载 ' + y + ' 年数据，点击行可复制日期'); }
+      if (copyText) { setStatus(t('ui.4','已加载 ') + y + t('ui.3',' 年数据，点击行可复制日期')); }
       else { setStatus(''); }
     }
 

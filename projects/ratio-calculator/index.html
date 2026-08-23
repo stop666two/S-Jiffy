@@ -22,16 +22,17 @@
       <div class="ratio-formula">
         <input id="aVal" class="input" style="width:70px;text-align:center;" placeholder="A"> : <input id="bVal" class="input" style="width:70px;text-align:center;" placeholder="B"> = <input id="cVal" class="input" style="width:70px;text-align:center;" placeholder="C"> : <input id="dVal" class="input" style="width:70px;text-align:center;" placeholder="D">
       </div>
-      <p style="text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-3);">留空要计算的项，其余三项填数字</p>
+      <p style="text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-3);" data-i18n="ui.1">留空要计算的项，其余三项填数字</p>
       <div class="rc-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="simplifyChk" type="checkbox"> 也化简比例</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">计算</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var aEl = document.getElementById('aVal');
     var bEl = document.getElementById('bVal');
@@ -104,11 +105,11 @@
       }
 
       outputEl.textContent = output;
-      setStatus('计算完成');
+      setStatus(t('ui.calcDone','计算完成'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

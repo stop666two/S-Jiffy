@@ -28,32 +28,33 @@
     <p class="tool-desc" data-i18n="desc">定义表结构与列类型，一键生成 N 条类型感知的随机 INSERT 语句。</p>
     <div class="card">
       <div class="form-row">
-        <label for="tableName">表名</label>
+        <label for="tableName" data-i18n="ui.1">表名</label>
         <input id="tableName" class="input js-focus-input" type="text" placeholder="users">
-        <label for="rowCount">生成条数</label>
+        <label for="rowCount" data-i18n="ui.2">生成条数</label>
         <input id="rowCount" class="input" type="text" value="5" placeholder="1-1000">
       </div>
       <table class="col-table">
         <thead>
-          <tr><th>列名</th><th>类型</th><th></th></tr>
+          <tr><th data-i18n="ui.3">列名</th><th data-i18n="ui.4">类型</th><th></th></tr>
         </thead>
         <tbody id="colBody"></tbody>
       </table>
       <div class="form-row">
-        <button class="btn btn-secondary" id="addColBtn">+ 添加列</button>
-        <button class="btn btn-primary" id="genBtn">生成 INSERT 语句</button>
+        <button class="btn btn-secondary" id="addColBtn" data-i18n="ui.5">+ 添加列</button>
+        <button class="btn btn-primary" id="genBtn" data-i18n="ui.6">生成 INSERT 语句</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var TYPES = ['int', 'varchar', 'text', 'date', 'email', 'boolean', 'decimal', 'ip', 'timestamp'];
@@ -143,7 +144,7 @@
       var input = document.createElement('input');
       input.className = 'input';
       input.type = 'text';
-      input.placeholder = '列名，如 name';
+      input.placeholder = t('ui.16','列名，如 name');
       input.value = name || '';
       tdName.appendChild(input);
       var tdType = document.createElement('td');
@@ -161,7 +162,7 @@
       tdDel.className = 'col-del';
       var btn = document.createElement('button');
       btn.className = 'btn btn-secondary';
-      btn.textContent = '删除';
+      btn.textContent = t('ui.15','删除');
       btn.onclick = function () {
         var all = colBody.getElementsByTagName('tr');
         if (all.length <= 1) {
@@ -188,7 +189,7 @@
         var name = inputs[0].value.trim();
         var type = select.value;
         if (!name) {
-          return { error: '第 ' + (i + 1) + ' 行的列名为空，请填写或删除该行。' };
+          return { error: t('ui.nth','第 ') + (i + 1) + t('ui.14',' 行的列名为空，请填写或删除该行。') };
         }
         if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
           return { error: '列名 "' + name + '" 不合法，只能包含字母、数字、下划线且不能以数字开头。' };
@@ -196,7 +197,7 @@
         cols.push({ name: name, type: type });
       }
       if (cols.length === 0) {
-        return { error: '请至少添加一列。' };
+        return { error: t('ui.13','请至少添加一列。') };
       }
       return { cols: cols };
     }
@@ -204,24 +205,24 @@
     function generate() {
       var table = tableNameInput.value.trim();
       if (!table) {
-        outputText.textContent = '请填写表名。';
+        outputText.textContent = t('ui.12','请填写表名。');
         setStatus('表名为空', 'error');
         return;
       }
       if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) {
-        outputText.textContent = '表名不合法，只能包含字母、数字、下划线且不能以数字开头。';
+        outputText.textContent = t('ui.11','表名不合法，只能包含字母、数字、下划线且不能以数字开头。');
         setStatus('表名不合法', 'error');
         return;
       }
       var countStr = rowCountInput.value.trim();
       var count = parseInt(countStr, 10);
       if (!countStr || isNaN(count) || count < 1) {
-        outputText.textContent = '生成条数必须是大于 0 的整数。';
+        outputText.textContent = t('ui.10','生成条数必须是大于 0 的整数。');
         setStatus('条数无效', 'error');
         return;
       }
       if (count > 1000) {
-        outputText.textContent = '单次最多生成 1000 条，请减小条数。';
+        outputText.textContent = t('ui.9','单次最多生成 1000 条，请减小条数。');
         setStatus('条数超出上限', 'error');
         return;
       }
@@ -248,7 +249,7 @@
       var sql = header + '\n' + rows.join(',\n') + ';';
       lastCode = sql;
       outputText.textContent = sql;
-      setStatus('已生成 ' + count + ' 条 INSERT 语句（' + cols.length + ' 列）');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.8',' 条 INSERT 语句（') + cols.length + t('ui.7',' 列）'));
     }
 
     document.getElementById('addColBtn').onclick = function () {

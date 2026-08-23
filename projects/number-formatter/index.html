@@ -18,23 +18,24 @@
 <p class="tool-desc" data-i18n="desc">数字格式化：区域格式、单词（英/中/日/法/德）、序数、罗马数字、科学计数法、货币。</p>
 <div class="card">
 <div class="nf-row">
-<div class="field"><label for="inputNum">输入数字</label><input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any"></div>
-<div class="field"><label for="langSelect">语言</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
-<button id="formatBtn" class="btn btn-primary">格式化</button>
+<div class="field"><label for="inputNum" data-i18n="ui.1">输入数字</label><input id="inputNum" class="input js-focus-input" type="number" value="1234567.89" step="any"></div>
+<div class="field"><label for="langSelect" data-i18n="ui.2">语言</label><select id="langSelect" class="input" style="width:auto;"><option value="en">English</option><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="fr">French</option><option value="de">German</option></select></div>
+<button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button>
 </div>
 <div class="nf-results">
-<div class="nf-item"><span class="key">区域格式</span><span class="val" id="resultComma">-</span></div>
-<div class="nf-item"><span class="key">百分比</span><span class="val" id="resultPercent">-</span></div>
-<div class="nf-item"><span class="key">序数</span><span class="val" id="resultOrdinal">-</span></div>
-<div class="nf-item"><span class="key">单词形式</span><span class="val" id="resultWords">-</span></div>
-<div class="nf-item"><span class="key">罗马数字</span><span class="val" id="resultRoman">-</span></div>
-<div class="nf-item"><span class="key">科学计数法</span><span class="val" id="resultSci">-</span></div>
-<div class="nf-item"><span class="key">货币</span><span class="val" id="resultCurrency">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.3">区域格式</span><span class="val" id="resultComma">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.4">百分比</span><span class="val" id="resultPercent">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.5">序数</span><span class="val" id="resultOrdinal">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.6">单词形式</span><span class="val" id="resultWords">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.7">罗马数字</span><span class="val" id="resultRoman">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.8">科学计数法</span><span class="val" id="resultSci">-</span></div>
+<div class="nf-item"><span class="key" data-i18n="ui.9">货币</span><span class="val" id="resultCurrency">-</span></div>
 </div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){
   var inputNum=document.getElementById('inputNum'),langSelect=document.getElementById('langSelect');
@@ -43,8 +44,8 @@
 
   var onesEn=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
   var tensEn=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
-  var onesCn=['','一','二','三','四','五','六','七','八','九'];var unitsCn=['','十','百','千','万','十','百','千','亿'];
-  var onesJp=['','一','二','三','四','五','六','七','八','九'];var unitsJp=['','十','百','千','万','十','百','千','億'];
+  var onesCn=['', t('ui.one','一'), t('ui.two','二'), t('ui.three','三'), t('ui.four','四'), t('ui.five','五'), t('ui.six','六'), t('ui.28','七'), t('ui.27','八'), t('ui.26','九')];var unitsCn=['', t('ui.24','十'), t('ui.23','百'), t('ui.22','千'), t('ui.25','万'), t('ui.24','十'), t('ui.23','百'), t('ui.22','千'), t('ui.29','亿')];
+  var onesJp=['', t('ui.one','一'), t('ui.two','二'), t('ui.three','三'), t('ui.four','四'), t('ui.five','五'), t('ui.six','六'), t('ui.28','七'), t('ui.27','八'), t('ui.26','九')];var unitsJp=['', t('ui.24','十'), t('ui.23','百'), t('ui.22','千'), t('ui.25','万'), t('ui.24','十'), t('ui.23','百'), t('ui.22','千'), t('ui.21','億')];
   var onesFr=['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
   var tensFr=['','','vingt','trente','quarante','cinquante','soixante','soixante-dix','quatre-vingt','quatre-vingt-dix'];
   var onesDe=['','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
@@ -57,7 +58,7 @@
     if(n>0){if(w!=='')w+='and ';if(n<20)w+=onesEn[n];else{w+=tensEn[Math.floor(n/10)];if(n%10>0)w+='-'+onesEn[n%10];}}
     return w.trim();}
 
-  function numberToWordsCn(n){if(n===0)return'零';if(n<0)return'负'+numberToWordsCn(-n);
+  function numberToWordsCn(n){if(n===0)return'零';if(n<0)returnt('ui.20','负') +numberToWordsCn(-n);
     var s=n.toString(),r='',len=s.length;
     for(var i=0;i<len;i++){var d=parseInt(s[i]),pos=len-1-i;
       if(d===0){if(pos===4||pos===8)r+=unitsCn[pos];else if(r.slice(-1)!=='零'&&i<len-1)r+='零';}
@@ -98,7 +99,7 @@
     res.ordinal.textContent=ordinalSuffix(intPart);
     switch(lang){
       case'cn':res.words.textContent=numberToWordsCn(intPart);break;
-      case'jp':res.words.textContent=numberToWordsGeneric(intPart,onesJp,['','','二十','三十','四十','五十','六十','七十','八十','九十'],['零']);break;
+      case'jp':res.words.textContent=numberToWordsGeneric(intPart,onesJp,['','', t('ui.19','二十'), t('ui.18','三十'), t('ui.17','四十'), t('ui.16','五十'), t('ui.15','六十'), t('ui.14','七十'), t('ui.13','八十'), t('ui.12','九十')],[ t('ui.11','零')]);break;
       case'fr':res.words.textContent=numberToWordsFr(intPart);break;
       case'de':res.words.textContent=numberToWordsDe(intPart);break;
       default:res.words.textContent=numberToWordsEn(intPart);
@@ -108,12 +109,12 @@
     var sym={en:'$',cn:'¥',jp:'¥',fr:'€',de:'€'}[lang]||'$';
     res.currency.textContent=sym+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     outputEl.textContent=res.comma.textContent+' | '+res.words.textContent;
-    setStatus('格式化完成');}
+    setStatus(t('ui.10','格式化完成'));}
 
   formatBtn.addEventListener('click',format);
   inputNum.addEventListener('keydown',function(e){if(e.key==='Enter')format();});
   langSelect.addEventListener('change',format);
-  copyBtn.addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,copyBtn);setStatus('已复制');}});
+  copyBtn.addEventListener('click',function(){var t=outputEl.textContent;if(t){copyToClipboard(t,copyBtn);setStatus(t('ui.copied','已复制'));}});
   format();
 })();
 </script></body></html>

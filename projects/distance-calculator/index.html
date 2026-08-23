@@ -35,35 +35,36 @@
     <p class="tool-desc" data-i18n="desc">计算二维、三维欧氏距离或经纬度球面距离（Haversine），并换算公里、米、英里与海里。</p>
     <div class="card">
       <div class="dc-row">
-        <label for="modeSelect">计算模式</label>
+        <label for="modeSelect" data-i18n="ui.1">计算模式</label>
         <select id="modeSelect" class="input">
-          <option value="2d">二维坐标</option>
-          <option value="3d">三维坐标</option>
-          <option value="geo">经纬度（Haversine）</option>
+          <option value="2d" data-i18n="ui.2">二维坐标</option>
+          <option value="3d" data-i18n="ui.3">三维坐标</option>
+          <option value="geo" data-i18n="ui.4">经纬度（Haversine）</option>
         </select>
       </div>
       <div class="point-box">
-        <span class="p-title">点 1</span>
+        <span class="p-title" data-i18n="ui.5">点 1</span>
         <div class="inputs" id="p1Box"></div>
       </div>
       <div class="point-box">
-        <span class="p-title">点 2</span>
+        <span class="p-title" data-i18n="ui.6">点 2</span>
         <div class="inputs" id="p2Box"></div>
       </div>
       <div style="margin-top:var(--space-2);">
-        <button class="btn btn-primary" id="calcBtn">计算距离</button>
+        <button class="btn btn-primary" id="calcBtn" data-i18n="ui.7">计算距离</button>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var modeEl = document.getElementById('modeSelect');
@@ -126,7 +127,7 @@
           return { empty: true };
         }
         if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(s)) {
-          return { error: name + ' 不是有效数字' };
+          return { error: name + t('ui.16',' 不是有效数字') };
         }
         return { value: parseFloat(s) };
       }
@@ -152,7 +153,7 @@
         var labels;
         if (mode === 'geo') {
           keys = ['lat1', 'lon1', 'lat2', 'lon2'];
-          labels = ['纬度1', '经度1', '纬度2', '经度2'];
+          labels = [ t('ui.15','纬度1'), t('ui.14','经度1'), t('ui.13','纬度2'), t('ui.12','经度2')];
         } else if (mode === '3d') {
           keys = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2'];
           labels = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2'];
@@ -184,7 +185,7 @@
         }
         for (var j = 0; j < vals.length; j++) {
           if (vals[j] === null) {
-            setStatus('请填写完整的 ' + labels[j] + '（所有坐标必填）', 'error');
+            setStatus(t('ui.11','请填写完整的 ') + labels[j] + t('ui.10','（所有坐标必填）'), 'error');
             return;
           }
         }
@@ -211,12 +212,12 @@
           var dy = vals[4] - vals[1];
           var dz = vals[5] - vals[2];
           km = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          formulaNote = '三维欧氏距离 d = ' + sqrtSpan('((x2-x1)² + (y2-y1)² + (z2-z1)²)');
+          formulaNote = t('ui.9','三维欧氏距离 d = ') + sqrtSpan('((x2-x1)² + (y2-y1)² + (z2-z1)²)');
         } else {
           var dxx = vals[2] - vals[0];
           var dyy = vals[3] - vals[1];
           km = Math.sqrt(dxx * dxx + dyy * dyy);
-          formulaNote = '二维欧氏距离 d = ' + sqrtSpan('((x2-x1)² + (y2-y1)²)');
+          formulaNote = t('ui.8','二维欧氏距离 d = ') + sqrtSpan('((x2-x1)² + (y2-y1)²)');
         }
         var meters = km * 1000;
         var miles = km * 0.621371;
@@ -230,7 +231,7 @@
         html += '</div>';
         html += '<div class="formula-note">' + formulaNote + '</div>';
         outputText.innerHTML = html;
-        setStatus('计算完成');
+        setStatus(t('ui.calcDone','计算完成'));
       }
 
       modeEl.addEventListener('change', function () {

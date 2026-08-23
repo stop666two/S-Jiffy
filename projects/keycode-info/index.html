@@ -22,7 +22,7 @@
     <h1 data-i18n="h1">按键信息</h1>
     <p class="tool-desc" data-i18n="desc">按下任意键盘按键，查看详细按键信息。</p>
     <div class="card">
-      <div class="key-display" id="keyDisplay">按下任意键</div>
+      <div class="key-display" id="keyDisplay" data-i18n="ui.1">按下任意键</div>
     </div>
     <div class="key-grid" id="keyGrid">
       <div class="key-item"><label>key</label><span id="kvKey">-</span></div>
@@ -39,9 +39,10 @@
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var display = document.getElementById('keyDisplay');
     var kvKey = document.getElementById('kvKey');
@@ -55,7 +56,7 @@
     var kvRepeat = document.getElementById('kvRepeat');
     var kvWhich = document.getElementById('kvWhich');
     function locationName(l) {
-      return ['标准', '左', '右', '数字键盘', '移动设备', '手柄'][l] || '未知';
+      return [ t('ui.8','标准'), t('ui.7','左'), t('ui.6','右'), t('ui.5','数字键盘'), t('ui.4','移动设备'), t('ui.3','手柄')][l] || '未知';
     }
     document.addEventListener('keydown', function(e) {
       display.textContent = e.key || ' ';
@@ -69,7 +70,7 @@
       kvMeta.textContent = e.metaKey ? 'true' : 'false';
       kvRepeat.textContent = e.repeat ? 'true' : 'false';
       kvWhich.textContent = e.which;
-      setStatus('捕获按键: ' + (e.key || ' '));
+      setStatus(t('ui.2','捕获按键: ') + (e.key || ' '));
       e.preventDefault();
     });
   })();</script>

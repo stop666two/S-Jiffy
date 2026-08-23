@@ -35,20 +35,21 @@
       <label>
         <input type="checkbox" id="excludeCommon" checked> 排除常用端口
       </label>
-      <button id="generateBtn" class="btn btn-primary">生成</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div id="portInfo" class="port-info"></div>
     <div class="output-box" id="输出Container" style="min-height:100px;">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var countEl = document.getElementById('countInput');
@@ -108,8 +109,8 @@
           grid += '<div class="port-item">' + ports[i] + '</div>';
         }
         outputEl.innerHTML = '<div class="port-grid">' + grid + '</div>';
-        infoEl.textContent = '范围: ' + minEl.value + '-' + maxEl.value + ' · ' + (excludeChk.checked ? '已排除 ' + commonPorts.length + ' 个常用端口' : '不排除');
-        setStatus('已生成 ' + ports.length + ' 个端口');
+        infoEl.textContent = t('ui.4','范围: ') + minEl.value + '-' + maxEl.value + ' · ' + (excludeChk.checked ? t('ui.3','已排除 ') + commonPorts.length + ' 个常用端口' : '不排除');
+        setStatus(t('ui.generated','已生成 ') + ports.length + t('ui.2',' 个端口'));
       });
 
       document.getElementById('clearBtn').addEventListener('click', function () {
@@ -121,7 +122,7 @@
         if (text && text.trim()) {
           var nums = text.trim().split(/\s+/).join(', ');
           copyToClipboard(nums, this);
-          setStatus('已复制端口列表');
+          setStatus(t('ui.1','已复制端口列表'));
         }
       });
     })();

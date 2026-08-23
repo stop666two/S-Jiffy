@@ -7,7 +7,7 @@
 <main class="tool-workspace"><h1 data-i18n="h1">翻转文字</h1><p class="tool-desc" data-i18n="desc">将文本翻转、镜像或反转，生成 upside-down / mirror / reverse 效果。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">模式</label>
+<label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.mode">模式</label>
 <label><input type="radio" name="mode" value="flip" checked> 上下翻转</label>
 <label><input type="radio" name="mode" value="mirror"> 镜像</label>
 <label><input type="radio" name="mode" value="reverse"> 反转顺序</label>
@@ -15,12 +15,13 @@
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
-<button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>
 (function(){
 var inputEl=document.getElementById('inputText');
 var outputEl=document.getElementById('outputText');
@@ -68,6 +69,6 @@ else outputEl.textContent=reverse(t);
 setStatus('');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

@@ -14,13 +14,14 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">月相查询</h1><p class="tool-desc" data-i18n="desc">显示当前或任意日期的月相及光照百分比。</p>
-<div class="card"><div class="date-row"><label style="font-size:var(--font-size-sm);">日期</label><input id="dateInput" class="input" type="date"><button id="todayBtn" class="btn btn-secondary">今天</button></div></div>
+<div class="card"><div class="date-row"><label style="font-size:var(--font-size-sm);" data-i18n="ui.date">日期</label><input id="dateInput" class="input" type="date"><button id="todayBtn" class="btn btn-secondary" data-i18n="ui.1">今天</button></div></div>
 <div class="card"><div class="moon-visual"><svg id="moonSvg" width="200" height="200" viewBox="0 0 200 200"></svg></div>
 <div style="text-align:center;margin-top:var(--space-2);"><span id="phaseName" style="font-size:var(--font-size-lg);font-weight:600;"></span><br><span id="illumPct" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span></div>
-<div class="moon-grid"><div class="moon-item"><div class="lbl">新月</div><div class="val" id="nextNew">—</div></div><div class="moon-item"><div class="lbl">满月</div><div class="val" id="nextFull">—</div></div><div class="moon-item"><div class="lbl">上弦月</div><div class="val" id="nextFirstQ">—</div></div><div class="moon-item"><div class="lbl">下弦月</div><div class="val" id="nextLastQ">—</div></div></div></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div></main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<div class="moon-grid"><div class="moon-item"><div class="lbl" data-i18n="ui.2">新月</div><div class="val" id="nextNew">—</div></div><div class="moon-item"><div class="lbl" data-i18n="ui.3">满月</div><div class="val" id="nextFull">—</div></div><div class="moon-item"><div class="lbl" data-i18n="ui.4">上弦月</div><div class="val" id="nextFirstQ">—</div></div><div class="moon-item"><div class="lbl" data-i18n="ui.5">下弦月</div><div class="val" id="nextLastQ">—</div></div></div></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function(){var di=document.getElementById('dateInput'),svg=document.getElementById('moonSvg'),pn=document.getElementById('phaseName'),ip=document.getElementById('illumPct'),o=document.getElementById('outputText');
 di.value=new Date().toISOString().slice(0,10);
@@ -59,6 +60,6 @@ o.textContent=mp.name+' ('+mp.illumination.toFixed(1)+'%)';}
 
 document.getElementById('todayBtn').addEventListener('click',function(){di.value=new Date().toISOString().slice(0,10);update();});
 di.addEventListener('change',update);
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus('已复制');}});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 update();})();
 </script></body></html>

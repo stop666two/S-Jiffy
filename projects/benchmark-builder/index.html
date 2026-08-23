@@ -20,20 +20,21 @@
     <h1 data-i18n="h1">性能测试</h1>
     <p class="tool-desc" data-i18n="desc">通过循环计算测试浏览器 JavaScript 引擎性能，评估你的设备算力。</p>
     <div class="card" style="text-align:center; padding:32px;">
-      <p style="margin-bottom:16px; font-size:var(--font-size-sm); color:var(--color-text-secondary);">点击下方按钮运行测试，约需 2-5 秒。</p>
-      <button id="runBtn" class="btn btn-primary" style="width:200px;">运行测试</button>
+      <p style="margin-bottom:16px; font-size:var(--font-size-sm); color:var(--color-text-secondary);" data-i18n="ui.1">点击下方按钮运行测试，约需 2-5 秒。</p>
+      <button id="runBtn" class="btn btn-primary" style="width:200px;" data-i18n="ui.2">运行测试</button>
     </div>
     <div class="card" id="resultCard" style="display:none;">
       <div class="bm-score" id="scoreDisplay">0</div>
-      <div id="scoreLabel" style="text-align:center; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:16px;">计算中...</div>
+      <div id="scoreLabel" style="text-align:center; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:16px;" data-i18n="ui.3">计算中...</div>
       <div id="detailRows"></div>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var runBtn = document.getElementById('runBtn');
@@ -104,7 +105,7 @@
         else if (score > 100) label = '👍 良好';
         else if (score > 50) label = '👌 一般';
         else label = '🐢 较慢';
-        scoreLabel.textContent = '评分: ' + label + ' (总分越高越好)';
+        scoreLabel.textContent = t('ui.7','评分: ') + label + ' (总分越高越好)';
 
         var html = '';
         var keys = Object.keys(results);
@@ -115,19 +116,19 @@
         detailRows.innerHTML = html;
 
         resultCard.style.display = 'block';
-        setStatus('测试完成，评分: ' + score);
+        setStatus(t('ui.6','测试完成，评分: ') + score);
       }
 
       runBtn.addEventListener('click', function() {
         runBtn.disabled = true;
-        runBtn.textContent = '运行中...';
+        runBtn.textContent = t('ui.5','运行中...');
         resultCard.style.display = 'none';
-        setStatus('正在测试，请稍候...');
+        setStatus(t('ui.4','正在测试，请稍候...'));
         // Use setTimeout to allow UI to update
         setTimeout(function() {
           runBenchmark();
           runBtn.disabled = false;
-          runBtn.textContent = '运行测试';
+          runBtn.textContent = t('ui.2','运行测试');
         }, 50);
       });
     })();

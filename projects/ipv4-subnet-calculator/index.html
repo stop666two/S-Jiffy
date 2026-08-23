@@ -23,10 +23,10 @@
     <div class="card">
       <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label for="cidrInput" style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px;">CIDR 地址</label>
+          <label for="cidrInput" style="display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px;" data-i18n="ui.1">CIDR 地址</label>
           <input id="cidrInput" class="input js-focus-input" type="text" placeholder="192.168.1.0/24" value="192.168.1.0/24">
         </div>
-        <button id="calcBtn" class="btn btn-primary">计算</button>
+        <button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button>
       </div>
     </div>
     <div class="card" id="resultCard">
@@ -34,14 +34,15 @@
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var cidrInput = document.getElementById('cidrInput');
@@ -69,21 +70,21 @@
         var input = cidrInput.value.trim();
         var parts = input.split('/');
         if (parts.length !== 2) {
-          outputEl.textContent = '请输入有效的 CIDR 格式（如 192.168.1.0/24）';
+          outputEl.textContent = t('ui.8','请输入有效的 CIDR 格式（如 192.168.1.0/24）');
           setStatus('', 'error');
           return;
         }
         var ipStr = parts[0];
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          outputEl.textContent = '子网掩码位数必须在 0 — 32 之间';
+          outputEl.textContent = t('ui.7','子网掩码位数必须在 0 — 32 之间');
           setStatus('', 'error');
           return;
         }
 
         var ipNum = ipToNum(ipStr);
         if (isNaN(ipNum) || ipNum === 0) {
-          outputEl.textContent = '无效的 IP 地址';
+          outputEl.textContent = t('ui.6','无效的 IP 地址');
           setStatus('', 'error');
           return;
         }
@@ -113,7 +114,7 @@
         subnetGrid.appendChild(fillItem('可用主机数', hosts.toLocaleString()));
         subnetGrid.appendChild(fillItem('主机范围', (prefix <= 30 ? numToIp(firstHost) + ' — ' + numToIp(lastHost) : '—')));
 
-        outputEl.textContent = input + ' → 掩码: ' + numToIp(mask) + ' | 网络: ' + numToIp(network) + ' | 广播: ' + numToIp(broadcast) + ' | 主机: ' + hosts;
+        outputEl.textContent = input + t('ui.5',' → 掩码: ') + numToIp(mask) + t('ui.4',' | 网络: ') + numToIp(network) + t('ui.3',' | 广播: ') + numToIp(broadcast) + t('ui.2',' | 主机: ') + hosts;
         setStatus('');
       }
 
@@ -122,7 +123,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (text) { copyToClipboard(text, copyBtn); setStatus('已复制到剪贴板'); }
+        if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
       calculate();

@@ -21,20 +21,21 @@
     <p class="tool-desc" data-i18n="desc">输入 CIDR 网段，展开显示该范围内的所有 IP 地址。</p>
     <div class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
       <input id="cidrInput" class="input js-focus-input" placeholder="192.168.1.0/24" style="width:240px;">
-      <button id="expandBtn" class="btn btn-primary">展开</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="expandBtn" class="btn btn-primary" data-i18n="ui.1">展开</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div id="statsArea" class="range-stats" style="display:none;"></div>
     <div class="output-box" id="输出Container" style="min-height:200px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function() {
       var cidrEl = document.getElementById('cidrInput');
@@ -86,7 +87,7 @@
           + '<span class="range-stat">可用 IP: <strong>' + result.list.length + '</strong></span>'
           + '<span class="range-stat">网络地址: <strong>' + ((result.network>>>24)&255)+'.'+((result.network>>>16)&255)+'.'+((result.network>>>8)&255)+'.'+(result.network&255) + '</strong></span>'
           + '<span class="range-stat">广播地址: <strong>' + ((result.broadcast>>>24)&255)+'.'+((result.broadcast>>>16)&255)+'.'+((result.broadcast>>>8)&255)+'.'+(result.broadcast&255) + '</strong></span>';
-        setStatus('已展开 ' + result.list.length + ' 个 IP');
+        setStatus(t('ui.3','已展开 ') + result.list.length + t('ui.2',' 个 IP'));
       });
 
       clearBtn.addEventListener('click', function() {
@@ -99,7 +100,7 @@
       });
 
       copyBtn.addEventListener('click', function() {
-        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); }
+        if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); }
       });
 
       cidrEl.addEventListener('keydown', function(e) {

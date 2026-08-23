@@ -101,15 +101,15 @@
     <p class="tool-desc" data-i18n="desc">使用 AES-GCM + PBKDF2 在浏览器本地加密便签，密文仅存于 localStorage，明文不落盘</p>
     <div id="unavailBox" class="note-unavail" style="display:none;"></div>
     <div class="card">
-      <label class="field-label" for="noteName">便签名称</label>
+      <label class="field-label" for="noteName" data-i18n="ui.1">便签名称</label>
       <input id="noteName" class="input note-input js-focus-input" placeholder="如：服务器密码备忘">
-      <label class="field-label" for="notePassword">加密密码</label>
+      <label class="field-label" for="notePassword" data-i18n="ui.2">加密密码</label>
       <input id="notePassword" class="input note-input" type="password" placeholder="用于加密/解密的密码，请牢记">
-      <label class="field-label" for="noteText">便签内容</label>
+      <label class="field-label" for="noteText" data-i18n="ui.3">便签内容</label>
       <textarea id="noteText" class="input textarea" placeholder="输入要加密保存的内容..."></textarea>
       <div style="margin-top:12px;display:flex;gap:12px;">
-        <button id="saveBtn" class="btn btn-primary">加密保存</button>
-        <button id="clearBtn" class="btn btn-secondary">清空输入</button>
+        <button id="saveBtn" class="btn btn-primary" data-i18n="ui.4">加密保存</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.5">清空输入</button>
       </div>
       <p class="note-hint">加密过程全部在本机完成（PBKDF2 派生密钥 + AES-GCM 加密，随机 salt 与 iv）。数据仅保存在当前浏览器 localStorage，清除浏览器数据将永久丢失；请勿用于存储密码管理器等极端敏感信息。</p>
     </div>
@@ -119,14 +119,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var noteName = document.getElementById('noteName');
@@ -306,7 +307,7 @@
           noteName.value = '';
           outputText.textContent = '';
           renderList();
-          setStatus('已加密保存：' + name);
+          setStatus(t('ui.11','已加密保存：') + name);
         }).catch(function () {
           setStatus('加密失败，请重试', 'error');
         }).then(function () {
@@ -321,7 +322,7 @@
           renderList();
           return;
         }
-        showPrompt('输入密码解密「' + note.name + '」', '加密密码', '', function (pwd) {
+        showPrompt(t('ui.10','输入密码解密「') + note.name + '」', t('ui.2','加密密码'), '', function (pwd) {
           if (pwd === null) return;
           if (!pwd) {
             setStatus('请输入密码', 'error');
@@ -329,7 +330,7 @@
           }
           decryptNote(note, pwd).then(function (plain) {
             outputText.textContent = '【' + note.name + '】' + '\n' + plain;
-            setStatus('解密成功');
+            setStatus(t('ui.9','解密成功'));
           }).catch(function () {
             outputText.textContent = '';
             setStatus('解密失败：密码错误或数据已损坏', 'error');
@@ -343,7 +344,7 @@
           renderList();
           return;
         }
-        showConfirm('确定删除便签「' + note.name + '」？删除后无法恢复。', function (ok) {
+        showConfirm(t('ui.8','确定删除便签「') + note.name + t('ui.7','」？删除后无法恢复。'), function (ok) {
           if (!ok) return;
           var list = loadNotes();
           for (var i = 0; i < list.length; i++) {
@@ -357,7 +358,7 @@
             outputText.textContent = '';
           }
           renderList();
-          setStatus('已删除便签');
+          setStatus(t('ui.6','已删除便签'));
         });
       }
 
@@ -392,7 +393,7 @@
       copyBtn.addEventListener('click', function () {
         if (outputText.textContent) {
           copyToClipboard(outputText.textContent, copyBtn);
-          setStatus('已复制');
+          setStatus(t('ui.copied','已复制'));
         }
       });
 

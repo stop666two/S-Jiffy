@@ -19,10 +19,10 @@
     <p class="tool-desc" data-i18n="desc">使用单词+单词+数字模式生成好记又安全的密码。</p>
     <div class="card">
       <div class="pm-row">
-        <div class="field"><label for="wordCount">单词数量</label><input id="wordCount" class="input" type="number" value="3" min="2" max="8"></div>
-        <div class="field"><label for="sepVal">分隔符</label>
+        <div class="field"><label for="wordCount" data-i18n="ui.1">单词数量</label><input id="wordCount" class="input" type="number" value="3" min="2" max="8"></div>
+        <div class="field"><label for="sepVal" data-i18n="ui.separator">分隔符</label>
           <select id="sepVal" class="input" style="width:auto;min-width:80px;">
-            <option value="">无</option>
+            <option value="" data-i18n="ui.none">无</option>
             <option value="-" selected>-</option>
             <option value="_">_</option>
             <option value=".">.</option>
@@ -30,17 +30,18 @@
             <option value="!">!</option>
           </select>
         </div>
-        <div class="field"><label for="countVal">密码数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
+        <div class="field"><label for="countVal" data-i18n="ui.2">密码数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
       </div>
       <div class="pm-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="capChk" type="checkbox" checked> 首字母大写</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var wordCntEl = document.getElementById('wordCount');
     var sepEl = document.getElementById('sepVal');
@@ -83,11 +84,11 @@
         result.push(parts.join(sep) + num);
       }
       outputEl.textContent = result.join('\n');
-      setStatus('已生成 ' + count + ' 个易记密码');
+      setStatus(t('ui.generated','已生成 ') + count + t('ui.3',' 个易记密码'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

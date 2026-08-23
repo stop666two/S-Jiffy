@@ -30,7 +30,7 @@
     <p class="tool-desc" data-i18n="desc">根据密码长度、字符集与攻击速度，估算暴力破解所需时间并评估密码强度。</p>
     <div class="card">
       <div class="form-row">
-        <label class="field-label" for="passwordInput">密码</label>
+        <label class="field-label" for="passwordInput" data-i18n="ui.1">密码</label>
         <div class="pwd-row">
           <input id="passwordInput" class="input js-focus-input" type="password" maxlength="128" placeholder="请输入要评估的密码">
           <label class="pwd-toggle"><input id="showPwd" type="checkbox"> 显示</label>
@@ -38,7 +38,7 @@
         </div>
       </div>
       <div class="form-row">
-        <span class="field-label">字符集（可能使用的字符种类）</span>
+        <span class="field-label" data-i18n="ui.2">字符集（可能使用的字符种类）</span>
         <div class="chk-group">
           <label class="chk-item"><input type="checkbox" id="chkLower" checked> 小写字母 (26)</label>
           <label class="chk-item"><input type="checkbox" id="chkUpper"> 大写字母 (26)</label>
@@ -47,24 +47,25 @@
         </div>
       </div>
       <div class="form-row" style="margin-bottom:0">
-        <label class="field-label" for="speedSelect">攻击速度</label>
+        <label class="field-label" for="speedSelect" data-i18n="ui.3">攻击速度</label>
         <select id="speedSelect" class="input">
-          <option value="10">慢速在线攻击（10 次/秒）</option>
-          <option value="1000">快速在线攻击（1,000 次/秒）</option>
-          <option value="1000000000">离线 GPU 攻击（100 亿次/秒）</option>
+          <option value="10" data-i18n="ui.4">慢速在线攻击（10 次/秒）</option>
+          <option value="1000" data-i18n="ui.5">快速在线攻击（1,000 次/秒）</option>
+          <option value="1000000000" data-i18n="ui.6">离线 GPU 攻击（100 亿次/秒）</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var pwdEl = document.getElementById('passwordInput');
@@ -89,15 +90,15 @@
       }
 
       function fmtSeconds(sec) {
-        if (sec < 60) return fmtNum(sec) + ' 秒';
-        if (sec < 3600) return fmtInt(sec / 60) + ' 分钟';
-        if (sec < 86400) return fmtInt(sec / 3600) + ' 小时';
-        if (sec < 31536000) return fmtInt(sec / 86400) + ' 天';
+        if (sec < 60) return fmtNum(sec) + t('ui.second',' 秒');
+        if (sec < 3600) return fmtInt(sec / 60) + t('ui.minute',' 分钟');
+        if (sec < 86400) return fmtInt(sec / 3600) + t('ui.hour',' 小时');
+        if (sec < 31536000) return fmtInt(sec / 86400) + t('ui.day',' 天');
         var years = sec / 31536000;
-        if (years < 1e4) return fmtNum(years) + ' 年';
-        if (years < 1e8) return fmtNum(years / 1e4) + ' 万年';
-        if (years < 1e12) return fmtNum(years / 1e8) + ' 亿年';
-        return years.toExponential(2) + ' 年';
+        if (years < 1e4) return fmtNum(years) + t('ui.year',' 年');
+        if (years < 1e8) return fmtNum(years / 1e4) + t('ui.25',' 万年');
+        if (years < 1e12) return fmtNum(years / 1e8) + t('ui.24',' 亿年');
+        return years.toExponential(2) + t('ui.year',' 年');
       }
 
       function fmtSpace(n) {
@@ -106,11 +107,11 @@
       }
 
       function gradeOf(sec) {
-        if (sec < 60) return { text: '极弱', color: 'var(--color-error)' };
-        if (sec < 3600) return { text: '弱', color: 'var(--color-error)' };
-        if (sec < 86400) return { text: '一般', color: 'var(--color-text-secondary)' };
-        if (sec < 3153600000) return { text: '强', color: 'var(--color-success)' };
-        return { text: '不可破解', color: 'var(--color-success)' };
+        if (sec < 60) return { text: t('ui.23','极弱'), color: 'var(--color-error)' };
+        if (sec < 3600) return { text: t('ui.22','弱'), color: 'var(--color-error)' };
+        if (sec < 86400) return { text: t('ui.21','一般'), color: 'var(--color-text-secondary)' };
+        if (sec < 3153600000) return { text: t('ui.20','强'), color: 'var(--color-success)' };
+        return { text: t('ui.19','不可破解'), color: 'var(--color-success)' };
       }
 
       function adviceOf(grade) {
@@ -156,14 +157,7 @@
         var sec = (space / 2) / speed;
         var timeText = fmtSeconds(sec);
         var g = gradeOf(sec);
-        var lines = [
-          '密码长度：' + len + ' 位',
-          '字符集：' + parts.join(' + ') + '（共 ' + spaceSize + ' 种字符）',
-          '组合空间：' + fmtSpace(space) + ' 种组合',
-          '攻击速度：' + speedEl.options[speedEl.selectedIndex].text,
-          '破解时间（平均）：' + timeText,
-          '强度分级：' + g.text,
-          '建议：' + adviceOf(g.text)
+        var lines = [ t('ui.18','密码长度：') + len + t('ui.17',' 位'), t('ui.16','字符集：') + parts.join(' + ') + t('ui.15','（共 ') + spaceSize + t('ui.14',' 种字符）'), t('ui.13','组合空间：') + fmtSpace(space) + t('ui.12',' 种组合'), t('ui.11','攻击速度：') + speedEl.options[speedEl.selectedIndex].text, t('ui.10','破解时间（平均）：') + timeText, t('ui.9','强度分级：') + g.text, t('ui.8','建议：') + adviceOf(g.text)
         ];
         copyText = lines.join('\n');
         var html = '';
@@ -172,7 +166,7 @@
           html += '<div' + color + '>' + htmlEscape(lines[j]) + '</div>';
         }
         outEl.innerHTML = html;
-        setStatus('估算完成');
+        setStatus(t('ui.7','估算完成'));
       }
 
       pwdEl.addEventListener('input', calc);
@@ -186,7 +180,7 @@
       copyBtn.addEventListener('click', function () {
         if (!copyText) return;
         copyToClipboard(copyText, copyBtn);
-        setStatus('已复制');
+        setStatus(t('ui.copied','已复制'));
       });
       calc();
     })();

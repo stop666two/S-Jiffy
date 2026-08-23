@@ -23,21 +23,22 @@
     <div class="card">
       <div class="field-row">
         <input id="resourceName" class="input js-focus-input" placeholder="资源名，如 user">
-        <button class="btn btn-primary" id="generateBtn">生成脚手架</button>
+        <button class="btn btn-primary" id="generateBtn" data-i18n="ui.1">生成脚手架</button>
       </div>
       <div class="field-hint">字段定义：每行「name:type」，多行或逗号分隔均可。类型支持 int / string / bool / float / email / date</div>
       <textarea id="fieldInput" class="input textarea" rows="6" placeholder="id:int&#10;name:string&#10;email:email&#10;age:int"></textarea>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var output = document.getElementById('outputText');
@@ -117,45 +118,45 @@
         var created = makeObj(fields, true);
         var bodyJson = JSON.stringify(body);
         var lines = [];
-        lines.push('资源：' + resource + '  复数形式：' + plural);
+        lines.push(t('ui.14','资源：') + resource + t('ui.13','  复数形式：') + plural);
         lines.push('');
-        lines.push('【1. 列表 LIST】GET ' + base);
+        lines.push(t('ui.12','【1. 列表 LIST】GET ') + base);
         lines.push('curl -X GET ' + "'" + base + "'");
-        lines.push('响应 200 OK:');
+        lines.push(t('ui.6','响应 200 OK:'));
         lines.push(JSON.stringify({ data: [created], total: 1 }, null, 2));
         lines.push('');
-        lines.push('【2. 创建 CREATE】POST ' + base);
+        lines.push(t('ui.11','【2. 创建 CREATE】POST ') + base);
         lines.push("curl -X POST '" + base + "' -H 'Content-Type: application/json' -d '" + bodyJson + "'");
-        lines.push('请求体:');
+        lines.push(t('ui.7','请求体:'));
         lines.push(JSON.stringify(body, null, 2));
-        lines.push('响应 201 Created:');
+        lines.push(t('ui.10','响应 201 Created:'));
         lines.push(JSON.stringify({ data: created }, null, 2));
         lines.push('');
-        lines.push('【3. 查询 GET】GET ' + base + '/{id}');
+        lines.push(t('ui.9','【3. 查询 GET】GET ') + base + '/{id}');
         lines.push("curl -X GET '" + base + "/1'");
-        lines.push('响应 200 OK:');
+        lines.push(t('ui.6','响应 200 OK:'));
         lines.push(JSON.stringify({ data: created }, null, 2));
         lines.push('');
-        lines.push('【4. 更新 UPDATE】PUT ' + base + '/{id}');
+        lines.push(t('ui.8','【4. 更新 UPDATE】PUT ') + base + '/{id}');
         lines.push("curl -X PUT '" + base + "/1' -H 'Content-Type: application/json' -d '" + bodyJson + "'");
-        lines.push('请求体:');
+        lines.push(t('ui.7','请求体:'));
         lines.push(JSON.stringify(body, null, 2));
-        lines.push('响应 200 OK:');
+        lines.push(t('ui.6','响应 200 OK:'));
         lines.push(JSON.stringify({ data: created }, null, 2));
         lines.push('');
-        lines.push('【5. 删除 DELETE】DELETE ' + base + '/{id}');
+        lines.push(t('ui.5','【5. 删除 DELETE】DELETE ') + base + '/{id}');
         lines.push("curl -X DELETE '" + base + "/1'");
-        lines.push('响应 204 No Content（成功删除，无响应体）');
+        lines.push(t('ui.4','响应 204 No Content（成功删除，无响应体）'));
         current = lines.join('\n');
         output.innerHTML = '<pre style="margin:0;font-size:var(--font-size-sm);white-space:pre-wrap;word-break:break-all;font-family:var(--font-mono)">' + htmlEscape(current) + '</pre>';
-        setStatus('已生成 ' + resource + ' 的 CRUD 脚手架');
+        setStatus(t('ui.generated','已生成 ') + resource + t('ui.3',' 的 CRUD 脚手架'));
       }
 
       document.getElementById('generateBtn').addEventListener('click', generate);
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制脚手架内容');
+        setStatus(t('ui.2','已复制脚手架内容'));
       });
     })();
   </script>

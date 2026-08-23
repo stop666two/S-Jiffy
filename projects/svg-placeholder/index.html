@@ -19,36 +19,37 @@
     <p class="tool-desc" data-i18n="desc">生成 SVG 占位图片，自定义尺寸、文字和颜色。</p>
     <div class="card" style="display:flex;flex-direction:column;gap:10px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">宽度</label>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">宽度</label>
         <input id="widthInput" class="input" type="number" value="800" min="10" max="2000" style="width:130px;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">高度</label>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.2">高度</label>
         <input id="heightInput" class="input" type="number" value="400" min="10" max="2000" style="width:130px;">
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">背景色</label>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.bgColor">背景色</label>
         <input id="bgColorInput" class="input" type="text" value="#CCCCCC" style="width:120px;">
         <input id="bgColorPicker" type="color" value="#cccccc" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">文字色</label>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.3">文字色</label>
         <input id="textColorInput" class="input" type="text" value="#333333" style="width:120px;">
         <input id="textColorPicker" type="color" value="#333333" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;">
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">文字</label>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.4">文字</label>
         <input id="textInput" class="input js-focus-input" type="text" value="800 x 400" style="flex:1;min-width:150px;">
-        <button id="generateBtn" class="btn btn-primary">生成 SVG</button>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.5">生成 SVG</button>
       </div>
     </div>
     <div class="svg-preview" id="previewContainer"></div>
     <div class="output-box" style="min-height:120px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制 SVG 代码</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.6">复制 SVG 代码</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script>
   <script>(function(){
     var wEl = document.getElementById('widthInput');
@@ -87,7 +88,7 @@
     tcEl.addEventListener('input', function() { tcPicker.value = this.value; });
     wEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === wEl.defaultValue + ' x ' + hEl.defaultValue) textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
     hEl.addEventListener('change', function() { if (!textEl.value.trim() || textEl.value === '800 x 400') textEl.value = wEl.value + ' x ' + hEl.value; generateSvg(); });
-    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('SVG 代码已复制'); } });
+    document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.7','SVG 代码已复制')); } });
     generateSvg();
   })();</script>
 </body>

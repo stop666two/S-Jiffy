@@ -43,14 +43,15 @@
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
   (function () {
     var searchInput = document.getElementById('searchInput');
@@ -62,50 +63,50 @@
     var lastCopy = '';
 
     var items = [
-      { name: 'forEach', cat: '遍历', desc: '对每个元素执行回调', syntax: 'arr.forEach((item, index) => {...})', ret: 'undefined', example: "[1, 2, 3].forEach((n) => console.log(n));\n// 1 2 3" },
-      { name: 'map', cat: '遍历', desc: '映射为长度相同的新数组', syntax: 'arr.map((item, index) => newItem)', ret: '新数组', example: "[1, 2, 3].map((n) => n * 2);\n// [2, 4, 6]" },
-      { name: 'filter', cat: '遍历', desc: '筛选满足条件的元素', syntax: 'arr.filter((item) => condition)', ret: '新数组', example: "[1, 2, 3, 4].filter((n) => n % 2 === 0);\n// [2, 4]" },
-      { name: 'reduce', cat: '遍历', desc: '从左到右累计归并', syntax: 'arr.reduce((acc, item) => acc + item, init)', ret: '累计结果', example: "[1, 2, 3].reduce((a, b) => a + b, 0);\n// 6" },
-      { name: 'reduceRight', cat: '遍历', desc: '从右到左累计归并', syntax: 'arr.reduceRight((acc, item) => {...}, init)', ret: '累计结果', example: "['a', 'b'].reduceRight((a, b) => a + b);\n// 'ba'" },
-      { name: 'some', cat: '遍历', desc: '任一元素满足则返回 true', syntax: 'arr.some((item) => condition)', ret: '布尔值', example: "[1, 2, 3].some((n) => n > 2);\n// true" },
-      { name: 'every', cat: '遍历', desc: '全部元素满足才返回 true', syntax: 'arr.every((item) => condition)', ret: '布尔值', example: "[1, 2, 3].every((n) => n > 0);\n// true" },
-      { name: 'flatMap', cat: '遍历', desc: '映射后展开一层', syntax: 'arr.flatMap((item) => [a, b])', ret: '新数组', example: "[1, 2].flatMap((n) => [n, n * 10]);\n// [1, 10, 2, 20]" },
-      { name: 'keys', cat: '遍历', desc: '返回索引迭代器', syntax: 'arr.keys()', ret: '迭代器', example: "[...[10, 20].keys()];\n// [0, 1]" },
-      { name: 'values', cat: '遍历', desc: '返回元素值迭代器', syntax: 'arr.values()', ret: '迭代器', example: "[...['a', 'b'].values()];\n// ['a', 'b']" },
-      { name: 'entries', cat: '遍历', desc: '返回 [索引, 值] 迭代器', syntax: 'arr.entries()', ret: '迭代器', example: "[...['x', 'y'].entries()];\n// [[0, 'x'], [1, 'y']]" },
-      { name: 'indexOf', cat: '查找', desc: '返回元素首次出现的索引', syntax: 'arr.indexOf(item, fromIndex?)', ret: '索引或 -1', example: "[1, 2, 3].indexOf(2);\n// 1" },
-      { name: 'lastIndexOf', cat: '查找', desc: '返回元素最后一次出现的索引', syntax: 'arr.lastIndexOf(item)', ret: '索引或 -1', example: "[1, 2, 1].lastIndexOf(1);\n// 2" },
-      { name: 'includes', cat: '查找', desc: '判断是否包含指定元素', syntax: 'arr.includes(item)', ret: '布尔值', example: "[1, 2, 3].includes(2);\n// true" },
-      { name: 'find', cat: '查找', desc: '返回第一个满足条件的元素', syntax: 'arr.find((item) => condition)', ret: '元素或 undefined', example: "[1, 2, 3].find((n) => n > 1);\n// 2" },
-      { name: 'findIndex', cat: '查找', desc: '返回第一个满足条件的索引', syntax: 'arr.findIndex((item) => condition)', ret: '索引或 -1', example: "[1, 2, 3].findIndex((n) => n > 1);\n// 1" },
-      { name: 'findLast', cat: '查找', desc: '从尾部找第一个满足条件的元素', syntax: 'arr.findLast((item) => condition)', ret: '元素或 undefined', example: "[1, 2, 3].findLast((n) => n < 3);\n// 2" },
-      { name: 'findLastIndex', cat: '查找', desc: '从尾部找第一个满足条件的索引', syntax: 'arr.findLastIndex((item) => condition)', ret: '索引或 -1', example: "[1, 2, 3].findLastIndex((n) => n < 3);\n// 1" },
-      { name: 'at', cat: '查找', desc: '按索引取值，支持负数', syntax: 'arr.at(index)', ret: '元素或 undefined', example: "[1, 2, 3].at(-1);\n// 3" },
-      { name: 'push', cat: '增删', desc: '末尾追加一个或多个元素', syntax: 'arr.push(item1, item2)', ret: '新长度', example: "const a = [1];\na.push(2);\n// a 为 [1, 2]，返回 2" },
-      { name: 'pop', cat: '增删', desc: '移除并返回末尾元素', syntax: 'arr.pop()', ret: '被移除的元素', example: "const a = [1, 2];\na.pop();\n// 返回 2，a 为 [1]" },
-      { name: 'shift', cat: '增删', desc: '移除并返回头部元素', syntax: 'arr.shift()', ret: '被移除的元素', example: "const a = [1, 2];\na.shift();\n// 返回 1，a 为 [2]" },
-      { name: 'unshift', cat: '增删', desc: '头部插入一个或多个元素', syntax: 'arr.unshift(item)', ret: '新长度', example: "const a = [2];\na.unshift(1);\n// a 为 [1, 2]，返回 2" },
-      { name: 'splice', cat: '增删', desc: '删除/替换/插入任意位置', syntax: 'arr.splice(start, deleteCount, ...items)', ret: '被删除的元素数组', example: "const a = [1, 2, 3];\na.splice(1, 1, 9);\n// a 为 [1, 9, 3]，返回 [2]" },
-      { name: 'fill', cat: '增删', desc: '用固定值填充区间', syntax: 'arr.fill(value, start?, end?)', ret: '原数组', example: "[1, 2, 3].fill(0, 1);\n// [1, 0, 0]" },
-      { name: 'join', cat: '转换', desc: '用分隔符拼成字符串', syntax: 'arr.join(separator?)', ret: '字符串', example: "['a', 'b', 'c'].join('-');\n// 'a-b-c'" },
-      { name: 'slice', cat: '转换', desc: '截取区间，返回新数组', syntax: 'arr.slice(start?, end?)', ret: '新数组', example: "[1, 2, 3, 4].slice(1, 3);\n// [2, 3]" },
-      { name: 'concat', cat: '转换', desc: '合并数组并返回新数组', syntax: 'arr.concat(arr2, item)', ret: '新数组', example: "[1].concat([2, 3]);\n// [1, 2, 3]" },
-      { name: 'flat', cat: '转换', desc: '按深度展开嵌套数组', syntax: 'arr.flat(depth?)', ret: '新数组', example: "[[1, 2], [3]].flat();\n// [1, 2, 3]" },
-      { name: 'reverse', cat: '转换', desc: '原地反转元素顺序', syntax: 'arr.reverse()', ret: '原数组', example: "const a = [1, 2, 3];\na.reverse();\n// a 为 [3, 2, 1]" },
-      { name: 'sort', cat: '转换', desc: '原地排序（默认按字符串）', syntax: 'arr.sort((a, b) => a - b)', ret: '原数组', example: "[3, 1, 2].sort((a, b) => a - b);\n// [1, 2, 3]" },
-      { name: 'toSorted', cat: '转换', desc: '排序并返回新数组（不修改原数组）', syntax: 'arr.toSorted((a, b) => a - b)', ret: '新数组', example: "[3, 1, 2].toSorted();\n// [1, 2, 3]" },
-      { name: 'toReversed', cat: '转换', desc: '反转并返回新数组', syntax: 'arr.toReversed()', ret: '新数组', example: "[1, 2, 3].toReversed();\n// [3, 2, 1]" },
-      { name: 'toSpliced', cat: '转换', desc: '删除/插入并返回新数组', syntax: 'arr.toSpliced(start, deleteCount, ...items)', ret: '新数组', example: "[1, 2, 3].toSpliced(1, 1, 9);\n// [1, 9, 3]" },
-      { name: 'toString', cat: '转换', desc: '转为逗号分隔字符串', syntax: 'arr.toString()', ret: '字符串', example: "[1, 2, 3].toString();\n// '1,2,3'" },
-      { name: 'toLocaleString', cat: '转换', desc: '按区域设置格式化字符串', syntax: 'arr.toLocaleString(locale?)', ret: '字符串', example: "[1000, 2000].toLocaleString('zh-CN');\n// '1,000,2,000'" },
-      { name: 'copyWithin', cat: '其他', desc: '数组内复制一段到另一位置', syntax: 'arr.copyWithin(target, start?, end?)', ret: '原数组', example: "[1, 2, 3, 4].copyWithin(1, 2);\n// [1, 3, 4, 4]" },
-      { name: 'from', cat: '其他', desc: '从类数组或可迭代对象创建数组', syntax: 'Array.from(arrayLike, mapFn?)', ret: '新数组', example: "Array.from('abc');\n// ['a', 'b', 'c']" },
-      { name: 'of', cat: '其他', desc: '用参数列表创建数组', syntax: 'Array.of(...items)', ret: '新数组', example: "Array.of(1, 2, 3);\n// [1, 2, 3]" },
-      { name: 'isArray', cat: '其他', desc: '判断是否为数组', syntax: 'Array.isArray(value)', ret: '布尔值', example: "Array.isArray([1]);\n// true" },
-      { name: 'length', cat: '其他', desc: '数组长度（可截断）', syntax: 'arr.length', ret: '数字', example: "const a = [1, 2, 3];\na.length = 2;\n// a 为 [1, 2]" }
+      { name: 'forEach', cat: '遍历', desc: t('ui.45','对每个元素执行回调'), syntax: 'arr.forEach((item, index) => {...})', ret: 'undefined', example: "[1, 2, 3].forEach((n) => console.log(n));\n// 1 2 3" },
+      { name: 'map', cat: '遍历', desc: t('ui.44','映射为长度相同的新数组'), syntax: 'arr.map((item, index) => newItem)', ret: '新数组', example: "[1, 2, 3].map((n) => n * 2);\n// [2, 4, 6]" },
+      { name: 'filter', cat: '遍历', desc: t('ui.43','筛选满足条件的元素'), syntax: 'arr.filter((item) => condition)', ret: '新数组', example: "[1, 2, 3, 4].filter((n) => n % 2 === 0);\n// [2, 4]" },
+      { name: 'reduce', cat: '遍历', desc: t('ui.42','从左到右累计归并'), syntax: 'arr.reduce((acc, item) => acc + item, init)', ret: '累计结果', example: "[1, 2, 3].reduce((a, b) => a + b, 0);\n// 6" },
+      { name: 'reduceRight', cat: '遍历', desc: t('ui.41','从右到左累计归并'), syntax: 'arr.reduceRight((acc, item) => {...}, init)', ret: '累计结果', example: "['a', 'b'].reduceRight((a, b) => a + b);\n// 'ba'" },
+      { name: 'some', cat: '遍历', desc: t('ui.40','任一元素满足则返回 true'), syntax: 'arr.some((item) => condition)', ret: '布尔值', example: "[1, 2, 3].some((n) => n > 2);\n// true" },
+      { name: 'every', cat: '遍历', desc: t('ui.39','全部元素满足才返回 true'), syntax: 'arr.every((item) => condition)', ret: '布尔值', example: "[1, 2, 3].every((n) => n > 0);\n// true" },
+      { name: 'flatMap', cat: '遍历', desc: t('ui.38','映射后展开一层'), syntax: 'arr.flatMap((item) => [a, b])', ret: '新数组', example: "[1, 2].flatMap((n) => [n, n * 10]);\n// [1, 10, 2, 20]" },
+      { name: 'keys', cat: '遍历', desc: t('ui.37','返回索引迭代器'), syntax: 'arr.keys()', ret: '迭代器', example: "[...[10, 20].keys()];\n// [0, 1]" },
+      { name: 'values', cat: '遍历', desc: t('ui.36','返回元素值迭代器'), syntax: 'arr.values()', ret: '迭代器', example: "[...['a', 'b'].values()];\n// ['a', 'b']" },
+      { name: 'entries', cat: '遍历', desc: t('ui.35','返回 [索引, 值] 迭代器'), syntax: 'arr.entries()', ret: '迭代器', example: "[...['x', 'y'].entries()];\n// [[0, 'x'], [1, 'y']]" },
+      { name: 'indexOf', cat: '查找', desc: t('ui.34','返回元素首次出现的索引'), syntax: 'arr.indexOf(item, fromIndex?)', ret: '索引或 -1', example: "[1, 2, 3].indexOf(2);\n// 1" },
+      { name: 'lastIndexOf', cat: '查找', desc: t('ui.33','返回元素最后一次出现的索引'), syntax: 'arr.lastIndexOf(item)', ret: '索引或 -1', example: "[1, 2, 1].lastIndexOf(1);\n// 2" },
+      { name: 'includes', cat: '查找', desc: t('ui.32','判断是否包含指定元素'), syntax: 'arr.includes(item)', ret: '布尔值', example: "[1, 2, 3].includes(2);\n// true" },
+      { name: 'find', cat: '查找', desc: t('ui.31','返回第一个满足条件的元素'), syntax: 'arr.find((item) => condition)', ret: '元素或 undefined', example: "[1, 2, 3].find((n) => n > 1);\n// 2" },
+      { name: 'findIndex', cat: '查找', desc: t('ui.30','返回第一个满足条件的索引'), syntax: 'arr.findIndex((item) => condition)', ret: '索引或 -1', example: "[1, 2, 3].findIndex((n) => n > 1);\n// 1" },
+      { name: 'findLast', cat: '查找', desc: t('ui.29','从尾部找第一个满足条件的元素'), syntax: 'arr.findLast((item) => condition)', ret: '元素或 undefined', example: "[1, 2, 3].findLast((n) => n < 3);\n// 2" },
+      { name: 'findLastIndex', cat: '查找', desc: t('ui.28','从尾部找第一个满足条件的索引'), syntax: 'arr.findLastIndex((item) => condition)', ret: '索引或 -1', example: "[1, 2, 3].findLastIndex((n) => n < 3);\n// 1" },
+      { name: 'at', cat: '查找', desc: t('ui.27','按索引取值，支持负数'), syntax: 'arr.at(index)', ret: '元素或 undefined', example: "[1, 2, 3].at(-1);\n// 3" },
+      { name: 'push', cat: '增删', desc: t('ui.26','末尾追加一个或多个元素'), syntax: 'arr.push(item1, item2)', ret: '新长度', example: "const a = [1];\na.push(2);\n// a 为 [1, 2]，返回 2" },
+      { name: 'pop', cat: '增删', desc: t('ui.25','移除并返回末尾元素'), syntax: 'arr.pop()', ret: '被移除的元素', example: "const a = [1, 2];\na.pop();\n// 返回 2，a 为 [1]" },
+      { name: 'shift', cat: '增删', desc: t('ui.24','移除并返回头部元素'), syntax: 'arr.shift()', ret: '被移除的元素', example: "const a = [1, 2];\na.shift();\n// 返回 1，a 为 [2]" },
+      { name: 'unshift', cat: '增删', desc: t('ui.23','头部插入一个或多个元素'), syntax: 'arr.unshift(item)', ret: '新长度', example: "const a = [2];\na.unshift(1);\n// a 为 [1, 2]，返回 2" },
+      { name: 'splice', cat: '增删', desc: t('ui.22','删除/替换/插入任意位置'), syntax: 'arr.splice(start, deleteCount, ...items)', ret: '被删除的元素数组', example: "const a = [1, 2, 3];\na.splice(1, 1, 9);\n// a 为 [1, 9, 3]，返回 [2]" },
+      { name: 'fill', cat: '增删', desc: t('ui.21','用固定值填充区间'), syntax: 'arr.fill(value, start?, end?)', ret: '原数组', example: "[1, 2, 3].fill(0, 1);\n// [1, 0, 0]" },
+      { name: 'join', cat: '转换', desc: t('ui.20','用分隔符拼成字符串'), syntax: 'arr.join(separator?)', ret: '字符串', example: "['a', 'b', 'c'].join('-');\n// 'a-b-c'" },
+      { name: 'slice', cat: '转换', desc: t('ui.19','截取区间，返回新数组'), syntax: 'arr.slice(start?, end?)', ret: '新数组', example: "[1, 2, 3, 4].slice(1, 3);\n// [2, 3]" },
+      { name: 'concat', cat: '转换', desc: t('ui.18','合并数组并返回新数组'), syntax: 'arr.concat(arr2, item)', ret: '新数组', example: "[1].concat([2, 3]);\n// [1, 2, 3]" },
+      { name: 'flat', cat: '转换', desc: t('ui.17','按深度展开嵌套数组'), syntax: 'arr.flat(depth?)', ret: '新数组', example: "[[1, 2], [3]].flat();\n// [1, 2, 3]" },
+      { name: 'reverse', cat: '转换', desc: t('ui.16','原地反转元素顺序'), syntax: 'arr.reverse()', ret: '原数组', example: "const a = [1, 2, 3];\na.reverse();\n// a 为 [3, 2, 1]" },
+      { name: 'sort', cat: '转换', desc: t('ui.15','原地排序（默认按字符串）'), syntax: 'arr.sort((a, b) => a - b)', ret: '原数组', example: "[3, 1, 2].sort((a, b) => a - b);\n// [1, 2, 3]" },
+      { name: 'toSorted', cat: '转换', desc: t('ui.14','排序并返回新数组（不修改原数组）'), syntax: 'arr.toSorted((a, b) => a - b)', ret: '新数组', example: "[3, 1, 2].toSorted();\n// [1, 2, 3]" },
+      { name: 'toReversed', cat: '转换', desc: t('ui.13','反转并返回新数组'), syntax: 'arr.toReversed()', ret: '新数组', example: "[1, 2, 3].toReversed();\n// [3, 2, 1]" },
+      { name: 'toSpliced', cat: '转换', desc: t('ui.12','删除/插入并返回新数组'), syntax: 'arr.toSpliced(start, deleteCount, ...items)', ret: '新数组', example: "[1, 2, 3].toSpliced(1, 1, 9);\n// [1, 9, 3]" },
+      { name: 'toString', cat: '转换', desc: t('ui.11','转为逗号分隔字符串'), syntax: 'arr.toString()', ret: '字符串', example: "[1, 2, 3].toString();\n// '1,2,3'" },
+      { name: 'toLocaleString', cat: '转换', desc: t('ui.10','按区域设置格式化字符串'), syntax: 'arr.toLocaleString(locale?)', ret: '字符串', example: "[1000, 2000].toLocaleString('zh-CN');\n// '1,000,2,000'" },
+      { name: 'copyWithin', cat: '其他', desc: t('ui.9','数组内复制一段到另一位置'), syntax: 'arr.copyWithin(target, start?, end?)', ret: '原数组', example: "[1, 2, 3, 4].copyWithin(1, 2);\n// [1, 3, 4, 4]" },
+      { name: 'from', cat: '其他', desc: t('ui.8','从类数组或可迭代对象创建数组'), syntax: 'Array.from(arrayLike, mapFn?)', ret: '新数组', example: "Array.from('abc');\n// ['a', 'b', 'c']" },
+      { name: 'of', cat: '其他', desc: t('ui.7','用参数列表创建数组'), syntax: 'Array.of(...items)', ret: '新数组', example: "Array.of(1, 2, 3);\n// [1, 2, 3]" },
+      { name: 'isArray', cat: '其他', desc: t('ui.6','判断是否为数组'), syntax: 'Array.isArray(value)', ret: '布尔值', example: "Array.isArray([1]);\n// true" },
+      { name: 'length', cat: '其他', desc: t('ui.5','数组长度（可截断）'), syntax: 'arr.length', ret: '数字', example: "const a = [1, 2, 3];\na.length = 2;\n// a 为 [1, 2]" }
     ];
 
-    var cats = ['全部', '遍历', '查找', '增删', '转换', '其他'];
+    var cats = [ t('ui.all','全部'), t('ui.traverse','遍历'), t('ui.find','查找'), t('ui.4','增删'), t('ui.convert','转换'), t('ui.3','其他')];
 
     function buildCats() {
       var html = '';
@@ -154,7 +155,7 @@
             lastCopy = it.example;
             outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b style="font-family:var(--font-mono);">' + htmlEscape(it.name) + '</b> · ' + htmlEscape(it.desc) + '</div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.example) + '</div>';
             copyBtn.onclick = function () { copyToClipboard(lastCopy, copyBtn); };
-            setStatus('已选中「' + it.name + '」，点击复制按钮可复制示例');
+            setStatus(t('ui.2','已选中「') + it.name + t('ui.1','」，点击复制按钮可复制示例'));
           };
         })(m);
       }

@@ -6,11 +6,12 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Markdown 转 JSX</h1><p class="tool-desc" data-i18n="desc">将 Markdown 文本转换为 React JSX 代码</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="# Hello World\n\nThis is **bold** and *italic*.\n\n- Item 1\n- Item 2\n\n> A quote" style="min-height:200px;"></textarea></div>
-<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary">转换</button><button id="clearBtn" class="btn btn-secondary">清空</button></div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="action-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>
 (function () {
   var inputEl = document.getElementById('inputText');
@@ -158,15 +159,15 @@
     try {
       var result = convert(text);
       outputEl.textContent = result;
-      setStatus('转换成功');
+      setStatus(t('ui.convertOk','转换成功'));
     } catch (e) {
       outputEl.textContent = '';
-      setStatus('转换出错: ' + e.message, 'error');
+      setStatus(t('ui.1','转换出错: ') + e.message, 'error');
     }
   }
 
   document.getElementById('convertBtn').addEventListener('click', doConvert);
   document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
-  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus('已复制到剪贴板'); } });
+  document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
 })();
 </script></body></html>

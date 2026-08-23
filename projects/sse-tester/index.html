@@ -26,21 +26,22 @@
     <div class="card">
       <div class="form-row">
         <input id="urlInput" class="input js-focus-input" placeholder="事件流 URL，如 https://example.com/events">
-        <button class="btn btn-primary" id="connectBtn">连接</button>
-        <button class="btn btn-secondary" id="stopBtn" disabled>停止</button>
+        <button class="btn btn-primary" id="connectBtn" data-i18n="ui.connect">连接</button>
+        <button class="btn btn-secondary" id="stopBtn" disabled data-i18n="ui.1">停止</button>
       </div>
-      <div class="conn-status" id="connStatus">未连接</div>
+      <div class="conn-status" id="connStatus" data-i18n="ui.2">未连接</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var es = null;
@@ -82,13 +83,13 @@
         logs = [];
         output.innerHTML = '';
         current = '';
-        appendLog('正在连接：' + url);
-        setConn('连接中…');
+        appendLog(t('ui.12','正在连接：') + url);
+        setConn(t('ui.11','连接中…'));
         try {
           es = new EventSource(url);
         } catch (e) {
           setConn('连接失败：URL 不合法', 'off');
-          appendLog('错误：URL 不合法，请检查地址格式');
+          appendLog(t('ui.10','错误：URL 不合法，请检查地址格式'));
           setStatus('URL 不合法，无法建立连接', 'error');
           es = null;
           return;
@@ -99,18 +100,18 @@
         es.dispatchEvent = function (ev) {
           var name = ev && ev.type ? ev.type : '未知';
           var data = ev && typeof ev.data !== 'undefined' ? ev.data : '';
-          appendLog('事件 ' + name + (ev && ev.lastEventId ? '（id=' + ev.lastEventId + '）' : ''));
+          appendLog(t('ui.9','事件 ') + name + (ev && ev.lastEventId ? '（id=' + ev.lastEventId + '）' : ''));
           if (data !== '') appendLog('  data: ' + String(data));
           return dispatch(ev);
         };
         es.onopen = function () {
           setConn('已连接，等待事件…', 'on');
-          appendLog('连接成功（EventSource 已建立）');
-          setStatus('连接成功');
+          appendLog(t('ui.8','连接成功（EventSource 已建立）'));
+          setStatus(t('ui.7','连接成功'));
         };
         es.onerror = function () {
           setConn('连接中断，浏览器将自动重连…', 'off');
-          appendLog('错误：连接中断（若跨域受限，目标站需允许 CORS；服务器无响应也会触发）');
+          appendLog(t('ui.6','错误：连接中断（若跨域受限，目标站需允许 CORS；服务器无响应也会触发）'));
           setStatus('连接中断，正在等待自动重连', 'error');
         };
       }
@@ -123,8 +124,8 @@
         document.getElementById('connectBtn').disabled = false;
         document.getElementById('stopBtn').disabled = true;
         setConn('已断开连接', 'off');
-        appendLog('已手动断开连接');
-        setStatus('已断开');
+        appendLog(t('ui.5','已手动断开连接'));
+        setStatus(t('ui.4','已断开'));
       }
 
       document.getElementById('connectBtn').addEventListener('click', connect);
@@ -132,7 +133,7 @@
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!current) return;
         copyToClipboard(current, this);
-        setStatus('已复制事件日志');
+        setStatus(t('ui.3','已复制事件日志'));
       });
     })();
   </script>

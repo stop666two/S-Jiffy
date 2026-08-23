@@ -5,12 +5,13 @@
 <style>.status-card{padding:16px;border-radius:var(--radius-md);text-align:center;font-weight:600;margin-bottom:var(--space-2);}.status-protected{background:#e6f4ea;color:var(--color-success);}.status-vulnerable{background:#fce8e6;color:var(--color-error);}.status-unknown{background:#fef7e0;color:#e37400;}.detail-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;gap:8px;}.detail-row:last-child{border:none;}.detail-label{color:var(--color-text-secondary);min-width:140px;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">点击劫持检测</h1><p class="tool-desc" data-i18n="desc">检测网站是否配置了 X-Frame-Options 或 CSP frame-ancestors 防御点击劫持攻击</p>
-<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="urlInput" class="input js-focus-input" placeholder="https://example.com" style="flex:1;"><button id="checkBtn" class="btn btn-primary">检测</button></div>
-<div class="card" id="resultCard" style="display:none;"><div id="statusDisplay" class="status-card"></div><div id="detailsList"></div><div id="recommendation" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div><div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-xs);color:var(--color-text-secondary);"><strong>检测原理与局限：</strong><br>① 本工具为纯前端检测，结果受浏览器策略差异与目标站点可达性影响，仅作参考。<br>② 目标通过 X-Frame-Options 或 CSP 拒绝嵌入时，不同浏览器行为不同（部分触发加载成功但内容不可读，部分触发加载失败），可能导致判定偏差。<br>③ 检测结果代表「当前浏览器视角」，建议结合响应头信息或服务端工具进一步确认。</div></div>
-<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><input id="urlInput" class="input js-focus-input" placeholder="https://example.com" style="flex:1;"><button id="checkBtn" class="btn btn-primary" data-i18n="ui.1">检测</button></div>
+<div class="card" id="resultCard" style="display:none;"><div id="statusDisplay" class="status-card"></div><div id="detailsList"></div><div id="recommendation" style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div><div style="margin-top:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--color-border);font-size:var(--font-size-xs);color:var(--color-text-secondary);"><strong data-i18n="ui.2">检测原理与局限：</strong><br>① 本工具为纯前端检测，结果受浏览器策略差异与目标站点可达性影响，仅作参考。<br>② 目标通过 X-Frame-Options 或 CSP 拒绝嵌入时，不同浏览器行为不同（部分触发加载成功但内容不可读，部分触发加载失败），可能导致判定偏差。<br>③ 检测结果代表「当前浏览器视角」，建议结合响应头信息或服务端工具进一步确认。</div></div>
+<div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script>(function(){
 var urlInput=document.getElementById('urlInput'),checkBtn=document.getElementById('checkBtn'),resultCard=document.getElementById('resultCard'),statusDisplay=document.getElementById('statusDisplay'),detailsList=document.getElementById('detailsList'),recommendation=document.getElementById('recommendation'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var verdictRow=null,auxRows=[],runId=0,currentFrame=null;
@@ -31,7 +32,7 @@ function finish(result){
   outputText.textContent=result.out;
   verdictRow=result.detail;
   renderDetails();
-  setStatus('检测完成');
+  setStatus(t('ui.6','检测完成'));
 }
 function vulnerableDetail(label,text){
   return '<div class="detail-row"><span class="detail-label">'+label+'</span><span style="color:var(--color-error);font-weight:600;">'+text+'</span></div>';
@@ -64,9 +65,9 @@ function runIframeProbe(url,myRun){
     try{doc=frame.contentDocument;}catch(e){secured=true;}
     done();
     if(secured){
-      finish({statusText:'❌ 可嵌入（存在被点击劫持风险）',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测','跨域加载成功，目标页面可被嵌入（建议结合响应头进一步确认）'),rec:headerSuggestion()});
+      finish({statusText:'❌ 可嵌入（存在被点击劫持风险）',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测', t('ui.5','跨域加载成功，目标页面可被嵌入（建议结合响应头进一步确认）')),rec:headerSuggestion()});
     }else if(doc&&doc.body&&doc.body.innerHTML&&doc.body.innerHTML.replace(/\s/g,'')!==''){
-      finish({statusText:'❌ 可嵌入',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测','目标页面已在 iframe 中成功渲染，可被嵌入'),rec:headerSuggestion()});
+      finish({statusText:'❌ 可嵌入',cls:'status-vulnerable',out:'可嵌入',detail:vulnerableDetail('iframe 探测', t('ui.4','目标页面已在 iframe 中成功渲染，可被嵌入')),rec:headerSuggestion()});
     }else{
       finish({statusText:'✅ 受保护',cls:'status-protected',out:'受保护',detail:protectedDetail('iframe 探测','目标拒绝在 iframe 中渲染内容，已被 X-Frame-Options 或 CSP frame-ancestors 阻止嵌入'),rec:'该网站已配置防点击劫持保护措施，通过响应头限制自身页面被第三方站点嵌入，点击劫持风险较低。'});
     }
@@ -115,7 +116,7 @@ checkBtn.addEventListener('click',function(){
   verdictRow=null;
   auxRows=[];
   resultCard.style.display='block';
-  statusDisplay.textContent='检测中...';
+  statusDisplay.textContent = t('ui.3','检测中...');
   statusDisplay.className='status-card status-unknown';
   recommendation.textContent='';
   outputText.textContent='';
@@ -123,7 +124,7 @@ checkBtn.addEventListener('click',function(){
   runIframeProbe(url,myRun);
   runFetchAux(url,myRun);
 });
-copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
 urlInput.addEventListener('keydown',function(e){if(e.key==='Enter')checkBtn.click();});
 })();</script>
 </body></html>

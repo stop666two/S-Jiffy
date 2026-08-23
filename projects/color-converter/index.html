@@ -25,10 +25,10 @@
     <h1 data-i18n="h1">颜色转换</h1>
     <p class="tool-desc" data-i18n="desc">HEX / RGB / HSL / CMYK / HSV / OKLCH / LAB / LCH / HSLA 互转，含色盲模拟。</p>
     <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">输入</label>
+      <label style="font-size:var(--font-size-sm); color:var(--color-text-secondary);" data-i18n="ui.1">输入</label>
       <input id="colorInput" class="input js-focus-input" placeholder="#1E6DF2 或 rgb(30,109,242)" style="width:320px;">
-      <button id="convertBtn" class="btn btn-primary">转换</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div id="previewBox" class="color-preview-lg"></div>
     <div class="card">
@@ -43,15 +43,16 @@
         <div class="color-row"><label>LAB</label><span class="val" id="valLab">—</span></div>
         <div class="color-row"><label>LCH</label><span class="val" id="valLch">—</span></div>
       </div>
-      <div class="cb-section"><h3>色盲模拟</h3><div class="cb-swatches" id="cbSim"></div></div>
+      <div class="cb-section"><h3 data-i18n="ui.2">色盲模拟</h3><div class="cb-swatches" id="cbSim"></div></div>
     </div>
     <div class="output-box" id="输出Container" style="min-height:60px;">
       <span id="outputText" style="display:block; padding-right:60px; white-space:pre-line;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('colorInput'), preview = document.getElementById('previewBox');
@@ -227,7 +228,7 @@
       });
       inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('convertBtn').click(); });
       document.getElementById('clearBtn').addEventListener('click', function () { inputEl.value = ''; o.textContent = ''; preview.style.background = ''; [vHex, vRgb, vHsl, vHsla, vHsv, vCmyk, vOklch, vLab, vLch].forEach(function (el) { el.textContent = '—'; }); cbSim.innerHTML = ''; setStatus(''); inputEl.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus('已复制'); } });
+      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('ui.copied','已复制')); } });
     })();
   </script>
 </body>

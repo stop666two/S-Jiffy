@@ -7,9 +7,9 @@
 <main class="tool-workspace"><h1 data-i18n="h1">Base58 编解码</h1><p class="tool-desc" data-i18n="desc">Base58（Bitcoin 风格）编码/解码。用于加密货币地址和简短标识符。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<button id="encodeBtn" class="btn btn-primary">编码</button>
-<button id="decodeBtn" class="btn btn-secondary">解码</button>
-<button id="clearBtn" class="btn btn-secondary">清空</button>
+<button id="encodeBtn" class="btn btn-primary" data-i18n="ui.encode">编码</button>
+<button id="decodeBtn" class="btn btn-secondary" data-i18n="ui.decode">解码</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
 <textarea id="inputText" class="js-focus-input" placeholder="输入文本或 Base58 字符串...">Hello S-Jiffy</textarea>
@@ -17,10 +17,11 @@
 </div>
 <div class="note">Base58 字母表: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz (不含 0、O、I、l)</div>
 </div>
-<div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
-<script src="../../assets/js/global.js"></script><script>(function(){
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script><script>(function(){
 var ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 var BASE=BigInt(58);
 
@@ -75,7 +76,7 @@ try{
 var bytes=stringToBytes(text);
 var base58=bytesToBase58(bytes);
 outputEl.value=base58;
-statusText.textContent='编码完成，'+base58.length+' 字符';
+statusText.textContent = t('ui.2','编码完成，')+base58.length+ t('ui.chars',' 字符');
 setStatus('');
 }catch(e){setStatus('编码错误','error');}
 }
@@ -87,7 +88,7 @@ try{
 var bytes=base58ToBytes(text);
 var decoded=bytesToString(bytes);
 outputEl.value=decoded;
-statusText.textContent='解码完成，'+decoded.length+' 字符';
+statusText.textContent = t('ui.1','解码完成，')+decoded.length+ t('ui.chars',' 字符');
 setStatus('');
 }catch(e){setStatus('解码错误：Base58 格式无效','error');}
 }
@@ -103,5 +104,5 @@ var copyBtn=document.getElementById('copyBtn');
 encodeBtn.addEventListener('click',encode);
 decodeBtn.addEventListener('click',decode);
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.value='';statusText.textContent='';setStatus('');inputEl.focus();});
-copyBtn.addEventListener('click',function(){if(outputEl.value){copyToClipboard(outputEl.value,copyBtn);setStatus('已复制');}});
+copyBtn.addEventListener('click',function(){if(outputEl.value){copyToClipboard(outputEl.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 })();</script></body></html>

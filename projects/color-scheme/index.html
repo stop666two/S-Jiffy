@@ -8,16 +8,17 @@
 <div class="card">
 <div class="scheme-controls">
 <label>背景色 <input id="baseColor" type="color" value="#F7F6F3"></label>
-<label>色相变化 <select id="hueVar"><option value="0">0° (同色系)</option><option value="30">30°</option><option value="60">60° (邻近)</option><option value="90">90°</option><option value="120">120° (三分)</option><option value="180" selected>180° (互补)</option></select></label>
+<label>色相变化 <select id="hueVar"><option value="0" data-i18n="ui.1">0° (同色系)</option><option value="30">30°</option><option value="60" data-i18n="ui.2">60° (邻近)</option><option value="90">90°</option><option value="120" data-i18n="ui.3">120° (三分)</option><option value="180" selected data-i18n="ui.4">180° (互补)</option></select></label>
 <label>数量 <input id="countInput" type="number" min="2" max="20" value="6"></label>
-<button id="generateBtn" class="btn btn-primary" style="height:40px;">生成</button>
+<button id="generateBtn" class="btn btn-primary" style="height:40px;" data-i18n="ui.generate">生成</button>
 </div>
 <div class="scheme-grid" id="schemeGrid"></div>
 </div>
-<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
-<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
 <script src="../../assets/js/custom-controls.js"></script><script>(function(){
 var baseColor=document.getElementById('baseColor');
 var hueVar=document.getElementById('hueVar');
@@ -129,7 +130,7 @@ html+='<div class="meta" style="border-top:1px solid var(--color-border);"><span
 html+='</div>';
 }
 schemeGrid.innerHTML=html;
-outputEl.textContent='生成 '+count+' 个配色方案';
+outputEl.textContent = t('ui.generate','生成 ')+count+ t('ui.12',' 个配色方案');
 var cards=schemeGrid.querySelectorAll('.scheme-card');
 for(var i=0;i<cards.length;i++){
 (function(el){
@@ -137,9 +138,9 @@ el.addEventListener('click',function(){
 var fg=this.getAttribute('data-fg');
 var bg=this.getAttribute('data-bg');
 var ratio=this.getAttribute('data-ratio');
-var txt='前景: '+fg+' | 背景: '+bg+' | 对比度: '+ratio+':1';
+var txt=t('ui.8','前景: ') +fg+ t('ui.11',' | 背景: ')+bg+ t('ui.10',' | 对比度: ')+ratio+':1';
 copyToClipboard(txt,copyBtn);
-setStatus('已复制配色信息');
+setStatus(t('ui.9','已复制配色信息'));
 });
 })(cards[i]);
 }
@@ -155,9 +156,9 @@ for(var i=0;i<cards.length;i++){
 var fg=cards[i].getAttribute('data-fg');
 var bg=cards[i].getAttribute('data-bg');
 var ratio=cards[i].getAttribute('data-ratio');
-lines.push('前景:'+fg+' 背景:'+bg+' 对比度:'+ratio);
+lines.push(t('ui.8','前景:') +fg+ t('ui.7',' 背景:')+bg+ t('ui.6',' 对比度:')+ratio);
 }
-copyToClipboard(lines.join('\n'),copyBtn);setStatus('已复制全部');
+copyToClipboard(lines.join('\n'),copyBtn);setStatus(t('ui.5','已复制全部'));
 });
 generate();
 })();</script></body></html>

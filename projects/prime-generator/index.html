@@ -19,19 +19,20 @@
     <p class="tool-desc" data-i18n="desc">在指定范围内生成质数，支持筛选孪生素数和安全素数。</p>
     <div class="card">
       <div class="pg-row">
-        <div class="field"><label for="minVal">起始值</label><input id="minVal" class="input" type="number" value="1"></div>
-        <div class="field"><label for="maxVal">结束值</label><input id="maxVal" class="input" type="number" value="200"></div>
+        <div class="field"><label for="minVal" data-i18n="ui.1">起始值</label><input id="minVal" class="input" type="number" value="1"></div>
+        <div class="field"><label for="maxVal" data-i18n="ui.2">结束值</label><input id="maxVal" class="input" type="number" value="200"></div>
       </div>
       <div class="pg-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="twinChk" type="checkbox"> 仅显示孪生素数</label>
         <label style="display:flex;align-items:center;gap:8px;"><input id="safeChk" type="checkbox"> 仅显示安全素数</label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary">生成</button></div>
+      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
-    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn">复制</button></div>
+    <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
-  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div>S-Jiffy · 即用即走</div></footer>
+  <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>(function(){
     var minEl = document.getElementById('minVal');
     var maxEl = document.getElementById('maxVal');
@@ -87,11 +88,11 @@
       var display = primes.join(', ');
       if (display.length === 0) display = '（无符合条件的质数）';
       outputEl.textContent = display;
-      setStatus('找到 ' + primes.length + ' 个质数');
+      setStatus(t('ui.4','找到 ') + primes.length + t('ui.3',' 个质数'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>
 </html>

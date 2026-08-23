@@ -27,18 +27,19 @@
     <p class="tool-desc" data-i18n="desc">CIDR 格式 IPv4 子网计算，含二进制可视化。</p>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <input id="cidrInput" class="input js-focus-input" placeholder="192.168.1.0/24" style="width:220px;">
-      <button id="calcBtn" class="btn btn-primary">计算</button>
+      <button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button>
     </div>
     <div id="resultBox" class="output-box" style="min-height:200px;">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var cidrEl = document.getElementById('cidrInput');
@@ -140,7 +141,7 @@
 
       calcBtn.addEventListener('click', update);
       cidrEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') update(); });
-      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus('已复制'); } });
+      copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
     })();
   </script>
 </body>

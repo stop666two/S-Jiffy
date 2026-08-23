@@ -26,22 +26,23 @@
       <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴演讲稿文本..." style="min-height:160px;"></textarea>
       <div class="spd-controls">
         <select id="speedSelect" class="input">
-          <option value="100">慢速（100 字/分）</option>
-          <option value="180" selected>正常（180 字/分）</option>
-          <option value="240">快速（240 字/分）</option>
+          <option value="100" data-i18n="ui.1">慢速（100 字/分）</option>
+          <option value="180" selected data-i18n="ui.2">正常（180 字/分）</option>
+          <option value="240" data-i18n="ui.3">快速（240 字/分）</option>
         </select>
       </div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
-    <div>S-Jiffy · 即用即走</div>
+    <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
   </footer>
   <script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script></script>
   <script>
     (function () {
       var inputEl = document.getElementById('inputText');
@@ -92,10 +93,10 @@
         var html = [];
         html.push('<div class="spd-time">' + formatTime(seconds) + '</div>');
         html.push('<div class="spd-range">时长区间（±10%）：' + formatTime(low) + ' ~ ' + formatTime(high) + '</div>');
-        html.push('<div class="spd-detail">中文 ' + cjkCount + ' 字 + 英文 ' + wordCount + ' 词 = 共 ' + units + ' 个计速单位<br>语速：' + speed + ' 单位/分</div>');
+        html.push('<div class="spd-detail">中文 ' + cjkCount + t('ui.12',' 字 + 英文 ') + wordCount + t('ui.11',' 词 = 共 ') + units + ' 个计速单位<br>语速：' + speed + ' 单位/分</div>');
         outputEl.innerHTML = html.join('');
-        lastPlain = '预计时长：' + formatTime(seconds) + '（区间 ' + formatTime(low) + ' ~ ' + formatTime(high) + '）' + '\n中文 ' + cjkCount + ' 字，英文 ' + wordCount + ' 词，总计 ' + units + ' 单位，语速 ' + speed + '/分';
-        setStatus('估算完成：' + formatTime(seconds));
+        lastPlain = t('ui.10','预计时长：') + formatTime(seconds) + t('ui.9','（区间 ') + formatTime(low) + ' ~ ' + formatTime(high) + '）' + '\n中文 ' + cjkCount + t('ui.8',' 字，英文 ') + wordCount + t('ui.7',' 词，总计 ') + units + t('ui.6',' 单位，语速 ') + speed + t('ui.5','/分');
+        setStatus(t('ui.4','估算完成：') + formatTime(seconds));
       }
 
       inputEl.addEventListener('input', render);

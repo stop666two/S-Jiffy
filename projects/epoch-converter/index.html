@@ -66,10 +66,26 @@
 
   function getDateFromTs(val,unit){var num=parseFloat(val);if(isNaN(num))return null;return unit==='auto'?(num>1e12?new Date(num):new Date(num*1000)):(unit==='milliseconds'?new Date(num):new Date(num*1000));}
 
+  function parseAny(raw){
+    if(raw.toLowerCase()==='now')return new Date();
+    if(/^\d+$/.test(raw)){var num=parseInt(raw,10);return num<1e12?new Date(num*1000):new Date(num);}
+    var d=new Date(raw);return isNaN(d.getTime())?null:d;
+  }
+
+  function relText(date){
+    var now=Date.now(),diff=date.getTime()-now,abs=Math.abs(diff);
+    if(abs<60000)return t('justNow','刚刚');
+    if(abs<3600000){var mins=Math.round(abs/60000);return diff<0?mins+t('minAgo',' 分钟前'):t('inMin','约 ')+mins+t('minLater',' 分钟后');}
+    if(abs<86400000){var hrs=Math.round(abs/3600000);return diff<0?hrs+t('hrAgo',' 小时前'):t('inHr','约 ')+hrs+t('hrLater',' 小时后');}
+    var days=Math.round(abs/86400000);
+    return diff<0?days+t('dayAgo',' 天前'):t('inDay','约 ')+days+t('dayLater',' 天后');
+  }
+
   document.getElementById('tsToDateBtn').addEventListener('click',function(){
     var raw=tsInput.value.trim();if(!raw){ts结果.textContent = t('ui.12','请输入时间戳');extraInfo.style.display='none';return;}
-    var d=getDateFromTs(raw,tsUnit.value);if(!d||isNaN(d.getTime())){ts结果.textContent = t('ui.11','时间戳无效');extraInfo.style.display='none';return;}
+    var d=parseAny(raw);if(!d||isNaN(d.getTime())){ts结果.textContent = t('ui.11','时间戳无效');extraInfo.style.display='none';return;}
     ts结果.textContent=formatDate(d,'Asia/Shanghai')+' (CST) | '+d.toISOString()+' (UTC)';
+    ts结果.innerHTML+='<br>ISO 8601: '+d.toISOString()+'<br>UTC / RFC 2822: '+d.toUTCString()+'<br>'+t('relativeTime','相对时间')+': '+relText(d);
     weekEl.textContent=getWeekOfYear(d);quarterEl.textContent='Q'+getQuarter(d);doyEl.textContent=getDayOfYear(d);extraInfo.style.display='block';
     setStatus(t('ui.converted','已转换'));});
 

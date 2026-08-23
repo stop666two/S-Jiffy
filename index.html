@@ -49,6 +49,9 @@
       text-decoration: none;
       color: inherit;
       transition: border-color 0.15s, background-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      height: 168px;
     }
     .tool-card:hover {
       border-color: var(--color-text-primary);
@@ -59,17 +62,32 @@
       font-weight: 600;
       margin-bottom: 4px;
       font-family: var(--font-mono);
+      flex-shrink: 0;
     }
     .tool-card p {
       font-size: var(--font-size-sm);
       color: var(--color-text-secondary);
       line-height: 1.4;
       margin-bottom: 8px;
+      flex: 1;
+      min-height: 44px;
+      max-height: 66px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .tool-card p::-webkit-scrollbar {
+      width: 4px;
+    }
+    .tool-card p::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 2px;
     }
     .tool-card .tags {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
+      margin-top: auto;
+      flex-shrink: 0;
     }
     .tool-card .tags span {
       font-size: 10px;
@@ -876,7 +894,7 @@
           if (!tool) return;
           var card = document.createElement('div');
           card.style.display = 'flex';
-          card.style.alignItems = 'flex-start';
+          card.style.alignItems = 'stretch';
           card.style.gap = '8px';
 
           if (isHistory) {

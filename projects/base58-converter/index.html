@@ -12,10 +12,10 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
-<textarea id="inputText" class="js-focus-input" placeholder="输入文本或 Base58 字符串...">Hello S-Jiffy</textarea>
-<textarea id="outputText" readonly placeholder="结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="inputText" class="js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本或 Base58 字符串...">Hello S-Jiffy</textarea>
+<textarea id="outputText" readonly data-i18n-placeholder="ui.105" placeholder="结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
-<div class="note">Base58 字母表: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz (不含 0、O、I、l)</div>
+<div class="note" data-i18n="ui.106">Base58 字母表: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz (不含 0、O、I、l)</div>
 </div>
 <div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
@@ -71,26 +71,26 @@ return bytes;
 
 function encode(){
 var text=inputEl.value;
-if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入内容','error');return;}
+if(!text){outputEl.value='';statusText.textContent='';setStatus(t('ui.100','请输入内容'),'error');return;}
 try{
 var bytes=stringToBytes(text);
 var base58=bytesToBase58(bytes);
 outputEl.value=base58;
 statusText.textContent = t('ui.2','编码完成，')+base58.length+ t('ui.chars',' 字符');
 setStatus('');
-}catch(e){setStatus('编码错误','error');}
+}catch(e){setStatus(t('ui.101','编码错误'),'error');}
 }
 
 function decode(){
 var text=inputEl.value.trim();
-if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入 Base58','error');return;}
+if(!text){outputEl.value='';statusText.textContent='';setStatus(t('ui.102','请输入 Base58'),'error');return;}
 try{
 var bytes=base58ToBytes(text);
 var decoded=bytesToString(bytes);
 outputEl.value=decoded;
 statusText.textContent = t('ui.1','解码完成，')+decoded.length+ t('ui.chars',' 字符');
 setStatus('');
-}catch(e){setStatus('解码错误：Base58 格式无效','error');}
+}catch(e){setStatus(t('ui.103','解码错误：Base58 格式无效'),'error');}
 }
 
 var inputEl=document.getElementById('inputText');

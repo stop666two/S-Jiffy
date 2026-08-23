@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">列表随机化</h1>
     <p class="tool-desc" data-i18n="desc">输入列表（每行一项），打乱顺序或随机抽取。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入列表..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="每行一项，输入列表..."></textarea>
     </div>
     <div class="lr-actions">
       <button id="shuffleBtn" class="btn btn-primary" data-i18n="ui.1">打乱顺序</button>
@@ -44,7 +44,7 @@
 
       function getItems() {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入列表', 'error'); return null; }
+        if (!text) { setStatus(t('ui.100','请输入列表'), 'error'); return null; }
         return text.split('\n').filter(function(l) { return l.trim().length > 0; });
       }
 

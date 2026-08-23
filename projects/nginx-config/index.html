@@ -4,13 +4,13 @@
 <div class="row"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button><button id="clearBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px" data-i18n="ui.clear">清空</button></div></div><div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main><footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer><script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script></script><script>(function(){var d=document.getElementById("domain"),m=document.getElementById("mode"),pr=document.getElementById("proxyRow"),pt=document.getElementById("proxyTarget"),o=document.getElementById("outputText");
 m.addEventListener("change",function(){pr.style.display=m.value==="static"?"none":"flex"});
-document.getElementById("generateBtn").addEventListener("click",function(){var domain=d.value.trim(),mode=m.value,target=pt.value.trim();if(!domain){setStatus("请输入域名","error");return}
+document.getElementById("generateBtn").addEventListener("click",function(){var domain=d.value.trim(),mode=m.value,target=pt.value.trim();if(!domain){setStatus(t('ui.100','请输入域名'),"error");return}
 var cfg="server {\n    listen 80;\n    server_name "+domain+";\n    charset utf-8;\n\n";
-if(mode==="proxy"){if(!target){setStatus("请输入代理地址","error");return}
+if(mode==="proxy"){if(!target){setStatus(t('ui.101','请输入代理地址'),"error");return}
 cfg+="    location / {\n        proxy_pass "+target+";\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n"
 }else if(mode==="spa"){cfg+="    root /var/www/"+domain+";\n    index index.html;\n\n    location / {\n        try_files $uri $uri/ /index.html;\n    }\n"
 }else{cfg+="    root /var/www/"+domain+";\n    index index.html;\n\n    location / {\n        try_files $uri $uri/ =404;\n    }\n"}
 cfg+="\n    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {\n        expires 30d;\n        add_header Cache-Control \"public, immutable\";\n    }\n\n    gzip on;\n    gzip_types text/css application/javascript image/svg+xml;\n}"
-o.textContent=cfg;setStatus("配置已生成")});
+o.textContent=cfg;setStatus(t('ui.102','配置已生成'))});
 document.getElementById("clearBtn").addEventListener("click",function(){o.textContent="";setStatus("")});
-document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus("已复制")}});})();</script></body></html>
+document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.103','已复制'))}});})();</script></body></html>

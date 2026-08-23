@@ -72,7 +72,7 @@
     <h1 data-i18n="h1">API Key 识别器</h1>
     <p class="tool-desc" data-i18n="desc">粘贴文本，自动识别 AWS、Google、GitHub、Stripe 等平台的密钥格式并展示打码示例</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴配置、日志或代码片段，自动检测其中的 API Key..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴配置、日志或代码片段，自动检测其中的 API Key..."></textarea>
       <div style="margin-top:12px;display:flex;gap:12px;">
         <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
@@ -168,7 +168,7 @@
         tableCard.style.display = 'block';
         if (total > 0) {
           outputText.textContent = t('ui.11','检测到 ') + total + t('ui.10',' 个疑似密钥，涉及 ') + hitPlatforms + t('ui.9',' 个平台');
-          riskText.textContent = '文本中存在疑似密钥，可能已被泄露。请立即在对应平台的控制台吊销并轮换密钥；切勿将密钥提交到公共仓库、日志或聊天记录；建议接入密钥扫描与密钥管理服务（如 Vault、云平台 Secret Manager）。';
+          riskText.textContent = t('ui.100','文本中存在疑似密钥，可能已被泄露。请立即在对应平台的控制台吊销并轮换密钥；切勿将密钥提交到公共仓库、日志或聊天记录；建议接入密钥扫描与密钥管理服务（如 Vault、云平台 Secret Manager）。');
           riskBox.style.display = 'block';
           setStatus(t('ui.8','检测到疑似密钥'));
         } else {

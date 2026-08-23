@@ -10,7 +10,7 @@
 <div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;" data-i18n="ui.1">速度</label><input id="speedInput" type="range" min="2" max="20" value="10" style="width:120px;"><span id="speedVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">10</span></div>
 <div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;" data-i18n="ui.2">音高(Hz)</label><input id="pitchInput" type="range" min="200" max="2000" value="700" style="width:120px;"><span id="pitchVal" style="font-size:var(--font-size-sm);font-family:var(--font-mono);">700</span></div>
 </div>
-<textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换为摩斯码并播放的文本..." style="min-height:80px;"></textarea>
+<textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入要转换为摩斯码并播放的文本..." style="min-height:80px;"></textarea>
 </div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="playBtn" class="btn btn-secondary" data-i18n="ui.3">▶ 播放</button><button id="stopBtn" class="btn btn-secondary" data-i18n="ui.4">■ 停止</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
@@ -86,7 +86,7 @@ osc.stop(start+dur);
 }
 convertBtn.addEventListener('click',function(){
 var t=inputEl.value;
-if(!t){setStatus('请输入文本','error');return;}
+if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
 var morse=textToMorse(t);
 outputEl.textContent=morse;
 setStatus('');
@@ -94,7 +94,7 @@ setStatus('');
 playBtn.addEventListener('click',function(){
 var morse=outputEl.textContent.trim();
 if(!morse||(morse.indexOf('.')===-1&&morse.indexOf('-')===-1)){
-setStatus('请先转换文本','error');return;}
+setStatus(t('ui.101','请先转换文本'),'error');return;}
 setStatus(t('ui.6','播放中...'));
 playMorse(morse);
 });

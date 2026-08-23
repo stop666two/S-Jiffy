@@ -15,7 +15,7 @@
 <script>(function(){
 var domainInput=document.getElementById('domainInput'),typeSelect=document.getElementById('typeSelect'),lookupBtn=document.getElementById('lookupBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),dnsStatus=document.getElementById('dnsStatus'),recordsList=document.getElementById('recordsList'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 lookupBtn.addEventListener('click',function(){
-  var domain=domainInput.value.trim();if(!domain){setStatus('请输入域名','error');return;}
+  var domain=domainInput.value.trim();if(!domain){setStatus(t('ui.100','请输入域名'),'error');return;}
   var type=typeSelect.value;var types=type==='ALL'?['A','AAAA','MX','TXT','CNAME','NS','SOA']:[type];
   dnsStatus.innerHTML='<div class="loading">查询中...</div>';recordsList.innerHTML='';resultCard.style.display='block';
   var allHtml='';var allOutput='';var completed=0;var hasError=false;

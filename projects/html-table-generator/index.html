@@ -24,7 +24,7 @@
     <p class="tool-desc" data-i18n="desc">从 CSV 数据生成 HTML 表格代码。</p>
 
     <div class="card">
-      <textarea id="csvInput" class="input textarea" placeholder="粘贴 CSV/TSV 数据...&#10;&#10;name,age,city&#10;Alice,30,New York&#10;Bob,25,London&#10;Charlie,35,Beijing" style="min-height:160px;"></textarea>
+      <textarea id="csvInput" class="input textarea" data-i18n-placeholder="ui.103" placeholder="粘贴 CSV/TSV 数据...&#10;&#10;name,age,city&#10;Alice,30,New York&#10;Bob,25,London&#10;Charlie,35,Beijing" style="min-height:160px;"></textarea>
     </div>
 
     <div class="card">
@@ -45,7 +45,7 @@
     </div>
 
     <div class="output-box">
-      <textarea id="html输出" readonly placeholder="HTML 代码将显示在这里..."></textarea>
+      <textarea id="html输出" readonly data-i18n-placeholder="ui.104" placeholder="HTML 代码将显示在这里..."></textarea>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
@@ -70,12 +70,12 @@
 
       function generate() {
         var raw = csvInput.value;
-        if (!raw.trim()) { setStatus('请输入 CSV 数据', 'error'); return; }
+        if (!raw.trim()) { setStatus(t('ui.100','请输入 CSV 数据'), 'error'); return; }
 
         var sep = optSep.value;
         if (sep === '\\t') sep = '\t';
         var lines = raw.split('\n').filter(function (l) { return l.trim(); });
-        if (!lines.length) { setStatus('数据为空', 'error'); return; }
+        if (!lines.length) { setStatus(t('ui.101','数据为空'), 'error'); return; }
 
         var rows = lines.map(function (l) {
           var cells = [], current = '', inQuote = false;
@@ -94,7 +94,7 @@
         var dataRows = hasHeader ? rows.slice(1) : rows;
         var colCount = headerRow ? headerRow.length : (dataRows.length ? dataRows[0].length : 0);
 
-        if (!colCount) { setStatus('无法解析列数', 'error'); return; }
+        if (!colCount) { setStatus(t('ui.102','无法解析列数'), 'error'); return; }
 
         var html = '<table>\n';
         if (headerRow) {

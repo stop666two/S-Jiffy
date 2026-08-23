@@ -140,7 +140,7 @@
         var tw = parseNum(targetWidthEl.value);
         if (!w || !h || !tw) {
           outputEl.textContent = '';
-          setStatus('请填写大于 0 的数字', 'error');
+          setStatus(t('ui.100','请填写大于 0 的数字'), 'error');
           return;
         }
         var bpp = parseFloat(bppSelect.value);
@@ -204,7 +204,7 @@
         };
         img.onerror = function () {
           (window.URL || window.webkitURL).revokeObjectURL(url);
-          setStatus('图片读取失败，请更换文件', 'error');
+          setStatus(t('ui.101','图片读取失败，请更换文件'), 'error');
         };
         img.src = url;
       });

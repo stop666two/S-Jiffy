@@ -11,7 +11,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
-<textarea id="jsInput" class="js-focus-input" placeholder="粘贴 JS 代码...">// 这是一个函数
+<textarea id="jsInput" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴 JS 代码...">// 这是一个函数
 function hello(name) {
   /* 打印问候 */
   var msg = 'Hello, ' + name + '!';
@@ -19,7 +19,7 @@ function hello(name) {
   return msg;
 }
 </textarea>
-<textarea id="js输出" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="js输出" readonly data-i18n-placeholder="ui.102" placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 <div class="stats" id="stats"></div>
 </div>
@@ -38,7 +38,7 @@ var stats=document.getElementById('stats');
 
 function minify(){
 var code=jsInput.value;
-if(!code.trim()){js输出.value='';stats.textContent='';outputEl.textContent='';setStatus('请输入 JS 代码','error');return;}
+if(!code.trim()){js输出.value='';stats.textContent='';outputEl.textContent='';setStatus(t('ui.100','请输入 JS 代码'),'error');return;}
 var result=code;
 result=result.replace(/\/\/.*$/gm,'');
 result=result.replace(/\/\*[\s\S]*?\*\//g,'');

@@ -40,10 +40,10 @@ function typeMatch(pattern,actual){
   return pattern===actual;
 }
 negBtn.addEventListener('click',function(){
-  var accept=acceptInput.value.trim();if(!accept){setStatus('请输入 Accept 头部','error');return;}
-  var typesStr=typesInput.value.trim();if(!typesStr){setStatus('请输入服务器可用类型','error');return;}
+  var accept=acceptInput.value.trim();if(!accept){setStatus(t('ui.100','请输入 Accept 头部'),'error');return;}
+  var typesStr=typesInput.value.trim();if(!typesStr){setStatus(t('ui.101','请输入服务器可用类型'),'error');return;}
   var serverTypes=typesStr.split('\n').map(function(s){return s.trim();}).filter(function(s){return s;});
-  if(!serverTypes.length){setStatus('没有有效的服务器类型','error');return;}
+  if(!serverTypes.length){setStatus(t('ui.102','没有有效的服务器类型'),'error');return;}
   var accepted=parseAccept(accept);var results=[];
   for(var i=0;i<serverTypes.length;i++){
     var st=serverTypes[i];var bestQ=0;

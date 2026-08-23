@@ -30,15 +30,15 @@
       </div>
       <div class="field-row">
         <label data-i18n="ui.1">标题</label>
-        <input id="titleInput" class="input js-focus-input" type="text" placeholder="分享标题（必填）">
+        <input id="titleInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="分享标题（必填）">
       </div>
       <div class="field-row">
         <label data-i18n="ui.desc">描述</label>
-        <input id="descInput" class="input" type="text" placeholder="一句话描述（选填）">
+        <input id="descInput" class="input" type="text" data-i18n-placeholder="ui.102" placeholder="一句话描述（选填）">
       </div>
       <div class="field-row">
         <label data-i18n="ui.2">站点名</label>
-        <input id="siteInput" class="input" type="text" placeholder="站点名称（选填）">
+        <input id="siteInput" class="input" type="text" data-i18n-placeholder="ui.103" placeholder="站点名称（选填）">
       </div>
       <div class="field-row">
         <label data-i18n="ui.bgColor">背景色</label>
@@ -152,7 +152,7 @@
 
       function exportPng() {
         if (!titleInput.value.trim()) {
-          setStatus('请先填写标题', 'error');
+          setStatus(t('ui.100','请先填写标题'), 'error');
           return;
         }
         var url = canvas.toDataURL('image/png');

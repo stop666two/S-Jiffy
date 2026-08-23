@@ -22,7 +22,7 @@
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
           <label for="barcodeInput" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">输入内容</label>
-          <input id="barcodeInput" class="input js-focus-input" placeholder="输入条码内容" value="S-JIFFY-123">
+          <input id="barcodeInput" class="input js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入条码内容" value="S-JIFFY-123">
         </div>
         <div><button id="generateBtn" class="btn btn-primary" data-i18n="ui.2">生成条码</button></div>
       </div>
@@ -83,7 +83,7 @@
       }
 
       function generateSVG(text) {
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入内容'), 'error'); return; }
         try {
           var codes = encode128(text.toUpperCase());
           var barParts = [];
@@ -117,7 +117,7 @@
 
       function generate() {
         var text = barcodeInput.value.trim();
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入内容'), 'error'); return; }
         var svg = generateSVG(text);
         if (!svg) return;
         barcodeWrap.innerHTML = svg;

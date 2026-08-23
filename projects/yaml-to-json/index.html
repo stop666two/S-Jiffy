@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">YAML → JSON</h1>
     <p class="tool-desc" data-i18n="desc">将 YAML 格式转换为 JSON。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="name: test
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="name: test
 version: 1
 list:
   - 1
@@ -164,14 +164,14 @@ nested:
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 YAML', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 YAML'), 'error'); return; }
         try {
           var parsed = parseYaml(text);
           outputEl.textContent = JSON.stringify(parsed, null, 2);
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('YAML 解析错误', 'error');
+          setStatus(t('ui.101','YAML 解析错误'), 'error');
         }
       });
 

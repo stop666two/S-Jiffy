@@ -50,8 +50,8 @@ var target=targets[type]||0;var lunarDay=days%29.53058867;if(lunarDay<0)lunarDay
 var diff=(target-lunarDay+29.53058867)%29.53058867;var next=new Date(d.getTime()+diff*86400000);
 return next.toLocaleDateString('zh-CN');}
 
-function update(){var val=di.value;if(!val){setStatus('请选择日期','error');return;}
-var mp=moonPhase(val);if(!mp){setStatus('日期无效','error');return;}
+function update(){var val=di.value;if(!val){setStatus(t('ui.100','请选择日期'),'error');return;}
+var mp=moonPhase(val);if(!mp){setStatus(t('ui.101','日期无效'),'error');return;}
 drawMoon(mp.lunarDay/29.53058867);pn.textContent=mp.name;ip.textContent='Illumination: '+mp.illumination.toFixed(1)+'%';
 var nNew=nextPhase(val,'new'),nFull=nextPhase(val,'full'),nFQ=nextPhase(val,'firstQ'),nLQ=nextPhase(val,'lastQ');
 document.getElementById('nextNew').textContent=nNew;document.getElementById('nextFull').textContent=nFull;

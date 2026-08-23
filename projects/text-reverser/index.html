@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">文本反转器</h1>
     <p class="tool-desc" data-i18n="desc">反转文本、反转单词顺序、反转行顺序。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要反转的文本..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入要反转的文本..."></textarea>
     </div>
     <div class="rev-actions">
       <button id="reverseTextBtn" class="btn btn-primary" data-i18n="ui.1">反转字符</button>
@@ -46,21 +46,21 @@
 
       function reverseChars() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         outputEl.textContent = text.split('').reverse().join('');
         setStatus(t('ui.6','字符反转完成'));
       }
 
       function reverseWords() {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入文本'), 'error'); return; }
         outputEl.textContent = text.split(/\s+/).reverse().join(' ');
         setStatus(t('ui.5','单词反转完成'));
       }
 
       function reverseLines() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.102','请输入文本'), 'error'); return; }
         var lines = text.split('\n');
         outputEl.textContent = lines.reverse().join('\n');
         setStatus(t('ui.4','行反转完成'));

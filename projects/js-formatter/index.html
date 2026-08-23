@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">JS 格式化</h1>
     <p class="tool-desc" data-i18n="desc">JavaScript 代码格式化与压缩。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 JavaScript 代码..." style="min-height:200px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 JavaScript 代码..." style="min-height:200px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button>
@@ -122,14 +122,14 @@
 
       formatBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 JavaScript 代码'), 'error'); return; }
         outputEl.textContent = formatJS(text);
         setStatus('');
       });
 
       minifyBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 JavaScript 代码', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入 JavaScript 代码'), 'error'); return; }
         outputEl.textContent = minifyJS(text);
         setStatus('');
       });

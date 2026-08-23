@@ -38,7 +38,7 @@ var intersection=0;for(var k in setA){if(setB[k])intersection++;}
 var union=Object.keys(setA).length+Object.keys(setB).length-intersection;
 return{intersection:intersection,union:union,jaccard:union>0?intersection/union:0};}
 
-function compare(){var a=tA.value,b=tB.value;if(!a&&!b){setStatus('请至少在一个输入框中输入文本','error');return;}
+function compare(){var a=tA.value,b=tB.value;if(!a&&!b){setStatus(t('ui.100','请至少在一个输入框中输入文本'),'error');return;}
 var lenA=a.length,lenB=b.length;var wordsA=a.trim()?a.trim().split(/\s+/):[];var wordsB=b.trim()?b.trim().split(/\s+/):[];
 var wcA=wordsA.length,wcB=wordsB.length;
 var editDist=levenshtein(a,b);var maxLen=Math.max(lenA,lenB,1);var sim=Math.round((1-editDist/maxLen)*10000)/100;

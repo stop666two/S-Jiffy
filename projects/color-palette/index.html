@@ -72,7 +72,7 @@
     html+='</div></div>';}
     container.innerHTML=html;out.textContent=currentColors.join(', ');setStatus(t('ui.generated','已生成 ') +scheme+ t('ui.3',' 配色方案'));}
 
-  function exportFmt(type){if(currentColors.length===0){setStatus('请先生成调色板','error');return;}
+  function exportFmt(type){if(currentColors.length===0){setStatus(t('ui.100','请先生成调色板'),'error');return;}
     var lines=[];
     if(type==='css'){currentColors.forEach(function(c,i){lines.push('  --color-'+(i+1)+': '+c+';');});
     out.textContent=':root {\n'+lines.join('\n')+'\n}';}

@@ -27,7 +27,7 @@
     <h1 data-i18n="h1">分隔符检测器</h1>
     <p class="tool-desc" data-i18n="desc">自动检测 CSV/TSV 文本的分隔符（逗号、制表符、分号、竖线、空格），识别引号规则并渲染表格预览。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 CSV/TSV 文本（多行）..." style="min-height:160px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴 CSV/TSV 文本（多行）..." style="min-height:160px;"></textarea>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -113,7 +113,7 @@
           outputEl.innerHTML = '';
           lastPlain = '';
           lastRows = [];
-          setStatus('未找到有效数据行', 'error');
+          setStatus(t('ui.100','未找到有效数据行'), 'error');
           return;
         }
         var cands = [];

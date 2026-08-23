@@ -92,7 +92,7 @@
     for(var i=0;i<vals.length;i++){while(n>=vals[i]){result+=chars[i];n-=vals[i];}}return result;}
 
   function format(){
-    var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus('请输入有效数字','error');return;}
+    var val=parseFloat(inputNum.value),lang=langSelect.value;if(isNaN(val)){setStatus(t('ui.100','请输入有效数字'),'error');return;}
     res.comma.textContent=val.toLocaleString('en-US');
     res.percent.textContent=(val/100).toFixed(4)+'%';
     var intPart=Math.floor(Math.abs(val));

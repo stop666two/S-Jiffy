@@ -56,13 +56,13 @@
     fMs.textContent=d.getTime();}
 
   document.getElementById('tsToDateBtn').addEventListener('click',function(){
-    var v=parseInt(tsInput.value);if(isNaN(v)){setStatus('请输入有效数字','error');fmtR.style.display='none';return;}
+    var v=parseInt(tsInput.value);if(isNaN(v)){setStatus(t('ui.100','请输入有效数字'),'error');fmtR.style.display='none';return;}
     var d=new Date(v>1e11?v:v*1000);o.textContent=d.toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})+' (UTC+8)';
     showFormats(d);setStatus('');});
 
   document.getElementById('dateToTsBtn').addEventListener('click',function(){
-    if(!dateInput.value){setStatus('请选择日期/时间','error');return;}
-    var d=new Date(dateInput.value);if(isNaN(d.getTime())){setStatus('日期无效','error');return;}
+    if(!dateInput.value){setStatus(t('ui.101','请选择日期/时间'),'error');return;}
+    var d=new Date(dateInput.value);if(isNaN(d.getTime())){setStatus(t('ui.102','日期无效'),'error');return;}
     o.textContent=Math.floor(d.getTime()/1000)+' (s)  /  '+d.getTime()+' (ms)';
     showFormats(d);setStatus('');});
 

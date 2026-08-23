@@ -22,10 +22,10 @@
     <p class="tool-desc" data-i18n="desc">输入资源名与字段定义，自动生成列表/创建/查询/更新/删除 5 个 REST 端点的 curl 命令及请求响应示例。</p>
     <div class="card">
       <div class="field-row">
-        <input id="resourceName" class="input js-focus-input" placeholder="资源名，如 user">
+        <input id="resourceName" class="input js-focus-input" data-i18n-placeholder="ui.102" placeholder="资源名，如 user">
         <button class="btn btn-primary" id="generateBtn" data-i18n="ui.1">生成脚手架</button>
       </div>
-      <div class="field-hint">字段定义：每行「name:type」，多行或逗号分隔均可。类型支持 int / string / bool / float / email / date</div>
+      <div class="field-hint" data-i18n="ui.103">字段定义：每行「name:type」，多行或逗号分隔均可。类型支持 int / string / bool / float / email / date</div>
       <textarea id="fieldInput" class="input textarea" rows="6" placeholder="id:int&#10;name:string&#10;email:email&#10;age:int"></textarea>
     </div>
     <div id="resultBox" class="output-box">
@@ -101,13 +101,13 @@
         if (!resource) {
           output.innerHTML = '';
           current = '';
-          setStatus('请输入资源名，如 user', 'error');
+          setStatus(t('ui.100','请输入资源名，如 user'), 'error');
           return;
         }
         if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(resource)) {
           output.innerHTML = '';
           current = '';
-          setStatus('资源名不合法：必须以字母开头，仅含字母/数字/下划线', 'error');
+          setStatus(t('ui.101','资源名不合法：必须以字母开头，仅含字母/数字/下划线'), 'error');
           return;
         }
         var fields = parseFields(document.getElementById('fieldInput').value);

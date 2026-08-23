@@ -110,11 +110,11 @@
       tdDel.className = 'col-del';
       var btn = document.createElement('button');
       btn.className = 'btn btn-secondary';
-      btn.textContent = '删除';
+      btn.textContent = t('ui.104','删除');
       btn.onclick = function () {
         var all = kvBody.getElementsByTagName('tr');
         if (all.length <= 1) {
-          setStatus('至少保留一行', 'error');
+          setStatus(t('ui.100','至少保留一行'), 'error');
           return;
         }
         kvBody.removeChild(tr);
@@ -245,13 +245,13 @@
       if (collected.error) {
         outputText.textContent = collected.error;
         lastValid = false;
-        setStatus('配置无效', 'error');
+        setStatus(t('ui.101','配置无效'), 'error');
         return;
       }
       outputs = buildAll(collected.rows);
       lastValid = true;
       outputText.textContent = outputs[currentId];
-      setStatus('已生成五种格式，切换上方 tab 查看');
+      setStatus(t('ui.102','已生成五种格式，切换上方 tab 查看'));
     }
 
     document.getElementById('addRowBtn').onclick = function () {
@@ -260,7 +260,7 @@
     document.getElementById('genBtn').onclick = generate;
     copyBtn.onclick = function () {
       if (!lastValid || !outputs[currentId]) {
-        setStatus('请先生成配置', 'error');
+        setStatus(t('ui.103','请先生成配置'), 'error');
         return;
       }
       copyToClipboard(outputs[currentId], copyBtn);

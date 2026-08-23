@@ -35,7 +35,7 @@
         <textarea id="branchInput" class="input textarea js-focus-input" style="min-height:140px;" placeholder="* main&#10;feature/login&#10;feature/pay&#10;fix/typo&#10;experiment/cache"></textarea>
       </div>
       <div class="form-row">
-        <label for="mergedInput" class="field-label">git branch --merged 输出（可选，用于标记已合并分支，留空则全部按未合并处理）</label>
+        <label for="mergedInput" class="field-label" data-i18n="ui.102">git branch --merged 输出（可选，用于标记已合并分支，留空则全部按未合并处理）</label>
         <textarea id="mergedInput" class="input textarea" style="min-height:90px;" placeholder="* main&#10;fix/typo&#10;feature/login"></textarea>
       </div>
       <div class="form-row">
@@ -184,7 +184,7 @@
         }
         if (!safe.length && !force.length) {
           outputEl.textContent = '';
-          setStatus('请至少勾选一个要清理的分支', 'error');
+          setStatus(t('ui.100','请至少勾选一个要清理的分支'), 'error');
           return;
         }
         outputEl.textContent = lines.join('\n');
@@ -197,7 +197,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

@@ -5,9 +5,9 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">HTML 标签去除</h1><p class="tool-desc" data-i18n="desc">移除 HTML 标签，仅保留纯文本内容，支持保留指定标签。</p>
-<div class="card"><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.1">保留标签（逗号分隔，如 a,b,br）</label><input id="keepTags" class="input" placeholder="可选，留空则移除所有标签" style="width:300px;">
+<div class="card"><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.1">保留标签（逗号分隔，如 a,b,br）</label><input id="keepTags" class="input" data-i18n-placeholder="ui.101" placeholder="可选，留空则移除所有标签" style="width:300px;">
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 HTML 内容..." style="min-height:120px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 HTML 内容..." style="min-height:120px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="stripBtn" class="btn btn-primary" data-i18n="ui.2">去除标签</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
@@ -42,7 +42,7 @@ return r;
 }
 stripBtn.addEventListener('click',function(){
 var html=inputEl.value;
-if(!html){setStatus('请输入 HTML','error');return;}
+if(!html){setStatus(t('ui.100','请输入 HTML'),'error');return;}
 outputEl.textContent=strip(html,keepTags.value);
 setStatus('');
 });

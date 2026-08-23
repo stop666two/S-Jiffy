@@ -10,7 +10,7 @@
 <div><label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:block;" data-i18n="ui.1">关键词</label><input id="keyInput" class="input" value="KEY" style="width:200px;"></div>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="encryptBtn" class="btn btn-primary" data-i18n="ui.encrypt">加密</button>
 <button id="decryptBtn" class="btn btn-secondary" data-i18n="ui.decrypt">解密</button>
@@ -36,7 +36,7 @@ function clean(text){return text.toUpperCase().replace(/[^A-Z]/g,'');}
 function encrypt(text,key){
 var t=clean(text);
 var k=clean(key);
-if(!t||!k){setStatus('请输入文本和关键词','error');return null;}
+if(!t||!k){setStatus(t('ui.100','请输入文本和关键词'),'error');return null;}
 var steps=t('ui.5','明文: ') +t+'\n关键词: '+k+'\n\n';
 var stream=k+t;
 var r='';
@@ -55,7 +55,7 @@ return r;
 function decrypt(text,key){
 var t=clean(text);
 var k=clean(key);
-if(!t||!k){setStatus('请输入密文和关键词','error');return null;}
+if(!t||!k){setStatus(t('ui.101','请输入密文和关键词'),'error');return null;}
 var steps=t('ui.4','密文: ') +t+'\n关键词: '+k+'\n\n';
 var r='';
 var stream=k;
@@ -74,13 +74,13 @@ return r;
 }
 encryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var k=keyInput.value;
-if(!t||!k){setStatus('请输入文本和关键词','error');return;}
+if(!t||!k){setStatus(t('ui.102','请输入文本和关键词'),'error');return;}
 var r=encrypt(t,k);
 if(r){outputEl.textContent=r;setStatus('');}
 });
 decryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var k=keyInput.value;
-if(!t||!k){setStatus('请输入密文和关键词','error');return;}
+if(!t||!k){setStatus(t('ui.103','请输入密文和关键词'),'error');return;}
 var r=decrypt(t,k);
 if(r){outputEl.textContent=r;setStatus('');}
 });

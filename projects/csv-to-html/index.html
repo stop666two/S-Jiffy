@@ -15,7 +15,7 @@
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);flex-wrap:wrap;align-items:center;">
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 <label style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;"><input id="hasHeader" type="checkbox" checked> 首行为表头</label>
-<input id="delimiterInput" class="input" value="," style="width:60px;" placeholder="分隔符" title="分隔符">
+<input id="delimiterInput" class="input" value="," style="width:60px;" data-i18n-placeholder="ui.102" placeholder="分隔符" title="分隔符">
 </div>
 <div id="tableContainer" class="table-wrap card"></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -37,11 +37,11 @@ function parseCSVLine(text,delim){
   result.push(cur.trim());return result;
 }
 document.getElementById('convertBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入 CSV','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.100','请输入 CSV'),'error');return;}
   var d=delim.value||',';
   if(d==='\\t')d='\t';
   var lines=text.split('\n').filter(function(l){return l.trim();});
-  if(lines.length<1){setStatus('数据为空','error');return;}
+  if(lines.length<1){setStatus(t('ui.101','数据为空'),'error');return;}
   var data=lines.map(function(l){return parseCSVLine(l,d);});
   var start=hdr.checked?1:0;
   var headers=hdr.checked?data[0]:data[0].map(function(_,idx){return'Column '+(idx+1);});

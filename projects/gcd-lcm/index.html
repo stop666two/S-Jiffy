@@ -19,7 +19,7 @@
     <p class="tool-desc" data-i18n="desc">计算多个数的最大公约数和最小公倍数，并显示质因数分解。</p>
     <div class="card">
       <div class="gl-row">
-        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 18, 24" placeholder="例如 12, 18, 24"></div>
+        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 18, 24" data-i18n-placeholder="ui.102" placeholder="例如 12, 18, 24"></div>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
@@ -75,7 +75,7 @@
 
     function generate() {
       var raw = inputEl.value.trim();
-      if (!raw) { setStatus('请输入数字', 'error'); return; }
+      if (!raw) { setStatus(t('ui.100','请输入数字'), 'error'); return; }
       var parts = raw.split(/[,，\s]+/).filter(function(s) { return s !== ''; });
       var nums = [];
       for (var i = 0; i < parts.length; i++) {
@@ -83,7 +83,7 @@
         if (isNaN(n) || n <= 0) { setStatus('"' + parts[i] + '" 不是有效的正整数', 'error'); return; }
         nums.push(n);
       }
-      if (nums.length < 2) { setStatus('请至少输入两个数字', 'error'); return; }
+      if (nums.length < 2) { setStatus(t('ui.101','请至少输入两个数字'), 'error'); return; }
 
       var g = nums[0];
       var l = nums[0];

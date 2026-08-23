@@ -23,7 +23,7 @@
     <h1 data-i18n="h1">演讲时长估算</h1>
     <p class="tool-desc" data-i18n="desc">按语速估算演讲稿朗读时长：中文字数 + 英文单词分别计速。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴演讲稿文本..." style="min-height:160px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴演讲稿文本..." style="min-height:160px;"></textarea>
       <div class="spd-controls">
         <select id="speedSelect" class="input">
           <option value="100" data-i18n="ui.1">慢速（100 字/分）</option>
@@ -84,7 +84,7 @@
         var speed = parseInt(speedEl.value, 10);
         if (isNaN(speed) || speed <= 0) {
           outputEl.innerHTML = '';
-          setStatus('语速设置无效', 'error');
+          setStatus(t('ui.100','语速设置无效'), 'error');
           return;
         }
         var seconds = units / speed * 60;

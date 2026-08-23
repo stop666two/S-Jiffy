@@ -73,7 +73,7 @@
         <label><input type="checkbox" id="privilegedChk"> --privileged</label>
       </div>
       <div class="dc-addl">
-        <textarea id="extraInput" class="input textarea" placeholder='额外 docker run 参数 (每行一个, 如 --restart=always 等)' style="min-height:40px;"></textarea>
+        <textarea id="extraInput" class="input textarea" data-i18n-placeholder="ui.101" placeholder='额外 docker run 参数 (每行一个, 如 --restart=always 等)' style="min-height:40px;"></textarea>
       </div>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
@@ -116,7 +116,7 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var image = imageEl.value.trim();
-        if (!image) { setStatus('请输入镜像名称', 'error'); return; }
+        if (!image) { setStatus(t('ui.100','请输入镜像名称'), 'error'); return; }
 
         var lines = [];
         lines.push('version: "3.8"');

@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">HTML 实体转义</h1>
     <p class="tool-desc" data-i18n="desc">对 HTML 特殊字符进行转义（escape）与反转义（unescape）。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 HTML 文本..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入 HTML 文本..."></textarea>
     </div>
     <div style="display:flex; gap:12px; margin-bottom:24px;">
       <button id="escapeBtn" class="btn btn-primary" data-i18n="ui.1">转义 (Escape)</button>
@@ -55,14 +55,14 @@
 
       escapeBtn.addEventListener('click', function () {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入内容'), 'error'); return; }
         outputEl.textContent = escapeHtml(text);
         setStatus('');
       });
 
       unescapeBtn.addEventListener('click', function () {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入内容'), 'error'); return; }
         outputEl.textContent = unescapeHtml(text);
         setStatus('');
       });

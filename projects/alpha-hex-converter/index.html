@@ -57,7 +57,7 @@ aN.addEventListener('input',function(){syncSlider('aSlider',parseInt(this.value)
 
 h2rBtn.addEventListener('click',function(){
   var v=hexIn.value.trim().replace('#','');
-  if(v.length!==8&&v.length!==6){setStatus('请输入 6 或 8 位 HEX','error');return;}
+  if(v.length!==8&&v.length!==6){setStatus(t('ui.100','请输入 6 或 8 位 HEX'),'error');return;}
   if(v.length===6)v+='FF';
   var r=parseInt(v.substr(0,2),16),g=parseInt(v.substr(2,2),16),b=parseInt(v.substr(4,2),16),a=Math.round(parseInt(v.substr(6,2),16)/255*100);
   rS.value=r;gS.value=g;bS.value=b;aS.value=a;update();

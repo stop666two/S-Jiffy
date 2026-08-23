@@ -60,11 +60,11 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
         try {
           var data = JSON.parse(text);
           if (!Array.isArray(data) || data.length === 0) {
-            setStatus('请输入非空 JSON 数组', 'error'); return;
+            setStatus(t('ui.101','请输入非空 JSON 数组'), 'error'); return;
           }
           var delim = delimiterEl.value;
           if (delim === '\\t') delim = '\t';
@@ -101,7 +101,7 @@
           setStatus(t('ui.generated','已生成 ') + data.length + t('ui.rows',' 行'));
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('JSON 格式错误', 'error');
+          setStatus(t('ui.102','JSON 格式错误'), 'error');
         }
       });
 

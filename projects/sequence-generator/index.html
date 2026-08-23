@@ -25,8 +25,8 @@
       </div>
       <div class="sg-row">
         <div class="field"><label for="padVal" data-i18n="ui.4">补零位数（0=不补）</label><input id="padVal" class="input" type="number" value="2" min="0" max="10"></div>
-        <div class="field"><label for="prefixVal" data-i18n="ui.5">前缀</label><input id="prefixVal" class="input" type="text" placeholder="例如 #"></div>
-        <div class="field"><label for="suffixVal" data-i18n="ui.6">后缀</label><input id="suffixVal" class="input" type="text" placeholder="例如 ."></div>
+        <div class="field"><label for="prefixVal" data-i18n="ui.5">前缀</label><input id="prefixVal" class="input" type="text" data-i18n-placeholder="ui.101" placeholder="例如 #"></div>
+        <div class="field"><label for="suffixVal" data-i18n="ui.6">后缀</label><input id="suffixVal" class="input" type="text" data-i18n-placeholder="ui.102" placeholder="例如 ."></div>
       </div>
       <div class="sg-row">
         <label style="display:flex;align-items:center;gap:8px;">分隔符
@@ -78,7 +78,7 @@
       if (pad < 0) pad = 0;
       if (pad > 10) pad = 10;
 
-      if (start > end) { setStatus('起始值不能大于结束值', 'error'); return; }
+      if (start > end) { setStatus(t('ui.100','起始值不能大于结束值'), 'error'); return; }
 
       var result = [];
       for (var i = start; i <= end; i += step) {

@@ -186,7 +186,7 @@
 
   function loadFile(f) {
     hideErr();
-    setStatus('正在解码音频…');
+    setStatus(t('ui.100','正在解码音频…'));
     AK.decodeAudioFile(f, function (buf) {
       file = f;
       buffer = buf;
@@ -211,7 +211,7 @@
         srWarn.classList.add('hidden');
       }
       updateAB();
-      setStatus('文件已就绪');
+      setStatus(t('ui.101','文件已就绪'));
     }, function () {
       showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
       setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
@@ -231,7 +231,7 @@
     stopAudio();
     var ctx;
     try { ctx = AK.createAudioContext(); }
-    catch (e) { setStatus('浏览器不支持音频播放', 'error'); return; }
+    catch (e) { setStatus(t('ui.102','浏览器不支持音频播放'), 'error'); return; }
     playCtx = ctx;
     if (ctx.state === 'suspended') ctx.resume();
     var src = ctx.createBufferSource();
@@ -285,7 +285,7 @@
     processing = false;
     btnGate.disabled = false;
     btnAi.disabled = false;
-    setStatus('降噪完成');
+    setStatus(t('ui.103','降噪完成'));
   }
   function fail(msg) {
     setProgress(1);
@@ -353,7 +353,7 @@
         processing = false;
         btnGate.disabled = false;
         btnAi.disabled = false;
-        setStatus('AI 降噪完成');
+        setStatus(t('ui.104','AI 降噪完成'));
       }
     }, function (err) {
       setProgress(1);
@@ -364,7 +364,7 @@
   btnDownload.addEventListener('click', function () {
     if (!outBlob) return;
     AK.downloadBlob(outBlob, AK.getOutputName(file.name, 'denoised'));
-    setStatus('已开始下载');
+    setStatus(t('ui.105','已开始下载'));
   });
 
   dropZone.addEventListener('click', function () { fileInput.click(); });

@@ -45,7 +45,7 @@
     </div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/7.2.4/ajv7.min.js" onerror="(function(){var s=document.getElementById('statusBar');if(s){s.textContent='验证库加载失败，请检查网络';s.className='tool-status error';}var o=document.getElementById('outputText');if(o){o.textContent='验证库加载失败，请检查网络';}})()"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/7.2.4/ajv7.min.js" onerror="(function(){var s=document.getElementById('statusBar');if(s){s.textContent=t('ui.107','验证库加载失败，请检查网络');s.className='tool-status error';}var o=document.getElementById('outputText');if(o){o.textContent=t('ui.108','验证库加载失败，请检查网络');}})()"></script>
   <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script></script>
   <script>
@@ -64,16 +64,16 @@
         outputText.textContent = '';
         errorList.innerHTML = '';
 
-        if (!dataStr) { setStatus('请输入 JSON 数据', 'error'); return; }
-        if (!schemaStr) { setStatus('请输入 JSON Schema', 'error'); return; }
+        if (!dataStr) { setStatus(t('ui.100','请输入 JSON 数据'), 'error'); return; }
+        if (!schemaStr) { setStatus(t('ui.101','请输入 JSON Schema'), 'error'); return; }
 
         var data, schema;
-        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus('数据格式错误', 'error'); return; }
-        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus('Schema 格式错误', 'error'); return; }
+        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus(t('ui.102','数据格式错误'), 'error'); return; }
+        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus(t('ui.103','Schema 格式错误'), 'error'); return; }
 
         if (typeof ajv7 === 'undefined') {
           outputText.textContent = t('ui.4','验证库加载失败，请检查网络');
-          setStatus('验证库加载失败，请检查网络', 'error');
+          setStatus(t('ui.104','验证库加载失败，请检查网络'), 'error');
           return;
         }
 
@@ -92,11 +92,11 @@
               li.textContent = err.instancePath + ' ' + err.message;
               ul.appendChild(li);
             }
-            setStatus('验证失败', 'error');
+            setStatus(t('ui.105','验证失败'), 'error');
           }
         } catch (e) {
           outputText.innerHTML = '<span class="invalid-badge">错误</span> ' + htmlEscape(e.message);
-          setStatus('验证出错', 'error');
+          setStatus(t('ui.106','验证出错'), 'error');
         }
       });
 

@@ -32,7 +32,7 @@
     <p class="tool-desc" data-i18n="desc">计算文件或文本的 CRC16、CRC32、Adler-32、MD5、SHA-1、SHA-256 校验和，支持拖放文件。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
     <div class="card">
       <div class="text-mode-row">
-        <input id="textInput" class="input js-focus-input" placeholder="输入文本计算校验和...">
+        <input id="textInput" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入文本计算校验和...">
         <button id="textCalcBtn" class="btn btn-secondary" data-i18n="ui.calc">计算</button>
         <button id="clearBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px;" data-i18n="ui.clear">清空</button>
       </div>
@@ -179,7 +179,7 @@
 
       function computeText() {
         var t = textInp.value;
-        if (!t) { setStatus('请输入文本','error'); return; }
+        if (!t) { setStatus(t('ui.100','请输入文本'),'error'); return; }
         sourceLabel.textContent = t('ui.11','文本校验和');
         var vals = {};
         vals['CRC16'] = crc16(t);

@@ -85,7 +85,7 @@
     <p class="tool-desc" data-i18n="desc">查看当前域名下 localStorage 与 sessionStorage 的全部键值对，支持搜索、删除与新增。</p>
     <div class="card" style="display:flex;flex-direction:column;gap:var(--space-2);">
       <div class="ops-row">
-        <input id="searchInput" class="input js-focus-input" type="text" placeholder="搜索键名…">
+        <input id="searchInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.102" placeholder="搜索键名…">
         <button id="addBtn" class="btn btn-primary" data-i18n="ui.1">新增键值对</button>
         <button id="clearLocalBtn" class="btn btn-secondary" data-i18n="ui.2">清空 localStorage</button>
         <button id="clearSessionBtn" class="btn btn-secondary" data-i18n="ui.3">清空 sessionStorage</button>
@@ -222,7 +222,7 @@
         showPrompt('新增键值对 - 键名', t('ui.8','键名'), '', function (key) {
           if (key === null) return;
           if (!String(key).trim()) {
-            setStatus('键名不能为空', 'error');
+            setStatus(t('ui.100','键名不能为空'), 'error');
             return;
           }
           showPrompt('新增键值对 - 值', t('ui.7','值（可选）'), '', function (value) {
@@ -232,7 +232,7 @@
               render();
               setStatus(t('ui.6','已添加「') + String(key).trim() + '」');
             } catch (err) {
-              setStatus('写入失败：存储已满或不可用', 'error');
+              setStatus(t('ui.101','写入失败：存储已满或不可用'), 'error');
             }
           });
         });

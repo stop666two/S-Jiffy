@@ -36,25 +36,25 @@ async function hmacSign(algorithm,data,keyBytes){
 }
 verifyBtn.addEventListener('click',async function(){
   var jwt=jwtInput.value.trim();var secret=secretInput.value;
-  if(!jwt){setStatus('请输入 JWT Token','error');return;}
-  if(!secret){setStatus('请输入密钥','error');return;}
+  if(!jwt){setStatus(t('ui.100','请输入 JWT Token'),'error');return;}
+  if(!secret){setStatus(t('ui.101','请输入密钥'),'error');return;}
   var parts=jwt.split('.');
-  if(parts.length!==3){setStatus('JWT 格式无效，应有 3 个部分','error');return;}
+  if(parts.length!==3){setStatus(t('ui.102','JWT 格式无效，应有 3 个部分'),'error');return;}
   resultCard.style.display='block';
   try{
     var headerStr=base64UrlDecode(parts[0]);var header=JSON.parse(headerStr);
     headerVal.textContent=JSON.stringify(header,null,2);
-  }catch(e){headerVal.textContent = t('ui.11','解析失败: ')+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.12','Header 解析失败');setStatus('Header 解析失败','error');return;}
+  }catch(e){headerVal.textContent = t('ui.11','解析失败: ')+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.12','Header 解析失败');setStatus(t('ui.103','Header 解析失败'),'error');return;}
   try{
     var payloadStr=base64UrlDecode(parts[1]);var payload=JSON.parse(payloadStr);
     payloadVal.textContent=JSON.stringify(payload,null,2);
-  }catch(e){payloadVal.textContent = t('ui.11','解析失败: ')+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.10','Payload 解析失败');setStatus('Payload 解析失败','error');return;}
+  }catch(e){payloadVal.textContent = t('ui.11','解析失败: ')+e.message;verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.10','Payload 解析失败');setStatus(t('ui.104','Payload 解析失败'),'error');return;}
   signatureVal.textContent=base64UrlDecode(parts[2]);
   var algorithm=header.alg||'HS256';
   if(algorithm!=='HS256'&&algorithm!=='HS384'&&algorithm!=='HS512'){
     verifyResult.className='verify-result verify-fail';
-    verifyResult.textContent='仅支持 HMAC 算法 (HS256/HS384/HS512)';
-    setStatus('算法不支持','error');return;
+    verifyResult.textContent=t('ui.108','仅支持 HMAC 算法 (HS256/HS384/HS512)');
+    setStatus(t('ui.105','算法不支持'),'error');return;
   }
   try{
     var data=new TextEncoder().encode(parts[0]+'.'+parts[1]);
@@ -70,11 +70,11 @@ verifyBtn.addEventListener('click',async function(){
     }else{
       verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.6','❌ 签名不匹配');
       outputText.textContent = t('ui.5','JWT 签名无效');
-      setStatus('验证失败','error');
+      setStatus(t('ui.106','验证失败'),'error');
     }
   }catch(e){
     verifyResult.className='verify-result verify-fail';verifyResult.textContent = t('ui.4','验证错误: ')+e.message;
-    setStatus('验证错误','error');
+    setStatus(t('ui.107','验证错误'),'error');
   }
 });
 clearBtn.addEventListener('click',function(){jwtInput.value='';secretInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');jwtInput.focus();});

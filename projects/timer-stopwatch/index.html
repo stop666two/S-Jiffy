@@ -53,7 +53,7 @@ var now=Date.now();if(ms.value==='timer'){var remaining=Math.max(0,targetMs-(now
 if(remaining<=0){running=false;elapsed=0;dp.textContent='00:00.0';sub.textContent = t('ui.18','时间到！');clearInterval(timerId);return;}}else{elapsed=now-startTime;}
 dp.textContent=fmt(elapsed);o.textContent=dp.textContent;}
 
-function startTimer(){if(running)return;if(ms.value==='timer'){var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus('请设置有效时间','error');return;}
+function startTimer(){if(running)return;if(ms.value==='timer'){var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus(t('ui.100','请设置有效时间'),'error');return;}
 targetMs=total;startTime=Date.now();elapsed=total;}else{startTime=Date.now()-elapsed;}
 running=true;sub.textContent = t('ui.17','运行中...');clearInterval(timerId);timerId=setInterval(tick,100);}
 

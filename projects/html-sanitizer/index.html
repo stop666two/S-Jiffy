@@ -70,7 +70,7 @@
     <div class="sanitize-layout">
       <div class="card">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.3">原始 HTML</label>
-        <textarea id="dirtyInput" class="input textarea js-focus-input" placeholder="粘贴需要净化的 HTML..." style="min-height:250px;font-family:var(--font-mono);font-size:13px;"></textarea>
+        <textarea id="dirtyInput" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴需要净化的 HTML..." style="min-height:250px;font-family:var(--font-mono);font-size:13px;"></textarea>
       </div>
       <div class="card">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.4">净化后的 HTML</label>
@@ -154,7 +154,7 @@
 
       sanitizeBtn.addEventListener('click', function () {
         var html = dirtyInput.value;
-        if (!html.trim()) { setStatus('请输入 HTML', 'error'); return; }
+        if (!html.trim()) { setStatus(t('ui.100','请输入 HTML'), 'error'); return; }
 
         var allowed = getAllowedTags();
         var noAttrs = stripAttrs.checked;
@@ -167,7 +167,7 @@
         var output = container.innerHTML;
 
         if (!output.trim()) {
-          outputText.textContent = '(净化后无内容 - 所有标签均被过滤)';
+          outputText.textContent = t('ui.101','(净化后无内容 - 所有标签均被过滤)');
         } else {
           outputText.textContent = output;
         }

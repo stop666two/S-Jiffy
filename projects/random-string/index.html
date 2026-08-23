@@ -34,7 +34,7 @@
       </div>
       <div style="margin-top:var(--space-2);margin-bottom:var(--space-3);">
         <label for="customCharset" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.3">自定义字符集（覆盖上方勾选）</label>
-        <input id="customCharset" class="input" placeholder="留空则使用勾选的字符集">
+        <input id="customCharset" class="input" data-i18n-placeholder="ui.101" placeholder="留空则使用勾选的字符集">
       </div>
       <div><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
@@ -78,7 +78,7 @@
           if (chDigits.checked) charset += '0123456789';
           if (chSpecial.checked) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
         }
-        if (!charset) { setStatus('请至少选择一个字符集', 'error'); return; }
+        if (!charset) { setStatus(t('ui.100','请至少选择一个字符集'), 'error'); return; }
 
         var results = [];
         for (var n = 0; n < count; n++) {

@@ -19,7 +19,7 @@
     <h1 data-i18n="h1">Bencode 编解码</h1>
     <p class="tool-desc" data-i18n="desc">BitTorrent 使用的 Bencode 格式编码与解码。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或 Bencode 数据..." style="min-height:160px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本或 Bencode 数据..." style="min-height:160px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
       <button id="encodeBtn" class="btn btn-primary" data-i18n="ui.1">编码 Encode</button>
@@ -117,7 +117,7 @@
 
       function encode() {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入内容'), 'error'); return; }
         try {
           var parsed = JSON.parse(text);
           decodePos = 0;
@@ -126,13 +126,13 @@
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('编码失败：请输入有效 JSON', 'error');
+          setStatus(t('ui.101','编码失败：请输入有效 JSON'), 'error');
         }
       }
 
       function decode() {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.102','请输入内容'), 'error'); return; }
         try {
           decodeStr = text;
           decodePos = 0;
@@ -142,7 +142,7 @@
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('解码失败：Bencode 格式错误', 'error');
+          setStatus(t('ui.103','解码失败：Bencode 格式错误'), 'error');
         }
       }
 

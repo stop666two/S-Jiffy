@@ -26,7 +26,7 @@
     <p class="tool-desc" data-i18n="desc">动态维护键值对参数表，实时生成 URL 编码的查询字符串、完整 URL 与解码后的可读预览，一键复制查询串。</p>
     <div class="card">
       <div class="base-row">
-        <input id="baseUrl" class="input js-focus-input" placeholder="基础 URL，如 https://api.example.com/search">
+        <input id="baseUrl" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="基础 URL，如 https://api.example.com/search">
       </div>
       <div id="rowsBox"></div>
       <div class="btn-row">
@@ -52,8 +52,8 @@
 
       function rowHtml(key, value) {
         return '<div class="param-row">' +
-          '<input class="input key-input" placeholder="参数名，如 keyword" value="' + htmlEscape(key) + '">' +
-          '<input class="input value-input" placeholder="参数值，如 hello world" value="' + htmlEscape(value) + '">' +
+          '<input class="input key-input" data-i18n-placeholder="ui.104" placeholder="参数名，如 keyword" value="' + htmlEscape(key) + '">' +
+          '<input class="input value-input" data-i18n-placeholder="ui.105" placeholder="参数值，如 hello world" value="' + htmlEscape(value) + '">' +
           '<button class="btn btn-secondary del-btn">删除</button>' +
           '</div>';
       }
@@ -73,7 +73,7 @@
           rows[i].querySelector('.del-btn').addEventListener('click', function (e) {
             var row = e.target.parentNode;
             if (document.querySelectorAll('#rowsBox .param-row').length <= 1) {
-              setStatus('至少保留一个参数行', 'error');
+              setStatus(t('ui.100','至少保留一个参数行'), 'error');
               return;
             }
             row.parentNode.removeChild(row);
@@ -109,7 +109,7 @@
           } catch (e) {
             output.innerHTML = '';
             queryText = '';
-            setStatus('参数包含无法编码的字符（如孤立代理项）', 'error');
+            setStatus(t('ui.101','参数包含无法编码的字符（如孤立代理项）'), 'error');
             return;
           }
           encoded.push(ek + '=' + ev);
@@ -162,7 +162,7 @@
       });
       document.getElementById('copyBtn').addEventListener('click', function () {
         if (!queryText) {
-          setStatus('当前没有可复制的查询串', 'error');
+          setStatus(t('ui.102','当前没有可复制的查询串'), 'error');
           return;
         }
         copyToClipboard(queryText, this);

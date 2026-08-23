@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">文本去重</h1>
     <p class="tool-desc" data-i18n="desc">移除重复行，显示移除数量。支持保留空行与大小写敏感选项。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入包含重复项的文本..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="每行一项，输入包含重复项的文本..."></textarea>
     </div>
     <div class="dedup-actions">
       <button id="dedupBtn" class="btn btn-primary" data-i18n="ui.1">去重</button>
@@ -45,7 +45,7 @@
 
       function deduplicate(ignoreCase) {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         var lines = text.split('\n');
         var seen = {};
         var result = [];

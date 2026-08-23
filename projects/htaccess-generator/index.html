@@ -29,15 +29,15 @@
     <div class="card">
       <div class="field">
         <label data-i18n="ui.1">域名（www 跳转与 HTTPS 跳转使用）</label>
-        <input id="domain" class="input js-focus-input" placeholder="如 example.com">
+        <input id="domain" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="如 example.com">
       </div>
       <div class="field">
         <label data-i18n="ui.2">自定义 404 页面路径</label>
-        <input id="errorPage" class="input" value="/404.html" placeholder="如 /404.html">
+        <input id="errorPage" class="input" value="/404.html" data-i18n-placeholder="ui.102" placeholder="如 /404.html">
       </div>
       <div class="field">
         <label data-i18n="ui.3">密码保护 .htpasswd 路径</label>
-        <input id="htpasswdPath" class="input" value="/path/to/.htpasswd" placeholder="如 /etc/apache2/.htpasswd">
+        <input id="htpasswdPath" class="input" value="/path/to/.htpasswd" data-i18n-placeholder="ui.103" placeholder="如 /etc/apache2/.htpasswd">
       </div>
       <div class="opt-grid">
         <label><input type="checkbox" id="optHttps" checked> 强制 HTTPS 跳转</label>
@@ -92,7 +92,7 @@
         }
 
         if (isChecked('optWww')) {
-          if (!domain) { setStatus('勾选 www 跳转时必须填写域名', 'error'); return null; }
+          if (!domain) { setStatus(t('ui.100','勾选 www 跳转时必须填写域名'), 'error'); return null; }
           parts.push(t('ui.16','# www 跳转到非 www'));
           parts.push('RewriteCond %{HTTP_HOST} ^www\\.(.*)$ [NC]');
           parts.push('RewriteRule ^(.*)$ https://' + domain + '/$1 [R=301,L]');

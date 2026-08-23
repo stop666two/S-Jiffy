@@ -353,7 +353,7 @@
         outputText.textContent = t('ui.11','未找到 CREATE TABLE 语句，请检查 SQL 语法（每条语句以 CREATE TABLE 开头）。');
         statList.style.display = 'none';
         warnList.style.display = 'none';
-        setStatus('未找到 CREATE TABLE', 'error');
+        setStatus(t('ui.100','未找到 CREATE TABLE'), 'error');
         return;
       }
       var models = [];
@@ -389,7 +389,7 @@
         outputText.textContent = t('ui.7','全部 CREATE TABLE 语句解析失败，请检查 SQL 语法。');
         statList.style.display = 'none';
         warnList.style.display = 'none';
-        setStatus('解析失败', 'error');
+        setStatus(t('ui.101','解析失败'), 'error');
         return;
       }
       lastCode = 'generator client {\n  provider = "prisma-client-js"\n}\n\ndatasource db {\n  provider = "mysql"\n  url      = env("DATABASE_URL")\n}\n\n' + models.join('\n\n');
@@ -418,7 +418,7 @@
     mapOpt.onchange = generate;
     copyBtn.onclick = function () {
       if (!lastCode) {
-        setStatus('请先生成 Prisma Schema', 'error');
+        setStatus(t('ui.102','请先生成 Prisma Schema'), 'error');
         return;
       }
       copyToClipboard(lastCode, copyBtn);

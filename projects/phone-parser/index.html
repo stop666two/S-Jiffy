@@ -21,7 +21,7 @@
     <h1 data-i18n="h1">电话号码解析</h1>
     <p class="tool-desc" data-i18n="desc">解析和验证电话号码，检测国家代码与格式。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <input id="phoneInput" class="input js-focus-input" type="text" placeholder="输入电话号码，如 +86 13800138000" style="flex:1;min-width:200px;">
+      <input id="phoneInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.168" placeholder="输入电话号码，如 +86 13800138000" style="flex:1;min-width:200px;">
       <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
@@ -241,7 +241,7 @@
     }
     function doParse() {
       var raw = inputEl.value.trim();
-      if (!raw) { setStatus('请输入电话号码', 'error'); render(null); return; }
+      if (!raw) { setStatus(t('ui.167','请输入电话号码'), 'error'); render(null); return; }
       var result = parsePhone(raw);
       render(result);
       setStatus(result.isValid ? '解析完成' : '号码格式可能不完整');

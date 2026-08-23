@@ -73,11 +73,11 @@
 
       document.getElementById('expandBtn').addEventListener('click', function() {
         var cidr = cidrEl.value.trim();
-        if (!cidr) { setStatus('请输入 CIDR 网段', 'error'); return; }
+        if (!cidr) { setStatus(t('ui.100','请输入 CIDR 网段'), 'error'); return; }
         var result = expandCIDR(cidr);
-        if (!result) { setStatus('无效的 CIDR 格式', 'error'); return; }
+        if (!result) { setStatus(t('ui.101','无效的 CIDR 格式'), 'error'); return; }
         if (result.list.length > 65536) {
-          setStatus('范围过大（超过 65536 个 IP），请输入更小的前缀（如 /24）', 'error');
+          setStatus(t('ui.102','范围过大（超过 65536 个 IP），请输入更小的前缀（如 /24）'), 'error');
           return;
         }
         outputEl.textContent = result.list.join('\n');

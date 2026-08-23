@@ -90,7 +90,7 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 setStatus(t('ui.22','已开始下载录音'));}
-catch(e){setStatus('下载失败','error');}});
+catch(e){setStatus(t('ui.100','下载失败'),'error');}});
 var del=document.createElement('button');
 del.textContent = t('ui.21','删除');
 del.addEventListener('click',function(){
@@ -110,11 +110,11 @@ recList.appendChild(li);
 function startRec(){
 if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
 recState.textContent = t('ui.19','当前浏览器不支持录音');
-setStatus('浏览器不支持麦克风录音','error');
+setStatus(t('ui.101','浏览器不支持麦克风录音'),'error');
 return;}
 if(!window.MediaRecorder){
 recState.textContent = t('ui.18','当前浏览器不支持 MediaRecorder');
-setStatus('浏览器不支持 MediaRecorder 录音','error');
+setStatus(t('ui.102','浏览器不支持 MediaRecorder 录音'),'error');
 return;}
 navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
 stream=s;
@@ -123,7 +123,7 @@ try{
 recorder=mime===null?new MediaRecorder(s):new MediaRecorder(s,{mimeType:mime});
 }catch(e){
 try{recorder=new MediaRecorder(s);}
-catch(e2){recState.textContent = t('ui.17','录音初始化失败');setStatus('录音初始化失败','error');return;}}
+catch(e2){recState.textContent = t('ui.17','录音初始化失败');setStatus(t('ui.103','录音初始化失败'),'error');return;}}
 chunks=[];
 recorder.ondataavailable=function(e){if(e.data&&e.data.size>0)chunks.push(e.data);};
 recorder.onstop=function(){
@@ -144,7 +144,7 @@ recState.className='rec-state recording';
 setStatus(t('ui.15','录音已开始，请对准麦克风说话'));}).catch(function(err){
 recState.textContent = t('ui.14','麦克风权限被拒绝');
 recState.className='rec-state';
-setStatus('无法获取麦克风权限：请在浏览器地址栏或设置中允许本页使用麦克风，并通过 HTTPS 或 localhost 访问本页','error');});}
+setStatus(t('ui.104','无法获取麦克风权限：请在浏览器地址栏或设置中允许本页使用麦克风，并通过 HTTPS 或 localhost 访问本页'),'error');});}
 function updateTimer(){
 if(paused)return;
 accMs+=200;
@@ -188,7 +188,7 @@ stopBtn.addEventListener('click',function(){
 if(!recorder||!recording)return;
 if(paused){paused=false;setButtons();}
 try{recorder.stop();}
-catch(e){finishState();setStatus('录音已停止','error');}});
+catch(e){finishState();setStatus(t('ui.105','录音已停止'),'error');}});
 document.addEventListener('visibilitychange',function(){
 if(document.hidden&&recording){
 focusWarn.style.display='block';

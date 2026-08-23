@@ -6,8 +6,8 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">JSONPath 查询</h1><p class="tool-desc" data-i18n="desc">使用 JSONPath 表达式从 JSON 中提取值，支持点号和括号语法。</p>
 <div class="card">
-<input id="pathInput" class="input" placeholder="JSONPath 表达式，如 $.store.book[0].title" style="width:100%;max-width:500px;">
-<div style="margin-top:var(--space-1);"><span class="jp-hint">支持: $.key, $.key.subkey, $[0], $..recursive, *.wildcard</span></div>
+<input id="pathInput" class="input" data-i18n-placeholder="ui.102" placeholder="JSONPath 表达式，如 $.store.book[0].title" style="width:100%;max-width:500px;">
+<div style="margin-top:var(--space-1);"><span class="jp-hint" data-i18n="ui.103">支持: $.key, $.key.subkey, $[0], $..recursive, *.wildcard</span></div>
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder='输入 JSON，如 {"store":{"book":[{"title":"JSON","price":12}]}}' style="min-height:120px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
@@ -74,8 +74,8 @@ return current;
 extractBtn.addEventListener('click',function(){
 var json=inputEl.value.trim();
 var path=pathInput.value.trim();
-if(!json){setStatus('请输入 JSON','error');return;}
-if(!path){setStatus('请输入 JSONPath 表达式','error');return;}
+if(!json){setStatus(t('ui.100','请输入 JSON'),'error');return;}
+if(!path){setStatus(t('ui.101','请输入 JSONPath 表达式'),'error');return;}
 try{
 var parsed=JSON.parse(json);
 var result=evaluatePath(parsed,path);

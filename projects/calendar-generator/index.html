@@ -30,7 +30,7 @@
     <p class="tool-desc" data-i18n="desc">生成任意月份日历（周日开头），内置固定日期节假日提示。</p>
     <div class="card">
       <div class="cal-controls">
-        <input id="yearInput" type="number" min="1900" max="2100" class="input js-focus-input" placeholder="年份 1900-2100">
+        <input id="yearInput" type="number" min="1900" max="2100" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="年份 1900-2100">
         <select id="monthSelect" class="input" style="width:auto;">
           <option value="1" data-i18n="ui.1">1 月</option>
           <option value="2" data-i18n="ui.2">2 月</option>
@@ -100,14 +100,14 @@
       var y = parseInt(yearInput.value, 10);
       var m = parseInt(monthSelect.value, 10);
       if (isNaN(y) || y < 1900 || y > 2100) {
-        setStatus('请先输入 1900-2100 之间的年份', 'error');
+        setStatus(t('ui.100','请先输入 1900-2100 之间的年份'), 'error');
         return;
       }
       var total = y * 12 + (m - 1) + delta;
       var ny = Math.floor(total / 12);
       var nm = (total % 12) + 1;
       if (ny < 1900 || ny > 2100) {
-        setStatus('已超出可查看范围（1900-2100）', 'error');
+        setStatus(t('ui.101','已超出可查看范围（1900-2100）'), 'error');
         return;
       }
       yearInput.value = ny;
@@ -126,7 +126,7 @@
       var m = parseInt(monthSelect.value, 10);
       if (isNaN(y) || y < 1900 || y > 2100) {
         outputText.innerHTML = '';
-        setStatus('年份需为 1900-2100 之间的整数', 'error');
+        setStatus(t('ui.102','年份需为 1900-2100 之间的整数'), 'error');
         return;
       }
       var now = new Date();

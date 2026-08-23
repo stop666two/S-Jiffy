@@ -92,7 +92,7 @@ posts.title" style="min-height:140px;font-size:13px;"></textarea></div>
     var argsText = argsInput.value.trim();
     var compact = compactCheck.checked;
 
-    if (!fieldsText) { setStatus('请输入字段列表', 'error'); return; }
+    if (!fieldsText) { setStatus(t('ui.100','请输入字段列表'), 'error'); return; }
 
     var lines = fieldsText.split('\n').filter(function (l) { return l.trim(); });
     var tree = buildTree(lines);
@@ -110,7 +110,7 @@ posts.title" style="min-height:140px;font-size:13px;"></textarea></div>
         }
         args = '(' + argPairs.join(', ') + ')';
       } catch (e) {
-        setStatus('参数 JSON 格式错误', 'error');
+        setStatus(t('ui.101','参数 JSON 格式错误'), 'error');
         return;
       }
     }

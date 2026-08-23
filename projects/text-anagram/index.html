@@ -22,8 +22,8 @@
     <p class="tool-desc" data-i18n="desc">检查两个文本是否为变位词（字母重排），并显示字母计数对比。</p>
     <div class="card">
       <div class="ta-row">
-        <div class="field"><label for="textA" data-i18n="ui.1">文本 A</label><input id="textA" class="input" type="text" value="listen" placeholder="第一个文本"></div>
-        <div class="field"><label for="textB" data-i18n="ui.2">文本 B</label><input id="textB" class="input" type="text" value="silent" placeholder="第二个文本"></div>
+        <div class="field"><label for="textA" data-i18n="ui.1">文本 A</label><input id="textA" class="input" type="text" value="listen" data-i18n-placeholder="ui.101" placeholder="第一个文本"></div>
+        <div class="field"><label for="textB" data-i18n="ui.2">文本 B</label><input id="textB" class="input" type="text" value="silent" data-i18n-placeholder="ui.102" placeholder="第二个文本"></div>
       </div>
       <div class="ta-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="ignoreCaseChk" type="checkbox" checked> 忽略大小写</label>
@@ -59,7 +59,7 @@
     function generate() {
       var a = aEl.value;
       var b = bEl.value;
-      if (!a || !b) { setStatus('请输入两个文本', 'error'); return; }
+      if (!a || !b) { setStatus(t('ui.100','请输入两个文本'), 'error'); return; }
       var ignoreCase = ignoreCaseChk.checked;
       var ignoreSpace = ignoreSpaceChk.checked;
 

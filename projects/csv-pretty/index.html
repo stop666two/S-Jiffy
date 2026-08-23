@@ -12,7 +12,7 @@
 <label style="font-size:var(--font-size-sm);cursor:pointer;margin-left:12px;"><input type="checkbox" id="headerLine" checked> 首行为表头</label>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 CSV..." style="min-height:120px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入 CSV..." style="min-height:120px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
@@ -99,9 +99,9 @@ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace
 }
 formatBtn.addEventListener('click',function(){
 var t=inputEl.value.trim();
-if(!t){setStatus('请输入 CSV','error');return;}
+if(!t){setStatus(t('ui.100','请输入 CSV'),'error');return;}
 var rows=parseCSV(t);
-if(rows.length<2){setStatus('CSV 至少需要 2 行','error');return;}
+if(rows.length<2){setStatus(t('ui.101','CSV 至少需要 2 行'),'error');return;}
 var formatted=formatCSV(rows,padSelect.value);
 outputEl.textContent=formatted;
 tableArea.innerHTML=buildTable(rows,headerLine.checked);

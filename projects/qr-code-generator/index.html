@@ -19,7 +19,7 @@
 <p class="tool-desc" data-i18n="desc">生成可自定义尺寸、颜色、边距、模块大小和纠错级别的二维码。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
-<input id="textInput" class="input js-focus-input" type="text" placeholder="输入文本或链接..." style="flex:1;min-width:200px;"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
+<input id="textInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.104" placeholder="输入文本或链接..." style="flex:1;min-width:200px;"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
 <div class="qr-options">
 <div><label data-i18n="ui.1">尺寸</label><div class="qr-size-btns"><button class="qr-size-btn" data-size="128" data-i18n="ui.2">小</button><button class="qr-size-btn active" data-size="256" data-i18n="ui.3">中</button><button class="qr-size-btn" data-size="512" data-i18n="ui.4">大</button></div></div>
 <div><label data-i18n="ui.5">边距</label><select id="marginSelect" class="input" style="width:auto;"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></div>
@@ -45,7 +45,7 @@
   var sizeBtns=document.querySelectorAll('.qr-size-btn');
   for(var b=0;b<sizeBtns.length;b++){sizeBtns[b].addEventListener('click',function(){for(var k=0;k<sizeBtns.length;k++)sizeBtns[k].classList.remove('active');this.classList.add('active');currentSize=parseInt(this.dataset.size);});}
   function generate(){
-    var text=textEl.value.trim();if(!text){setStatus('请输入文本或链接','error');return;}
+    var text=textEl.value.trim();if(!text){setStatus(t('ui.100','请输入文本或链接'),'error');return;}
     var ecc=eccEl.value,margin=parseInt(marginEl.value)||2;qrEl.innerHTML='';
     currentQR=new QRCode(qrEl,{text:text,width:currentSize,height:currentSize,correctLevel:QRCode.CorrectLevel[ecc],colorDark:fgEl.value,colorLight:bgEl.value});
     // Apply margin via padding on the container
@@ -53,7 +53,7 @@
     outputEl.textContent=text;setStatus(t('ui.15','二维码已生成'));}
   document.getElementById('generateBtn').addEventListener('click',generate);
   textEl.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
-  document.getElementById('downloadBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(!canvas){setStatus('请先生成二维码','error');return;}
+  document.getElementById('downloadBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(!canvas){setStatus(t('ui.101','请先生成二维码'),'error');return;}
     var link=document.createElement('a');link.download='qrcode.png';link.href=canvas.toDataURL('image/png');link.click();setStatus(t('ui.14','已下载'));});
-  document.getElementById('copyBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(canvas){canvas.toBlob(function(blob){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){setStatus(t('ui.13','二维码图片已复制'));}).catch(function(){setStatus('复制失败','error');});});}else{setStatus('请先生成二维码','error');}});
+  document.getElementById('copyBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(canvas){canvas.toBlob(function(blob){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){setStatus(t('ui.13','二维码图片已复制'));}).catch(function(){setStatus(t('ui.102','复制失败'),'error');});});}else{setStatus(t('ui.103','请先生成二维码'),'error');}});
 })();</script></body></html>

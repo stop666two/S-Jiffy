@@ -12,7 +12,7 @@
 <label style="margin-left:12px;display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="sortKeys"> 按键排序</label>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入 JSON..." style="min-height:150px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入 JSON..." style="min-height:150px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
@@ -42,7 +42,7 @@ return sorted;
 }
 formatBtn.addEventListener('click',function(){
 var t=inputEl.value.trim();
-if(!t){setStatus('请输入 JSON','error');return;}
+if(!t){setStatus(t('ui.100','请输入 JSON'),'error');return;}
 try{
 var parsed=JSON.parse(t);
 var data=sortKeys.checked?sortObject(parsed):parsed;

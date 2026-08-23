@@ -21,7 +21,7 @@
     <h1 data-i18n="h1">信用卡号验证</h1>
     <p class="tool-desc" data-i18n="desc">验证信用卡号（Luhn 算法），检测卡类型（Visa/MC/Amex/Discover）。</p>
     <div class="card">
-      <input id="cardInput" class="input js-focus-input" type="text" placeholder="输入信用卡号..." style="margin-bottom:var(--space-2);">
+      <input id="cardInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入信用卡号..." style="margin-bottom:var(--space-2);">
       <div class="cc-result">
         <span id="validBadge" class="cc-badge" data-i18n="ui.1">等待输入</span>
         <span id="cardType" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span>
@@ -105,7 +105,7 @@
           validBadge.className = 'cc-badge invalid';
           cardType.textContent = t('ui.3','Luhn 校验失败');
           outputEl.textContent = t('ui.2','信用卡号无效：Luhn 校验失败');
-          setStatus('Luhn 校验失败', 'error');
+          setStatus(t('ui.100','Luhn 校验失败'), 'error');
         }
       }
 

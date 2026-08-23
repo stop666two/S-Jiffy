@@ -97,7 +97,7 @@
       function doMerge(priorityA, priorityB) {
         var textA = jsonA.value.trim();
         var textB = jsonB.value.trim();
-        if (!textA && !textB) { setStatus('请至少输入一个 JSON', 'error'); return; }
+        if (!textA && !textB) { setStatus(t('ui.100','请至少输入一个 JSON'), 'error'); return; }
 
         var objA = textA ? (function () { try { return JSON.parse(textA); } catch (e) { setStatus(t('ui.7','JSON A 格式错误: ') + e.message, 'error'); return undefined; } })() : {};
         if (objA === undefined) return;

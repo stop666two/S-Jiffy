@@ -25,7 +25,7 @@
     <h1 data-i18n="h1">代码语言检测器</h1>
     <p class="tool-desc" data-i18n="desc">通过关键词与语法特征启发式识别代码语言，输出判定、置信度与命中特征。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴代码片段..." style="min-height:180px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴代码片段..." style="min-height:180px;"></textarea>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -100,7 +100,7 @@
           html.push('<div class="det-none">未识别出任何语言特征，请粘贴更完整的代码片段。</div>');
           outputEl.innerHTML = html.join('');
           lastPlain = '未识别';
-          setStatus('未识别出语言特征', 'error');
+          setStatus(t('ui.100','未识别出语言特征'), 'error');
           return;
         }
         var conf = Math.round(scores[best] / (scores[best] + second + 0.5) * 100);

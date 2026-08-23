@@ -31,7 +31,7 @@ var dirDescriptions = {
   'must-understand': '缓存必须理解并遵守响应中所有缓存指令的要求，否则不得存储响应。'
 };
 parseBtn.addEventListener('click',function(){
-  var v=input.value.trim();if(!v){setStatus('请输入 Cache-Control 头部值','error');return;}
+  var v=input.value.trim();if(!v){setStatus(t('ui.100','请输入 Cache-Control 头部值'),'error');return;}
   var parts=v.split(',').map(function(p){return p.trim();});
   var html='',summaries=[],dirs=[];
   for(var i=0;i<parts.length;i++){
@@ -48,7 +48,7 @@ parseBtn.addEventListener('click',function(){
     html+='<div class="directive-item"><div><span class="directive-name">'+htmlEscape(name)+'</span>'+valHtml+tagHtml+'</div><div class="directive-desc">'+htmlEscape(desc)+'</div></div>';
     dirs.push({name:name,val:val});
   }
-  if(dirs.length===0){setStatus('未找到有效指令','error');return;}
+  if(dirs.length===0){setStatus(t('ui.101','未找到有效指令'),'error');return;}
   parsedList.innerHTML=html;resultCard.style.display='block';
   var s='';if(dirs.some(function(d){return d.name==='no-store';}))s+='⚠️ no-store 存在：响应不会被缓存。';
   else if(dirs.some(function(d){return d.name==='no-cache';}))s+='⚠️ no-cache 存在：需要每次验证。';

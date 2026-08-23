@@ -179,7 +179,7 @@ border-radius: 8px;" style="min-height:200px;"></textarea></div>
 
   function convert() {
     var text = inputEl.value.trim();
-    if (!text) { setStatus('请输入 CSS', 'error'); return; }
+    if (!text) { setStatus(t('ui.100','请输入 CSS'), 'error'); return; }
     var lines = text.split('\n');
     var classes = [];
     for (var i = 0; i < lines.length; i++) {
@@ -198,7 +198,7 @@ border-radius: 8px;" style="min-height:200px;"></textarea></div>
     }
     if (classes.length === 0) {
       outputEl.textContent = '';
-      setStatus('未识别到可转换的 CSS 属性', 'error');
+      setStatus(t('ui.101','未识别到可转换的 CSS 属性'), 'error');
       return;
     }
     outputEl.textContent = classes.join(' ');

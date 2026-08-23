@@ -22,7 +22,7 @@
     <div class="card">
       <div class="form-row">
         <label for="tableInput" class="field-label" data-i18n="ui.1">表格内容（支持 Markdown 表格或 CSV，首行为表头）</label>
-        <textarea id="tableInput" class="input textarea js-focus-input" style="min-height:180px;" placeholder="名称,数量,价格&#10;苹果,3,2.5&#10;香蕉,5,1.8&#10;橙子,2,3.2"></textarea>
+        <textarea id="tableInput" class="input textarea js-focus-input" style="min-height:180px;" data-i18n-placeholder="ui.103" placeholder="名称,数量,价格&#10;苹果,3,2.5&#10;香蕉,5,1.8&#10;橙子,2,3.2"></textarea>
       </div>
       <div class="form-row">
         <label for="alignSel" class="field-label" data-i18n="ui.2">列对齐方式</label>
@@ -121,7 +121,7 @@
         }
         if (!rows.length) {
           outputEl.textContent = '';
-          setStatus('未解析到任何表格数据', 'error');
+          setStatus(t('ui.100','未解析到任何表格数据'), 'error');
           return;
         }
         var sepIdx = -1;
@@ -149,7 +149,7 @@
         }
         if (maxCols === 0) {
           outputEl.textContent = '';
-          setStatus('表头为空，无法格式化', 'error');
+          setStatus(t('ui.101','表头为空，无法格式化'), 'error');
           return;
         }
         var widths = [];
@@ -199,7 +199,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.102','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

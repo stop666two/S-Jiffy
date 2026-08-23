@@ -54,13 +54,13 @@
       function calcAge() {
         var birthStr = birthEl.value;
         var targetStr = targetEl.value;
-        if (!birthStr) { setStatus('请选择出生日期', 'error'); return; }
-        if (!targetStr) { setStatus('请选择目标日期', 'error'); return; }
+        if (!birthStr) { setStatus(t('ui.100','请选择出生日期'), 'error'); return; }
+        if (!targetStr) { setStatus(t('ui.101','请选择目标日期'), 'error'); return; }
 
         var birth = new Date(birthStr);
         var target = new Date(targetStr);
 
-        if (birth >= target) { setStatus('出生日期应早于目标日期', 'error'); return; }
+        if (birth >= target) { setStatus(t('ui.102','出生日期应早于目标日期'), 'error'); return; }
 
         var y = target.getFullYear() - birth.getFullYear();
         var m = target.getMonth() - birth.getMonth();

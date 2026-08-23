@@ -111,7 +111,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 </div>
 </div>
 <div class="progress hidden" id="progress"><div id="progressFill"></div></div>
-<button class="dl-btn" id="btnExport" type="button" disabled><span>导出 1 个片段</span></button>
+<button class="dl-btn" id="btnExport" type="button" disabled><span data-i18n="ui.104">导出 1 个片段</span></button>
 <div class="result-card hidden" id="resultCard">
 <h3><span data-i18n="segmentsReady">片段已就绪</span><button class="re" id="btnReExport" type="button" data-i18n="reExportBtn">重新导出</button></h3>
 <div id="partList"></div>
@@ -240,7 +240,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 
   function loadFile(f) {
     hideErr();
-    setStatus('正在解码音频…');
+    setStatus(t('ui.100','正在解码音频…'));
     AK.decodeAudioFile(f, function (buf) {
       file = f;
       buffer = buf;
@@ -261,7 +261,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
       resultBlobs = [];
       renderSplits();
       draw();
-      setStatus('文件已就绪');
+      setStatus(t('ui.101','文件已就绪'));
     }, function () {
       showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
       setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
@@ -441,7 +441,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 
   btnExport.addEventListener('click', function () {
     if (!buffer || processing) return;
-    if (splits.length === 0) { setStatus('请先添加分割点', 'error'); return; }
+    if (splits.length === 0) { setStatus(t('ui.102','请先添加分割点'), 'error'); return; }
     processing = true;
     btnExport.disabled = true;
     hideErr();
@@ -478,7 +478,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
       processing = false;
       btnExport.disabled = false;
       showErr(err && err.message ? err.message : '导出失败');
-      setStatus('导出失败', 'error');
+      setStatus(t('ui.103','导出失败'), 'error');
     }
     next();
   });

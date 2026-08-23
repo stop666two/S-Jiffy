@@ -42,7 +42,7 @@ return result;}
 
 function getIndent(){var v=document.getElementById('indentSelect').value;return v==='tab'?'\t':parseInt(v);}
 
-function process(fn){var t=i.value.trim();if(!t){setStatus('请输入 JSON','error');return;}
+function process(fn){var t=i.value.trim();if(!t){setStatus(t('ui.100','请输入 JSON'),'error');return;}
 try{var parsed=JSON.parse(t);var deep=document.getElementById('chkDeep').checked;var desc=document.getElementById('chkDesc').checked;
 var sortAr=document.getElementById('chkArray').checked;var result=fn(parsed,desc,deep,sortAr);
 var indent=getIndent();dO.textContent=JSON.stringify(result,null,indent);setStatus(t('ui.6','完成'));}catch(e){setStatus(t('ui.5','无效 JSON：') +e.message,'error');}}

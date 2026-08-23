@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">文本与 Unicode 互转</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 \\uXXXX 格式的 Unicode 码点，或从 \\uXXXX 还原为文本。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或 \\uXXXX 序列..." style="min-height:100px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入文本或 \\uXXXX 序列..." style="min-height:100px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="toUnicodeBtn" class="btn btn-primary" data-i18n="ui.1">文本 → \\uXXXX</button>
@@ -42,7 +42,7 @@
 
       document.getElementById('toUnicodeBtn').addEventListener('click', function() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         var result = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
@@ -54,7 +54,7 @@
 
       document.getElementById('toTextBtn').addEventListener('click', function() {
         var raw = inputEl.value;
-        if (!raw) { setStatus('请输入 \\uXXXX 序列', 'error'); return; }
+        if (!raw) { setStatus(t('ui.101','请输入 \\uXXXX 序列'), 'error'); return; }
         try {
           var result = raw.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
             return String.fromCharCode(parseInt(hex, 16));
@@ -62,7 +62,7 @@
           outputEl.textContent = result;
           setStatus(t('ui.3','已还原为文本'));
         } catch (e) {
-          setStatus('解析失败：格式无效', 'error');
+          setStatus(t('ui.102','解析失败：格式无效'), 'error');
         }
       });
 

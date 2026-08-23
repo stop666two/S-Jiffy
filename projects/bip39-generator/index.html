@@ -20,7 +20,7 @@
     <p class="tool-desc" data-i18n="desc">生成 BIP39 标准助记词短语，支持自定义熵值。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">熵值 (Hex)</label>
-      <input id="entropyInput" class="input" type="text" placeholder="留空随机生成 (32字节)" style="width:280px;font-size:13px;">
+      <input id="entropyInput" class="input" type="text" data-i18n-placeholder="ui.103" placeholder="留空随机生成 (32字节)" style="width:280px;font-size:13px;">
       <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
       <button id="randomBtn" class="btn btn-secondary" data-i18n="ui.2">随机熵</button>
     </div>
@@ -333,8 +333,8 @@
     document.getElementById('generateBtn').addEventListener('click', function() {
       var hex = entropyEl.value.trim();
       if (!hex) { setStatus('请先输入熵值或点击"随机熵"', 'error'); return; }
-      if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) { setStatus('熵值格式无效，请输入十六进制', 'error'); return; }
-      if (hex.length < 32) { setStatus('熵值过短，至少 16 字节 (32 hex)', 'error'); return; }
+      if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) { setStatus(t('ui.100','熵值格式无效，请输入十六进制'), 'error'); return; }
+      if (hex.length < 32) { setStatus(t('ui.101','熵值过短，至少 16 字节 (32 hex)'), 'error'); return; }
       var words = entropyToMnemonic(hex.toLowerCase());
       outputEl.textContent = words.join(' ');
       var chips = '';
@@ -345,7 +345,7 @@
     document.getElementById('randomBtn').addEventListener('click', function() {
       var hex = generateEntropy(32);
       entropyEl.value = hex;
-      setStatus('已生成随机熵值 (32 字节)');
+      setStatus(t('ui.102','已生成随机熵值 (32 字节)'));
     });
     document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copied','已复制')); } });
   })();</script>

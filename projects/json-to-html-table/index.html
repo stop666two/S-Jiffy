@@ -34,7 +34,7 @@ function buildTable(data){
   return html;
 }
 document.getElementById('generateBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入 JSON','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.100','请输入 JSON'),'error');return;}
   try{
     var data=JSON.parse(text);
     if(!Array.isArray(data)){var arr=[];for(var k in data){if(data.hasOwnProperty(k))arr.push({key:k,value:data[k]});}data=arr;}
@@ -44,7 +44,7 @@ document.getElementById('generateBtn').addEventListener('click',function(){
   }catch(e){tc.innerHTML='';o.textContent='';setStatus(t('ui.4','JSON 解析失败: ') +e.message,'error');}
 });
 document.getElementById('fullPageBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入 JSON','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.101','请输入 JSON'),'error');return;}
   try{
     var data=JSON.parse(text);if(!Array.isArray(data))throw new Error(t('ui.8','需要数组'));
     var headers=Object.keys(data[0]);

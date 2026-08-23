@@ -50,7 +50,7 @@ function parseDN(b64){
   }catch(e){return '(无法解析 DN)';}
 }
 parseBtn.addEventListener('click',function(){
-  var text=certInput.value.trim();if(!text){setStatus('请输入 PEM 证书','error');return;}
+  var text=certInput.value.trim();if(!text){setStatus(t('ui.100','请输入 PEM 证书'),'error');return;}
   var lines=text.split('\n');var bodyLines=[];
   var inBlock=false,headerFound=false,footerFound=false;
   for(var i=0;i<lines.length;i++){
@@ -59,9 +59,9 @@ parseBtn.addEventListener('click',function(){
     if(l.indexOf('-----END CERTIFICATE-----')>=0){inBlock=false;footerFound=true;continue;}
     if(inBlock&&l)bodyLines.push(l);
   }
-  if(!headerFound||!footerFound){setStatus('未找到完整的 PEM 证书块','error');return;}
+  if(!headerFound||!footerFound){setStatus(t('ui.101','未找到完整的 PEM 证书块'),'error');return;}
   var body=bodyLines.join('');var html='';var binary='';
-  try{binary=atob(body);}catch(e){setStatus('Base64 解码失败','error');return;}
+  try{binary=atob(body);}catch(e){setStatus(t('ui.102','Base64 解码失败'),'error');return;}
   var bytes=[];for(var i=0;i<binary.length;i++)bytes.push(binary.charCodeAt(i));
   html+='<div class="section-title">基本信息</div>';
   html+='<div class="cert-row"><span class="cert-label">格式</span><span class="cert-val">X.509 v3</span></div>';

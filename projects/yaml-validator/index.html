@@ -172,7 +172,7 @@
 
       function validate() {
         var text = inputEl.value;
-        if (!text.trim()) { setStatus('请输入 YAML 内容', 'error'); return; }
+        if (!text.trim()) { setStatus(t('ui.100','请输入 YAML 内容'), 'error'); return; }
 
         try {
           var parsed = simpleYamlParse(text);
@@ -190,13 +190,13 @@
           }
         } catch (e) {
           outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 解析错误:</strong> ' + escapeHtml(e.message) + '</div>';
-          setStatus('解析失败', 'error');
+          setStatus(t('ui.101','解析失败'), 'error');
         }
       }
 
       function format() {
         var text = inputEl.value;
-        if (!text.trim()) { setStatus('请输入 YAML 内容', 'error'); return; }
+        if (!text.trim()) { setStatus(t('ui.102','请输入 YAML 内容'), 'error'); return; }
 
         try {
           var parsed = simpleYamlParse(text);
@@ -214,7 +214,7 @@
           }
         } catch (e) {
           outputEl.innerHTML = '<div class="yaml-error"><strong>\u2716 错误:</strong> ' + escapeHtml(e.message) + '</div>';
-          setStatus('格式化失败', 'error');
+          setStatus(t('ui.103','格式化失败'), 'error');
         }
       }
 

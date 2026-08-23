@@ -16,7 +16,7 @@
     <p class="tool-desc" data-i18n="desc">二进制 / 八进制 / 十进制 / 十六进制互转。</p>
 
     <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <input id="inputValue" class="input js-focus-input" placeholder="输入数值" style="width:200px;">
+      <input id="inputValue" class="input js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入数值" style="width:200px;">
       <select id="fromBase" class="input" style="width:auto; min-width:80px;">
         <option value="2" data-i18n="ui.binary">二进制</option>
         <option value="8" data-i18n="ui.1">八进制</option>
@@ -51,9 +51,9 @@
       var baseNames = { 2: '二进制', 8: '八进制', 10: '十进制', 16: '十六进制' };
       document.getElementById('convertBtn').addEventListener('click', function () {
         var str = v.value.trim();
-        if (!str) { setStatus('请输入数值', 'error'); return; }
+        if (!str) { setStatus(t('ui.100','请输入数值'), 'error'); return; }
         var dec = parseInt(str, parseInt(f.value));
-        if (isNaN(dec)) { setStatus('输入与所选进制不匹配', 'error'); o.textContent = ''; return; }
+        if (isNaN(dec)) { setStatus(t('ui.101','输入与所选进制不匹配'), 'error'); o.textContent = ''; return; }
         var to = parseInt(t.value);
         var result = dec.toString(to).toUpperCase();
         o.textContent = baseNames[to] + ': ' + result;

@@ -48,7 +48,7 @@
       generateBtn.addEventListener('click', function () {
         var user = authUsername.value;
         var pass = authPassword.value;
-        if (!user && !pass) { setStatus('请输入用户名和密码', 'error'); return; }
+        if (!user && !pass) { setStatus(t('ui.100','请输入用户名和密码'), 'error'); return; }
         var token = btoa(unescape(encodeURIComponent(user + ':' + pass)));
         var header = 'Authorization: Basic ' + token;
         outputEl.textContent = header;

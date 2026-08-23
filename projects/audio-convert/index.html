@@ -61,7 +61,7 @@
 <div class="opt-card">
 <h3 data-i18n="formatLabel">格式</h3>
 <div class="opt-row">
-<div class="opt-group"><div class="lbl">输出格式</div>
+<div class="opt-group"><div class="lbl" data-i18n="ui.108">输出格式</div>
 <div id="fmtBtns">
 <button class="seg-btn active" data-fmt="wav" type="button">WAV</button>
 <button class="seg-btn" data-fmt="mp3" type="button">MP3</button>
@@ -83,11 +83,11 @@
 <p class="note hidden" id="webmNote" data-i18n="webmNote">WebM/Opus 使用浏览器 MediaRecorder，比特率和采样率由浏览器控制。</p>
 </div>
 <div class="progress hidden" id="progress"><div id="progressFill"></div></div>
-<button class="dl-btn" id="btnConvert" type="button" disabled>⇄ <span>转换为 WAV</span></button>
+<button class="dl-btn" id="btnConvert" type="button" disabled>⇄ <span data-i18n="ui.107">转换为 WAV</span></button>
 <div class="result-card hidden" id="resultCard">
 <h3 data-i18n="previewConverted">预览转换后的音频</h3>
 <audio controls id="resultAudio"></audio>
-<button class="dl-btn green" id="btnDownload" type="button">⬇ <span>下载</span></button>
+<button class="dl-btn green" id="btnDownload" type="button">⬇ <span data-i18n="ui.106">下载</span></button>
 </div>
 </div>
 </div>
@@ -157,7 +157,7 @@
     bitrateGroup.classList.toggle('hidden', fmt !== 'mp3');
     srGroup.classList.toggle('hidden', fmt === 'webm');
     webmNote.classList.toggle('hidden', fmt !== 'webm');
-    btnConvert.querySelector('span').textContent = '转换为 ' + fmt.toUpperCase();
+    btnConvert.querySelector('span').textContent = t('ui.104','转换为 ') + fmt.toUpperCase();
     var all = fmtBtns.querySelectorAll('.seg-btn');
     for (var i = 0; i < all.length; i++) all[i].classList.toggle('active', all[i].getAttribute('data-fmt') === fmt);
   }
@@ -165,7 +165,7 @@
   function loadFile(f) {
     hideErr();
     clearResult();
-    setStatus('正在解码音频…');
+    setStatus(t('ui.100','正在解码音频…'));
     AK.decodeAudioFile(f, function (buf) {
       file = f;
       buffer = buf;
@@ -179,7 +179,7 @@
       dropZone.style.display = 'none';
       btnConvert.disabled = false;
       draw();
-      setStatus('文件已就绪');
+      setStatus(t('ui.101','文件已就绪'));
     }, function () {
       showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
       setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
@@ -269,11 +269,11 @@
       resultAudio.src = resultUrl;
       resultCard.classList.remove('hidden');
       btnDownload.disabled = false;
-      btnDownload.querySelector('span').textContent = '下载 .' + fmt;
+      btnDownload.querySelector('span').textContent = t('ui.105','下载 .') + fmt;
       setProgress(1);
       processing = false;
       btnConvert.disabled = false;
-      setStatus('转换完成');
+      setStatus(t('ui.102','转换完成'));
     }
     function failed(err) {
       setProgress(1);
@@ -308,7 +308,7 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setStatus('已开始下载');
+    setStatus(t('ui.103','已开始下载'));
   });
 
   var h1 = document.querySelector('h1');

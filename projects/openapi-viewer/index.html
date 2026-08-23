@@ -27,7 +27,7 @@
     <h1 data-i18n="h1">OpenAPI 查看器</h1>
     <p class="tool-desc" data-i18n="desc">粘贴 OpenAPI 3.x 的 JSON 或 YAML 定义，自动提取全部端点，生成方法/路径/操作摘要表格。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" rows="12" placeholder="粘贴 OpenAPI 3.x JSON 或 YAML 内容，例如：&#10;openapi: 3.0.0&#10;paths:&#10;  /users:&#10;    get:&#10;      summary: 获取用户列表&#10;      operationId: listUsers"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" rows="12" data-i18n-placeholder="ui.102" placeholder="粘贴 OpenAPI 3.x JSON 或 YAML 内容，例如：&#10;openapi: 3.0.0&#10;paths:&#10;  /users:&#10;    get:&#10;      summary: 获取用户列表&#10;      operationId: listUsers"></textarea>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -160,13 +160,13 @@
             rows = parseYaml(text);
           } catch (e2) {
             clearResult();
-            setStatus('解析失败：内容既不是有效 JSON，也不符合可识别的 YAML 结构', 'error');
+            setStatus(t('ui.100','解析失败：内容既不是有效 JSON，也不符合可识别的 YAML 结构'), 'error');
             return;
           }
         }
         if (!rows.length) {
           clearResult();
-          setStatus('未找到任何端点：JSON 需包含 paths 节点，YAML 需包含缩进的 /路径: 行与 get:/post: 等方法行', 'error');
+          setStatus(t('ui.101','未找到任何端点：JSON 需包含 paths 节点，YAML 需包含缩进的 /路径: 行与 get:/post: 等方法行'), 'error');
           return;
         }
         render(rows);

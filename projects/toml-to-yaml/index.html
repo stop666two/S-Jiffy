@@ -147,14 +147,14 @@ level = "debug"' style="min-height:200px;"></textarea>
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 TOML', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 TOML'), 'error'); return; }
         try {
           var parsed = parseToml(text);
           outputEl.textContent = toYaml(parsed, 0);
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('转换错误', 'error');
+          setStatus(t('ui.101','转换错误'), 'error');
         }
       });
 

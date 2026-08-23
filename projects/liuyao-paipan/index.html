@@ -70,7 +70,7 @@
       <div class="mode-panel" id="panelNum">
         <div class="row3">
           <div class="input-group">
-            <label>上卦数（1 乾 / 2 兑 / 3 离 / 4 震 / 5 巽 / 6 坎 / 7 艮 / 8 坤）</label>
+            <label data-i18n="ui.102">上卦数（1 乾 / 2 兑 / 3 离 / 4 震 / 5 巽 / 6 坎 / 7 艮 / 8 坤）</label>
             <input id="numUpper" class="input" type="number" min="1" max="8" value="1">
           </div>
           <div class="input-group">
@@ -301,14 +301,14 @@
         var upper = clampInt(parseInt(document.getElementById('numUpper').value, 10), 1, 8);
         var lower = clampInt(parseInt(document.getElementById('numLower').value, 10), 1, 8);
         if (upper === null || lower === null) {
-          setStatus('上卦数与下卦数需为 1-8 的整数', 'error');
+          setStatus(t('ui.100','上卦数与下卦数需为 1-8 的整数'), 'error');
           return;
         }
         var sh = shichenNow();
         var useSh = document.getElementById('useShichen').checked;
         var move = clampInt(parseInt(document.getElementById('numMove').value, 10), 1, 6);
         if (!useSh && move === null) {
-          setStatus('动爻需为 1-6 的整数', 'error');
+          setStatus(t('ui.101','动爻需为 1-6 的整数'), 'error');
           return;
         }
         if (useSh) {

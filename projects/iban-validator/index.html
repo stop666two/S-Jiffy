@@ -23,7 +23,7 @@
     <h1 data-i18n="h1">IBAN 验证器</h1>
     <p class="tool-desc" data-i18n="desc">验证国际银行账号 (IBAN) 格式、国家代码和校验位。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <input id="ibanInput" class="input js-focus-input" type="text" placeholder="输入 IBAN，如 GB33BUKB20201555555555" style="flex:1;min-width:200px;font-size:14px;letter-spacing:1px;">
+      <input id="ibanInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入 IBAN，如 GB33BUKB20201555555555" style="flex:1;min-width:200px;font-size:14px;letter-spacing:1px;">
       <button id="validateBtn" class="btn btn-primary" data-i18n="ui.1">验证</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
@@ -115,7 +115,7 @@
     }
     function doValidate() {
       var iban = inputEl.value.trim();
-      if (!iban) { setStatus('请输入 IBAN', 'error'); render(null); return; }
+      if (!iban) { setStatus(t('ui.100','请输入 IBAN'), 'error'); render(null); return; }
       var result = validateIBAN(iban);
       render(result);
       setStatus(result ? (result.valid ? 'IBAN 验证通过' : result.reason) : '无效');

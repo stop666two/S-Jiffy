@@ -5,8 +5,8 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">博福特密码</h1><p class="tool-desc" data-i18n="desc">Beaufort 密码加密/解密（Vigenère 变体，加密与解密相同操作）。</p>
-<div class="card"><input id="keyInput" class="input" placeholder="关键词" value="BEAUFORT" style="width:200px;"></div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
+<div class="card"><input id="keyInput" class="input" data-i18n-placeholder="ui.103" placeholder="关键词" value="BEAUFORT" style="width:200px;"></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本（仅字母）..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="encryptBtn" class="btn btn-primary" data-i18n="ui.encrypt">加密</button>
 <button id="decryptBtn" class="btn btn-secondary" data-i18n="ui.decrypt">解密</button>
@@ -28,7 +28,7 @@ var copyBtn=document.getElementById('copyBtn');
 function beaufort(text,key){
 var t=text.toUpperCase().replace(/[^A-Z]/g,'');
 var k=key.toUpperCase().replace(/[^A-Z]/g,'');
-if(!t||!k){setStatus('请输入文本和关键词','error');return null;}
+if(!t||!k){setStatus(t('ui.100','请输入文本和关键词'),'error');return null;}
 var r='';
 for(var i=0;i<t.length;i++){
 var p=t.charCodeAt(i)-65;
@@ -40,13 +40,13 @@ return r;
 }
 encryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var k=keyInput.value;
-if(!t||!k){setStatus('请输入文本和关键词','error');return;}
+if(!t||!k){setStatus(t('ui.101','请输入文本和关键词'),'error');return;}
 var r=beaufort(t,k);
 if(r){outputEl.textContent=r;setStatus('');}
 });
 decryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var k=keyInput.value;
-if(!t||!k){setStatus('请输入密文和关键词','error');return;}
+if(!t||!k){setStatus(t('ui.102','请输入密文和关键词'),'error');return;}
 var r=beaufort(t,k);
 if(r){outputEl.textContent=r;setStatus('');}
 });

@@ -62,11 +62,11 @@
 </div>
 <div id="paramsCompress">
 <div class="param-block">
-<label><span>质量</span><b id="qVal">80%</b></label>
+<label><span data-i18n="ui.113">质量</span><b id="qVal">80%</b></label>
 <input type="range" id="qRange" min="10" max="100" value="80">
 </div>
 <div class="param-block">
-<label><span>输出格式</span></label>
+<label><span data-i18n="ui.112">输出格式</span></label>
 <div class="opt-pills" id="fmtPills">
 <button data-v="auto" class="active">自动（保持原格式）</button>
 <button data-v="png">PNG</button>
@@ -77,8 +77,8 @@
 </div>
 <div id="paramsResize" style="display:none;">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-<div class="param-block"><label><span>宽度（像素）</span></label><input type="number" id="rw" value="800" min="1" max="16384"></div>
-<div class="param-block"><label><span>高度（像素）</span></label><input type="number" id="rh" value="600" min="1" max="16384"></div>
+<div class="param-block"><label><span data-i18n="ui.111">宽度（像素）</span></label><input type="number" id="rw" value="800" min="1" max="16384"></div>
+<div class="param-block"><label><span data-i18n="ui.110">高度（像素）</span></label><input type="number" id="rh" value="600" min="1" max="16384"></div>
 </div>
 <label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;margin-bottom:12px;">
 <input type="checkbox" id="keepAR" checked> <span data-i18n="maintainAspectRatio">保持宽高比</span>
@@ -86,7 +86,7 @@
 </div>
 <div id="paramsConvert" style="display:none;">
 <div class="param-block">
-<label><span>目标格式</span></label>
+<label><span data-i18n="ui.109">目标格式</span></label>
 <div class="opt-pills" id="convPills">
 <button data-v="jpg" class="active">JPG</button>
 <button data-v="png">PNG</button>
@@ -94,16 +94,16 @@
 </div>
 </div>
 <div class="param-block">
-<label><span>质量</span><b id="cqVal">85%</b></label>
+<label><span data-i18n="ui.108">质量</span><b id="cqVal">85%</b></label>
 <input type="range" id="cqRange" min="10" max="100" value="85">
 </div>
 </div>
 <div id="paramsWatermark" style="display:none;">
-<div class="param-block"><label><span>水印文字</span></label><input type="text" id="wmText" value="© S-Jiffy" style="width:100%;height:38px;padding:0 10px;font-size:14px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);"></div>
+<div class="param-block"><label><span data-i18n="ui.107">水印文字</span></label><input type="text" id="wmText" value="© S-Jiffy" style="width:100%;height:38px;padding:0 10px;font-size:14px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-<div class="param-block"><label><span>颜色</span></label><input type="color" id="wmColor" value="#ffffff" style="width:100%;height:38px;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:2px;"></div>
+<div class="param-block"><label><span data-i18n="ui.106">颜色</span></label><input type="color" id="wmColor" value="#ffffff" style="width:100%;height:38px;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:2px;"></div>
 <div class="param-block">
-<label><span>位置</span></label>
+<label><span data-i18n="ui.105">位置</span></label>
 <select id="wmPos" style="width:100%;height:38px;font-size:13px;border:1px solid #DDDDDD;border-radius:var(--radius-sm);font-family:var(--font-mono);">
 <option value="bottom-right">右下</option>
 <option value="bottom-left">左下</option>
@@ -115,15 +115,15 @@
 </div>
 </div>
 <div class="param-block">
-<label><span>透明度</span><b id="wmOpVal">70%</b></label>
+<label><span data-i18n="ui.104">透明度</span><b id="wmOpVal">70%</b></label>
 <input type="range" id="wmOpRange" min="10" max="100" value="70">
 </div>
 <div class="param-block">
-<label><span>字号</span><b id="wmSizeVal">48</b></label>
+<label><span data-i18n="ui.103">字号</span><b id="wmSizeVal">48</b></label>
 <input type="range" id="wmSizeRange" min="12" max="120" value="48">
 </div>
 <div class="param-block">
-<label><span>旋转角度</span><b id="wmRotVal">0°</b></label>
+<label><span data-i18n="ui.102">旋转角度</span><b id="wmRotVal">0°</b></label>
 <input type="range" id="wmRotRange" min="0" max="360" value="0">
 </div>
 </div>
@@ -229,7 +229,7 @@ function renderList(){
     row.innerHTML='<span class="fname">'+htmlEscape(item.file.name)+'</span><span class="fsize">'+fmtBytes(item.file.size)+'</span>'+st;
     var dl=document.createElement('button');
     dl.className='btn btn-secondary';
-    dl.textContent='下载';
+    dl.textContent=t('ui.100','下载');
     dl.style.display=item.status==='done'?'':'none';
     dl.addEventListener('click',(function(item){return function(){
       if(item.result&&item.resultName){
@@ -244,7 +244,7 @@ function renderList(){
     row.appendChild(dl);
     var prev=document.createElement('button');
     prev.className='btn btn-secondary';
-    prev.textContent='预览';
+    prev.textContent=t('ui.101','预览');
     prev.addEventListener('click',(function(f){return function(){
       var img=new Image();
       img.onload=function(){

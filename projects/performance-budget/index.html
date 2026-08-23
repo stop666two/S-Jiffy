@@ -84,17 +84,17 @@
         var target = parseFloat(targetInput.value);
         if (!isFinite(kb) || kb <= 0) {
           outputText.textContent = '';
-          setStatus('请输入有效的页面总大小（KB）', 'error');
+          setStatus(t('ui.100','请输入有效的页面总大小（KB）'), 'error');
           return;
         }
         if (!requestsInput.value.trim() || !isFinite(reqs) || reqs < 1) {
           outputText.textContent = '';
-          setStatus('请输入有效的请求数（至少 1 个）', 'error');
+          setStatus(t('ui.101','请输入有效的请求数（至少 1 个）'), 'error');
           return;
         }
         if (!targetInput.value.trim() || !isFinite(target) || target <= 0) {
           outputText.textContent = '';
-          setStatus('请输入有效的目标 LCP 秒数', 'error');
+          setStatus(t('ui.102','请输入有效的目标 LCP 秒数'), 'error');
           return;
         }
         var mbps = SPEEDS[netSelect.value];

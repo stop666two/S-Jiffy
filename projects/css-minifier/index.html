@@ -11,7 +11,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
-<textarea id="cssInput" class="js-focus-input" placeholder="粘贴 CSS 代码...">/* 这是个注释 */
+<textarea id="cssInput" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴 CSS 代码...">/* 这是个注释 */
 body {
   background-color: #ffffff;
   color: #333333;
@@ -25,7 +25,7 @@ body {
   margin-right: auto;
 }
 </textarea>
-<textarea id="css输出" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="css输出" readonly data-i18n-placeholder="ui.102" placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 <div class="stats" id="stats"></div>
 </div>
@@ -44,7 +44,7 @@ var stats=document.getElementById('stats');
 
 function minify(){
 var css=cssInput.value;
-if(!css.trim()){css输出.value='';stats.textContent='';outputEl.textContent='';setStatus('请输入 CSS','error');return;}
+if(!css.trim()){css输出.value='';stats.textContent='';outputEl.textContent='';setStatus(t('ui.100','请输入 CSS'),'error');return;}
 var result=css;
 result=result.replace(/\/\*[\s\S]*?\*\//g,'');
 result=result.replace(/\s+/g,' ');

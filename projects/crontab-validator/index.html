@@ -131,7 +131,7 @@
         var raw = cronInput.value.trim();
         if (!raw) { outputEl.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
         var parsed = parseCron(raw);
-        if (parsed.error) { outputEl.textContent = parsed.error; setStatus('格式错误', 'error'); return; }
+        if (parsed.error) { outputEl.textContent = parsed.error; setStatus(t('ui.100','格式错误'), 'error'); return; }
         fields.min.value = parsed.min; fields.hour.value = parsed.hour; fields.day.value = parsed.day; fields.month.value = parsed.month; fields.week.value = parsed.week;
 
         var desc = '';

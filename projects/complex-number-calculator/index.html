@@ -31,11 +31,11 @@
       <div class="cpx-grid">
         <div class="cpx-field">
           <label for="z1Input" data-i18n="ui.1">复数 z1（格式 a+bi）</label>
-          <input type="text" id="z1Input" class="input js-focus-input" placeholder="如 3+4i">
+          <input type="text" id="z1Input" class="input js-focus-input" data-i18n-placeholder="ui.104" placeholder="如 3+4i">
         </div>
         <div class="cpx-field" id="z2Field">
           <label for="z2Input" data-i18n="ui.2">复数 z2（格式 a+bi）</label>
-          <input type="text" id="z2Input" class="input" placeholder="如 1-2i">
+          <input type="text" id="z2Input" class="input" data-i18n-placeholder="ui.105" placeholder="如 1-2i">
         </div>
       </div>
       <div class="op-row">
@@ -197,18 +197,18 @@
         }
         var z1 = parseComplex(z1El.value);
         if (z1 === null) {
-          setStatus('复数 z1 格式无效，请输入如 3+4i、2i 或 -5 的格式', 'error');
+          setStatus(t('ui.100','复数 z1 格式无效，请输入如 3+4i、2i 或 -5 的格式'), 'error');
           return;
         }
         var z2 = null;
         if (needTwo) {
           if (z2El.value.trim() === '') {
-            setStatus('请填写复数 z2', 'error');
+            setStatus(t('ui.101','请填写复数 z2'), 'error');
             return;
           }
           z2 = parseComplex(z2El.value);
           if (z2 === null) {
-            setStatus('复数 z2 格式无效，请输入如 3+4i、2i 或 -5 的格式', 'error');
+            setStatus(t('ui.102','复数 z2 格式无效，请输入如 3+4i、2i 或 -5 的格式'), 'error');
             return;
           }
         }
@@ -223,7 +223,7 @@
         } else if (op === 'divide') {
           var den = z2.a * z2.a + z2.b * z2.b;
           if (den === 0) {
-            setStatus('除数 z2 为 0，无法执行除法', 'error');
+            setStatus(t('ui.103','除数 z2 为 0，无法执行除法'), 'error');
             return;
           }
           res = { a: (z1.a * z2.a + z1.b * z2.b) / den, b: (z1.b * z2.a - z1.a * z2.b) / den };

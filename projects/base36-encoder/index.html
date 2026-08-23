@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">Base36 编解码</h1>
     <p class="tool-desc" data-i18n="desc">使用 0-9a-z 字符集进行 Base36 编码与解码。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
     </div>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <button id="encodeBtn" class="btn btn-primary" data-i18n="ui.encode">编码</button>
@@ -101,16 +101,16 @@
 
       encodeBtn.addEventListener('click', function () {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         outputEl.textContent = base36Encode(text);
         setStatus('');
       });
 
       decodeBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 Base36 文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入 Base36 文本'), 'error'); return; }
         var result = base36Decode(text);
-        if (result === null) { setStatus('Base36 格式无效', 'error'); return; }
+        if (result === null) { setStatus(t('ui.102','Base36 格式无效'), 'error'); return; }
         outputEl.textContent = result;
         setStatus('');
       });

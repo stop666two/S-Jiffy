@@ -29,7 +29,7 @@
         <div>
           <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.2">TypeScript 接口</label>
           <div class="output-box" style="min-height:340px;">
-            <textarea id="ts输出" readonly placeholder="生成的 TypeScript 接口..."></textarea>
+            <textarea id="ts输出" readonly data-i18n-placeholder="ui.101" placeholder="生成的 TypeScript 接口..."></textarea>
             <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
           </div>
         </div>
@@ -110,7 +110,7 @@
 
       function convert() {
         var raw = jsonInput.value.trim();
-        if (!raw) { setStatus('请输入 JSON', 'error'); return; }
+        if (!raw) { setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
         try {
           var obj = JSON.parse(raw);
           interfaces = [];

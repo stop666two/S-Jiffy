@@ -21,7 +21,7 @@
     <h1 data-i18n="h1">MD5 生成器</h1>
     <p class="tool-desc" data-i18n="desc">使用标准 MD5 算法计算文本或文件的哈希值。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算 MD5 的文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入要计算 MD5 的文本..." style="min-height:120px;"></textarea>
     </div>
     <div class="md5-opts">
       <button id="calcBtn" class="btn btn-primary" data-i18n="ui.1">计算 MD5</button>
@@ -73,12 +73,12 @@
           show(hex);
           setStatus(t('ui.14','文件 MD5 计算完成'));
         };
-        reader.onerror=function(){setStatus('文件读取失败','error');};
+        reader.onerror=function(){setStatus(t('ui.100','文件读取失败'),'error');};
         reader.readAsBinaryString(file);
       }
 
       document.getElementById('calcBtn').addEventListener('click',function(){
-        var t=i.value.trim();if(!t){setStatus('请输入内容','error');return;}
+        var t=i.value.trim();if(!t){setStatus(t('ui.101','请输入内容'),'error');return;}
         show(calcMD5(t));setStatus('');
       });
 

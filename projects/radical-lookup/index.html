@@ -85,7 +85,7 @@
     <p class="tool-desc" data-i18n="desc">输入部首，查找含有该部首的汉字及其结构类型。</p>
     <div class="card">
       <div class="query-row">
-        <input id="radicalInput" class="input js-focus-input" type="text" maxlength="2" placeholder="输入部首，如：氵 木 亻">
+        <input id="radicalInput" class="input js-focus-input" type="text" maxlength="2" data-i18n-placeholder="ui.101" placeholder="输入部首，如：氵 木 亻">
         <button id="queryBtn" class="btn btn-primary" data-i18n="ui.1">查字</button>
         <button id="helpBtn" class="btn btn-secondary" title="查看部首列表">？</button>
       </div>
@@ -197,7 +197,7 @@
 
       function doQuery() {
         var raw = input.value.trim();
-        if (!raw) { setStatus('请输入要查询的部首', 'error'); return; }
+        if (!raw) { setStatus(t('ui.100','请输入要查询的部首'), 'error'); return; }
         if (raw === '*') {
           var starList = parseStarEntry(RAD_DATA['*']);
           renderResult('*', starList, t('ui.22','（无部首的独体字）'));

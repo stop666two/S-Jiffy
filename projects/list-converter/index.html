@@ -116,9 +116,9 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入内容', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入内容'), 'error'); return; }
         var parsed = parseItems(text, inFmt.value);
-        if (parsed.length === 0) { outputEl.textContent = ''; setStatus('未解析到任何条目', 'error'); return; }
+        if (parsed.length === 0) { outputEl.textContent = ''; setStatus(t('ui.101','未解析到任何条目'), 'error'); return; }
         outputEl.textContent = formatItems(parsed, outFmt.value);
         setStatus(t('ui.total','共 ') + parsed.length + t('ui.items',' 项'));
       });

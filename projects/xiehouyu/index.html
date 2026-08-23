@@ -33,7 +33,7 @@
     <p class="tool-desc" data-i18n="desc">收录两千余条歇后语，支持按引子、后衬或全文检索，点击条目即可复制。</p>
     <div class="card">
       <div class="xh-controls">
-        <input id="searchInput" class="input js-focus-input" type="text" placeholder="输入关键词，如：老鼠、下雨、诸葛亮">
+        <input id="searchInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入关键词，如：老鼠、下雨、诸葛亮">
         <button id="searchBtn" class="btn btn-primary" data-i18n="ui.query">查询</button>
         <button id="randomBtn" class="btn btn-secondary" data-i18n="ui.1">随机一条</button>
         <div class="xh-scope">
@@ -114,7 +114,7 @@
     function doSearch() {
       var kw = searchInput.value.trim();
       if (!kw) {
-        setStatus('请输入关键词', 'error');
+        setStatus(t('ui.100','请输入关键词'), 'error');
         return;
       }
       var s = scope();

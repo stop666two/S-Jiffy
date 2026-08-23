@@ -35,7 +35,7 @@
 (function(){var sd=document.getElementById('startDate'),op=document.getElementById('opSelect'),am=document.getElementById('amountInput'),un=document.getElementById('unitSelect'),rg=document.getElementById('resultGrid'),o=document.getElementById('outputText');
 sd.value=new Date().toISOString().slice(0,10);
 
-function calc(){var d=new Date(sd.value);if(isNaN(d.getTime())){setStatus('日期无效','error');return;}
+function calc(){var d=new Date(sd.value);if(isNaN(d.getTime())){setStatus(t('ui.100','日期无效'),'error');return;}
 var n=parseInt(am.value)||0;if(op.value==='subtract')n=-n;var u=un.value;
 var result=new Date(d);if(u==='days')result.setDate(result.getDate()+n);
 else if(u==='weeks')result.setDate(result.getDate()+n*7);

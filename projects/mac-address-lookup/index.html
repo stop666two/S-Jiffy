@@ -223,12 +223,12 @@
 
       document.getElementById('lookupBtn').addEventListener('click', function () {
         var raw = macInput.value.trim();
-        if (!raw) { setStatus('请输入 MAC 地址', 'error'); return; }
+        if (!raw) { setStatus(t('ui.100','请输入 MAC 地址'), 'error'); return; }
 
         var normalized = normalizeMac(raw);
         if (!normalized || normalized.length < 8) {
           resultEl.innerHTML = '<div class="mac-empty">无效的 MAC 地址格式</div>';
-          setStatus('格式错误', 'error');
+          setStatus(t('ui.101','格式错误'), 'error');
           return;
         }
 
@@ -238,7 +238,7 @@
           setStatus(t('ui.3','查询成功'));
         } else {
           resultEl.innerHTML = '<div class="mac-empty">未找到厂商信息 (OUI: ' + htmlEscape(normalized.substring(0, 8)) + ')</div>';
-          setStatus('未匹配到厂商', 'error');
+          setStatus(t('ui.102','未匹配到厂商'), 'error');
         }
       });
 

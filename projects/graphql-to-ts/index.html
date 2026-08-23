@@ -20,7 +20,7 @@
     <p class="tool-desc" data-i18n="desc">粘贴 GraphQL SDL，自动将 type/interface/enum/input/union 转换为 TypeScript 类型定义，并输出解析统计。</p>
     <div class="card">
       <div class="stat-line" id="statLine"></div>
-      <textarea id="inputText" class="input textarea js-focus-input" rows="12" placeholder="粘贴 GraphQL SDL，例如：&#10;type User {&#10;  id: ID!&#10;  name: String!&#10;  email: String&#10;  age: Int&#10;}&#10;enum Role {&#10;  ADMIN&#10;  USER&#10;}&#10;input UserInput {&#10;  name: String!&#10;}&#10;union SearchResult = User | Article"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" rows="12" data-i18n-placeholder="ui.101" placeholder="粘贴 GraphQL SDL，例如：&#10;type User {&#10;  id: ID!&#10;  name: String!&#10;  email: String&#10;  age: Int&#10;}&#10;enum Role {&#10;  ADMIN&#10;  USER&#10;}&#10;input UserInput {&#10;  name: String!&#10;}&#10;union SearchResult = User | Article"></textarea>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -140,7 +140,7 @@
           output.innerHTML = '';
           current = '';
           document.getElementById('statLine').textContent = '';
-          setStatus('未解析到任何类型定义：请粘贴包含 type/enum/input/union 块的有效 GraphQL SDL', 'error');
+          setStatus(t('ui.100','未解析到任何类型定义：请粘贴包含 type/enum/input/union 块的有效 GraphQL SDL'), 'error');
           return;
         }
         var lines = [];

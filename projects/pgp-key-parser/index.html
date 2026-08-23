@@ -17,7 +17,7 @@
 var keyInput=document.getElementById('keyInput'),parseBtn=document.getElementById('parseBtn'),clearBtn=document.getElementById('clearBtn'),resultCard=document.getElementById('resultCard'),keyInfo=document.getElementById('keyInfo'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 var algoNames={1:'RSA (Encrypt or Sign)',2:'RSA (Encrypt-Only)',3:'RSA (Sign-Only)',16:'ElGamal (Encrypt-Only)',17:'DSA (Digital Signature Algorithm)',18:'Elliptic Curve',19:'ECDSA',20:'ElGamal (Encrypt or Sign)',21:'Diffie-Hellman',22:'Ed25519',23:'Ed448'};
 parseBtn.addEventListener('click',function(){
-  var text=keyInput.value.trim();if(!text){setStatus('请输入 PGP 公钥','error');return;}
+  var text=keyInput.value.trim();if(!text){setStatus(t('ui.100','请输入 PGP 公钥'),'error');return;}
   var html='';
   var lines=text.split('\n');
   var header=lines[0]||'';

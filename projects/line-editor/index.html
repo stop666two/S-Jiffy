@@ -24,7 +24,7 @@
     <h1 data-i18n="h1">行编辑器</h1>
     <p class="tool-desc" data-i18n="desc">按行批量处理文本：加前缀后缀、截断、过滤、去空行、加行号。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入多行文本，每行一条..." style="min-height:140px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入多行文本，每行一条..." style="min-height:140px;"></textarea>
       <div class="line-controls">
         <select id="opSelect" class="input">
           <option value="prefix" data-i18n="ui.1">添加前缀</option>
@@ -36,7 +36,7 @@
           <option value="blank" data-i18n="ui.7">去空行</option>
           <option value="number" data-i18n="ui.8">加行号</option>
         </select>
-        <input id="paramInput" type="text" class="input" placeholder="参数">
+        <input id="paramInput" type="text" class="input" data-i18n-placeholder="ui.102" placeholder="参数">
       </div>
     </div>
     <div id="resultBox" class="output-box">
@@ -126,7 +126,7 @@
               lastPlain = '';
               lastIn = 0;
               lastOut = 0;
-              setStatus('起始行号必须是大于等于 0 的整数', 'error');
+              setStatus(t('ui.100','起始行号必须是大于等于 0 的整数'), 'error');
               return;
             }
             startNum = sn;

@@ -51,8 +51,8 @@ document.getElementById('generateBtn').addEventListener('click',function(){
   var port=parseInt(ep.value);if(port&&port>0&&port<65536)lines.push('EXPOSE '+port);
   lines.push('CMD ["'+rc.value.replace(/"/g,'\\"').split(' ').join('","')+'"]');
   o.textContent=lines.join('\n');
-  setStatus('Dockerfile 已生成');
+  setStatus(t('ui.100','Dockerfile 已生成'));
 });
-document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus('已复制');});
+document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.101','已复制'));});
 })();</script>
 </body></html>

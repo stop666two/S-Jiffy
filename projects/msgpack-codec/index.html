@@ -26,13 +26,13 @@
       <div class="btn-row">
         <button class="btn btn-primary" id="encodeBtn" data-i18n="ui.2">编码为 MessagePack</button>
       </div>
-      <div class="note">支持 nil / 布尔 / 整数（fixint、int8/16/32/64、uint8/16/32/64）/ 浮点（float64）/ 字符串（UTF-8）/ 数组 / 映射；16 位以上纯数字字符串按 int64 编码。</div>
+      <div class="note" data-i18n="ui.107">支持 nil / 布尔 / 整数（fixint、int8/16/32/64、uint8/16/32/64）/ 浮点（float64）/ 字符串（UTF-8）/ 数组 / 映射；16 位以上纯数字字符串按 int64 编码。</div>
       <div class="section-title" data-i18n="ui.3">解码：MessagePack → JSON</div>
-      <textarea id="hexInput" class="input textarea" rows="6" placeholder="81 a4 6e 61 6d 65 a7 53 2d 4a 69 66 66 79（支持空格分隔）"></textarea>
+      <textarea id="hexInput" class="input textarea" rows="6" data-i18n-placeholder="ui.105" placeholder="81 a4 6e 61 6d 65 a7 53 2d 4a 69 66 66 79（支持空格分隔）"></textarea>
       <div class="btn-row">
         <button class="btn btn-primary" id="decodeBtn" data-i18n="ui.4">解码为 JSON</button>
       </div>
-      <div class="note">解码支持 fixint / int8-64 / uint8-64 / float32-64 / str（fixstr、str8/16/32）/ array（fixarray、array16/32）/ map（fixmap、map16/32）；int64 / uint64 显示为字符串以避免精度丢失；bin / ext 类型暂不支持。</div>
+      <div class="note" data-i18n="ui.106">解码支持 fixint / int8-64 / uint8-64 / float32-64 / str（fixstr、str8/16/32）/ array（fixarray、array16/32）/ map（fixmap、map16/32）；int64 / uint64 显示为字符串以避免精度丢失；bin / ext 类型暂不支持。</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -444,7 +444,7 @@
         parsed = JSON.parse(text);
       } catch (e) {
         outputText.textContent = t('ui.12','JSON 解析失败：') + e.message + t('ui.11','。请检查括号、引号与逗号是否完整。');
-        setStatus('JSON 解析失败', 'error');
+        setStatus(t('ui.100','JSON 解析失败'), 'error');
         return;
       }
       try {
@@ -454,7 +454,7 @@
         setStatus(t('ui.10','编码成功，共 ') + bytes.length + t('ui.bytes',' 字节'));
       } catch (e) {
         outputText.textContent = t('ui.9','编码失败：') + e.message;
-        setStatus('编码失败', 'error');
+        setStatus(t('ui.101','编码失败'), 'error');
       }
     }
 
@@ -470,7 +470,7 @@
         bytes = hexToBytes(text);
       } catch (e) {
         outputText.textContent = e.message;
-        setStatus('输入错误', 'error');
+        setStatus(t('ui.102','输入错误'), 'error');
         return;
       }
       try {
@@ -482,7 +482,7 @@
         setStatus(t('ui.6','解码成功'));
       } catch (e) {
         outputText.textContent = t('ui.5','解码失败：') + e.message;
-        setStatus('解码失败', 'error');
+        setStatus(t('ui.103','解码失败'), 'error');
       }
     }
 
@@ -490,7 +490,7 @@
     document.getElementById('decodeBtn').onclick = doDecode;
     copyBtn.onclick = function () {
       if (!outputText.textContent) {
-        setStatus('没有可复制的内容', 'error');
+        setStatus(t('ui.104','没有可复制的内容'), 'error');
         return;
       }
       copyToClipboard(outputText.textContent, copyBtn);

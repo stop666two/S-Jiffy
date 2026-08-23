@@ -26,7 +26,7 @@
     <h1 data-i18n="h1">文件名重命名器</h1>
     <p class="tool-desc" data-i18n="desc">批量重命名文件名：替换、加前后缀、转换扩展名、序号重命名，自动检测重名冲突。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文件名列表，每行一个..." style="min-height:130px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入文件名列表，每行一个..." style="min-height:130px;"></textarea>
       <div class="ren-controls">
         <select id="opSelect" class="input">
           <option value="replace" data-i18n="ui.1">替换文本</option>
@@ -35,9 +35,9 @@
           <option value="ext" data-i18n="ui.4">扩展名转换</option>
           <option value="seq" data-i18n="ui.5">序号重命名</option>
         </select>
-        <input id="param1" type="text" class="input" placeholder="查找文本">
-        <input id="param2" type="text" class="input" placeholder="替换为" style="display:none;">
-        <input id="param3" type="text" class="input" placeholder="起始序号" style="display:none;">
+        <input id="param1" type="text" class="input" data-i18n-placeholder="ui.104" placeholder="查找文本">
+        <input id="param2" type="text" class="input" data-i18n-placeholder="ui.105" placeholder="替换为" style="display:none;">
+        <input id="param3" type="text" class="input" data-i18n-placeholder="ui.106" placeholder="起始序号" style="display:none;">
       </div>
     </div>
     <div id="resultBox" class="output-box">
@@ -134,7 +134,7 @@
         var digits = 0;
         if (op === 'replace' && !find) {
           outputEl.innerHTML = '';
-          setStatus('查找文本不能为空', 'error');
+          setStatus(t('ui.100','查找文本不能为空'), 'error');
           return;
         }
         if (op === 'seq') {
@@ -142,7 +142,7 @@
             var sn = parseInt(p2.value, 10);
             if (isNaN(sn) || sn < 0) {
               outputEl.innerHTML = '';
-              setStatus('起始序号必须是大于等于 0 的整数', 'error');
+              setStatus(t('ui.101','起始序号必须是大于等于 0 的整数'), 'error');
               return;
             }
             startNum = sn;
@@ -151,7 +151,7 @@
             var dg = parseInt(p3.value, 10);
             if (isNaN(dg) || dg < 1 || dg > 10) {
               outputEl.innerHTML = '';
-              setStatus('数字位数必须是 1 到 10 的整数', 'error');
+              setStatus(t('ui.102','数字位数必须是 1 到 10 的整数'), 'error');
               return;
             }
             digits = dg;

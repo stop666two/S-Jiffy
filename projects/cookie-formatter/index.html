@@ -89,7 +89,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
 
   function parse() {
     var text = inputEl.value;
-    if (!text.trim()) { setStatus('请输入 Cookie 字符串', 'error'); return; }
+    if (!text.trim()) { setStatus(t('ui.100','请输入 Cookie 字符串'), 'error'); return; }
 
     var lines = text.split('\n');
     var parsedCookies = [];
@@ -98,7 +98,7 @@ token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.x" style="min-height:160px;"></tex
       if (c) parsedCookies.push(c);
     }
 
-    if (parsedCookies.length === 0) { setStatus('未解析到有效的 Cookie', 'error'); return; }
+    if (parsedCookies.length === 0) { setStatus(t('ui.101','未解析到有效的 Cookie'), 'error'); return; }
 
     var html = '';
     for (var ci = 0; ci < parsedCookies.length; ci++) {

@@ -23,7 +23,7 @@
     <p class="tool-desc" data-i18n="desc">对一组数字计算总和、计数、均值、中位数、众数、最值、极差、方差和标准差。</p>
     <div class="card">
       <div class="sc-row">
-        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 15, 18, 20, 22, 25, 30" placeholder="例如 1, 2, 3, 4, 5"></div>
+        <div class="field" style="flex:2;"><label for="inputVal" data-i18n="ui.1">输入数字（逗号或空格分隔）</label><input id="inputVal" class="input" type="text" value="12, 15, 18, 20, 22, 25, 30" data-i18n-placeholder="ui.102" placeholder="例如 1, 2, 3, 4, 5"></div>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
       <div class="stat-grid" id="statGrid">
@@ -52,7 +52,7 @@
 
     function generate() {
       var raw = inputEl.value.trim();
-      if (!raw) { setStatus('请输入数字', 'error'); return; }
+      if (!raw) { setStatus(t('ui.100','请输入数字'), 'error'); return; }
       var parts = raw.split(/[,，\s]+/).filter(function(s) { return s !== ''; });
       var nums = [];
       for (var i = 0; i < parts.length; i++) {
@@ -60,7 +60,7 @@
         if (isNaN(n)) { setStatus('"' + parts[i] + '" 不是有效数字', 'error'); return; }
         nums.push(n);
       }
-      if (nums.length === 0) { setStatus('请输入至少一个数字', 'error'); return; }
+      if (nums.length === 0) { setStatus(t('ui.101','请输入至少一个数字'), 'error'); return; }
 
       var sorted = nums.slice().sort(function(a,b){return a-b;});
       var sum = 0;

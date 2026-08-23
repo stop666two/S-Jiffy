@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">Punycode 转换</h1>
     <p class="tool-desc" data-i18n="desc">域名 Punycode 与 Unicode 互转（国际化域名 IDN）。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入域名（如：m\xe4rketplace.com 或 xn--mrketplace-9g.com）..." style="min-height:100px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入域名（如：m\xe4rketplace.com 或 xn--mrketplace-9g.com）..." style="min-height:100px;"></textarea>
     </div>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <button id="toPunyBtn" class="btn btn-primary">Unicode → Punycode</button>
@@ -173,14 +173,14 @@
 
       toPunyBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入域名', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入域名'), 'error'); return; }
         try { outputEl.textContent = encodeDomain(text); setStatus(''); }
         catch (e) { setStatus(t('ui.1','转换失败: ') + e.message, 'error'); }
       });
 
       toUniBtn.addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入域名', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入域名'), 'error'); return; }
         try { outputEl.textContent = decodeDomain(text); setStatus(''); }
         catch (e) { setStatus(t('ui.1','转换失败: ') + e.message, 'error'); }
       });

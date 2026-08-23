@@ -63,7 +63,7 @@ document.getElementById('generateBtn').addEventListener('click',function(){
   for(var i=0;i<defs.length;i++){var el=document.getElementById('param_'+i);vals.push(el?el.value:'');}
   var tpl=composeTemplates[currentService];
   if(tpl){o.textContent='version: "3.8"\n\nservices:\n'+tpl(vals);setStatus(t('ui.6','docker-compose 片段已生成'));}
-  else{setStatus('未知服务类型','error');}
+  else{setStatus(t('ui.100','未知服务类型'),'error');}
 });
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});
 buildParams('nginx');cards[0].classList.add('selected');

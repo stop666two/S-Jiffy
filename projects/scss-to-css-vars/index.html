@@ -23,7 +23,7 @@ $font-stack: 'Helvetica', sans-serif;" style="min-height:200px;"></textarea></di
 
   function convert() {
     var text = inputEl.value.trim();
-    if (!text) { setStatus('请输入 SCSS 变量', 'error'); return; }
+    if (!text) { setStatus(t('ui.100','请输入 SCSS 变量'), 'error'); return; }
     var lines = text.split('\n');
     var vars = [];
     var usedPrefix = null;
@@ -48,7 +48,7 @@ $font-stack: 'Helvetica', sans-serif;" style="min-height:200px;"></textarea></di
       vars.push({ scss: scssName, cssName: '--' + cssVarName, value: scssVal, hasDefault: varName.indexOf('default') >= 0 });
     }
 
-    if (vars.length === 0) { setStatus('未找到 SCSS 变量', 'error'); return; }
+    if (vars.length === 0) { setStatus(t('ui.101','未找到 SCSS 变量'), 'error'); return; }
 
     var result = ':root {\n';
     for (var i = 0; i < vars.length; i++) {

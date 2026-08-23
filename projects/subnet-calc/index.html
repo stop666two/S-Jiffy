@@ -110,14 +110,14 @@
         var raw = cidrEl.value.trim();
         if (!raw) { outputEl.innerHTML = ''; setStatus(''); return; }
         var parts = raw.split('/');
-        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus('格式错误', 'error'); return; }
+        if (parts.length !== 2) { outputEl.innerHTML = '<span style="color:var(--color-error)">格式错误。示例: 192.168.1.0/24</span>'; setStatus(t('ui.100','格式错误'), 'error'); return; }
         var octets = parts[0].split('.').map(Number);
         if (octets.length !== 4 || octets.some(function (n) { return isNaN(n) || n < 0 || n > 255; })) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus('IP 无效', 'error'); return;
+          outputEl.innerHTML = '<span style="color:var(--color-error)">无效 IP 地址</span>'; setStatus(t('ui.101','IP 无效'), 'error'); return;
         }
         var prefix = parseInt(parts[1], 10);
         if (isNaN(prefix) || prefix < 0 || prefix > 32) {
-          outputEl.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus('前缀无效', 'error'); return;
+          outputEl.innerHTML = '<span style="color:var(--color-error)">前缀长度需在 0-32 之间</span>'; setStatus(t('ui.102','前缀无效'), 'error'); return;
         }
         var r = compute(octets, prefix);
 

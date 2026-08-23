@@ -27,7 +27,7 @@
 function escapeMd(s){return s.replace(/\|/g,'\\|').replace(/\n/g,'<br>');}
 
 function convert(){var t=i.value.trim(),delim=document.getElementById('delimSelect').value;if(delim==='\\t')delim='\t';
-var align=document.getElementById('alignSelect').value;if(!t){md.textContent='';setStatus('请输入 CSV 数据','error');return;}
+var align=document.getElementById('alignSelect').value;if(!t){md.textContent='';setStatus(t('ui.100','请输入 CSV 数据'),'error');return;}
 var lines=t.split('\n').filter(function(l){return l.trim().length>0;});if(lines.length<1){md.textContent='';return;}
 function parseLine(l){var parts=[],cur='',inQ=false;for(var c=0;c<l.length;c++){var ch=l[c];
 if(ch==='"'){inQ=!inQ;}else if(ch===delim&&!inQ){parts.push(cur.trim());cur='';}else{cur+=ch;}}

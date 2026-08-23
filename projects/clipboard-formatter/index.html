@@ -50,7 +50,7 @@
     <p class="tool-desc" data-i18n="desc">粘贴文本，进行 JSON / XML 美化、空白清理、换行符统一与 CSV 表格预览。</p>
     <div class="card">
       <label for="inputText" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">粘贴文本</label>
-      <textarea id="inputText" class="input textarea js-focus-input" rows="10" placeholder="在此粘贴 JSON、XML、CSV 或任意文本…"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" rows="10" data-i18n-placeholder="ui.103" placeholder="在此粘贴 JSON、XML、CSV 或任意文本…"></textarea>
       <div class="detect-hint" id="detectHint"></div>
       <div class="op-row">
         <button id="jsonBtn" class="btn btn-primary" data-i18n="ui.2">JSON 美化</button>
@@ -134,7 +134,7 @@
           }
           var gt = s.indexOf('>', i);
           if (gt === -1) {
-            setStatus('XML 解析失败：标签未闭合', 'error');
+            setStatus(t('ui.100','XML 解析失败：标签未闭合'), 'error');
             return false;
           }
           var tag = s.substring(i, gt + 1);
@@ -152,7 +152,7 @@
           }
         }
         if (!out.trim()) {
-          setStatus('XML 解析失败：未识别到任何标签', 'error');
+          setStatus(t('ui.101','XML 解析失败：未识别到任何标签'), 'error');
           return false;
         }
         outputEl.textContent = out.replace(/\n+$/, '');
@@ -223,7 +223,7 @@
           lines.pop();
         }
         if (!lines.length) {
-          setStatus('没有可预览的行', 'error');
+          setStatus(t('ui.102','没有可预览的行'), 'error');
           return;
         }
         var rows = [];

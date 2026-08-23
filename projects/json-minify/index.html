@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">JSON 压缩</h1>
     <p class="tool-desc" data-i18n="desc">去除 JSON 中所有空白字符，压缩为紧凑格式。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 JSON 文本..." style="min-height:180px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴 JSON 文本..." style="min-height:180px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px;">
       <button id="minifyBtn" class="btn btn-primary" data-i18n="ui.1">压缩 Minify</button>
@@ -42,7 +42,7 @@
 
       function minify() {
         var text = inputEl.value.trim();
-        if (!text) { outputEl.textContent = ''; setStatus('请输入 JSON', 'error'); return; }
+        if (!text) { outputEl.textContent = ''; setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
         try {
           var parsed = JSON.parse(text);
           outputEl.textContent = JSON.stringify(parsed);

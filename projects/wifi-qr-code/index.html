@@ -21,11 +21,11 @@
     <div class="card" style="display:flex;flex-direction:column;gap:12px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">SSID</label>
-        <input id="ssidInput" class="input js-focus-input" type="text" placeholder="WiFi 名称" style="flex:1;min-width:150px;">
+        <input id="ssidInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.103" placeholder="WiFi 名称" style="flex:1;min-width:150px;">
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">密码</label>
-        <input id="pwdInput" class="input" type="text" placeholder="WiFi 密码" style="flex:1;min-width:150px;">
+        <input id="pwdInput" class="input" type="text" data-i18n-placeholder="ui.104" placeholder="WiFi 密码" style="flex:1;min-width:150px;">
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.encrypt">加密</label>
@@ -63,7 +63,7 @@
     var outputEl = document.getElementById('outputText');
     function generate() {
       var ssid = ssidEl.value.trim();
-      if (!ssid) { setStatus('请输入 SSID', 'error'); return; }
+      if (!ssid) { setStatus(t('ui.100','请输入 SSID'), 'error'); return; }
       var pwd = pwdEl.value;
       var enc = encEl.value;
       var hidden = hiddenEl.checked ? 'H:true' : '';
@@ -80,9 +80,9 @@
         canvas.toBlob(function(blob) {
           navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function() {
             setStatus(t('ui.5','二维码图片已复制'));
-          }).catch(function() { setStatus('复制失败', 'error'); });
+          }).catch(function() { setStatus(t('ui.101','复制失败'), 'error'); });
         });
-      } else { setStatus('请先生成二维码', 'error'); }
+      } else { setStatus(t('ui.102','请先生成二维码'), 'error'); }
     });
   })();</script>
 </body>

@@ -32,7 +32,7 @@
       <div class="pf-row">
         <div class="pf-field">
           <label for="numInput" data-i18n="ui.1">输入整数（1 至 10^12）</label>
-          <input type="text" id="numInput" class="input js-focus-input" placeholder="如 360">
+          <input type="text" id="numInput" class="input js-focus-input" data-i18n-placeholder="ui.104" placeholder="如 360">
         </div>
         <button class="btn btn-primary" id="calcBtn" data-i18n="ui.2">分解</button>
       </div>
@@ -109,20 +109,20 @@
           return;
         }
         if (!/^\d+$/.test(raw)) {
-          setStatus('请输入正整数', 'error');
+          setStatus(t('ui.100','请输入正整数'), 'error');
           return;
         }
         var n = parseInt(raw, 10);
         if (String(n) !== raw.replace(/^0+/, '') && raw.replace(/^0+/, '') !== '') {
-          setStatus('数值过大或格式无效', 'error');
+          setStatus(t('ui.101','数值过大或格式无效'), 'error');
           return;
         }
         if (n < 1) {
-          setStatus('请输入不小于 1 的整数', 'error');
+          setStatus(t('ui.102','请输入不小于 1 的整数'), 'error');
           return;
         }
         if (n > MAX_N) {
-          setStatus('超出范围：仅支持 1 至 10^12 的整数', 'error');
+          setStatus(t('ui.103','超出范围：仅支持 1 至 10^12 的整数'), 'error');
           return;
         }
         var html = '';

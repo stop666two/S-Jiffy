@@ -20,7 +20,7 @@
     <h1 data-i18n="h1">行号添加器</h1>
     <p class="tool-desc" data-i18n="desc">为每行文本添加行号，可自定义起始值和格式。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入文本..."></textarea>
     </div>
     <div class="ln-row">
       <div class="field">
@@ -29,7 +29,7 @@
       </div>
       <div class="field">
         <label for="formatStr" data-i18n="ui.2">格式 ({n} 代表行号)</label>
-        <input id="formatStr" class="input" value="{n}. " placeholder='如 {n}. 或 [{n}] '>
+        <input id="formatStr" class="input" value="{n}. " data-i18n-placeholder="ui.102" placeholder='如 {n}. 或 [{n}] '>
       </div>
       <div style="display:flex;align-items:flex-end;">
         <button id="numberBtn" class="btn btn-primary" data-i18n="ui.3">添加行号</button>
@@ -57,7 +57,7 @@
 
       function numberLines() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         var lines = text.split('\n');
         var start = parseInt(startNum.value, 10) || 1;
         var fmt = formatStr.value || '{n}. ';

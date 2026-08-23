@@ -31,7 +31,7 @@
       <div class="sn-row">
         <div class="sn-field">
           <label for="numInput" data-i18n="ui.1">输入数字（普通十进制或科学计数法）</label>
-          <input type="text" id="numInput" class="input js-focus-input" placeholder="如 1.5e-7 或 0.00000015">
+          <input type="text" id="numInput" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="如 1.5e-7 或 0.00000015">
         </div>
       </div>
     </div>
@@ -192,7 +192,7 @@
         }
         var p = parseNumber(raw);
         if (p === null) {
-          setStatus('请输入有效数字，如 1234.5 或 1.5e-7', 'error');
+          setStatus(t('ui.100','请输入有效数字，如 1234.5 或 1.5e-7'), 'error');
           return;
         }
         var sigDigits = p.zero ? 0 : p.sig.length;

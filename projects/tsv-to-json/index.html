@@ -27,9 +27,9 @@ var i=document.getElementById('inputText'),o=document.getElementById('outputText
 var hdr=document.getElementById('hasHeader'),qs=document.getElementById('quoteStyle');
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 document.getElementById('convertBtn').addEventListener('click',function(){
-  var text=i.value;if(!text.trim()){setStatus('请输入 TSV 数据','error');return;}
+  var text=i.value;if(!text.trim()){setStatus(t('ui.100','请输入 TSV 数据'),'error');return;}
   var lines=text.split('\n').filter(function(l){return l.trim();});
-  if(lines.length<2){setStatus('至少需要 2 行数据','error');return;}
+  if(lines.length<2){setStatus(t('ui.101','至少需要 2 行数据'),'error');return;}
   var header,start;
   if(hdr.checked){
     header=lines[0].split('\t').map(function(s){return s.trim();});

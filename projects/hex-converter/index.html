@@ -64,7 +64,7 @@
       document.getElementById('toHexBtn').addEventListener('click', function () {
         var r = parseInt(rInput.value), g = parseInt(gInput.value), b = parseInt(bInput.value);
         if (isNaN(r) || isNaN(g) || isNaN(b) || r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-          setStatus('请输入 0-255 的 RGB 值', 'error'); return;
+          setStatus(t('ui.100','请输入 0-255 的 RGB 值'), 'error'); return;
         }
         var hex = '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('');
         hexInput.value = hex;
@@ -76,7 +76,7 @@
       document.getElementById('toRgbBtn').addEventListener('click', function () {
         var hex = hexInput.value.trim();
         var rgb = hexToRgb(hex);
-        if (!rgb) { setStatus('无效 Hex 值', 'error'); return; }
+        if (!rgb) { setStatus(t('ui.101','无效 Hex 值'), 'error'); return; }
         rInput.value = rgb.r; gInput.value = rgb.g; bInput.value = rgb.b;
         var text = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
         outputEl.textContent = text;
@@ -87,7 +87,7 @@
       document.getElementById('toDecBtn').addEventListener('click', function () {
         var hex = hexInput.value.trim();
         var rgb = hexToRgb(hex);
-        if (!rgb) { setStatus('无效 Hex 值', 'error'); return; }
+        if (!rgb) { setStatus(t('ui.102','无效 Hex 值'), 'error'); return; }
         var dec = (rgb.r << 16) | (rgb.g << 8) | rgb.b;
         outputEl.textContent = 'Decimal: ' + dec + ' | Hex: #' + dec.toString(16).padStart(6, '0').toUpperCase() + ' | RGB: (' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
         setPreview(rgb.r, rgb.g, rgb.b);

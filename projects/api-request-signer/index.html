@@ -32,17 +32,17 @@
           <option>HEAD</option>
           <option>OPTIONS</option>
         </select>
-        <input id="pathInput" class="input js-focus-input" placeholder="请求路径，如 /api/users/1">
+        <input id="pathInput" class="input js-focus-input" data-i18n-placeholder="ui.105" placeholder="请求路径，如 /api/users/1">
       </div>
       <div class="form-row">
-        <input id="tsInput" class="input" placeholder="时间戳（Unix 秒）">
+        <input id="tsInput" class="input" data-i18n-placeholder="ui.106" placeholder="时间戳（Unix 秒）">
         <button class="btn btn-secondary" id="nowBtn" data-i18n="ui.1">填入当前时间</button>
       </div>
       <div class="form-row">
-        <input id="secretInput" class="input" type="password" placeholder="共享密钥 Secret Key">
+        <input id="secretInput" class="input" type="password" data-i18n-placeholder="ui.107" placeholder="共享密钥 Secret Key">
         <button class="btn btn-primary" id="signBtn" data-i18n="ui.2">生成签名</button>
       </div>
-      <div class="form-hint">签名规则：message = 方法 + 路径 + 时间戳，Authorization 头格式：HMAC &lt;timestamp&gt;:&lt;hex&gt;。浏览器签名需 HTTPS 或 localhost 环境。</div>
+      <div class="form-hint" data-i18n="ui.108">签名规则：message = 方法 + 路径 + 时间戳，Authorization 头格式：HMAC &lt;timestamp&gt;:&lt;hex&gt;。浏览器签名需 HTTPS 或 localhost 环境。</div>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -82,25 +82,25 @@
         if (!path) {
           output.innerHTML = '';
           current = '';
-          setStatus('请输入请求路径', 'error');
+          setStatus(t('ui.100','请输入请求路径'), 'error');
           return;
         }
         if (!/^\d+$/.test(ts)) {
           output.innerHTML = '';
           current = '';
-          setStatus('时间戳必须为整数秒，可点击「填入当前时间」', 'error');
+          setStatus(t('ui.101','时间戳必须为整数秒，可点击「填入当前时间」'), 'error');
           return;
         }
         if (!secret) {
           output.innerHTML = '';
           current = '';
-          setStatus('请输入共享密钥', 'error');
+          setStatus(t('ui.102','请输入共享密钥'), 'error');
           return;
         }
         if (!window.crypto || !window.crypto.subtle) {
           output.innerHTML = '';
           current = '';
-          setStatus('当前环境不支持 Web Crypto API（需 HTTPS 或 localhost），无法生成签名', 'error');
+          setStatus(t('ui.103','当前环境不支持 Web Crypto API（需 HTTPS 或 localhost），无法生成签名'), 'error');
           return;
         }
         var message = method + path + ts;
@@ -119,7 +119,7 @@
           .catch(function () {
             output.innerHTML = '';
             current = '';
-            setStatus('签名失败：请检查密钥与输入内容', 'error');
+            setStatus(t('ui.104','签名失败：请检查密钥与输入内容'), 'error');
           });
       }
 

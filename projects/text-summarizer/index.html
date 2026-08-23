@@ -10,7 +10,7 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">文本摘要工具</h1><p class="tool-desc" data-i18n="desc">基于词频提取关键句子，可按句子数量限制摘要长度。</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴长文章以生成摘要..." style="min-height:180px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴长文章以生成摘要..." style="min-height:180px;"></textarea></div>
 <div class="opt-row">
 <label data-i18n="ui.1">摘要长度</label><select id="lengthSelect" class="input" style="width:auto;"><option value="3" data-i18n="ui.2">3 句</option><option value="5" selected data-i18n="ui.3">5 句</option><option value="7" data-i18n="ui.4">7 句</option><option value="10" data-i18n="ui.5">10 句</option><option value="20" data-i18n="ui.6">20 句</option></select>
 <button id="summarizeBtn" class="btn btn-primary" data-i18n="ui.7">生成摘要</button>
@@ -37,7 +37,7 @@ var selected={};for(var li=0;li<Math.min(limit,scores.length);li++){selected[sco
 var result=[];for(var ri=0;ri<sents.length;ri++){if(selected[ri])result.push(sents[ri].trim());}
 return result.join(' ');}
 
-function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus('请输入文本','error');return;}
+function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus(t('ui.100','请输入文本'),'error');return;}
 var origSents=(t.match(/[^.!?\n]+[.!?]?/g)||[]).length;oS.textContent=origSents;
 var limit=parseInt(document.getElementById('lengthSelect').value);
 var summary=summarize(t,limit);o.textContent=summary;

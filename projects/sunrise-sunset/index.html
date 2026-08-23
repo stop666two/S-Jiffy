@@ -64,7 +64,7 @@ var dayLen=s-r;if(dayLen<0)dayLen+=24;
 return{sunrise:r,sunset:s,dayLength:dayLen,solarNoon:n,civilStart:c1===null?r:c1,civilEnd:c2===null?s:c2};}
 
 function calc(){var lat=parseFloat(la.value)||0,lng=parseFloat(ln.value)||0;var date=da.value;
-var r=calcSun(lat,lng,date);if(!r){setStatus('该纬度下太阳不升起或不落下','error');return;}
+var r=calcSun(lat,lng,date);if(!r){setStatus(t('ui.100','该纬度下太阳不升起或不落下'),'error');return;}
 
 function fmtH(h){var h2=Math.floor(h);var m=Math.round((h-h2)*60);if(m>=60){h2++;m=0;}
 return String(h2).padStart(2,'0')+':'+String(m).padStart(2,'0');}

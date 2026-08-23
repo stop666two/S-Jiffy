@@ -25,7 +25,7 @@
     <h1 data-i18n="h1">Mock API 设计器</h1>
     <p class="tool-desc" data-i18n="desc">表格编辑端点（路径/方法/响应），占位符 {int} {name} {email} {timestamp} {uuid} 等自动替换为随机值，输出 JSON Server 格式的 mock 配置。</p>
     <div class="card">
-      <div class="form-hint">响应支持 JSON 对象与占位符语法，例如 {"id":"{int}","name":"{name}","email":"{email}","ts":"{timestamp}"}</div>
+      <div class="form-hint" data-i18n="ui.102">响应支持 JSON 对象与占位符语法，例如 {"id":"{int}","name":"{name}","email":"{email}","ts":"{timestamp}"}</div>
       <div id="rowsBox"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" id="addRowBtn" data-i18n="ui.1">+ 添加端点</button>
@@ -121,7 +121,7 @@
         return '<div class="mock-row">' +
           '<input class="input path-input js-focus-input" placeholder="/api/users" value="' + htmlEscape(path) + '">' +
           '<select class="input">' + opts + '</select>' +
-          '<textarea class="input textarea" placeholder="响应 JSON，如 {&quot;id&quot;:&quot;{int}&quot;,&quot;name&quot;:&quot;{name}&quot;}">' + htmlEscape(resp) + '</textarea>' +
+          '<textarea class="input textarea" data-i18n-placeholder="ui.101" placeholder="响应 JSON，如 {&quot;id&quot;:&quot;{int}&quot;,&quot;name&quot;:&quot;{name}&quot;}">' + htmlEscape(resp) + '</textarea>' +
           '<button class="btn btn-secondary del-btn">删除</button>' +
           '</div>';
       }
@@ -140,7 +140,7 @@
           btn.onclick = function (e) {
             var row = e.target.parentNode;
             if (document.querySelectorAll('#rowsBox .mock-row').length <= 1) {
-              setStatus('至少保留一个端点', 'error');
+              setStatus(t('ui.100','至少保留一个端点'), 'error');
               return;
             }
             row.parentNode.removeChild(row);

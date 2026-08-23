@@ -12,7 +12,7 @@
 <button id="tryAllBtn" class="btn btn-secondary" style="margin-top:14px;" data-i18n="ui.3">尝试所有 a</button>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="encryptBtn" class="btn btn-primary" data-i18n="ui.encrypt">加密</button>
 <button id="decryptBtn" class="btn btn-secondary" data-i18n="ui.decrypt">解密</button>
@@ -45,7 +45,7 @@ var t=text.toUpperCase().replace(/[^A-Z]/g,'');
 var r='';
 if(mode==='decrypt'){
 var inv=modInverse(a,26);
-if(inv===null){setStatus('密钥 a 与 26 不互质','error');return null;}
+if(inv===null){setStatus(t('ui.100','密钥 a 与 26 不互质'),'error');return null;}
 for(var i=0;i<t.length;i++){
 var c=t.charCodeAt(i)-65;
 var p=(inv*((c-b+26)%26))%26;
@@ -62,19 +62,19 @@ return r;
 }
 encryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var a=parseInt(keyA.value);var b=parseInt(keyB.value);
-if(!t||isNaN(a)||isNaN(b)){setStatus('请输入文本和密钥','error');return;}
+if(!t||isNaN(a)||isNaN(b)){setStatus(t('ui.101','请输入文本和密钥'),'error');return;}
 var r=affine(t,a,b,'encrypt');
 if(r){outputEl.textContent=r;setStatus('');}
 });
 decryptBtn.addEventListener('click',function(){
 var t=inputEl.value;var a=parseInt(keyA.value);var b=parseInt(keyB.value);
-if(!t||isNaN(a)||isNaN(b)){setStatus('请输入密文和密钥','error');return;}
+if(!t||isNaN(a)||isNaN(b)){setStatus(t('ui.102','请输入密文和密钥'),'error');return;}
 var r=affine(t,a,b,'decrypt');
 if(r){outputEl.textContent=r;setStatus('');}
 });
 tryAllBtn.addEventListener('click',function(){
 var t=inputEl.value;
-if(!t){setStatus('请输入文本','error');return;}
+if(!t){setStatus(t('ui.103','请输入文本'),'error');return;}
 var b=parseInt(keyB.value)||0;
 var lines='';
 for(var i=0;i<coPrimes.length;i++){

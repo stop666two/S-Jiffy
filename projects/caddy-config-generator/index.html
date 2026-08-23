@@ -27,7 +27,7 @@
     <div class="card">
       <div class="field">
         <label data-i18n="ui.1">域名（留空则监听 :80）</label>
-        <input id="domain" class="input js-focus-input" placeholder="如 example.com">
+        <input id="domain" class="input js-focus-input" data-i18n-placeholder="ui.105" placeholder="如 example.com">
       </div>
       <div class="radio-group">
         <label><input type="radio" name="siteType" value="static" checked> 静态站点</label>
@@ -35,15 +35,15 @@
       </div>
       <div class="field" id="rootRow">
         <label data-i18n="ui.2">站点根目录</label>
-        <input id="rootPath" class="input" value="/var/www/example.com" placeholder="如 /var/www/example.com">
+        <input id="rootPath" class="input" value="/var/www/example.com" data-i18n-placeholder="ui.106" placeholder="如 /var/www/example.com">
       </div>
       <div class="field" id="portRow" style="display:none;">
         <label data-i18n="ui.3">后端服务端口</label>
-        <input id="proxyPort" class="input" value="3000" placeholder="如 3000">
+        <input id="proxyPort" class="input" value="3000" data-i18n-placeholder="ui.107" placeholder="如 3000">
       </div>
       <div class="field">
         <label data-i18n="ui.4">额外指令（每行一条，可选）</label>
-        <textarea id="extra" class="input textarea" placeholder="如 encode gzip&#10;header X-Frame-Options DENY"></textarea>
+        <textarea id="extra" class="input textarea" data-i18n-placeholder="ui.108" placeholder="如 encode gzip&#10;header X-Frame-Options DENY"></textarea>
       </div>
       <div class="actions">
         <button id="generateBtn" class="btn btn-primary" data-i18n="ui.5">生成 Caddyfile</button>
@@ -98,13 +98,13 @@
         var port = portInput.value.trim();
         var extra = extraInput.value;
 
-        if (/\s/.test(domain)) { setStatus('域名不能包含空格', 'error'); return null; }
-        if (type === 'static' && !root) { setStatus('请输入站点根目录', 'error'); return null; }
+        if (/\s/.test(domain)) { setStatus(t('ui.100','域名不能包含空格'), 'error'); return null; }
+        if (type === 'static' && !root) { setStatus(t('ui.101','请输入站点根目录'), 'error'); return null; }
         if (type === 'proxy') {
-          if (!port) { setStatus('请输入后端服务端口', 'error'); return null; }
-          if (!/^\d+$/.test(port)) { setStatus('端口必须是数字', 'error'); return null; }
+          if (!port) { setStatus(t('ui.102','请输入后端服务端口'), 'error'); return null; }
+          if (!/^\d+$/.test(port)) { setStatus(t('ui.103','端口必须是数字'), 'error'); return null; }
           var p = parseInt(port, 10);
-          if (p < 1 || p > 65535) { setStatus('端口必须在 1-65535 之间', 'error'); return null; }
+          if (p < 1 || p > 65535) { setStatus(t('ui.104','端口必须在 1-65535 之间'), 'error'); return null; }
         }
 
         var listen = domain || ':80';

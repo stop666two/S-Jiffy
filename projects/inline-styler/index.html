@@ -54,10 +54,10 @@
 
   function convert() {
     var text = inputEl.value.trim();
-    if (!text) { setStatus('请输入 CSS', 'error'); return; }
+    if (!text) { setStatus(t('ui.100','请输入 CSS'), 'error'); return; }
     try {
       var rules = parseCSS(text);
-      if (rules.length === 0) { setStatus('未找到 CSS 规则', 'error'); return; }
+      if (rules.length === 0) { setStatus(t('ui.101','未找到 CSS 规则'), 'error'); return; }
       var result = '';
       for (var i = 0; i < rules.length; i++) {
         if (result) result += '\n\n';

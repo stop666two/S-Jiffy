@@ -42,16 +42,16 @@ function asciiTable(headers,rows){
   return lines.join('\n');
 }
 document.getElementById('generateBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入数据','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.100','请输入数据'),'error');return;}
   try{
     var data,headers;
     if(fmt.value==='json'){
       data=JSON.parse(text);if(!Array.isArray(data))throw new Error(t('ui.5','需要 JSON 数组'));
-      if(data.length===0){o.textContent='';setStatus('空数组','error');return;}
+      if(data.length===0){o.textContent='';setStatus(t('ui.101','空数组'),'error');return;}
       headers=Object.keys(data[0]);
     }else{
       var lines=text.split('\n').filter(function(l){return l.trim();});
-      if(lines.length<2){o.textContent='';setStatus('CSV 至少需要标题行和一行数据','error');return;}
+      if(lines.length<2){o.textContent='';setStatus(t('ui.102','CSV 至少需要标题行和一行数据'),'error');return;}
       headers=lines[0].split(',').map(function(s){return s.trim();});
       data=[];
       for(var li=1;li<lines.length;li++){

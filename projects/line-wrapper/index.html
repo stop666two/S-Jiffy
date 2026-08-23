@@ -8,7 +8,7 @@
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">文本换行工具</h1><p class="tool-desc" data-i18n="desc">将文本按指定宽度自动换行（soft wrap / hard wrap）。</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入需要换行的文本..." style="min-height:140px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入需要换行的文本..." style="min-height:140px;"></textarea></div>
 <div class="wrap-controls">
 <input id="wrapWidth" class="input" type="number" value="40" min="4" max="200" style="width:110px;">
 <label style="font-size:var(--font-size-sm);" data-i18n="ui.1">列宽</label>
@@ -43,9 +43,9 @@ function hardWrap(text,width){
   return result.join('\n');
 }
 document.getElementById('wrapBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.100','请输入文本'),'error');return;}
   var width=parseInt(wInput.value)||40;
-  if(width<4){setStatus('列宽不能小于 4','error');return;}
+  if(width<4){setStatus(t('ui.101','列宽不能小于 4'),'error');return;}
   var wrapped=hardWrap(text,width);
   o.textContent=wrapped;
   var lines=wrapped.split('\n').length;
@@ -53,7 +53,7 @@ document.getElementById('wrapBtn').addEventListener('click',function(){
   setStatus('');
 });
 document.getElementById('unwrapBtn').addEventListener('click',function(){
-  var text=i.value.trim();if(!text){setStatus('请输入文本','error');return;}
+  var text=i.value.trim();if(!text){setStatus(t('ui.102','请输入文本'),'error');return;}
   o.textContent=text.replace(/\n\s*/g,' ');
   lc.textContent='';
   setStatus('');

@@ -36,7 +36,7 @@
     </div>
 
     <div class="card">
-      <textarea id="testInput" class="input textarea" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
+      <textarea id="testInput" class="input textarea" data-i18n-placeholder="ui.102" placeholder="输入要匹配的文本..." style="min-height:140px;"></textarea>
     </div>
 
     <div id="tokenBox" class="card" style="display:none;"></div>
@@ -119,8 +119,8 @@
         outputText.textContent = '';
         tokenBox.style.display = 'none';
 
-        if (!pat) { setStatus('请输入正则表达式', 'error'); return; }
-        if (!text) { setStatus('请输入测试文本', 'error'); return; }
+        if (!pat) { setStatus(t('ui.100','请输入正则表达式'), 'error'); return; }
+        if (!text) { setStatus(t('ui.101','请输入测试文本'), 'error'); return; }
 
         tokenBox.innerHTML = explainPattern(pat);
         tokenBox.style.display = 'block';

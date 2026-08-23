@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">SQL 美化</h1>
     <p class="tool-desc" data-i18n="desc">SQL 格式化：将关键词转为大写，添加缩进和换行。</p>
     <div class="card">
-      <textarea id="inputSql" class="input textarea js-focus-input" placeholder="输入 SQL 语句..." style="min-height:150px;">select u.id, u.name, count(o.id) as order_count from users u join orders o on u.id = o.user_id where u.status = 'active' and o.created_at > '2024-01-01' group by u.id, u.name having count(o.id) > 5 order by order_count desc limit 10;</textarea>
+      <textarea id="inputSql" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入 SQL 语句..." style="min-height:150px;">select u.id, u.name, count(o.id) as order_count from users u join orders o on u.id = o.user_id where u.status = 'active' and o.created_at > '2024-01-01' group by u.id, u.name having count(o.id) > 5 order by order_count desc limit 10;</textarea>
     </div>
     <div style="display:flex; gap:12px; margin-bottom:var(--space-3);">
       <button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button>
@@ -91,7 +91,7 @@
 
       formatBtn.addEventListener('click', function () {
         var sql = inputSql.value.trim();
-        if (!sql) { setStatus('请输入 SQL 语句', 'error'); return; }
+        if (!sql) { setStatus(t('ui.100','请输入 SQL 语句'), 'error'); return; }
         var formatted = formatSQL(sql);
         outputEl.textContent = formatted;
         setStatus('');

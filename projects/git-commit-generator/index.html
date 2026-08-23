@@ -48,22 +48,22 @@
 
       <div style="margin-bottom:12px;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.desc">描述</label>
-        <input id="descInput" class="input js-focus-input" placeholder="添加用户登录功能..." style="height:40px;">
+        <input id="descInput" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="添加用户登录功能..." style="height:40px;">
       </div>
 
       <div style="margin-bottom:12px;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.3">正文 (可选，每行一个) </label>
-        <textarea id="bodyInput" class="input textarea" placeholder="详细描述这次提交的内容..." style="min-height:80px;"></textarea>
+        <textarea id="bodyInput" class="input textarea" data-i18n-placeholder="ui.102" placeholder="详细描述这次提交的内容..." style="min-height:80px;"></textarea>
       </div>
 
       <div style="margin-bottom:12px;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.4">脚注 (可选，每行一个，如 BREAKING CHANGE: 或 Ref: )</label>
-        <textarea id="footerInput" class="input textarea" placeholder="BREAKING CHANGE: 移除旧版 API 支持&#10;Ref: #123" style="min-height:60px;"></textarea>
+        <textarea id="footerInput" class="input textarea" data-i18n-placeholder="ui.103" placeholder="BREAKING CHANGE: 移除旧版 API 支持&#10;Ref: #123" style="min-height:60px;"></textarea>
       </div>
 
       <div style="margin-bottom:12px;">
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;" data-i18n="ui.5">引用 Issue</label>
-        <input id="issueInput" class="input" placeholder="#123, #456 (可选)" style="height:40px;">
+        <input id="issueInput" class="input" data-i18n-placeholder="ui.104" placeholder="#123, #456 (可选)" style="height:40px;">
       </div>
 
       <button id="generateBtn" class="btn btn-primary" data-i18n="ui.6">生成提交信息</button>
@@ -136,7 +136,7 @@
 
       generateBtn.addEventListener('click', function () {
         var msg = generateMessage();
-        if (!msg) { setStatus('请输入描述', 'error'); return; }
+        if (!msg) { setStatus(t('ui.100','请输入描述'), 'error'); return; }
         previewArea.textContent = msg;
         outputText.textContent = msg;
         setStatus(t('ui.generated','已生成'));

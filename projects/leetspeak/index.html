@@ -14,7 +14,7 @@
 <label style="margin-left:12px;"><input type="checkbox" id="reverseMode"> 反转换（Leet → 文本）</label>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
@@ -64,7 +64,7 @@ return r;
 }
 convertBtn.addEventListener('click',function(){
 var t=inputEl.value;
-if(!t){setStatus('请输入文本','error');return;}
+if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
 var level=getLevel();
 if(reverseMode.checked){
 outputEl.textContent=fromLeet(t,level);

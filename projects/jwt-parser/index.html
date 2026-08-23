@@ -20,7 +20,7 @@
     <h1 data-i18n="h1">JWT 解析器</h1>
     <p class="tool-desc" data-i18n="desc">粘贴 JWT Token，解码查看 Header 和 Payload 内容（Base64 解码）。</p>
     <div class="card">
-      <textarea id="jwtInput" class="input textarea js-focus-input" placeholder="粘贴 JWT Token...&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..." style="min-height:80px;"></textarea>
+      <textarea id="jwtInput" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="粘贴 JWT Token...&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..." style="min-height:80px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
@@ -56,11 +56,11 @@
 
       document.getElementById('parseBtn').addEventListener('click', function() {
         var token = jwtEl.value.trim();
-        if (!token) { setStatus('请输入 JWT Token', 'error'); return; }
+        if (!token) { setStatus(t('ui.100','请输入 JWT Token'), 'error'); return; }
         var parts = token.split('.');
         if (parts.length !== 3) {
-          outputEl.textContent = '无效的 JWT 格式。JWT 应包含 3 个由点号分隔的部分 (header.payload.signature)';
-          setStatus('格式错误', 'error');
+          outputEl.textContent = t('ui.103','无效的 JWT 格式。JWT 应包含 3 个由点号分隔的部分 (header.payload.signature)');
+          setStatus(t('ui.101','格式错误'), 'error');
           return;
         }
 
@@ -100,7 +100,7 @@
 
         } catch (e) {
           outputEl.textContent = t('ui.1','解析失败: ') + e.message;
-          setStatus('解析失败', 'error');
+          setStatus(t('ui.102','解析失败'), 'error');
         }
       });
 

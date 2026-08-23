@@ -18,7 +18,7 @@ var securityHeaders=[
 {name:'Strict-Transport-Security',desc:'HTTP 严格传输安全 (HSTS)',weight:2},{name:'Content-Security-Policy',desc:'内容安全策略 (CSP)',weight:3},{name:'X-Frame-Options',desc: t('ui.6','点击劫持保护'),weight:2},{name:'X-Content-Type-Options',desc: t('ui.5','MIME 类型嗅探保护'),weight:1},{name:'Referrer-Policy',desc: t('ui.4','引用来源策略'),weight:1},{name:'Permissions-Policy',desc:'权限策略 (Feature-Policy)',weight:1},{name:'X-XSS-Protection',desc:'XSS 过滤 (已弃用)',weight:1},{name:'Cross-Origin-Opener-Policy',desc:'跨域开放者策略 (COOP)',weight:1},{name:'Cross-Origin-Resource-Policy',desc:'跨域资源策略 (CORP)',weight:1},{name:'Cross-Origin-Embedder-Policy',desc:'跨域嵌入者策略 (COEP)',weight:1}
 ];
 checkBtn.addEventListener('click',function(){
-  var url=urlInput.value.trim();if(!url){setStatus('请输入 URL','error');return;}
+  var url=urlInput.value.trim();if(!url){setStatus(t('ui.100','请输入 URL'),'error');return;}
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   resultCard.style.display='block';headersList.innerHTML='<div style="color:var(--color-text-secondary);padding:8px;">检测中...</div>';scoreDisplay.textContent='';
   fetch(url,{method:'HEAD',mode:'cors'}).then(function(resp){
@@ -43,7 +43,7 @@ checkBtn.addEventListener('click',function(){
   }).catch(function(err){
     headersList.innerHTML='<div style="color:var(--color-error);">请求失败: '+htmlEscape(err.message)+'<br><span style="font-size:12px;">注意：由于浏览器 CORS 限制，部分目标可能无法检测。请确保目标支持 CORS 或使用无 CORS 模式。</span></div>';
     scoreDisplay.textContent='—';
-    setStatus('检测失败','error');
+    setStatus(t('ui.101','检测失败'),'error');
   });
 });
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});

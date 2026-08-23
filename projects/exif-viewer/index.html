@@ -47,7 +47,7 @@
         <input id="fileInput" class="js-focus-input" type="file" accept="image/*">
         <button id="resetBtn" class="btn btn-secondary" data-i18n="ui.1">重置</button>
       </div>
-      <div id="fileInfo" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-1);">支持 JPEG（含 EXIF 段）。PNG、WebP 等格式通常不含 EXIF 信息。</div>
+      <div id="fileInfo" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-1);" data-i18n="ui.102">支持 JPEG（含 EXIF 段）。PNG、WebP 等格式通常不含 EXIF 信息。</div>
     </div>
     <div style="margin-top:var(--space-2);overflow-x:auto;">
       <table class="exif-table" style="display:none;">
@@ -372,7 +372,7 @@
             exifBody.innerHTML = '';
             outputEl.textContent = format + t('ui.21',' 图片通常不含 EXIF 信息（JPEG 才有），无法解析。');
             fileInfo.textContent = t('ui.5','已选择：') + file.name + '（' + format + '）';
-            setStatus('该格式不含 EXIF 信息', 'error');
+            setStatus(t('ui.100','该格式不含 EXIF 信息'), 'error');
             return;
           }
           var dv = new DataView(buf);
@@ -421,7 +421,7 @@
           setStatus(t('ui.4','EXIF 解析完成'));
         };
         reader.onerror = function () {
-          setStatus('文件读取失败', 'error');
+          setStatus(t('ui.101','文件读取失败'), 'error');
         };
         reader.readAsArrayBuffer(file);
       }

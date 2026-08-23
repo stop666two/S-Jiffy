@@ -45,12 +45,12 @@
         </div>
         <div class="field">
           <label data-i18n="ui.4">远程端口</label>
-          <input id="remotePort" class="input" value="22" placeholder="SSH 端口">
+          <input id="remotePort" class="input" value="22" data-i18n-placeholder="ui.106" placeholder="SSH 端口">
         </div>
       </div>
       <label class="toggle-row"><input type="checkbox" id="become" checked> become（提权执行）</label>
       <div class="tasks-title">
-        <span>任务列表（模块：apt/yum/copy/service/command/shell/user/systemd）</span>
+        <span data-i18n="ui.109">任务列表（模块：apt/yum/copy/service/command/shell/user/systemd）</span>
         <button id="addTaskBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px" data-i18n="ui.5">+ 添加任务</button>
       </div>
       <div id="taskRows"></div>
@@ -87,9 +87,9 @@
         var id = ++rowSeq;
         var div = document.createElement('div');
         div.className = 'task-row';
-        div.innerHTML = '<input class="task-name input" placeholder="任务名，如 安装 nginx">'
+        div.innerHTML = '<input class="task-name input" data-i18n-placeholder="ui.107" placeholder="任务名，如 安装 nginx">'
           + '<select class="task-module input">' + MODULES.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select>'
-          + '<textarea class="task-params input textarea" placeholder="每行一个参数，如 name=nginx&#10;state=present"></textarea>'
+          + '<textarea class="task-params input textarea" data-i18n-placeholder="ui.108" placeholder="每行一个参数，如 name=nginx&#10;state=present"></textarea>'
           + '<button class="btn btn-secondary task-del" type="button">删</button>';
         div.querySelector('.task-del').addEventListener('click', function () {
           div.parentNode.removeChild(div);
@@ -131,12 +131,12 @@
         var become = document.getElementById('become').checked;
         var tasks = collectTasks();
         if (tasks === null) return null;
-        if (!play) { setStatus('请输入 Play 名称', 'error'); return null; }
-        if (!hosts) { setStatus('请输入主机组', 'error'); return null; }
-        if (!user) { setStatus('请输入远程用户', 'error'); return null; }
-        if (!port) { setStatus('请输入远程端口', 'error'); return null; }
-        if (!/^\d+$/.test(port)) { setStatus('远程端口必须是数字', 'error'); return null; }
-        if (tasks.length === 0) { setStatus('请至少添加一个任务', 'error'); return null; }
+        if (!play) { setStatus(t('ui.100','请输入 Play 名称'), 'error'); return null; }
+        if (!hosts) { setStatus(t('ui.101','请输入主机组'), 'error'); return null; }
+        if (!user) { setStatus(t('ui.102','请输入远程用户'), 'error'); return null; }
+        if (!port) { setStatus(t('ui.103','请输入远程端口'), 'error'); return null; }
+        if (!/^\d+$/.test(port)) { setStatus(t('ui.104','远程端口必须是数字'), 'error'); return null; }
+        if (tasks.length === 0) { setStatus(t('ui.105','请至少添加一个任务'), 'error'); return null; }
 
         var yaml = '---\n';
         yaml += '- name: ' + yamlQuote(play) + '\n';

@@ -19,7 +19,7 @@
     <p class="tool-desc" data-i18n="desc">小数与分数互转，支持化简、带分数显示和计算步骤。</p>
     <div class="card">
       <div class="fc-row">
-        <div class="field"><label for="inputVal" data-i18n="ui.number">数值</label><input id="inputVal" class="input" type="text" value="0.75" placeholder="输入小数或分数如 3/4"></div>
+        <div class="field"><label for="inputVal" data-i18n="ui.number">数值</label><input id="inputVal" class="input" type="text" value="0.75" data-i18n-placeholder="ui.103" placeholder="输入小数或分数如 3/4"></div>
       </div>
       <div class="fc-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="mixedChk" type="checkbox" checked> 允许带分数</label>
@@ -86,14 +86,14 @@
       var input = inputEl.value.trim();
       var showMixed = mixedChk.checked;
       var showSteps = stepsChk.checked;
-      if (!input) { setStatus('请输入数值', 'error'); return; }
+      if (!input) { setStatus(t('ui.100','请输入数值'), 'error'); return; }
 
       var steps = [];
       var result = '';
 
       if (input.indexOf('/') !== -1) {
         var decimal = fractionToDecimal(input);
-        if (decimal === null) { setStatus('无效的分数格式', 'error'); return; }
+        if (decimal === null) { setStatus(t('ui.101','无效的分数格式'), 'error'); return; }
         steps.push(t('ui.3','分数 → 小数:'));
         steps.push(input + ' = ' + decimal);
         var fr = decimalToFraction(decimal, []);
@@ -105,7 +105,7 @@
         }
       } else {
         var val = parseFloat(input);
-        if (isNaN(val)) { setStatus('请输入有效数值', 'error'); return; }
+        if (isNaN(val)) { setStatus(t('ui.102','请输入有效数值'), 'error'); return; }
         steps.push(t('ui.2','小数 → 分数:'));
         var fr = decimalToFraction(val, steps);
         result = t('ui.1','小数: ') + val;

@@ -148,7 +148,7 @@
           <button id="downloadBtn" class="btn btn-primary" data-i18n="ui.10">下载剪切结果</button>
         </div>
       </div>
-      <div class="note">视频仅在本机浏览器内处理，不上传任何数据；剪切采用无损复制，速度快且不损失画质，起止点会就近对齐到关键帧。</div>
+      <div class="note" data-i18n="ui.107">视频仅在本机浏览器内处理，不上传任何数据；剪切采用无损复制，速度快且不损失画质，起止点会就近对齐到关键帧。</div>
     </div>
   </main>
   <footer class="global-footer">
@@ -200,7 +200,7 @@
         script.onload = function () {
           if (!window.FFmpegWASM || !window.FFmpegWASM.FFmpeg) {
             setEnginePill('引擎：加载异常', 'bad');
-            setStatus('引擎脚本异常，请刷新页面重试', 'error');
+            setStatus(t('ui.100','引擎脚本异常，请刷新页面重试'), 'error');
             return;
           }
           var inst = new window.FFmpegWASM.FFmpeg();
@@ -229,7 +229,7 @@
         };
         script.onerror = function () {
           setEnginePill('引擎：加载失败', 'bad');
-          setStatus('引擎加载失败：无法连接脚本服务，请检查网络后刷新页面', 'error');
+          setStatus(t('ui.101','引擎加载失败：无法连接脚本服务，请检查网络后刷新页面'), 'error');
         };
         document.body.appendChild(script);
       }
@@ -249,7 +249,7 @@
           return false;
         }
         if (file.size > FILE_LIMIT) {
-          setStatus('文件过大（超过 800MB），可能导致浏览器内存不足，请换用更小的视频', 'error');
+          setStatus(t('ui.102','文件过大（超过 800MB），可能导致浏览器内存不足，请换用更小的视频'), 'error');
           return false;
         }
         return true;
@@ -318,16 +318,16 @@
 
       function doCut() {
         if (cutting) return;
-        if (!currentFile) { setStatus('请先选择视频文件', 'error'); return; }
+        if (!currentFile) { setStatus(t('ui.103','请先选择视频文件'), 'error'); return; }
         if (!engineReady) {
           setStatus(enginePill.textContent.indexOf(t('ui.21','失败')) !== -1 ? '处理引擎未就绪，请刷新页面重试' : '处理引擎仍在加载，请稍候再试', 'error');
           return;
         }
         var start = readInput(startTime);
         var end = readInput(endTime);
-        if (start < 0) { setStatus('开始时间无效，请输入不小于 0 的数字', 'error'); return; }
-        if (end < 0) { setStatus('结束时间无效，请输入不小于 0 的数字', 'error'); return; }
-        if (start >= end) { setStatus('开始时间必须小于结束时间', 'error'); return; }
+        if (start < 0) { setStatus(t('ui.104','开始时间无效，请输入不小于 0 的数字'), 'error'); return; }
+        if (end < 0) { setStatus(t('ui.105','结束时间无效，请输入不小于 0 的数字'), 'error'); return; }
+        if (start >= end) { setStatus(t('ui.106','开始时间必须小于结束时间'), 'error'); return; }
         var dur = player.duration;
         if (isFinite(dur) && end > dur + 0.05) {
           setStatus(t('ui.20','结束时间超出视频总时长（') + Math.round(dur * 10) / 10 + t('ui.19',' 秒）'), 'error');

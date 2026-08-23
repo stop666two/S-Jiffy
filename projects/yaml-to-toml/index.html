@@ -234,7 +234,7 @@ logging:
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 YAML', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 YAML'), 'error'); return; }
         try {
           var parsed = parseYaml(text);
           var result = toToml(parsed, []);
@@ -242,7 +242,7 @@ logging:
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('YAML 解析错误', 'error');
+          setStatus(t('ui.101','YAML 解析错误'), 'error');
         }
       });
 

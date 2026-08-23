@@ -70,10 +70,10 @@
     function generate() {
       var n = parseInt(nEl.value, 10);
       var r = parseInt(rEl.value, 10);
-      if (isNaN(n) || isNaN(r)) { setStatus('请输入有效数字', 'error'); return; }
-      if (n < 0 || r < 0) { setStatus('n 和 r 必须非负', 'error'); return; }
-      if (r > n) { setStatus('r 不能大于 n', 'error'); return; }
-      if (n > 500) { setStatus('n 不能大于 500', 'error'); return; }
+      if (isNaN(n) || isNaN(r)) { setStatus(t('ui.100','请输入有效数字'), 'error'); return; }
+      if (n < 0 || r < 0) { setStatus(t('ui.101','n 和 r 必须非负'), 'error'); return; }
+      if (r > n) { setStatus(t('ui.102','r 不能大于 n'), 'error'); return; }
+      if (n > 500) { setStatus(t('ui.103','n 不能大于 500'), 'error'); return; }
 
       var npr = permutation(n, r);
       var ncr = combination(n, r);

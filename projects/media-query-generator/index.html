@@ -114,25 +114,25 @@
         if ((min !== '' && !isFinite(minNum)) || (max !== '' && !isFinite(maxNum))) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('请输入有效的像素值', 'error');
+          setStatus(t('ui.100','请输入有效的像素值'), 'error');
           return;
         }
         if (minNum !== null && minNum < 0) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('min-width 不能为负数', 'error');
+          setStatus(t('ui.101','min-width 不能为负数'), 'error');
           return;
         }
         if (maxNum !== null && maxNum < 0) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('max-width 不能为负数', 'error');
+          setStatus(t('ui.102','max-width 不能为负数'), 'error');
           return;
         }
         if (minNum !== null && maxNum !== null && minNum > maxNum) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('min-width 不能大于 max-width', 'error');
+          setStatus(t('ui.103','min-width 不能大于 max-width'), 'error');
           return;
         }
         var conds = [];

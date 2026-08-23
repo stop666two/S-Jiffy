@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">SafeLink 解码</h1>
     <p class="tool-desc" data-i18n="desc">解码 Microsoft SafeLinks (statics/links.safelinks.protection.outlook.com) 和 Google 重定向网址 (google.com/url)，还原原始 URL。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 SafeLink 或 Google 重定向 URL...&#10;https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/...&#10;或 https://www.google.com/url?q=..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 SafeLink 或 Google 重定向 URL...&#10;https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/...&#10;或 https://www.google.com/url?q=..." style="min-height:120px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="decodeBtn" class="btn btn-primary" data-i18n="ui.decode">解码</button>
@@ -65,7 +65,7 @@
 
       document.getElementById('decodeBtn').addEventListener('click', function() {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 URL', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 URL'), 'error'); return; }
         var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
         var results = [];
         var decoded = 0;
@@ -82,7 +82,7 @@
         if (decoded > 0) {
           setStatus(t('ui.2','成功解码 ') + decoded + t('ui.1',' 个 URL'));
         } else {
-          setStatus('未能识别 SafeLink/Google 重定向格式', 'error');
+          setStatus(t('ui.101','未能识别 SafeLink/Google 重定向格式'), 'error');
         }
       });
 

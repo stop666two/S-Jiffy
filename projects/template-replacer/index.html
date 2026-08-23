@@ -27,7 +27,7 @@
     <h1 data-i18n="h1">模板替换器</h1>
     <p class="tool-desc" data-i18n="desc">将模板中的 ${var} 或 {{var}} 占位符替换为变量值，并提示未匹配的占位符。</p>
     <div class="card">
-      <textarea id="templateInput" class="input textarea js-focus-input" placeholder="输入模板，支持 ${var} 或 {{var}} 占位符..." style="min-height:120px;"></textarea>
+      <textarea id="templateInput" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="输入模板，支持 ${var} 或 {{var}} 占位符..." style="min-height:120px;"></textarea>
       <table class="var-tbl">
         <thead>
           <tr><th style="width:38%" data-i18n="ui.1">变量名</th><th style="width:47%" data-i18n="ui.2">值</th><th></th></tr>
@@ -62,8 +62,8 @@
       function addRow(name, value) {
         var tr = document.createElement('tr');
         tr.setAttribute('data-seq', String(rowSeq));
-        tr.innerHTML = '<td><input type="text" class="input js-var-name" placeholder="变量名，如 name" value="' + htmlEscape(name || '') + '"></td>' +
-          '<td><input type="text" class="input js-var-val" placeholder="值" value="' + htmlEscape(value || '') + '"></td>' +
+        tr.innerHTML = '<td><input type="text" class="input js-var-name" data-i18n-placeholder="ui.101" placeholder="变量名，如 name" value="' + htmlEscape(name || '') + '"></td>' +
+          '<td><input type="text" class="input js-var-val" data-i18n-placeholder="ui.102" placeholder="值" value="' + htmlEscape(value || '') + '"></td>' +
           '<td><button type="button" class="btn btn-secondary js-var-del">删除</button></td>';
         varBody.appendChild(tr);
         rowSeq++;

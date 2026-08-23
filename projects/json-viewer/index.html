@@ -148,9 +148,9 @@
 
       document.getElementById('viewBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
         var html = buildTree(text);
-        if (html === null) { treeEl.innerHTML = ''; setStatus('JSON 格式错误', 'error'); return; }
+        if (html === null) { treeEl.innerHTML = ''; setStatus(t('ui.101','JSON 格式错误'), 'error'); return; }
         treeEl.innerHTML = html;
         setStatus('');
       });

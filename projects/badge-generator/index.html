@@ -92,8 +92,8 @@
       function buildSvg() {
         var label = labelInput.value.trim();
         var value = valueInput.value.trim();
-        if (!label) { setStatus('请输入左侧标签文字', 'error'); return null; }
-        if (!value) { setStatus('请输入右侧值文字', 'error'); return null; }
+        if (!label) { setStatus(t('ui.100','请输入左侧标签文字'), 'error'); return null; }
+        if (!value) { setStatus(t('ui.101','请输入右侧值文字'), 'error'); return null; }
         var lc = labelColor.value;
         var vc = valueColor.value;
         var style = styleSelect.value;
@@ -138,7 +138,7 @@
         }
         preview.innerHTML = svg;
         var md = '![badge](data:image/svg+xml;utf8,' + encodeURIComponent(svg) + ')';
-        output.textContent = 'SVG 代码：\n\n' + svg + '\n\nMarkdown 嵌入语法：\n\n' + md;
+        output.textContent = t('ui.102','SVG 代码：\n\n') + svg + '\n\nMarkdown 嵌入语法：\n\n' + md;
         setStatus(t('ui.8','徽章已生成，实时预览见上方'));
       }
 

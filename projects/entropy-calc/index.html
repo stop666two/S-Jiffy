@@ -5,7 +5,7 @@
 <style>.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.stat-row:last-child{border:none;}.stat-label{color:var(--color-text-secondary);}.stat-val{font-weight:600;font-family:var(--font-mono);}.strength-box{padding:16px;text-align:center;border-radius:var(--radius-md);margin-top:var(--space-2);font-weight:600;}.strength-very-weak{background:#fce8e6;color:var(--color-error);}.strength-weak{background:#fef7e0;color:#e37400;}.strength-fair{background:#e8f0fe;color:#096bde;}.strength-strong{background:#e6f4ea;color:var(--color-success);}.strength-very-strong{background:#e6f4ea;color:#1b5e20;}.char-bar{display:flex;gap:1px;height:40px;align-items:flex-end;margin-top:var(--space-2);}.char-bar-item{flex:1;background:var(--color-accent);border-radius:1px 1px 0 0;min-width:2px;opacity:0.6;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">熵值计算</h1><p class="tool-desc" data-i18n="desc">计算文本/密码的 Shannon 信息熵，评估复杂度</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要计算熵值的文本或密码..." style="min-height:80px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要计算熵值的文本或密码..." style="min-height:80px;"></textarea></div>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="calcBtn" class="btn btn-primary" data-i18n="ui.1">计算熵值</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="entropyStats"></div><div id="strengthBox" class="strength-box"></div><div id="charBar" class="char-bar"></div></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -45,7 +45,7 @@ function guessTime(entropy){var perSec=1e9;var combos=Math.pow(2,entropy);var se
   return t('ui.4','超过 ') +Math.round(yrs/1000)+ t('ui.3',' 千年');
 }
 calcBtn.addEventListener('click',function(){
-  var txt=inputText.value;if(!txt){setStatus('请输入文本','error');return;}
+  var txt=inputText.value;if(!txt){setStatus(t('ui.100','请输入文本'),'error');return;}
   var len=txt.length;var entropy=shannonEntropy(txt);var charsetBits=calcCharsetBits(txt);
   var maxEntropy=Math.log2(charsetBits)*len;
   var strength=entropy/len;

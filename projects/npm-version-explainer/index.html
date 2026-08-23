@@ -23,7 +23,7 @@
       <label for="rangeInput" class="field-label" data-i18n="ui.1">版本范围表达式</label>
       <input id="rangeInput" class="input js-focus-input" placeholder="^1.2.3">
       <div style="margin-top:12px;"><button id="explainBtn" class="btn btn-primary" data-i18n="ui.2">解释范围</button></div>
-      <p class="range-hint">支持：精确版本 1.2.3、^1.2.3、~1.2.3、>=1.0.0 &lt;2.0.0、1.2.x、1.2.3 - 2.0.0、*、latest、|| 或运算</p>
+      <p class="range-hint" data-i18n="ui.103">支持：精确版本 1.2.3、^1.2.3、~1.2.3、>=1.0.0 &lt;2.0.0、1.2.x、1.2.3 - 2.0.0、*、latest、|| 或运算</p>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -309,8 +309,8 @@
         var branches = [];
         for (var i = 0; i < rawBranches.length; i++) {
           var raw = rawBranches[i].trim();
-          if (!raw) { outputEl.textContent = ''; setStatus('范围表达式中存在空的 || 分支', 'error'); return; }
-          if (raw === 'latest') { outputEl.textContent = ''; setStatus('latest 只能单独使用，不能与其他范围组合', 'error'); return; }
+          if (!raw) { outputEl.textContent = ''; setStatus(t('ui.100','范围表达式中存在空的 || 分支'), 'error'); return; }
+          if (raw === 'latest') { outputEl.textContent = ''; setStatus(t('ui.101','latest 只能单独使用，不能与其他范围组合'), 'error'); return; }
           var tokens = raw.split(/\s+/);
           var parsed = parseBranch(tokens);
           if (!parsed) { outputEl.textContent = ''; setStatus(t('ui.12','无法解析的分支：') + raw, 'error'); return; }
@@ -348,7 +348,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.102','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

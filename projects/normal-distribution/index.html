@@ -33,11 +33,11 @@
       <div class="param-grid">
         <div class="param-field">
           <label for="meanInput" data-i18n="ui.1">均值 μ</label>
-          <input type="text" id="meanInput" class="input js-focus-input" placeholder="如 0">
+          <input type="text" id="meanInput" class="input js-focus-input" data-i18n-placeholder="ui.107" placeholder="如 0">
         </div>
         <div class="param-field">
           <label for="sdInput" data-i18n="ui.2">标准差 σ</label>
-          <input type="text" id="sdInput" class="input" placeholder="如 1">
+          <input type="text" id="sdInput" class="input" data-i18n-placeholder="ui.108" placeholder="如 1">
         </div>
       </div>
       <div class="mode-row">
@@ -50,11 +50,11 @@
       <div class="x-row">
         <div class="param-field">
           <label for="x1Input" id="x1Label" data-i18n="ui.6">X 值</label>
-          <input type="text" id="x1Input" class="input" placeholder="如 1.5">
+          <input type="text" id="x1Input" class="input" data-i18n-placeholder="ui.109" placeholder="如 1.5">
         </div>
         <div class="param-field" id="x2Field" style="display:none;">
           <label for="x2Input" data-i18n="ui.7">X2 值</label>
-          <input type="text" id="x2Input" class="input" placeholder="如 2.5">
+          <input type="text" id="x2Input" class="input" data-i18n-placeholder="ui.110" placeholder="如 2.5">
         </div>
       </div>
       <div style="margin-top:var(--space-2);">
@@ -209,15 +209,15 @@
           return;
         }
         if (mu === null || isNaN(mu)) {
-          setStatus('请输入有效的均值 μ', 'error');
+          setStatus(t('ui.100','请输入有效的均值 μ'), 'error');
           return;
         }
         if (sigma === null || isNaN(sigma)) {
-          setStatus('请输入有效的标准差 σ', 'error');
+          setStatus(t('ui.101','请输入有效的标准差 σ'), 'error');
           return;
         }
         if (sigma <= 0) {
-          setStatus('标准差 σ 必须大于 0', 'error');
+          setStatus(t('ui.102','标准差 σ 必须大于 0'), 'error');
           return;
         }
         var x1 = parseNum(x1El.value);
@@ -225,20 +225,20 @@
         if (mode === 'interval') {
           x2 = parseNum(x2El.value);
           if (x1 === null || isNaN(x1)) {
-            setStatus('请输入有效的 X1 值', 'error');
+            setStatus(t('ui.103','请输入有效的 X1 值'), 'error');
             return;
           }
           if (x2 === null || isNaN(x2)) {
-            setStatus('请输入有效的 X2 值', 'error');
+            setStatus(t('ui.104','请输入有效的 X2 值'), 'error');
             return;
           }
           if (x1 >= x2) {
-            setStatus('X1 必须小于 X2', 'error');
+            setStatus(t('ui.105','X1 必须小于 X2'), 'error');
             return;
           }
         } else {
           if (x1 === null || isNaN(x1)) {
-            setStatus('请输入有效的 X 值', 'error');
+            setStatus(t('ui.106','请输入有效的 X 值'), 'error');
             return;
           }
         }

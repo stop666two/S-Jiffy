@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">Atbash 密码</h1>
     <p class="tool-desc" data-i18n="desc">Atbash 字母替换加密解密（A\u2194Z, B\u2194Y, ...）。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
     </div>
     <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
       <button id="encryptBtn" class="btn btn-primary" data-i18n="ui.encrypt">加密</button>
@@ -59,7 +59,7 @@
 
       function process(mode) {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         outputEl.textContent = atbash(text);
         setStatus('');
       }

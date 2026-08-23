@@ -95,7 +95,7 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 XML', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 XML'), 'error'); return; }
         try {
           var parser = new DOMParser();
           var doc = parser.parseFromString(text, 'text/xml');
@@ -108,7 +108,7 @@
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('XML 格式错误', 'error');
+          setStatus(t('ui.101','XML 格式错误'), 'error');
         }
       });
 

@@ -12,8 +12,8 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
-<textarea id="inputText" class="js-focus-input" placeholder="输入文本...">Hello, S-Jiffy!</textarea>
-<textarea id="outputText" readonly placeholder="结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="inputText" class="js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本...">Hello, S-Jiffy!</textarea>
+<textarea id="outputText" readonly data-i18n-placeholder="ui.105" placeholder="结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
 <div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -78,7 +78,7 @@ return new Uint8Array(bytes);
 
 function encode(){
 var text=inputEl.value;
-if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入内容','error');return;}
+if(!text){outputEl.value='';statusText.textContent='';setStatus(t('ui.100','请输入内容'),'error');return;}
 try{
 var encoder=new TextEncoder();
 var bytes=encoder.encode(text);
@@ -86,12 +86,12 @@ var encoded=encodeAscii85(bytes);
 outputEl.value=encoded;
 statusText.textContent = t('ui.2','编码完成，')+encoded.length+ t('ui.chars',' 字符');
 setStatus('');
-}catch(e){setStatus('编码错误','error');}
+}catch(e){setStatus(t('ui.101','编码错误'),'error');}
 }
 
 function decode(){
 var text=inputEl.value.trim();
-if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入 Base85','error');return;}
+if(!text){outputEl.value='';statusText.textContent='';setStatus(t('ui.102','请输入 Base85'),'error');return;}
 try{
 var bytes=decodeAscii85(text);
 var decoder=new TextDecoder();
@@ -99,7 +99,7 @@ var decoded=decoder.decode(bytes);
 outputEl.value=decoded;
 statusText.textContent = t('ui.1','解码完成，')+decoded.length+ t('ui.chars',' 字符');
 setStatus('');
-}catch(e){setStatus('解码错误：Base85 格式无效','error');}
+}catch(e){setStatus(t('ui.103','解码错误：Base85 格式无效'),'error');}
 }
 
 var inputEl=document.getElementById('inputText');

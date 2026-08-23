@@ -11,7 +11,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="split-pane">
-<textarea id="lessInput" class="js-focus-input" placeholder="输入 LESS 代码（变量定义 + CSS）...">@primary-color: #3498db;
+<textarea id="lessInput" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入 LESS 代码（变量定义 + CSS）...">@primary-color: #3498db;
 @font-size: 16px;
 @padding: 12px;
 @border-radius: 4px;
@@ -28,7 +28,7 @@ body {
   font-size: @font-size;
 }
 </textarea>
-<textarea id="css输出" readonly placeholder="编译结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="css输出" readonly data-i18n-placeholder="ui.102" placeholder="编译结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -45,7 +45,7 @@ var copyBtn=document.getElementById('copyBtn');
 
 function compile(){
 var text=lessInput.value;
-if(!text.trim()){css输出.value='';outputEl.textContent='';setStatus('请输入 LESS 代码','error');return;}
+if(!text.trim()){css输出.value='';outputEl.textContent='';setStatus(t('ui.100','请输入 LESS 代码'),'error');return;}
 var vars={};
 var lines=text.split('\n');
 var cleanLines=[];

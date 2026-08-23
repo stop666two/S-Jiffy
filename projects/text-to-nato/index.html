@@ -21,7 +21,7 @@
     <h1 data-i18n="h1">Text to NATO</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 NATO 北约 phonetic alphabet（音标字母代码），支持大小写和数字。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
@@ -56,7 +56,7 @@
 
       document.getElementById('convertBtn').addEventListener('click', function() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         var lines = [];
         for (var i = 0; i < text.length; i++) {
           var ch = text[i];

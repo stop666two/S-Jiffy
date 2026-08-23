@@ -28,11 +28,11 @@
       </div>
       <div class="form-row">
         <label for="projDesc" class="field-label" data-i18n="ui.2">一行描述</label>
-        <input id="projDesc" class="input" placeholder="一个简洁高效的示例项目">
+        <input id="projDesc" class="input" data-i18n-placeholder="ui.102" placeholder="一个简洁高效的示例项目">
       </div>
       <div class="form-row">
         <label for="projDetail" class="field-label" data-i18n="ui.3">详细说明</label>
-        <textarea id="projDetail" class="input textarea" placeholder="介绍项目解决的问题、核心特性与适用场景…"></textarea>
+        <textarea id="projDetail" class="input textarea" data-i18n-placeholder="ui.103" placeholder="介绍项目解决的问题、核心特性与适用场景…"></textarea>
       </div>
       <div class="form-row">
         <label for="installCmd" class="field-label" data-i18n="ui.4">安装命令</label>
@@ -44,7 +44,7 @@
       </div>
       <div class="form-row">
         <label for="featureList" class="field-label" data-i18n="ui.6">特性列表（每行一个）</label>
-        <textarea id="featureList" class="input textarea" style="min-height:100px;" placeholder="零依赖，开箱即用&#10;支持 TypeScript 类型提示&#10;完善的错误处理"></textarea>
+        <textarea id="featureList" class="input textarea" style="min-height:100px;" data-i18n-placeholder="ui.104" placeholder="零依赖，开箱即用&#10;支持 TypeScript 类型提示&#10;完善的错误处理"></textarea>
       </div>
       <div class="form-row">
         <label for="licenseSel" class="field-label" data-i18n="ui.7">许可证</label>
@@ -124,7 +124,7 @@
         var name = nameEl.value.trim();
         if (!name) {
           outputEl.textContent = '';
-          setStatus('请填写项目名称', 'error');
+          setStatus(t('ui.100','请填写项目名称'), 'error');
           return;
         }
         var desc = descEl.value.trim();
@@ -192,7 +192,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.101','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

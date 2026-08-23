@@ -36,7 +36,7 @@
         </div>
         <div class="lr-field">
           <label for="predictInput" data-i18n="ui.2">预测：输入新 x 值</label>
-          <input type="text" id="predictInput" class="input" placeholder="如 6">
+          <input type="text" id="predictInput" class="input" data-i18n-placeholder="ui.101" placeholder="如 6">
         </div>
       </div>
       <div style="margin-top:var(--space-2);">
@@ -218,7 +218,7 @@
           var pxv = predictEl.value.trim();
           if (pxv !== '') {
             if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(pxv)) {
-              setStatus('预测 x 值不是有效数字', 'error');
+              setStatus(t('ui.100','预测 x 值不是有效数字'), 'error');
               return;
             }
             var xv = parseFloat(pxv);

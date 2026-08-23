@@ -15,7 +15,7 @@
 <script>(function(){
 var domainInput=document.getElementById('domainInput'),checkBtn=document.getElementById('checkBtn'),resultCard=document.getElementById('resultCard'),hstsHeader=document.getElementById('hstsHeader'),preflightChecks=document.getElementById('preflightChecks'),preloadStatus=document.getElementById('preloadStatus'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 checkBtn.addEventListener('click',function(){
-  var domain=domainInput.value.trim();if(!domain){setStatus('请输入域名','error');return;}
+  var domain=domainInput.value.trim();if(!domain){setStatus(t('ui.100','请输入域名'),'error');return;}
   if(domain.indexOf('://')>=0)domain=domain.replace(/^https?:\/\//,'').split('/')[0];
   resultCard.style.display='block';hstsHeader.innerHTML='<div style="color:var(--color-text-secondary);">检查中...</div>';preflightChecks.innerHTML='';preloadStatus.innerHTML='';
   var url='https://'+domain;
@@ -51,7 +51,7 @@ checkBtn.addEventListener('click',function(){
   }).catch(function(err){
     hstsHeader.innerHTML='<div style="color:var(--color-error);">请求失败: '+htmlEscape(err.message)+'</div>';
     preflightChecks.innerHTML='<div style="color:var(--color-text-secondary);">由于 CORS 限制无法完整检查。可以尝试直接访问 hstspreload.org 检查。</div>';
-    setStatus('检查失败','error');
+    setStatus(t('ui.101','检查失败'),'error');
   });
 });
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});

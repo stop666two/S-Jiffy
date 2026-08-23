@@ -60,7 +60,7 @@
 </div>
 <div class="fx-field" style="margin-top:12px;">
 <label data-i18n="amountCurrencyLabel">金额</label>
-<input id="amountInput" type="number" min="0" step="any" value="1" data-i18n-placeholder="enterAmountPlaceholder" placeholder="输入金额">
+<input id="amountInput" type="number" min="0" step="any" value="1" data-i18n-placeholder="enterAmountPlaceholder" data-i18n-placeholder="ui.102" placeholder="输入金额">
 </div>
 <div class="fx-result" id="resultBox" style="display:none;"></div>
 <div id="errBox" class="fx-err" style="display:none;"></div>
@@ -134,8 +134,8 @@ function fetchRates(baseCode,cb){
       cb(true);
     }else{
       errBox.style.display='block';
-      errBox.textContent='无法获取实时汇率：网络异常且无离线缓存。请检查网络后重试。';
-      setStatus('汇率获取失败（所有数据源不可用）','error');
+      errBox.textContent=t('ui.101','无法获取实时汇率：网络异常且无离线缓存。请检查网络后重试。');
+      setStatus(t('ui.100','汇率获取失败（所有数据源不可用）'),'error');
       cb(false);
     }
   };

@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">字符串混淆器</h1>
     <p class="tool-desc" data-i18n="desc">在字符串的每个字符之间插入随机字符，实现简单混淆效果。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要混淆的文本..." style="min-height:100px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入要混淆的文本..." style="min-height:100px;"></textarea>
     </div>
     <div class="card obf-config">
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">干扰字符集</label>
@@ -68,7 +68,7 @@
     }
     function obfuscate() {
       var text = inputEl.value;
-      if (!text) { setStatus('请输入文本', 'error'); return; }
+      if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
       var density = parseInt(densityEl.value);
       var noiseSet = getNoiseChars();
       var result = '';
@@ -83,7 +83,7 @@
     }
     function deobfuscate() {
       var text = outputEl.textContent || inputEl.value;
-      if (!text) { setStatus('请输入文本', 'error'); return; }
+      if (!text) { setStatus(t('ui.101','请输入文本'), 'error'); return; }
       var density = parseInt(densityEl.value);
       var result = '';
       for (var i = 0; i < text.length; i += density + 1) {

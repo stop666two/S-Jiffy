@@ -108,11 +108,11 @@
 
       document.getElementById('convertBtn').addEventListener('click', function () {
         var text = inputEl.value.trim();
-        if (!text) { setStatus('请输入 JSON', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
         try {
           var parsed = JSON.parse(text);
           var keys = Object.keys(parsed);
-          if (keys.length === 0) { outputEl.textContent = ''; setStatus('空对象', 'error'); return; }
+          if (keys.length === 0) { outputEl.textContent = ''; setStatus(t('ui.101','空对象'), 'error'); return; }
           var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
           if (keys.length === 1) {
             result += jsonToXml(parsed[keys[0]], keys[0], 0);
@@ -127,7 +127,7 @@
           setStatus('');
         } catch (e) {
           outputEl.textContent = '';
-          setStatus('JSON 格式错误', 'error');
+          setStatus(t('ui.102','JSON 格式错误'), 'error');
         }
       });
 

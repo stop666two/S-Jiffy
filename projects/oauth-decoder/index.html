@@ -48,9 +48,9 @@ pre.json-display { margin:0; white-space:pre-wrap; word-break:break-all; font-si
 
   function decode() {
     var token = tokenInput.value.trim();
-    if (!token) { setStatus('请输入 JWT Token', 'error'); return; }
+    if (!token) { setStatus(t('ui.100','请输入 JWT Token'), 'error'); return; }
     var parts = token.split('.');
-    if (parts.length !== 3) { setStatus('无效的 JWT 格式，需要 header.payload.signature 结构', 'error'); return; }
+    if (parts.length !== 3) { setStatus(t('ui.101','无效的 JWT 格式，需要 header.payload.signature 结构'), 'error'); return; }
 
     try {
       var headerRaw = base64UrlDecode(parts[0]);

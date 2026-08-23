@@ -8,7 +8,7 @@
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Data URI 生成</h1><p class="tool-desc" data-i18n="desc">将文本或 JSON 数据转换为 data:text/plain 或 data:application/json URI。</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或 JSON 数据..." style="min-height:120px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入文本或 JSON 数据..." style="min-height:120px;"></textarea></div>
 <div class="uri-controls">
 <select id="mimeType" class="input" style="width:auto;min-width:140px;">
   <option value="text/plain">text/plain</option>
@@ -32,7 +32,7 @@
 var i=document.getElementById('inputText'),o=document.getElementById('outputText'),dp=document.getElementById('decodedPreview');
 var mime=document.getElementById('mimeType'),b64=document.getElementById('base64Encode');
 document.getElementById('generateBtn').addEventListener('click',function(){
-  var text=i.value;if(!text){setStatus('请输入内容','error');return;}
+  var text=i.value;if(!text){setStatus(t('ui.100','请输入内容'),'error');return;}
   var mt=mime.value;
   try{JSON.parse(text);mt='application/json';}catch(e){}
   var uri;

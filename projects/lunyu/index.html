@@ -31,7 +31,7 @@
     <h1 data-i18n="h1">论语全文</h1>
     <p class="tool-desc" data-i18n="desc">《论语》二十篇全文在线阅读，附白话译文，支持全文关键词检索。</p>
     <div class="card">
-      <input id="searchInput" class="input js-focus-input ly-search" type="text" placeholder="搜索原文或译文关键词，如：仁、君子、学而时习之">
+      <input id="searchInput" class="input js-focus-input ly-search" type="text" data-i18n-placeholder="ui.101" placeholder="搜索原文或译文关键词，如：仁、君子、学而时习之">
       <div class="ly-nav" id="navBox"></div>
     </div>
     <div class="card">
@@ -111,7 +111,7 @@
       pianTitle.textContent = t('ui.3','全文检索：') + kw;
       if (!found.length) {
         contentBox.innerHTML = '<div class="ly-no">未找到包含「' + htmlEscape(kw) + '」的章节，换个关键词试试。</div>';
-        setStatus('未找到匹配章节', 'error');
+        setStatus(t('ui.100','未找到匹配章节'), 'error');
         return;
       }
       var html = '';

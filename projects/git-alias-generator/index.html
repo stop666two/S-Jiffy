@@ -33,7 +33,7 @@
       </div>
       <div class="alias-list" id="aliasList"></div>
       <div style="margin-top:16px;">
-        <label for="customAlias" class="field-label">自定义别名（每行一个，格式：名称=命令，如 mylog=log --oneline --all）</label>
+        <label for="customAlias" class="field-label" data-i18n="ui.101">自定义别名（每行一个，格式：名称=命令，如 mylog=log --oneline --all）</label>
         <textarea id="customAlias" class="input textarea" style="min-height:100px;" placeholder="mylog=log --oneline --all&#10;lazy=!git add -A && git commit -m &quot;WIP&quot;"></textarea>
       </div>
     </div>
@@ -206,7 +206,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

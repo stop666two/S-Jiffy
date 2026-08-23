@@ -23,7 +23,7 @@
       <div class="repeater-row">
         <div class="field">
           <label for="inputText" data-i18n="ui.1">文本</label>
-          <input id="inputText" class="input js-focus-input" placeholder="要重复的文本">
+          <input id="inputText" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="要重复的文本">
         </div>
         <div class="field">
           <label for="repeatCount" data-i18n="ui.2">重复次数</label>
@@ -33,7 +33,7 @@
       <div class="repeater-row">
         <div class="field">
           <label for="separatorInput" data-i18n="ui.separator">分隔符</label>
-          <input id="separatorInput" class="input" placeholder="可选，如逗号/换行等">
+          <input id="separatorInput" class="input" data-i18n-placeholder="ui.102" placeholder="可选，如逗号/换行等">
         </div>
         <div style="display:flex;align-items:flex-end;">
           <button id="repeatBtn" class="btn btn-primary" data-i18n="ui.3">重复</button>
@@ -67,7 +67,7 @@
         if (count > 100000) count = 100000;
         if (!text) {
           outputEl.textContent = '';
-          setStatus('请输入文本', 'error');
+          setStatus(t('ui.100','请输入文本'), 'error');
           return;
         }
         var sep = sepEl.value;

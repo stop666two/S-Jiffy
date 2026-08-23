@@ -24,7 +24,7 @@
     <div class="card">
       <div class="lc-row">
         <div class="field"><label for="inputVal" data-i18n="ui.number">数值</label><input id="inputVal" class="input" type="number" value="100" step="any" min="0.0001"></div>
-        <div class="field"><label for="baseVal" data-i18n="ui.1">自定义底数（可选）</label><input id="baseVal" class="input" type="number" placeholder="留空不显示" step="any" min="0.1"></div>
+        <div class="field"><label for="baseVal" data-i18n="ui.1">自定义底数（可选）</label><input id="baseVal" class="input" type="number" data-i18n-placeholder="ui.101" placeholder="留空不显示" step="any" min="0.1"></div>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
       <div class="log-grid" id="logGrid">
@@ -48,7 +48,7 @@
 
     function generate() {
       var val = parseFloat(inputEl.value);
-      if (isNaN(val) || val <= 0) { setStatus('请输入大于 0 的有效数字', 'error'); return; }
+      if (isNaN(val) || val <= 0) { setStatus(t('ui.100','请输入大于 0 的有效数字'), 'error'); return; }
 
       var log10 = Math.log10(val);
       var ln = Math.log(val);

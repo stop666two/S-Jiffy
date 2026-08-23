@@ -34,8 +34,8 @@
 
   function checkCORS() {
     var url = urlInput.value.trim();
-    if (!url) { setStatus('请输入 URL', 'error'); return; }
-    if (!/^https?:\/\//.test(url)) { setStatus('URL 必须以 http:// 或 https:// 开头', 'error'); return; }
+    if (!url) { setStatus(t('ui.100','请输入 URL'), 'error'); return; }
+    if (!/^https?:\/\//.test(url)) { setStatus(t('ui.101','URL 必须以 http:// 或 https:// 开头'), 'error'); return; }
 
     resultCard.style.display = 'none';
     setStatus(t('ui.3','正在检测...'));
@@ -104,7 +104,7 @@
         corsHeaders.innerHTML = '<div class="header-item"><span style="font-size:12px;color:var(--color-error);">' + htmlEscape(err.message) + '</span></div>';
         outputEl.textContent = 'Error: ' + err.message;
         resultCard.style.display = 'block';
-        setStatus('CORS 请求失败', 'error');
+        setStatus(t('ui.102','CORS 请求失败'), 'error');
       });
   }
 

@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">Base64 转图片</h1>
     <p class="tool-desc" data-i18n="desc">粘贴 Base64 数据 URL，预览并下载图片。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 Base64 数据 URL (data:image/...)"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 Base64 数据 URL (data:image/...)"></textarea>
     </div>
     <div style="display:flex;gap:12px;margin-bottom:24px;">
       <button id="previewBtn" class="btn btn-primary" data-i18n="ui.1">预览</button>
@@ -48,11 +48,11 @@
       function process() {
         var dataUrl = inputEl.value.trim();
         if (!dataUrl) {
-          setStatus('请输入 Base64 数据 URL', 'error');
+          setStatus(t('ui.100','请输入 Base64 数据 URL'), 'error');
           return;
         }
         if (dataUrl.indexOf('data:image/') !== 0) {
-          setStatus('无效的数据 URL，应以 data:image/ 开头', 'error');
+          setStatus(t('ui.101','无效的数据 URL，应以 data:image/ 开头'), 'error');
           return;
         }
         previewImg.src = dataUrl;

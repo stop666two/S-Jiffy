@@ -36,7 +36,7 @@
       </div>
       <div class="form-row">
         <label for="paramList" class="field-label" data-i18n="ui.3">参数列表（每行一个，格式：名称:类型:描述，类型和描述可省略）</label>
-        <textarea id="paramList" class="input textarea" style="min-height:110px;" placeholder="name:string:用户名&#10;age:number&#10;options"></textarea>
+        <textarea id="paramList" class="input textarea" style="min-height:110px;" data-i18n-placeholder="ui.101" placeholder="name:string:用户名&#10;age:number&#10;options"></textarea>
       </div>
       <div class="form-row">
         <label for="retValue" class="field-label" data-i18n="ui.4">返回值（填写类型或说明，如 string / true 表示成功）</label>
@@ -44,7 +44,7 @@
       </div>
       <div class="form-row">
         <label for="fnDesc" class="field-label" data-i18n="ui.5">函数描述</label>
-        <textarea id="fnDesc" class="input textarea" style="min-height:70px;" placeholder="计算两个数字之和"></textarea>
+        <textarea id="fnDesc" class="input textarea" style="min-height:70px;" data-i18n-placeholder="ui.102" placeholder="计算两个数字之和"></textarea>
       </div>
     </div>
     <div id="resultBox" class="output-box">
@@ -190,7 +190,7 @@
 
       copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
-        if (!text) { setStatus('暂无内容可复制', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','暂无内容可复制'), 'error'); return; }
         copyToClipboard(text, copyBtn);
         setStatus(t('ui.copiedClip','已复制到剪贴板'));
       });

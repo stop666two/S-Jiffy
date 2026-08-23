@@ -50,7 +50,7 @@
       </div>
       <div class="field-row">
         <label data-i18n="ui.9">内容路径</label>
-        <input id="contentInput" class="input js-focus-input" type="text" value="./index.html" placeholder="多个路径用逗号分隔，如 ./index.html, ./src/**/*.{js,ts}">
+        <input id="contentInput" class="input js-focus-input" type="text" value="./index.html" data-i18n-placeholder="ui.102" placeholder="多个路径用逗号分隔，如 ./index.html, ./src/**/*.{js,ts}">
       </div>
     </div>
     <div id="resultBox" class="output-box">
@@ -112,13 +112,13 @@
         if (!isFinite(spacing) || spacing < 0) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('间距基准请输入大于等于 0 的数值', 'error');
+          setStatus(t('ui.100','间距基准请输入大于等于 0 的数值'), 'error');
           return;
         }
         if (!isFinite(radius) || radius < 0) {
           outputText.textContent = '';
           currentCode = '';
-          setStatus('圆角请输入大于等于 0 的数值', 'error');
+          setStatus(t('ui.101','圆角请输入大于等于 0 的数值'), 'error');
           return;
         }
         var paths = splitPaths(content);

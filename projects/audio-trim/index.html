@@ -77,7 +77,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 <div class="time-cell"><div class="lbl">Start</div><input id="startInput" type="text" inputmode="decimal"></div>
 <div class="time-cell"><div class="lbl">End</div><input id="endInput" type="text" inputmode="decimal"></div>
 </div>
-<div class="row-info"><span>选区时长</span><b id="selDuration">00:00.000</b></div>
+<div class="row-info"><span data-i18n="ui.106">选区时长</span><b id="selDuration">00:00.000</b></div>
 <div class="opt-row" style="margin-bottom:12px">
 <div class="opt-group"><div class="lbl" data-i18n="formatLabel">格式</div>
 <div id="fmtBtns">
@@ -92,7 +92,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 </div></div>
 </div>
 <div class="progress hidden" id="progress"><div id="progressFill"></div></div>
-<button class="dl-btn" id="btnExport" type="button" disabled>✂ <span>导出 WAV</span></button>
+<button class="dl-btn" id="btnExport" type="button" disabled>✂ <span data-i18n="ui.105">导出 WAV</span></button>
 </div>
 </div>
 </main>
@@ -180,7 +180,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
 
   function loadFile(f) {
     hideErr();
-    setStatus('正在解码音频…');
+    setStatus(t('ui.100','正在解码音频…'));
     AK.decodeAudioFile(f, function (buf) {
       file = f;
       buffer = buf;
@@ -200,7 +200,7 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
       selDuration.textContent = AK.fmtMs(duration);
       btnExport.disabled = false;
       draw();
-      setStatus('文件已就绪');
+      setStatus(t('ui.101','文件已就绪'));
     }, function () {
       showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
       setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
@@ -405,19 +405,19 @@ kbd{padding:1px 6px;background:var(--color-bg-soft);border:1px solid var(--color
         setProgress(1);
         processing = false;
         btnExport.disabled = false;
-        setStatus('导出完成');
+        setStatus(t('ui.102','导出完成'));
       }, function (err) {
         setProgress(1);
         processing = false;
         btnExport.disabled = false;
         showErr(err && err.message ? err.message : t('failedToLoad', '导出失败'));
-        setStatus('导出失败', 'error');
+        setStatus(t('ui.103','导出失败'), 'error');
       });
     }, function (err) {
       processing = false;
       btnExport.disabled = false;
       showErr('裁剪失败');
-      setStatus('裁剪失败', 'error');
+      setStatus(t('ui.104','裁剪失败'), 'error');
     });
   });
 

@@ -38,7 +38,7 @@
         <button class="btn btn-secondary" id="clearBtn" data-i18n="ui.2">清空全部</button>
       </div>
       <div id="stepList"></div>
-      <p class="tool-desc" id="stepHint">每个步骤选择一个聚合操作符，并填写其 JSON 参数（保持参数为 JSON 对象）。</p>
+      <p class="tool-desc" id="stepHint" data-i18n="ui.102">每个步骤选择一个聚合操作符，并填写其 JSON 参数（保持参数为 JSON 对象）。</p>
     </div>
     <div id="resultBox" class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -228,7 +228,7 @@
     function updateOutput() {
       if (steps.length === 0) {
         outputText.textContent = '';
-        setStatus('请先添加至少一个步骤', 'error');
+        setStatus(t('ui.100','请先添加至少一个步骤'), 'error');
         return;
       }
       var invalidIdx = -1;
@@ -272,7 +272,7 @@
         pipeline.push(stage);
       }
       if (!ok || steps.length === 0) {
-        setStatus('存在无效步骤，无法复制', 'error');
+        setStatus(t('ui.101','存在无效步骤，无法复制'), 'error');
         return;
       }
       copyToClipboard(JSON.stringify(pipeline, null, 2), copyBtn);

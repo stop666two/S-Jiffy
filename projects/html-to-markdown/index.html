@@ -11,8 +11,8 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="split-pane">
-<textarea id="htmlInput" class="js-focus-input" placeholder="在此粘贴 HTML 源码..."><h1 data-i18n="ui.2">标题</h1><p><strong data-i18n="ui.3">加粗</strong> 和 <em data-i18n="ui.4">斜体</em></p><ul><li data-i18n="ui.5">列表项 1</li><li data-i18n="ui.6">列表项 2</li></ul><a href="https://example.com" data-i18n="ui.7">链接</a></textarea>
-<textarea id="md输出" readonly placeholder="转换后的 Markdown 将显示在此..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="htmlInput" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="在此粘贴 HTML 源码..."><h1 data-i18n="ui.2">标题</h1><p><strong data-i18n="ui.3">加粗</strong> 和 <em data-i18n="ui.4">斜体</em></p><ul><li data-i18n="ui.5">列表项 1</li><li data-i18n="ui.6">列表项 2</li></ul><a href="https://example.com" data-i18n="ui.7">链接</a></textarea>
+<textarea id="md输出" readonly data-i18n-placeholder="ui.102" placeholder="转换后的 Markdown 将显示在此..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -67,7 +67,7 @@ return text;
 
 function convert(){
 var html=htmlInput.value;
-if(!html){md输出.value='';outputEl.textContent='';setStatus('请输入 HTML','error');return;}
+if(!html){md输出.value='';outputEl.textContent='';setStatus(t('ui.100','请输入 HTML'),'error');return;}
 var md=htmlToMd(html);
 md输出.value=md;
 outputEl.textContent = t('ui.8','转换完成，共 ')+md.length+ t('ui.chars',' 字符');

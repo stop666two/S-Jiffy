@@ -18,7 +18,7 @@ var cspInput=document.getElementById('cspInput'),validateBtn=document.getElement
 var knownDirectives=['default-src','script-src','script-src-elem','script-src-attr','style-src','style-src-elem','style-src-attr','img-src','font-src','connect-src','media-src','object-src','frame-src','frame-ancestors','worker-src','manifest-src','base-uri','form-action','report-uri','report-to','navigate-to','prefetch-src','plugin-types','sandbox','upgrade-insecure-requests','block-all-mixed-content','require-sri-for','require-trusted-types-for','trusted-types'];
 var knownSources=["'self'","'none'","'strict-dynamic'","'unsafe-inline'","'unsafe-eval'","'unsafe-hashes'","'unsafe-allow-redirects'","'report-sample'","'wasm-unsafe-eval'","data:","blob:","mediastream:","filesystem:"];
 validateBtn.addEventListener('click',function(){
-  var policy=cspInput.value.trim();if(!policy){setStatus('请输入 CSP 策略','error');return;}
+  var policy=cspInput.value.trim();if(!policy){setStatus(t('ui.100','请输入 CSP 策略'),'error');return;}
   var issues=[];var directiveCount=0;
   var directives=policy.split(';').map(function(d){return d.trim();}).filter(function(d){return d;});
   for(var di=0;di<directives.length;di++){

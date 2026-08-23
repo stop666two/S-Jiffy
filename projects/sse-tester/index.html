@@ -25,7 +25,7 @@
     <p class="tool-desc" data-i18n="desc">连接 Server-Sent Events 事件流地址，实时列出事件名、数据与连接状态。跨域受限时需目标站点允许 CORS。</p>
     <div class="card">
       <div class="form-row">
-        <input id="urlInput" class="input js-focus-input" placeholder="事件流 URL，如 https://example.com/events">
+        <input id="urlInput" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="事件流 URL，如 https://example.com/events">
         <button class="btn btn-primary" id="connectBtn" data-i18n="ui.connect">连接</button>
         <button class="btn btn-secondary" id="stopBtn" disabled data-i18n="ui.1">停止</button>
       </div>
@@ -76,7 +76,7 @@
       function connect() {
         var url = document.getElementById('urlInput').value.trim();
         if (!url) {
-          setStatus('请输入事件流 URL', 'error');
+          setStatus(t('ui.100','请输入事件流 URL'), 'error');
           return;
         }
         if (es) es.close();
@@ -90,7 +90,7 @@
         } catch (e) {
           setConn('连接失败：URL 不合法', 'off');
           appendLog(t('ui.10','错误：URL 不合法，请检查地址格式'));
-          setStatus('URL 不合法，无法建立连接', 'error');
+          setStatus(t('ui.101','URL 不合法，无法建立连接'), 'error');
           es = null;
           return;
         }
@@ -112,7 +112,7 @@
         es.onerror = function () {
           setConn('连接中断，浏览器将自动重连…', 'off');
           appendLog(t('ui.6','错误：连接中断（若跨域受限，目标站需允许 CORS；服务器无响应也会触发）'));
-          setStatus('连接中断，正在等待自动重连', 'error');
+          setStatus(t('ui.102','连接中断，正在等待自动重连'), 'error');
         };
       }
 

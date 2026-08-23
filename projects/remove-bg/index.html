@@ -47,26 +47,26 @@
 <p class="tool-desc" data-i18n="desc">AI 智能去除图片背景，完全在浏览器中运行。无需上传服务器。</p>
 <div class="card" id="modeCard">
 <div class="mode-row">
-<button id="modeAI" class="active"><b>AI 智能抠图（推荐）</b>基于 RMBG-1.4 分割模型，边缘精准；首次使用需下载模型（约 90MB+），之后浏览器会缓存</button>
-<button id="modeSimple"><b>简易抠图（免下载）</b>基于背景色差异（色度键）算法，适合纯色背景图片；无模型下载，立即处理</button>
+<button id="modeAI" class="active"><b data-i18n="ui.108">AI 智能抠图（推荐）</b>基于 RMBG-1.4 分割模型，边缘精准；首次使用需下载模型（约 90MB+），之后浏览器会缓存</button>
+<button id="modeSimple"><b data-i18n="ui.107">简易抠图（免下载）</b>基于背景色差异（色度键）算法，适合纯色背景图片；无模型下载，立即处理</button>
 </div>
 <div class="param-block" id="simpleParams" style="display:none;">
-<label><span>容差（颜色差异阈值）</span><b id="tolVal">60</b></label>
+<label><span data-i18n="ui.106">容差（颜色差异阈值）</span><b id="tolVal">60</b></label>
 <input type="range" id="tolRange" min="0" max="200" step="1" value="60">
-<label style="margin-top:10px;"><span>羽化（边缘过渡宽度）</span><b id="featherVal">5</b></label>
+<label style="margin-top:10px;"><span data-i18n="ui.105">羽化（边缘过渡宽度）</span><b id="featherVal">5</b></label>
 <input type="range" id="featherRange" min="0" max="50" step="1" value="5">
 <div class="color-row" style="margin-top:12px;">
 <label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);">背景色 <input type="color" id="bgColor" value="#ffffff"></label>
 <button id="pickBgBtn" class="btn btn-secondary" style="height:36px;min-width:0;font-size:13px;">从图片左上角取色</button>
 </div>
 </div>
-<span class="engine-pill" id="enginePill">模式：AI 智能抠图（模型未加载）</span>
+<span class="engine-pill" id="enginePill" data-i18n="ui.104">模式：AI 智能抠图（模型未加载）</span>
 </div>
 <div class="card">
 <div class="drop-zone" id="dropZone">
-<div>点击选择图片，或将图片文件拖拽到此处</div>
+<div data-i18n="ui.103">点击选择图片，或将图片文件拖拽到此处</div>
 <div class="dz-name" id="fileName"></div>
-<div class="dz-hint">支持 JPG / PNG / WebP · 最大 50MB</div>
+<div class="dz-hint" data-i18n="ui.102">支持 JPG / PNG / WebP · 最大 50MB</div>
 </div>
 <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
 </div>
@@ -80,7 +80,7 @@
 <p data-i18n="afterLabel">之后</p>
 <div class="img-wrap checkerboard" id="resultWrap">
 <img id="resultImg" alt="结果" style="display:none;">
-<div id="resultPlaceholder" style="font-size:var(--font-size-sm);color:var(--color-text-disabled);">处理后在此显示</div>
+<div id="resultPlaceholder" style="font-size:var(--font-size-sm);color:var(--color-text-disabled);" data-i18n="ui.101">处理后在此显示</div>
 </div>
 </div>
 </div>
@@ -92,7 +92,7 @@
 <button id="downloadBtn" class="btn btn-primary" style="display:none;">下载透明 PNG</button>
 <button id="resetBtn" class="btn btn-secondary" style="display:none;">重新选择</button>
 </div>
-<div class="note">两种模式的差异：AI 模式用分割模型识别主体（适合人像、物体、复杂背景），需要下载约 90MB 的模型文件且首次处理较慢；简易模式按颜色距离去除背景（适合白底/纯色底），无需下载任何文件。所有处理均在本地浏览器完成，图片不会上传。</div>
+<div class="note" data-i18n="ui.100">两种模式的差异：AI 模式用分割模型识别主体（适合人像、物体、复杂背景），需要下载约 90MB 的模型文件且首次处理较慢；简易模式按颜色距离去除背景（适合白底/纯色底），无需下载任何文件。所有处理均在本地浏览器完成，图片不会上传。</div>
 </div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>

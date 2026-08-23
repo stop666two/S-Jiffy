@@ -10,7 +10,7 @@
 <label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="useWrap" checked> 使用 ~&lt;~ ~&gt;~ 包裹</label>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要编码的文本或 Ascii85 字符串..." style="min-height:100px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入要编码的文本或 Ascii85 字符串..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="encodeBtn" class="btn btn-primary" data-i18n="ui.encode">编码</button>
 <button id="decodeBtn" class="btn btn-secondary" data-i18n="ui.decode">解码</button>
@@ -68,12 +68,12 @@ return r;
 }
 encodeBtn.addEventListener('click',function(){
 var t=inputEl.value;
-if(!t){setStatus('请输入文本','error');return;}
-try{outputEl.textContent=encode(t,useWrap.checked);setStatus('');}catch(e){setStatus('编码错误','error');}
+if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
+try{outputEl.textContent=encode(t,useWrap.checked);setStatus('');}catch(e){setStatus(t('ui.101','编码错误'),'error');}
 });
 decodeBtn.addEventListener('click',function(){
 var t=inputEl.value.trim();
-if(!t){setStatus('请输入 Ascii85','error');return;}
+if(!t){setStatus(t('ui.102','请输入 Ascii85'),'error');return;}
 try{outputEl.textContent=decode(t,useWrap.checked);setStatus('');}catch(e){setStatus(t('ui.1','解码错误: ') +e.message,'error');}
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});

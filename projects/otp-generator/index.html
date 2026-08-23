@@ -27,7 +27,7 @@
       <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:var(--space-3); flex-wrap:wrap;">
         <div class="field" style="flex:1;min-width:200px;">
           <label for="otpSecret" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">Base32 密钥</label>
-          <input id="otpSecret" class="input" type="text" value="JBSWY3DPEHPK3PXP" placeholder="Base32 密钥">
+          <input id="otpSecret" class="input" type="text" value="JBSWY3DPEHPK3PXP" data-i18n-placeholder="ui.101" placeholder="Base32 密钥">
         </div>
         <button id="otpRefreshBtn" class="btn btn-secondary" data-i18n="ui.2">刷新</button>
       </div>
@@ -157,7 +157,7 @@
           outputEl.textContent = t('ui.6','当前: ') + cur + t('ui.5',' | 剩余: ') + remaining + 's';
         } catch (e) {
           otpCurrent.textContent = '------';
-          setStatus('密钥无效', 'error');
+          setStatus(t('ui.100','密钥无效'), 'error');
         }
       }
 

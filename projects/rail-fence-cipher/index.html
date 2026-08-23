@@ -20,7 +20,7 @@
     <h1 data-i18n="h1">Rail Fence 密码</h1>
     <p class="tool-desc" data-i18n="desc">栅栏密码加密解密，可配置栅栏数量。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
     </div>
     <div class="card rail-config">
       <label>栅栏数量 (Rails)：<input id="railsInput" type="number" value="3" min="2" max="20"></label>
@@ -100,8 +100,8 @@
       encryptBtn.addEventListener('click', function () {
         var text = inputEl.value;
         var rails = parseInt(railsEl.value, 10) || 3;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
-        if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
+        if (rails < 2) { setStatus(t('ui.101','栅栏数量至少为 2'), 'error'); return; }
         outputEl.textContent = railFenceEncrypt(text, rails);
         setStatus('');
       });
@@ -109,8 +109,8 @@
       decryptBtn.addEventListener('click', function () {
         var text = inputEl.value;
         var rails = parseInt(railsEl.value, 10) || 3;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
-        if (rails < 2) { setStatus('栅栏数量至少为 2', 'error'); return; }
+        if (!text) { setStatus(t('ui.102','请输入文本'), 'error'); return; }
+        if (rails < 2) { setStatus(t('ui.103','栅栏数量至少为 2'), 'error'); return; }
         outputEl.textContent = railFenceDecrypt(text, rails);
         setStatus('');
       });

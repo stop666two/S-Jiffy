@@ -6,7 +6,7 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">XPath 查询工具</h1><p class="tool-desc" data-i18n="desc">在 XML/HTML 中测试 XPath 表达式，查看匹配节点数量和内容。</p>
 <div class="card"><input id="xpathInput" class="input" placeholder="XPath 表达式，如 //div[@class='foo']//text()" style="width:100%;max-width:600px;"></div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="粘贴 XML 或 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 XML 或 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="queryBtn" class="btn btn-primary" data-i18n="ui.query">查询</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
@@ -55,8 +55,8 @@ return results;
 queryBtn.addEventListener('click',function(){
 var xml=inputEl.value.trim();
 var xpath=xpathInput.value.trim();
-if(!xml){setStatus('请输入 XML/HTML','error');return;}
-if(!xpath){setStatus('请输入 XPath','error');return;}
+if(!xml){setStatus(t('ui.100','请输入 XML/HTML'),'error');return;}
+if(!xpath){setStatus(t('ui.101','请输入 XPath'),'error');return;}
 try{
 var results=evaluateXPath(xml,xpath);
 resultCard.style.display='block';

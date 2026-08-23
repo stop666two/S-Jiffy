@@ -39,7 +39,7 @@ function calc(){
 var s=startTime.value;
 var e=endTime.value;
 var br=parseFloat(breakMin.value)||0;
-if(!s||!e){setStatus('请选择时间','error');return;}
+if(!s||!e){setStatus(t('ui.100','请选择时间'),'error');return;}
 var p=s.split(':').map(Number);
 var q=e.split(':').map(Number);
 var sMin=p[0]*60+p[1];
@@ -47,7 +47,7 @@ var eMin=q[0]*60+q[1];
 var gross=eMin-sMin;
 if(gross<0)gross+=1440;
 var net=gross-br;
-if(net<0){setStatus('休息时间超过工时','error');return;}
+if(net<0){setStatus(t('ui.101','休息时间超过工时'),'error');return;}
 var gh=gross/60;
 var nh=net/60;
 grossHoursEl.textContent=gh.toFixed(2);

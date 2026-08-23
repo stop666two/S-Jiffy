@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">文本与二进制互转</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为二进制（每字符 8 位），或将二进制序列还原为文本。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本或二进制..." style="min-height:100px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入文本或二进制..." style="min-height:100px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="toBinaryBtn" class="btn btn-primary" data-i18n="ui.1">文本 → 二进制</button>
@@ -42,7 +42,7 @@
 
       document.getElementById('toBinaryBtn').addEventListener('click', function() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         var result = [];
         for (var i = 0; i < text.length; i++) {
           var code = text.charCodeAt(i);
@@ -54,11 +54,11 @@
 
       document.getElementById('toTextBtn').addEventListener('click', function() {
         var bin = inputEl.value.trim();
-        if (!bin) { setStatus('请输入二进制序列', 'error'); return; }
+        if (!bin) { setStatus(t('ui.101','请输入二进制序列'), 'error'); return; }
         // Remove spaces, newlines
         var clean = bin.replace(/\s+/g, '');
         if (clean.length % 8 !== 0) {
-          setStatus('二进制位数不是 8 的倍数', 'error');
+          setStatus(t('ui.102','二进制位数不是 8 的倍数'), 'error');
           return;
         }
         var result = '';
@@ -66,7 +66,7 @@
           var byteStr = clean.substring(i, i + 8);
           var code = parseInt(byteStr, 2);
           if (isNaN(code)) {
-            setStatus('包含无效的二进制字符（只能含 0 和 1）', 'error');
+            setStatus(t('ui.103','包含无效的二进制字符（只能含 0 和 1）'), 'error');
             return;
           }
           result += String.fromCharCode(code);

@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">ASCII 文字画</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 ASCII 艺术字，使用 figlet.js 标准库，6 种本地字体。</p>
     <div class="card font-select">
-      <input id="inputText" class="input js-focus-input" type="text" placeholder="输入英文文本..." style="flex:1;min-width:150px;font-size:16px;letter-spacing:1px;">
+      <input id="inputText" class="input js-focus-input" type="text" data-i18n-placeholder="ui.102" placeholder="输入英文文本..." style="flex:1;min-width:150px;font-size:16px;letter-spacing:1px;">
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">字体</label>
       <select id="fontSelect" class="input" style="width:auto;min-width:120px;">
         <option value="Standard">Standard</option>
@@ -43,9 +43,9 @@
     var i=document.getElementById('inputText'),f=document.getElementById('fontSelect'),o=document.getElementById('outputText');
     figlet.defaults({fontPath:'fonts'});
     function gen(){
-      var t=i.value.trim();if(!t){setStatus('请输入文本','error');return;}
+      var t=i.value.trim();if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
       figlet.text(t,{font:f.value},function(err,data){
-        if(err){setStatus('字体加载失败','error');return;}
+        if(err){setStatus(t('ui.101','字体加载失败'),'error');return;}
         o.textContent=data;setStatus('');
       });
     }

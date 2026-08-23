@@ -76,18 +76,18 @@
       function calcWorkingDays() {
         var startStr = startEl.value;
         var endStr = endEl.value;
-        if (!startStr || !endStr) { setStatus('请选择开始和结束日期', 'error'); return; }
+        if (!startStr || !endStr) { setStatus(t('ui.100','请选择开始和结束日期'), 'error'); return; }
 
         var start = parseDate(startStr);
         var end = parseDate(endStr);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-          setStatus('日期格式无效', 'error');
+          setStatus(t('ui.101','日期格式无效'), 'error');
           return;
         }
 
         if (start > end) {
-          setStatus('开始日期不能晚于结束日期', 'error');
+          setStatus(t('ui.102','开始日期不能晚于结束日期'), 'error');
           return;
         }
 

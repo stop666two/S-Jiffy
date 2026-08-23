@@ -90,7 +90,7 @@ transform: rotate(45deg);" style="min-height:160px;"></textarea></div>
 
   function check() {
     var text = inputEl.value.trim();
-    if (!text) { setStatus('请输入 CSS', 'error'); return; }
+    if (!text) { setStatus(t('ui.100','请输入 CSS'), 'error'); return; }
     var lines = text.split('\n');
     var checks = [];
     for (var i = 0; i < lines.length; i++) {
@@ -103,7 +103,7 @@ transform: rotate(45deg);" style="min-height:160px;"></textarea></div>
       var prefixes = getPrefixed(prop);
       checks.push({ property: prop, value: val, prefixes: prefixes });
     }
-    if (checks.length === 0) { setStatus('未找到 CSS 属性', 'error'); return; }
+    if (checks.length === 0) { setStatus(t('ui.101','未找到 CSS 属性'), 'error'); return; }
 
     resultArea.style.display = 'block';
     var html = '';

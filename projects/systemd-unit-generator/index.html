@@ -29,23 +29,23 @@
       <div class="form-grid">
         <div class="field">
           <label data-i18n="ui.1">服务名</label>
-          <input id="serviceName" class="input js-focus-input" placeholder="如 my-service">
+          <input id="serviceName" class="input js-focus-input" data-i18n-placeholder="ui.105" placeholder="如 my-service">
         </div>
         <div class="field">
           <label data-i18n="ui.desc">描述</label>
-          <input id="description" class="input" placeholder="如 My background service">
+          <input id="description" class="input" data-i18n-placeholder="ui.106" placeholder="如 My background service">
         </div>
         <div class="field full">
           <label data-i18n="ui.2">启动命令 ExecStart</label>
-          <input id="execStart" class="input" placeholder="如 /usr/bin/myapp --config /etc/myapp.conf">
+          <input id="execStart" class="input" data-i18n-placeholder="ui.107" placeholder="如 /usr/bin/myapp --config /etc/myapp.conf">
         </div>
         <div class="field">
           <label data-i18n="ui.3">工作目录</label>
-          <input id="workingDir" class="input" placeholder="如 /opt/myapp">
+          <input id="workingDir" class="input" data-i18n-placeholder="ui.108" placeholder="如 /opt/myapp">
         </div>
         <div class="field">
           <label data-i18n="ui.4">运行用户</label>
-          <input id="user" class="input" placeholder="如 www-data">
+          <input id="user" class="input" data-i18n-placeholder="ui.109" placeholder="如 www-data">
         </div>
         <div class="field">
           <label data-i18n="ui.5">重启策略</label>
@@ -57,7 +57,7 @@
         </div>
         <div class="field">
           <label data-i18n="ui.9">重启间隔 RestartSec</label>
-          <input id="restartSec" class="input" value="5" placeholder="秒，默认 5">
+          <input id="restartSec" class="input" value="5" data-i18n-placeholder="ui.110" placeholder="秒，默认 5">
         </div>
         <div class="field full">
           <label data-i18n="ui.10">环境变量（每行一条 KEY=value）</label>
@@ -103,11 +103,11 @@
         var sec = secInput.value.trim();
         var envText = envInput.value;
 
-        if (!name) { setStatus('请输入服务名', 'error'); return null; }
-        if (!/^[a-zA-Z0-9._-]+$/.test(name)) { setStatus('服务名只能包含字母、数字、点、下划线和连字符', 'error'); return null; }
-        if (!exec) { setStatus('请输入 ExecStart 启动命令', 'error'); return null; }
-        if (!sec) { setStatus('请输入重启间隔 RestartSec', 'error'); return null; }
-        if (!/^\d+(\.\d+)?(s|m|h|d)?$/.test(sec)) { setStatus('RestartSec 必须是数字或数字加单位（s/m/h/d）', 'error'); return null; }
+        if (!name) { setStatus(t('ui.100','请输入服务名'), 'error'); return null; }
+        if (!/^[a-zA-Z0-9._-]+$/.test(name)) { setStatus(t('ui.101','服务名只能包含字母、数字、点、下划线和连字符'), 'error'); return null; }
+        if (!exec) { setStatus(t('ui.102','请输入 ExecStart 启动命令'), 'error'); return null; }
+        if (!sec) { setStatus(t('ui.103','请输入重启间隔 RestartSec'), 'error'); return null; }
+        if (!/^\d+(\.\d+)?(s|m|h|d)?$/.test(sec)) { setStatus(t('ui.104','RestartSec 必须是数字或数字加单位（s/m/h/d）'), 'error'); return null; }
 
         var envLines = [];
         var lines = envText.split('\n');

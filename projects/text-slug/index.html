@@ -20,7 +20,7 @@
     <h1 data-i18n="h1">文本 Slug 转换</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 URL 友好的 slug。</p>
     <div class="card">
-      <input id="inputText" class="input js-focus-input" type="text" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
+      <input id="inputText" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
       <div class="slug-options">
         <label><input id="optLower" type="checkbox" checked> 转小写</label>
         <label>分隔符 <input id="optSep" class="input" value="-" style="width:40px;height:32px;padding:0 6px;"></label>
@@ -63,7 +63,7 @@
 
       document.getElementById('slugBtn').addEventListener('click', function () {
         var text = el.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         o.textContent = generate(text);
         setStatus('');
       });

@@ -14,17 +14,17 @@
 <label title="将中文标点（。，；：！？）统一为英文标点"><input type="checkbox" id="optNormalize" checked> 统一标点</label>
 <label title="按 Unicode NFKC 标准归一化全角/半角字符"><input type="checkbox" id="optUnicode"> Unicode 标准化</label>
 </div>
-<div class="opt-hint" style="font-size:12px;color:var(--color-text-secondary);margin:-4px 0 12px 2px;">移除特殊字符时保留：中文、字母数字、空格，以及常用符号 . , ! ? ; : ' &quot; ( ) [ ] { } - @ # $ % &amp; * + / = &lt; &gt; ~ ^ _ ` | \</div>
+<div class="opt-hint" style="font-size:12px;color:var(--color-text-secondary);margin:-4px 0 12px 2px;" data-i18n="ui.103">移除特殊字符时保留：中文、字母数字、空格，以及常用符号 . , ! ? ; : ' &quot; ( ) [ ] { } - @ # $ % &amp; * + / = &lt; &gt; ~ ^ _ ` | \</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
 <button id="cleanBtn" class="btn btn-primary" data-i18n="ui.1">清理</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="clean-layout">
-<textarea id="inputText" class="js-focus-input" placeholder="粘贴需要清理的文本...">Hello,  World!!  这是一段  含有多余空格、特殊字符@#$%和 空行的文本。
+<textarea id="inputText" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴需要清理的文本...">Hello,  World!!  这是一段  含有多余空格、特殊字符@#$%和 空行的文本。
 
   第二段  包含  不统一符号...   
 第三行</textarea>
-<textarea id="outputText" readonly placeholder="清理结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="outputText" readonly data-i18n-placeholder="ui.102" placeholder="清理结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
 <div class="output-box"><span id="statusText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -47,7 +47,7 @@ var optUnicode=document.getElementById('optUnicode');
 
 function clean(){
 var text=inputEl.value;
-if(!text){outputEl.value='';statusText.textContent='';setStatus('请输入文本','error');return;}
+if(!text){outputEl.value='';statusText.textContent='';setStatus(t('ui.100','请输入文本'),'error');return;}
 var result=text;
 if(optUnicode.checked)result=result.normalize('NFKC');
 if(optNormalize.checked){

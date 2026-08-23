@@ -69,7 +69,7 @@
 <div class="vol-head">
 <span class="lbl" data-i18n="volumeLabel">音量</span>
 <span class="db" id="dbDisplay">0.0 dB</span>
-<span class="badge safe" id="volBadge">正常</span>
+<span class="badge safe" id="volBadge" data-i18n="ui.108">正常</span>
 <span class="pct" id="volPct">100%</span>
 </div>
 <input type="range" id="volSlider" min="0" max="300" step="1" value="100">
@@ -81,7 +81,7 @@
 <div class="warn-box hidden" id="clipWarn">⚠ <span data-i18n="clippingWarning">音量超过 100% 可能导致导出音频出现削波失真。</span></div>
 </div>
 <div class="progress hidden" id="progress"><div id="progressFill"></div></div>
-<button class="dl-btn" id="btnExport" type="button" disabled><span>导出 WAV（100%）</span></button>
+<button class="dl-btn" id="btnExport" type="button" disabled><span data-i18n="ui.107">导出 WAV（100%）</span></button>
 </div>
 </div>
 </main>
@@ -149,7 +149,7 @@
     volBadge.className = 'badge ' + cls;
     volBadge.textContent = label;
     clipWarn.classList.toggle('hidden', volume <= 100);
-    btnExport.querySelector('span').textContent = '导出 WAV（' + volume + '%）';
+    btnExport.querySelector('span').textContent = t('ui.106','导出 WAV（') + volume + '%）';
     if (gainNode) gainNode.gain.value = volume / 100;
   }
 
@@ -162,7 +162,7 @@
 
   function loadFile(f) {
     hideErr();
-    setStatus('正在解码音频…');
+    setStatus(t('ui.100','正在解码音频…'));
     AK.decodeAudioFile(f, function (buf) {
       file = f;
       buffer = buf;
@@ -177,7 +177,7 @@
       dropZone.style.display = 'none';
       btnExport.disabled = false;
       draw();
-      setStatus('文件已就绪');
+      setStatus(t('ui.101','文件已就绪'));
     }, function () {
       showErr(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'));
       setStatus(t('failedToLoad', '加载失败。请确认文件为受支持的音频格式且未损坏。'), 'error');
@@ -216,7 +216,7 @@
     stopPlayback();
     if (!audioCtx) {
       try { audioCtx = AK.createAudioContext(); }
-      catch (e) { setStatus('浏览器不支持音频播放', 'error'); return; }
+      catch (e) { setStatus(t('ui.102','浏览器不支持音频播放'), 'error'); return; }
     }
     if (audioCtx.state === 'suspended') audioCtx.resume();
     gainNode = audioCtx.createGain();
@@ -277,20 +277,20 @@
           setProgress(1);
           processing = false;
           btnExport.disabled = false;
-          setStatus('导出完成');
+          setStatus(t('ui.103','导出完成'));
         }, function () {
           setProgress(1);
           processing = false;
           btnExport.disabled = false;
           showErr('音量调整失败');
-          setStatus('音量调整失败', 'error');
+          setStatus(t('ui.104','音量调整失败'), 'error');
         });
       } catch (e) {
         setProgress(1);
         processing = false;
         btnExport.disabled = false;
         showErr('音量调整失败');
-        setStatus('音量调整失败', 'error');
+        setStatus(t('ui.105','音量调整失败'), 'error');
       }
     }, 50);
   });

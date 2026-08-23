@@ -15,7 +15,7 @@
 <script>(function(){
 var urlInput=document.getElementById('urlInput'),generateBtn=document.getElementById('generateBtn'),resultCard=document.getElementById('resultCard'),sriResults=document.getElementById('sriResults'),outputText=document.getElementById('outputText'),copyBtn=document.getElementById('copyBtn');
 generateBtn.addEventListener('click',function(){
-  var url=urlInput.value.trim();if(!url){setStatus('请输入 URL','error');return;}
+  var url=urlInput.value.trim();if(!url){setStatus(t('ui.100','请输入 URL'),'error');return;}
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   resultCard.style.display='block';sriResults.innerHTML='<div style="color:var(--color-text-secondary);padding:8px;">获取内容中...</div>';
   fetch(url).then(function(resp){if(!resp.ok)throw new Error('HTTP '+resp.status);return resp.text();}).then(async function(text){
@@ -39,7 +39,7 @@ generateBtn.addEventListener('click',function(){
     setStatus(t('ui.2','SRI 哈希生成完成'));
   }).catch(function(err){
     sriResults.innerHTML='<div style="color:var(--color-error);">获取失败: '+htmlEscape(err.message)+'<br><span style="font-size:12px;">注意：CORS 限制可能导致无法获取资源。尝试使用同源 URL 或支持 CORS 的 CDN。</span></div>';
-    setStatus('获取失败','error');
+    setStatus(t('ui.101','获取失败'),'error');
   });
 });
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});

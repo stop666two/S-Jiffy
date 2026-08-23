@@ -32,7 +32,7 @@
       <div class="form-row">
         <label class="field-label" for="passwordInput" data-i18n="ui.1">密码</label>
         <div class="pwd-row">
-          <input id="passwordInput" class="input js-focus-input" type="password" maxlength="128" placeholder="请输入要评估的密码">
+          <input id="passwordInput" class="input js-focus-input" type="password" maxlength="128" data-i18n-placeholder="ui.102" placeholder="请输入要评估的密码">
           <label class="pwd-toggle"><input id="showPwd" type="checkbox"> 显示</label>
           <span class="len-hint">长度：<span id="lenText">0</span></span>
         </div>
@@ -143,7 +143,7 @@
         if (spaceSize === 0) {
           outEl.innerHTML = '';
           copyText = '';
-          setStatus('请至少选择一种字符集', 'error');
+          setStatus(t('ui.100','请至少选择一种字符集'), 'error');
           return;
         }
         var speed = parseFloat(speedEl.value);
@@ -151,7 +151,7 @@
         if (!isFinite(space)) {
           outEl.innerHTML = '';
           copyText = '';
-          setStatus('组合空间超出可计算范围，请缩短密码长度', 'error');
+          setStatus(t('ui.101','组合空间超出可计算范围，请缩短密码长度'), 'error');
           return;
         }
         var sec = (space / 2) / speed;

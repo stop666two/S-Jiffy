@@ -21,7 +21,7 @@
     <h1 data-i18n="h1">邮箱规范化</h1>
     <p class="tool-desc" data-i18n="desc">规范化邮箱地址：转小写、去除 Gmail 点号和 +tag 部分。</p>
     <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <input id="emailInput" class="input js-focus-input" type="text" placeholder="输入邮箱地址，如 User.Name+spam@gmail.com" style="flex:1;min-width:250px;font-size:14px;">
+      <input id="emailInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入邮箱地址，如 User.Name+spam@gmail.com" style="flex:1;min-width:250px;font-size:14px;">
       <button id="normalizeBtn" class="btn btn-primary" data-i18n="ui.1">规范化</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
@@ -91,7 +91,7 @@
     }
     function doNormalize() {
       var email = inputEl.value.trim();
-      if (!email) { setStatus('请输入邮箱地址', 'error'); render(null); return; }
+      if (!email) { setStatus(t('ui.100','请输入邮箱地址'), 'error'); render(null); return; }
       var result = normalize(email);
       render(result);
       if (result.error) { setStatus(result.error, 'error'); } else { setStatus(result.normalized === result.original ? '无需更改' : '已规范化'); }

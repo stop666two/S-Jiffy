@@ -12,7 +12,7 @@
 <select id="modeSelect" class="input" style="width:120px;"><option value="up" data-i18n="ui.2">向上</option><option value="down" data-i18n="ui.3">向下</option><option value="both" selected data-i18n="ui.4">双向</option></select></div>
 </div>
 </div>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="输入文本..." style="min-height:80px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入文本..." style="min-height:80px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
@@ -54,7 +54,7 @@ return r;
 }
 convertBtn.addEventListener('click',function(){
 var t=inputEl.value;
-if(!t){setStatus('请输入文本','error');return;}
+if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
 var l=parseInt(intensity.value);
 var m=modeSelect.value;
 var result=zalgo(t,l,m);

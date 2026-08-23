@@ -30,7 +30,7 @@
       <div class="form-grid">
         <div class="field">
           <label data-i18n="ui.1">指标名</label>
-          <input id="metricName" class="input js-focus-input" value="http_requests_total" placeholder="如 http_requests_total">
+          <input id="metricName" class="input js-focus-input" value="http_requests_total" data-i18n-placeholder="ui.104" placeholder="如 http_requests_total">
         </div>
         <div class="field">
           <label data-i18n="ui.2">指标类型</label>
@@ -86,8 +86,8 @@
         var id = ++rowSeq;
         var div = document.createElement('div');
         div.className = 'label-row';
-        div.innerHTML = '<input class="label-key input" placeholder="标签名，如 method">'
-          + '<input class="label-val input" placeholder="示例值，如 GET">'
+        div.innerHTML = '<input class="label-key input" data-i18n-placeholder="ui.105" placeholder="标签名，如 method">'
+          + '<input class="label-val input" data-i18n-placeholder="ui.106" placeholder="示例值，如 GET">'
           + '<button class="btn btn-secondary label-del" type="button">删</button>';
         div.querySelector('.label-del').addEventListener('click', function () {
           div.parentNode.removeChild(div);
@@ -226,10 +226,10 @@
         var lang = document.getElementById('language').value;
         var labels = collectLabels();
         if (labels === null) { output.textContent = ''; return; }
-        if (!name) { setStatus('请输入指标名', 'error'); return; }
-        if (!/^[a-zA-Z_][a-zA-Z0-9_:]*$/.test(name)) { setStatus('指标名只能包含字母、数字、下划线和冒号，且不能以数字开头', 'error'); return; }
-        if (name.indexOf(':') !== -1) { setStatus('指标名不能包含冒号（冒号仅供规则使用）', 'error'); return; }
-        if (!help) { setStatus('请输入帮助文本', 'error'); return; }
+        if (!name) { setStatus(t('ui.100','请输入指标名'), 'error'); return; }
+        if (!/^[a-zA-Z_][a-zA-Z0-9_:]*$/.test(name)) { setStatus(t('ui.101','指标名只能包含字母、数字、下划线和冒号，且不能以数字开头'), 'error'); return; }
+        if (name.indexOf(':') !== -1) { setStatus(t('ui.102','指标名不能包含冒号（冒号仅供规则使用）'), 'error'); return; }
+        if (!help) { setStatus(t('ui.103','请输入帮助文本'), 'error'); return; }
 
         var varName = camelName(name);
         var out;

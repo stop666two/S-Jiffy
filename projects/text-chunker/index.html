@@ -25,9 +25,9 @@
     <h1 data-i18n="h1">文本分块器</h1>
     <p class="tool-desc" data-i18n="desc">按字符数、行数或段落将长文本切分为多个块，支持逐块复制。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要分块的文本..." style="min-height:140px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入要分块的文本..." style="min-height:140px;"></textarea>
       <div class="chunk-controls">
-        <input id="sizeInput" type="text" class="input" placeholder="每块数量（字符/行）">
+        <input id="sizeInput" type="text" class="input" data-i18n-placeholder="ui.103" placeholder="每块数量（字符/行）">
         <select id="modeSelect" class="input">
           <option value="char" data-i18n="ui.1">按字符硬切</option>
           <option value="line" data-i18n="ui.2">按行分组</option>
@@ -75,12 +75,12 @@
       function parseSize() {
         var raw = sizeEl.value;
         if (raw === '') {
-          setStatus('请输入每块数量', 'error');
+          setStatus(t('ui.100','请输入每块数量'), 'error');
           return null;
         }
         var n = parseInt(raw, 10);
         if (isNaN(n) || n < 1) {
-          setStatus('每块数量必须是大于等于 1 的整数', 'error');
+          setStatus(t('ui.101','每块数量必须是大于等于 1 的整数'), 'error');
           return null;
         }
         return n;

@@ -19,7 +19,7 @@
     <p class="tool-desc" data-i18n="desc">生成 API 密钥，支持自定义前缀、格式（hex/base64/hybrid）和长度。</p>
     <div class="card">
       <div class="ak-row">
-        <div class="field"><label for="prefixVal" data-i18n="ui.1">前缀（可选）</label><input id="prefixVal" class="input" type="text" value="sk-" placeholder="例如 sk-"></div>
+        <div class="field"><label for="prefixVal" data-i18n="ui.1">前缀（可选）</label><input id="prefixVal" class="input" type="text" value="sk-" data-i18n-placeholder="ui.101" placeholder="例如 sk-"></div>
         <div class="field"><label for="fmtSel" data-i18n="ui.2">格式</label>
           <select id="fmtSel" class="input" style="width:auto;min-width:80px;">
             <option value="hex">Hex</option>
@@ -61,7 +61,7 @@
       if (count > 1000) count = 1000;
 
       var bodyLen = totalLen - prefix.length;
-      if (bodyLen < 4) { setStatus('前缀过长，请缩短前缀或增加长度', 'error'); return; }
+      if (bodyLen < 4) { setStatus(t('ui.100','前缀过长，请缩短前缀或增加长度'), 'error'); return; }
 
       var chars;
       if (fmt === 'hex') chars = hexChars;

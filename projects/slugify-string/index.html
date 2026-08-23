@@ -15,7 +15,7 @@
     <h1 data-i18n="h1">Slugify 字符串</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 URL 友好的 slug（"Hello World" → "hello-world"）。</p>
     <div class="card">
-      <input id="inputText" class="input js-focus-input" type="text" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
+      <input id="inputText" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
     </div>
     <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
       <button id="slugifyBtn" class="btn btn-primary" data-i18n="ui.1">生成 Slug</button>
@@ -53,7 +53,7 @@
 
       slugifyBtn.addEventListener('click', function () {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
         outputEl.textContent = slugify(text);
         setStatus('');
       });

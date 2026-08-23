@@ -214,11 +214,11 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
   function startDraw() {
     if (drawing) return;
     if (!QIAN || !QIAN.length) {
-      setStatus("签文数据为空，无法抽签", "error");
+      setStatus(t('ui.100','签文数据为空，无法抽签'), "error");
       return;
     }
     drawing = true;
-    drawBtn.textContent = "抽签中...";
+    drawBtn.textContent = t('ui.102','抽签中...');
     drawBtn.disabled = true;
     resultCard.style.display = "none";
     resultCard.classList.remove("show");
@@ -229,7 +229,7 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
     setTimeout(function () {
       qianStage.classList.remove("drawing");
       qianStage.classList.add("drawn");
-      drawBtn.textContent = "开始抽签";
+      drawBtn.textContent = t('ui.103','开始抽签');
       drawBtn.disabled = false;
       drawing = false;
       showResult(normalize(picked));
@@ -242,7 +242,7 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
   copyBtn.addEventListener("click", function () {
     if (!lastText) return;
     copyToClipboard(lastText, copyBtn);
-    setStatus("结果已复制到剪贴板");
+    setStatus(t('ui.101','结果已复制到剪贴板'));
   });
 
   allToggle.addEventListener("click", function () {

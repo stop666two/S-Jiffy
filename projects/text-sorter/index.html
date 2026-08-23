@@ -18,7 +18,7 @@
     <h1 data-i18n="h1">文本排序器</h1>
     <p class="tool-desc" data-i18n="desc">对文本行进行 A-Z、Z-A、按长度、随机打乱、去重排序。</p>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="每行一项，输入要排序的文本..."></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="每行一项，输入要排序的文本..."></textarea>
     </div>
     <div class="sort-actions">
       <button id="sortAZBtn" class="btn btn-primary">A-Z</button>
@@ -48,7 +48,7 @@
 
       function getLines() {
         var text = inputEl.value;
-        if (!text) { setStatus('请输入文本', 'error'); return null; }
+        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return null; }
         return text.split('\n');
       }
 

@@ -120,7 +120,7 @@
 
       document.getElementById('parseBtn').addEventListener('click', function() {
         var pem = pemEl.value.trim();
-        if (!pem) { setStatus('请粘贴 PEM 内容', 'error'); return; }
+        if (!pem) { setStatus(t('ui.100','请粘贴 PEM 内容'), 'error'); return; }
         try {
           var label = '';
           if (pem.indexOf('PUBLIC KEY') !== -1) label = '公钥';
@@ -186,11 +186,11 @@
               + t('ui.4','原始字节数: ') + (new Uint8Array(ab)).length + '\n'
               + t('ui.3','解析失败: ') + err.message + '\n'
               + '\n--- 格式化 PEM ---\n' + (formatted || pem);
-            setStatus('解析出错', 'error');
+            setStatus(t('ui.101','解析出错'), 'error');
           });
         } catch (e) {
           outputEl.textContent = t('ui.3','解析失败: ') + e.message;
-          setStatus('解析失败', 'error');
+          setStatus(t('ui.102','解析失败'), 'error');
         }
       });
 

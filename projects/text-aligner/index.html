@@ -7,9 +7,9 @@
 </style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">列对齐工具</h1><p class="tool-desc" data-i18n="desc">将多行文本按分隔符对齐或左右对齐格式化。</p>
-<div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="例如：&#10;name: Alice&#10;age: 30&#10;location: New York" style="min-height:140px;"></textarea></div>
+<div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="例如：&#10;name: Alice&#10;age: 30&#10;location: New York" style="min-height:140px;"></textarea></div>
 <div class="align-controls">
-<input id="delimiter" class="input" value=":" placeholder="分隔符" style="width:100px;">
+<input id="delimiter" class="input" value=":" data-i18n-placeholder="ui.102" placeholder="分隔符" style="width:100px;">
 <select id="alignMode" class="input" style="width:auto;min-width:100px;">
   <option value="delimiter" data-i18n="ui.1">按分隔符对齐</option>
   <option value="right" data-i18n="ui.2">右对齐</option>
@@ -29,7 +29,7 @@ var dInput=document.getElementById('delimiter'),am=document.getElementById('alig
 function dispWidth(s){var w=0;for(var k=0;k<s.length;k++){w+=(s.charCodeAt(k)>255?2:1);}return w;}
 function padTo(s,target){var pad=target-dispWidth(s);for(var k=0;k<pad;k++)s+=' ';return s;}
 document.getElementById('alignBtn').addEventListener('click',function(){
-  var text=i.value;if(!text.trim()){setStatus('请输入文本','error');return;}
+  var text=i.value;if(!text.trim()){setStatus(t('ui.100','请输入文本'),'error');return;}
   var lines=text.split('\n');var delim=dInput.value||':';var mode=am.value;
   if(mode==='delimiter'){
     var parts=lines.map(function(l){var idx=l.indexOf(delim);if(idx===-1)return[l,''];return[l.substring(0,idx),l.substring(idx+delim.length)];});

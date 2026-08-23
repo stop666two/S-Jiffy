@@ -31,7 +31,7 @@
     <p class="tool-desc" data-i18n="desc">毫秒、秒、分钟、小时、天、周、月、年之间双向换算，并展示全单位对照。</p>
     <div class="card">
       <div class="conv-controls">
-        <input id="numInput" type="number" step="any" class="input js-focus-input" placeholder="输入数值" value="1">
+        <input id="numInput" type="number" step="any" class="input js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入数值" value="1">
         <select id="fromSelect" class="input"></select>
         <button id="swapBtn" class="btn btn-secondary" data-i18n="ui.1">⇄ 互换</button>
         <span>→</span>
@@ -119,7 +119,7 @@
       var n = parseFloat(raw);
       if (isNaN(n)) {
         outputText.innerHTML = '';
-        setStatus('请输入有效的数字', 'error');
+        setStatus(t('ui.100','请输入有效的数字'), 'error');
         return;
       }
       var from = findUnit(fromSelect.value);

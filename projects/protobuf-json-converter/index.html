@@ -120,13 +120,13 @@
       } catch (e) {
         outputText.textContent = t('ui.7','JSON 解析失败：') + e.message + t('ui.6','。请检查括号、引号与逗号是否完整。');
         pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
-        setStatus('JSON 解析失败', 'error');
+        setStatus(t('ui.100','JSON 解析失败'), 'error');
         return;
       }
       if (!parsed || (typeof parsed !== 'object')) {
         outputText.textContent = t('ui.5','请输入 JSON 对象或数组，不能是裸字符串 / 数字 / null。');
         pairWrap.innerHTML = '<p class="empty-tip">无法解析，暂无对照表。</p>';
-        setStatus('输入格式错误', 'error');
+        setStatus(t('ui.101','输入格式错误'), 'error');
         return;
       }
       var dir = getDirection();
@@ -156,7 +156,7 @@
     }
     copyBtn.onclick = function () {
       if (!outputText.textContent) {
-        setStatus('没有可复制的内容', 'error');
+        setStatus(t('ui.102','没有可复制的内容'), 'error');
         return;
       }
       copyToClipboard(outputText.textContent, copyBtn);

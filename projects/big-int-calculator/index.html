@@ -37,11 +37,11 @@
       <div class="big-grid">
         <div class="big-field">
           <label for="num1Input" data-i18n="ui.3">整数 A</label>
-          <input type="text" id="num1Input" class="input js-focus-input" placeholder="如 123456789012345678901234567890">
+          <input type="text" id="num1Input" class="input js-focus-input" data-i18n-placeholder="ui.105" placeholder="如 123456789012345678901234567890">
         </div>
         <div class="big-field" id="num2Field">
           <label for="num2Input" data-i18n="ui.4">整数 B</label>
-          <input type="text" id="num2Input" class="input" placeholder="如 987654321">
+          <input type="text" id="num2Input" class="input" data-i18n-placeholder="ui.106" placeholder="如 987654321">
         </div>
       </div>
       <div class="op-row">
@@ -401,7 +401,7 @@
         if (mode === 'single') {
           if (op === 'factorial') {
             if (a.charAt(0) === '-') {
-              setStatus('阶乘要求非负整数', 'error');
+              setStatus(t('ui.100','阶乘要求非负整数'), 'error');
               return;
             }
             var n = parseInt(a, 10);
@@ -423,12 +423,12 @@
             return;
           }
           if (a.charAt(0) === '-') {
-            setStatus('素性检查要求正整数', 'error');
+            setStatus(t('ui.101','素性检查要求正整数'), 'error');
             return;
           }
           var p = isPrime(a);
           if (p === null) {
-            setStatus('数位过多或计算量过大', 'error');
+            setStatus(t('ui.102','数位过多或计算量过大'), 'error');
             return;
           }
           outputText.innerHTML = '<span class="res-label">素性检查结果</span><span class="res-value">' + htmlEscape(a) + (p ? ' 是素数' : ' 不是素数（合数）') + '</span>';
@@ -436,7 +436,7 @@
           return;
         }
         if (num2El.value.trim() === '') {
-          setStatus('请填写整数 B', 'error');
+          setStatus(t('ui.103','请填写整数 B'), 'error');
           return;
         }
         var b = num2El.value.trim();
@@ -458,7 +458,7 @@
           label = 'A × B';
         } else if (op === 'power') {
           if (b.charAt(0) === '-') {
-            setStatus('幂运算要求指数为非负整数', 'error');
+            setStatus(t('ui.104','幂运算要求指数为非负整数'), 'error');
             return;
           }
           if (bigCmpAbs(b, MAX_EXP) > 0) {

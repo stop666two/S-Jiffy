@@ -11,7 +11,7 @@
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
 <div class="code-pair">
-<textarea id="htmlInput" class="js-focus-input" placeholder="粘贴 HTML 代码..."><!-- 文档 -->
+<textarea id="htmlInput" class="js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴 HTML 代码..."><!-- 文档 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -25,7 +25,7 @@
 </body>
 </html>
 </textarea>
-<textarea id="html输出" readonly placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="html输出" readonly data-i18n-placeholder="ui.102" placeholder="压缩结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 <div class="stats" id="stats"></div>
 </div>
@@ -44,7 +44,7 @@ var stats=document.getElementById('stats');
 
 function minify(){
 var h=htmlInput.value;
-if(!h.trim()){html输出.value='';stats.textContent='';outputEl.textContent='';setStatus('请输入 HTML','error');return;}
+if(!h.trim()){html输出.value='';stats.textContent='';outputEl.textContent='';setStatus(t('ui.100','请输入 HTML'),'error');return;}
 var r=h;
 r=r.replace(/<!--[\s\S]*?-->/g,'');
 r=r.replace(/>\s+</g,'><');

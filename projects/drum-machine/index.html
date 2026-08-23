@@ -157,7 +157,7 @@
       <div class="grid-wrap">
         <div class="drum-grid" id="drumGrid"></div>
       </div>
-      <div class="kbd-hint">点击或拖拽网格可绘制音符（每 4 步一组）；M 静音 / S 独奏 / 行末按钮反转整轨；空格键播放与停止；Ctrl+Z 撤销、Ctrl+Y 重做（最多 30 步）。</div>
+      <div class="kbd-hint" data-i18n="ui.112">点击或拖拽网格可绘制音符（每 4 步一组）；M 静音 / S 独奏 / 行末按钮反转整轨；空格键播放与停止；Ctrl+Z 撤销、Ctrl+Y 重做（最多 30 步）。</div>
     </div>
   </main>
   <footer class="global-footer">
@@ -223,14 +223,14 @@
         if (history.length === 0) return;
         redoStack.push(snapshot());
         restore(history.pop());
-        setStatus('已撤销');
+        setStatus(t('ui.100','已撤销'));
       }
 
       function redo() {
         if (redoStack.length === 0) return;
         history.push(snapshot());
         restore(redoStack.pop());
-        setStatus('已重做');
+        setStatus(t('ui.101','已重做'));
       }
 
       function syncUndoBtns() {
@@ -317,7 +317,7 @@
           var rev = document.createElement('div');
           rev.className = 'row-rev';
           var revBtn = document.createElement('button');
-          revBtn.textContent = '反转';
+          revBtn.textContent = t('ui.109','反转');
           revBtn.title = '反转整轨音符';
           revBtn.addEventListener('click', (function (tr) {
             return function () {
@@ -371,7 +371,7 @@
           for (var s = 0; s < STEP_COUNT; s++) patterns[t][s] = 0;
         }
         paintAll();
-        setStatus('已清空全部音符');
+        setStatus(t('ui.102','已清空全部音符'));
       }
 
       function applyPreset(key) {
@@ -568,7 +568,7 @@
 
       function play() {
         if (!ensureAudio()) {
-          setStatus('当前浏览器不支持 Web Audio，无法播放', 'error');
+          setStatus(t('ui.103','当前浏览器不支持 Web Audio，无法播放'), 'error');
           return;
         }
         if (playing) return;
@@ -576,10 +576,10 @@
         currentStep = 0;
         nextTime = ctx.currentTime + 0.06;
         playStartTime = ctx.currentTime;
-        document.getElementById('playBtn').textContent = '停止';
+        document.getElementById('playBtn').textContent = t('ui.110','停止');
         timerId = setInterval(schedulerTick, 25);
         visualTimer = setInterval(visualTick, 25);
-        setStatus('播放中（空格键可停止）');
+        setStatus(t('ui.104','播放中（空格键可停止）'));
       }
 
       function stop() {
@@ -593,8 +593,8 @@
           var cells = cellMap[t];
           for (var s = 0; s < STEP_COUNT; s++) cells[s].classList.remove('lit');
         }
-        document.getElementById('playBtn').textContent = '播放';
-        setStatus('已停止');
+        document.getElementById('playBtn').textContent = t('ui.111','播放');
+        setStatus(t('ui.105','已停止'));
       }
 
       function togglePlay() {
@@ -627,7 +627,7 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setStatus('工程已导出为 JSON 文件');
+        setStatus(t('ui.106','工程已导出为 JSON 文件'));
       }
 
       function importProject(file) {
@@ -664,9 +664,9 @@
             if (master) master.gain.value = volume / 100;
             paintAll();
             syncMuteSolo();
-            setStatus('工程导入成功');
+            setStatus(t('ui.107','工程导入成功'));
           } catch (e) {
-            setStatus('导入失败：JSON 格式不正确或字段缺失', 'error');
+            setStatus(t('ui.108','导入失败：JSON 格式不正确或字段缺失'), 'error');
           }
         };
         reader.readAsText(file);

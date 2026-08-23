@@ -63,21 +63,21 @@
 <div class="err-msg hidden" id="errBox"></div>
 <div id="stage" class="hidden">
 <div class="timeline" id="timeline"></div>
-<div class="list-note"><span>拖动文件调整顺序</span><span id="fileCount"></span></div>
+<div class="list-note"><span data-i18n="ui.106">拖动文件调整顺序</span><span id="fileCount"></span></div>
 <div class="merge-list" id="mergeList"></div>
 <div class="total"><span id="totalDur"></span></div>
 <div class="fade-grid">
 <div class="fade-cell">
-<div class="fh"><span>淡入</span><b id="fadeInVal">0.20s</b></div>
+<div class="fh"><span data-i18n="ui.105">淡入</span><b id="fadeInVal">0.20s</b></div>
 <input type="range" id="fadeIn" min="0" max="2" step="0.05" value="0.2">
 </div>
 <div class="fade-cell">
-<div class="fh"><span>淡出</span><b id="fadeOutVal">0.20s</b></div>
+<div class="fh"><span data-i18n="ui.104">淡出</span><b id="fadeOutVal">0.20s</b></div>
 <input type="range" id="fadeOut" min="0" max="2" step="0.05" value="0.2">
 </div>
 </div>
 <div class="progress hidden" id="progress"><div id="progressFill"></div></div>
-<button class="dl-btn" id="btnMerge" type="button" disabled><span>合并文件</span></button>
+<button class="dl-btn" id="btnMerge" type="button" disabled><span data-i18n="ui.103">合并文件</span></button>
 <div class="result-card hidden" id="resultCard">
 <h3 data-i18n="mergedPreview">合并预览</h3>
 <audio controls id="resultAudio"></audio>
@@ -222,7 +222,7 @@
           var moved = entries.splice(from, 1)[0];
           entries.splice(to, 0, moved);
           render();
-          setStatus('已调整顺序');
+          setStatus(t('ui.100','已调整顺序'));
         }
       });
       mergeList.appendChild(item);
@@ -338,7 +338,7 @@
           setProgress(1);
           processing = false;
           render();
-          setStatus('合并完成');
+          setStatus(t('ui.101','合并完成'));
         } catch (e) {
           finishError('合并失败');
         }
@@ -358,7 +358,7 @@
   btnDownload.addEventListener('click', function () {
     if (!resultBlob) return;
     AK.downloadBlob(resultBlob, 'merged_audio.wav');
-    setStatus('已开始下载');
+    setStatus(t('ui.102','已开始下载'));
   });
 
   document.getElementById('dropZone').querySelector('.hint').textContent = t('hint', '点击或拖放多个音频文件（MP3 / WAV / OGG / AAC / FLAC / M4A，≤50MB）');

@@ -73,7 +73,7 @@ var alarmSec=-1,lastChimeKey='',chimeEnabled=false,nextRingKey='';
 
 function pad(n){return n<10?'0'+n:''+n;}
 function ensureCtx(){
-if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){setStatus('浏览器不支持音频合成','error');return false;}}
+if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){setStatus(t('ui.100','浏览器不支持音频合成'),'error');return false;}}
 if(audioCtx.state==='suspended'){audioCtx.resume();}
 return true;}
 function tone(freq,start,dur,vol){
@@ -129,7 +129,7 @@ if(h<0||h>23||m<0||m>59||s<0||s>59)return -1;
 return h*3600+m*60+s;}
 function setAlarm(){
 var sec=parseTime(timeInput.value);
-if(sec<0){setStatus('请输入有效的响铃时间','error');return;}
+if(sec<0){setStatus(t('ui.101','请输入有效的响铃时间'),'error');return;}
 alarmSec=sec;
 nextRingKey='';
 var now=new Date();

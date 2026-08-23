@@ -30,7 +30,7 @@
         <label><input type="radio" name="urlMode" value="rfc3986"> RFC 3986</label>
         <label><input type="radio" name="urlMode" value="form"> 表单编码</label>
       </div>
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入链接或文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入链接或文本..." style="min-height:120px;"></textarea>
     </div>
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="encodeBtn" class="btn btn-primary" data-i18n="ui.encode">编码</button>
@@ -81,7 +81,7 @@
           else if (mode === 'form') o.textContent = formEncode(i.value);
           else o.textContent = encodeURIComponent(i.value);
           setStatus('');
-        } catch (e) { setStatus('编码错误', 'error'); }
+        } catch (e) { setStatus(t('ui.100','编码错误'), 'error'); }
       });
       document.getElementById('decodeBtn').addEventListener('click', function () {
         parse结果.style.display = 'none';
@@ -90,11 +90,11 @@
           if (mode === 'form') o.textContent = formDecode(i.value);
           else o.textContent = decodeURIComponent(i.value);
           setStatus('');
-        } catch (e) { o.textContent = ''; setStatus('解码失败', 'error'); }
+        } catch (e) { o.textContent = ''; setStatus(t('ui.101','解码失败'), 'error'); }
       });
       document.getElementById('parseBtn').addEventListener('click', function () {
         var val = i.value.trim();
-        if (!val) { setStatus('请输入链接', 'error'); return; }
+        if (!val) { setStatus(t('ui.102','请输入链接'), 'error'); return; }
         parse结果.style.display = 'block';
         try {
           var url = new URL(val);
@@ -119,7 +119,7 @@
         } catch (e) {
           urlParts.innerHTML = '<div style="color:var(--color-error);font-size:var(--font-size-sm);">链接无效</div>';
           queryCard.style.display = 'none';
-          setStatus('链接无效', 'error');
+          setStatus(t('ui.103','链接无效'), 'error');
         }
       });
       document.getElementById('clearBtn').addEventListener('click', function () { i.value = ''; o.textContent = ''; parse结果.style.display = 'none'; setStatus(''); i.focus(); });

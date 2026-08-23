@@ -28,10 +28,10 @@
       </select>
       <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">位移/密钥</label>
       <input id="shiftInput" class="input" type="number" value="3" min="1" max="25" style="width:110px;">
-      <input id="xorKeyInput" class="input" placeholder="XOR 密钥" style="width:100px;display:none;">
+      <input id="xorKeyInput" class="input" data-i18n-placeholder="ui.101" placeholder="XOR 密钥" style="width:100px;display:none;">
     </div>
     <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
+      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入要处理的文本..." style="min-height:120px;"></textarea>
     </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
       <button id="processBtn" class="btn btn-primary" data-i18n="ui.2">执行</button>
@@ -94,7 +94,7 @@
 
     document.getElementById('processBtn').addEventListener('click', function() {
       var text = inputEl.value;
-      if (!text) { setStatus('请输入文本', 'error'); return; }
+      if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
       var algo = algoEl.value;
       var decrypt = modeEl.value === 'decrypt';
       var result;

@@ -52,7 +52,7 @@
     <p class="tool-desc" data-i18n="desc">输入单个汉字，查看它的偏旁部首、偏旁笔画数与文字结构。</p>
     <div class="card">
       <div class="query-row">
-        <input id="charInput" class="input js-focus-input" type="text" maxlength="4" placeholder="输入汉字，如：恩 江 森">
+        <input id="charInput" class="input js-focus-input" type="text" maxlength="4" data-i18n-placeholder="ui.101" placeholder="输入汉字，如：恩 江 森">
         <button id="queryBtn" class="btn btn-primary" data-i18n="ui.query">查询</button>
       </div>
       <div class="note-tip" data-i18n="ui.1">一次查询一个汉字；多字输入时仅取第一个字符。</div>
@@ -73,8 +73,8 @@
       <h4 data-i18n="ui.6">偏旁与部首的区别</h4>
       <p data-i18n="ui.7">偏旁与部首常被混用，但二者的职责并不相同：</p>
       <ul>
-        <li>偏旁：合体字中承担表意或表音作用的组成部件，是造字与识字的单位，如「江」中的氵（表意）与工（表音）。</li>
-        <li>部首：字典辞书按字形特征归类的检索类目，主要服务于查字，如《新华字典》将汉字归入 189 个部首。</li>
+        <li data-i18n="ui.103">偏旁：合体字中承担表意或表音作用的组成部件，是造字与识字的单位，如「江」中的氵（表意）与工（表音）。</li>
+        <li data-i18n="ui.102">部首：字典辞书按字形特征归类的检索类目，主要服务于查字，如《新华字典》将汉字归入 189 个部首。</li>
         <li data-i18n="ui.8">包含关系：部首都是偏旁，但偏旁不都是部首；同一偏旁在不同字典中可能归入不同部首。</li>
         <li data-i18n="ui.9">独体字无法拆分出偏旁，通常以自身作为部首，如「日」「木」。</li>
       </ul>
@@ -140,7 +140,7 @@
 
       function doQuery() {
         var raw = input.value.trim();
-        if (!raw) { setStatus('请输入要查询的汉字', 'error'); return; }
+        if (!raw) { setStatus(t('ui.100','请输入要查询的汉字'), 'error'); return; }
         var c = raw.charAt(0);
         if (!charMap[c]) {
           resultCard.style.display = 'none';

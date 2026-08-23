@@ -1,6 +1,8 @@
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
+var zlib = require('zlib');
+var crypto = require('crypto');
 var pidFile = path.join(__dirname, '.server.pid');
 
 // Kill previous instance
@@ -48,11 +50,47 @@ var mime = {
   '.pdf': 'application/pdf'
 };
 
+var gzipCache = {};
+
+function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
+  var ext = path.extname(filePath);
+  var type = mime[ext] || 'application/octet-stream';
+  var headers = {
+    'Content-Type': type,
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer'
+  };
+  var etag = '"' + crypto.createHash('md5').update(String(stats.size) + ':' + stats.mtimeMs).digest('hex') + '"';
+  headers['ETag'] = etag;
+  if (clientETag === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+  var isAsset = filePath.indexOf(path.sep + 'assets' + path.sep) !== -1;
+  var isCompressible = ['.html', '.css', '.js', '.mjs', '.json', '.svg', '.xml', '.txt', '.md', '.webmanifest'].indexOf(ext) !== -1;
+  if (isAsset) {
+    headers['Cache-Control'] = 'public, max-age=86400';
+  } else {
+    headers['Cache-Control'] = 'no-cache';
+  }
+  if (isCompressible && clientGzip) {
+    var key = filePath + ':' + stats.mtimeMs;
+    var gz = gzipCache[key];
+    if (!gz) {
+      gz = zlib.gzipSync(data);
+      gzipCache[key] = gz;
+    }
+    headers['Content-Encoding'] = 'gzip';
+    headers['Vary'] = 'Accept-Encoding';
+    data = gz;
+  }
+  res.writeHead(200, headers);
+  res.end(data);
+}
+
 http.createServer(function (req, res) {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'no-referrer');
-  res.setHeader('Cache-Control', 'no-cache');
 
   var rawUrl = req.url.split('?')[0];
   var url;
@@ -79,8 +117,8 @@ http.createServer(function (req, res) {
         res.end('<!DOCTYPE html><meta charset="utf-8"><title>404 - S-Jiffy</title><body style="font-family:monospace;padding:2em"><h1>404</h1><a href="/" style="color:#111">返回首页</a></body>');
         return;
       }
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath)] || 'application/octet-stream' });
-      res.end(data);
+      serveFile(res, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
+      return;
     });
   });
 }).listen(port, function () {

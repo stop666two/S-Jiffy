@@ -66,8 +66,8 @@
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script src="../../assets/js/i18n.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+<script src="../../assets/vendor/pdf-lib.min.js"></script>
+<script src="../../assets/vendor/pdf.min.js"></script>
 <script>
 /* ES5 IIFE：var/function，不用 let/const/箭头函数/模板字符串 */
 (function(){
@@ -79,7 +79,7 @@ var pages=[];            /* 显示顺序 [{thumb,origIdx}] */
 var splitAfter={};       /* 显示位置 i（第 i 页后）为分割点 */
 var busy=false;
 var dz=$('dropZone'),fi=$('fileInput');
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc='../../assets/vendor/pdf.worker.min.js';
 function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
 function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result);};r.onerror=function(){if(eb)eb();};r.readAsArrayBuffer(f);}
 function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3000);}

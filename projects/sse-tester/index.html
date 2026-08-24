@@ -18,7 +18,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">SSE 事件流测试器</h1>
@@ -88,7 +88,7 @@
         try {
           es = new EventSource(url);
         } catch (e) {
-          setConn('连接失败：URL 不合法', 'off');
+          setConn(t('ui.13','连接失败：URL 不合法'), 'off');
           appendLog(t('ui.10','错误：URL 不合法，请检查地址格式'));
           setStatus(t('ui.101','URL 不合法，无法建立连接'), 'error');
           es = null;
@@ -98,19 +98,19 @@
         document.getElementById('stopBtn').disabled = false;
         var dispatch = es.dispatchEvent.bind(es);
         es.dispatchEvent = function (ev) {
-          var name = ev && ev.type ? ev.type : '未知';
+          var name = ev && ev.type ? ev.type : t('ui.14','未知');
           var data = ev && typeof ev.data !== 'undefined' ? ev.data : '';
-          appendLog(t('ui.9','事件 ') + name + (ev && ev.lastEventId ? '（id=' + ev.lastEventId + '）' : ''));
+          appendLog(t('ui.9','事件 ') + name + (ev && ev.lastEventId ? t('ui.15','（id=') + ev.lastEventId + t('ui.16','）') : ''));
           if (data !== '') appendLog('  data: ' + String(data));
           return dispatch(ev);
         };
         es.onopen = function () {
-          setConn('已连接，等待事件…', 'on');
+          setConn(t('ui.17','已连接，等待事件…'), 'on');
           appendLog(t('ui.8','连接成功（EventSource 已建立）'));
           setStatus(t('ui.7','连接成功'));
         };
         es.onerror = function () {
-          setConn('连接中断，浏览器将自动重连…', 'off');
+          setConn(t('ui.18','连接中断，浏览器将自动重连…'), 'off');
           appendLog(t('ui.6','错误：连接中断（若跨域受限，目标站需允许 CORS；服务器无响应也会触发）'));
           setStatus(t('ui.102','连接中断，正在等待自动重连'), 'error');
         };
@@ -123,7 +123,7 @@
         }
         document.getElementById('connectBtn').disabled = false;
         document.getElementById('stopBtn').disabled = true;
-        setConn('已断开连接', 'off');
+        setConn(t('ui.19','已断开连接'), 'off');
         appendLog(t('ui.5','已手动断开连接'));
         setStatus(t('ui.4','已断开'));
       }

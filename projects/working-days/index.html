@@ -25,8 +25,8 @@
     <h1 data-i18n="h1">工作日计算器</h1>
     <p class="tool-desc" data-i18n="desc">计算两个日期之间的工作日数量，排除周末和可选节假日。</p>
     <div class="card wd-config">
-      <label>开始日期：<input id="startDate" type="date"></label>
-      <label>结束日期：<input id="endDate" type="date"></label>
+      <label for="startDate" data-i18n="ui.startLabel">开始日期：</label><input id="startDate" type="date">
+      <label for="endDate" data-i18n="ui.endLabel">结束日期：</label><input id="endDate" type="date">
       <button id="calcBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
@@ -126,10 +126,10 @@
         }
 
         var includeEnd = !isWeekend(end);
-        var result = '<strong>' + workingDays + '</strong> 个工作日';
-        result += '<br>总天数: ' + totalDays;
-        result += '<br>周末: ' + weekendDays + t('ui.day',' 天');
-        if (holidays.length > 0) result += '<br>节假日: ' + holidayDays + t('ui.day',' 天');
+        var result = '<strong>' + workingDays + '</strong>' + t('ui.workdays',' 个工作日');
+        result += '<br>' + t('ui.totalDays','总天数: ') + totalDays;
+        result += '<br>' + t('ui.weekend','周末: ') + weekendDays + t('ui.day',' 天');
+        if (holidays.length > 0) result += '<br>' + t('ui.holidays','节假日: ') + holidayDays + t('ui.day',' 天');
         result += '<br><span style="font-size:var(--font-size-xs);color:var(--color-text-disabled);">' + formatDate(start) + ' \u2192 ' + formatDate(end) + '</span>';
 
         outputEl.innerHTML = result;

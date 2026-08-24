@@ -13,7 +13,7 @@
 .lap-list div{padding:4px 8px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">秒表计时器</h1><p class="tool-desc" data-i18n="desc">带预设的倒计时器，以及支持计圈记录的秒表。</p>
 <div class="card">
 <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);">
@@ -58,9 +58,9 @@ targetMs=total;startTime=Date.now();elapsed=total;}else{startTime=Date.now()-ela
 running=true;sub.textContent = t('ui.17','运行中...');clearInterval(timerId);timerId=setInterval(tick,100);}
 
 function pauseTimer(){if(!running)return;running=false;clearInterval(timerId);sub.textContent = t('ui.16','已暂停');}
-function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent = t('ui.9','准备');ll.innerHTML='<div style="color:var(--color-text-disabled);">暂无计圈记录</div>';o.textContent='';}
+function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent = t('ui.9','准备');ll.innerHTML='<div style="color:var(--color-text-disabled);">'+t('ui.15','\u6682\u65e0\u8ba1\u5708\u8bb0\u5f55')+'</div>';o.textContent='';}
 function recordLap(){if(!running||ms.value!=='stopwatch')return;var now=elapsed;var lapTime=now-lastLap;laps.push({total:now,split:lapTime});lastLap=now;
-var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>第 '+(i+1)+' 圈</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
+var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>'+t('ui.lap','\u7b2c {n} \u5708').replace('{n}',String(i+1))+'</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
 ll.innerHTML=h;o.textContent=fmt(elapsed);}
 
 st.addEventListener('click',startTimer);pa.addEventListener('click',pauseTimer);rs.addEventListener('click',resetTimer);lb.addEventListener('click',recordLap);

@@ -28,7 +28,7 @@ body {
   font-size: @font-size;
 }
 </textarea>
-<textarea id="css输出" readonly data-i18n-placeholder="ui.102" placeholder="编译结果..." style="background:var(--color-bg-soft);"></textarea>
+<textarea id="cssOutput" readonly data-i18n-placeholder="ui.102" placeholder="编译结果..." style="background:var(--color-bg-soft);"></textarea>
 </div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -37,7 +37,7 @@ body {
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script><script>(function(){
 var lessInput=document.getElementById('lessInput');
-var css输出=document.getElementById(t('ui.4','css输出'));
+var cssOutput=document.getElementById(t('ui.4','cssOutput'));
 var compileBtn=document.getElementById('compileBtn');
 var clearBtn=document.getElementById('clearBtn');
 var outputEl=document.getElementById('outputText');
@@ -45,7 +45,7 @@ var copyBtn=document.getElementById('copyBtn');
 
 function compile(){
 var text=lessInput.value;
-if(!text.trim()){css输出.value='';outputEl.textContent='';setStatus(t('ui.100','请输入 LESS 代码'),'error');return;}
+if(!text.trim()){cssOutput.value='';outputEl.textContent='';setStatus(t('ui.100','请输入 LESS 代码'),'error');return;}
 var vars={};
 var lines=text.split('\n');
 var cleanLines=[];
@@ -63,13 +63,13 @@ for(var name in vars){
 var re=new RegExp('@'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
 result=result.replace(re,vars[name]);
 }
-css输出.value=result;
+cssOutput.value=result;
 outputEl.textContent = t('ui.3','已替换 ')+(Object.keys(vars).length)+ t('ui.2',' 个变量');
 setStatus('');
 }
 
 compileBtn.addEventListener('click',compile);
-clearBtn.addEventListener('click',function(){lessInput.value='';css输出.value='';outputEl.textContent='';setStatus('');lessInput.focus();});
-copyBtn.addEventListener('click',function(){if(css输出.value){copyToClipboard(css输出.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
+clearBtn.addEventListener('click',function(){lessInput.value='';cssOutput.value='';outputEl.textContent='';setStatus('');lessInput.focus();});
+copyBtn.addEventListener('click',function(){if(cssOutput.value){copyToClipboard(cssOutput.value,copyBtn);setStatus(t('ui.copied','已复制'));}});
 lessInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')compile();});
 })();</script></body></html>

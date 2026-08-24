@@ -41,7 +41,7 @@ document.getElementById('diffBBtn').addEventListener('click',function(){
 });
 document.getElementById('mergeBtn').addEventListener('click',function(){
   var rows=getItems(la).concat(getItems(lb));var seen={};rows.forEach(function(r){seen[r]=(seen[r]||0)+1;});
-  var lines=[];for(var k in seen){lines.push(k+' ('+seen[k]+'次)');}show(lines);
+  var lines=[];for(var k in seen){lines.push(k+' ('+seen[k]+t('ui.8','次')+')');}show(lines);
 });
 document.getElementById('clearBtn').addEventListener('click',function(){la.value='';lb.value='';o.textContent='';setStatus('');});
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent)copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));});

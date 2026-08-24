@@ -76,7 +76,7 @@
     function validateIBAN(iban) {
       var clean = iban.replace(/\s/g, '').toUpperCase();
       if (!clean) return null;
-      if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: '格式无效', clean: clean }; }
+      if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(clean)) { return { valid: false, reason: t('ui.10','格式无效'), clean: clean }; }
       var cc = clean.substr(0, 2);
       if (!(cc in countryInfo)) { return { valid: false, reason: t('ui.9','未知的国家代码: ') + cc, clean: clean, country: cc }; }
       var expectedLen = ibanLengths[cc];
@@ -93,7 +93,7 @@
         remainder = (remainder * 10 + parseInt(numeric[i])) % 97;
       }
       var valid = remainder === 1;
-      return { valid: valid, reason: valid ? '校验通过' : '校验位无效', clean: clean, country: cc, countryName: countryInfo[cc] };
+      return { valid: valid, reason: valid ? t('ui.11','校验通过') : t('ui.12','校验位无效'), clean: clean, country: cc, countryName: countryInfo[cc] };
     }
     function render(d) {
       if (!d) { outputEl.textContent = ''; gridEl.innerHTML = ''; return; }
@@ -101,10 +101,10 @@
       outputEl.style.color = d.valid ? 'var(--color-success)' : 'var(--color-error)';
       var items = [
         { label: 'IBAN', val: d.clean },
-        { label: t('ui.6','状态'), val: d.valid ? '有效' : '无效' },
+        { label: t('ui.6','状态'), val: d.valid ? t('ui.13','有效') : t('ui.14','无效') },
         { label: t('ui.5','国家代码'), val: d.country || '-' },
         { label: t('ui.4','国家名称'), val: d.countryName || '-' },
-        { label: t('ui.3','长度'), val: d.clean ? d.clean.length : '-' + (d.country && ibanLengths[d.country] ? ' (期望 ' + ibanLengths[d.country] + ')' : '') },
+        { label: t('ui.3','长度'), val: d.clean ? d.clean.length : '-' + (d.country && ibanLengths[d.country] ? t('ui.15',' (期望 ') + ibanLengths[d.country] + ')' : '') },
         { label: t('ui.2','校验结果'), val: d.reason }
       ];
       var html = '';
@@ -118,7 +118,7 @@
       if (!iban) { setStatus(t('ui.100','请输入 IBAN'), 'error'); render(null); return; }
       var result = validateIBAN(iban);
       render(result);
-      setStatus(result ? (result.valid ? 'IBAN 验证通过' : result.reason) : '无效');
+      setStatus(result ? (result.valid ? t('ui.16','IBAN 验证通过') : result.reason) : t('ui.14','无效'));
     }
     document.getElementById('validateBtn').addEventListener('click', doValidate);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doValidate(); });

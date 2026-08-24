@@ -22,7 +22,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">科学计数法转换器</h1>
@@ -53,23 +53,23 @@
       var copyBtn = document.getElementById('copyBtn');
 
       var PREFIXES = [
-        { exp: -12, name: '皮 (p)', example: '皮秒 / 皮法' },
-        { exp: -9, name: '纳 (n)', example: '纳米 / 纳秒' },
-        { exp: -6, name: '微 (μ)', example: '微米 / 微秒' },
-        { exp: -3, name: '毫 (m)', example: '毫米 / 毫秒' },
-        { exp: 0, name: '—', example: '米 / 秒' },
-        { exp: 3, name: '千 (k)', example: '千米 / 千克' },
-        { exp: 6, name: '兆 (M)', example: '兆赫 / 兆字节' },
-        { exp: 9, name: '吉 (G)', example: '吉赫 / 吉字节' },
-        { exp: 12, name: '太 (T)', example: '太字节' }
+        { exp: -12, name: t('ui.p.m12.name','皮 (p)'), example: t('ui.p.m12.example','皮秒 / 皮法') },
+        { exp: -9, name: t('ui.p.m9.name','纳 (n)'), example: t('ui.p.m9.example','纳米 / 纳秒') },
+        { exp: -6, name: t('ui.p.m6.name','微 (μ)'), example: t('ui.p.m6.example','微米 / 微秒') },
+        { exp: -3, name: t('ui.p.m3.name','毫 (m)'), example: t('ui.p.m3.example','毫米 / 毫秒') },
+        { exp: 0, name: '—', example: t('ui.p.0.example','米 / 秒') },
+        { exp: 3, name: t('ui.p.3.name','千 (k)'), example: t('ui.p.3.example','千米 / 千克') },
+        { exp: 6, name: t('ui.p.6.name','兆 (M)'), example: t('ui.p.6.example','兆赫 / 兆字节') },
+        { exp: 9, name: t('ui.p.9.name','吉 (G)'), example: t('ui.p.9.example','吉赫 / 吉字节') },
+        { exp: 12, name: t('ui.p.12.name','太 (T)'), example: t('ui.p.12.example','太字节') }
       ];
 
       function parseNumber(s) {
-        var t = String(s).trim();
-        if (t === '') {
+        var txt = String(s).trim();
+        if (txt === '') {
           return null;
         }
-        var m = t.match(/^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+        var m = txt.match(/^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
         if (!m) {
           return null;
         }
@@ -174,7 +174,10 @@
             }
           }
         }
-        var html = '<table class="prefix-table"><thead><tr><th>前缀</th><th>数量级</th><th>常见单位场景</th></tr></thead><tbody>';
+        var thPrefix = t('ui.102','前缀');
+        var thOrder = t('ui.103','数量级');
+        var thExample = t('ui.104','常见单位场景');
+        var html = '<table class="prefix-table"><thead><tr><th>' + thPrefix + '</th><th>' + thOrder + '</th><th>' + thExample + '</th></tr></thead><tbody>';
         for (var k = 0; k < PREFIXES.length; k++) {
           var cls = k === matchIdx ? ' class="prefix-match"' : '';
           html += '<tr' + cls + '><td>' + htmlEscape(PREFIXES[k].name) + '</td><td>10^' + PREFIXES[k].exp + '</td><td>' + htmlEscape(PREFIXES[k].example) + '</td></tr>';
@@ -196,16 +199,22 @@
           return;
         }
         var sigDigits = p.zero ? 0 : p.sig.length;
+        var lSci = t('ui.105','科学计数法');
+        var lDec = t('ui.106','普通十进制');
+        var lEng = t('ui.107','工程计数法（指数为 3 的倍数）');
+        var lSig = t('ui.108','有效数字位数');
+        var lPref = t('ui.109','单位前缀对照（当前量级已高亮）');
+        var lDigits = t('ui.110',' 位');
         var html = '';
-        html += '<span class="res-label">科学计数法</span>';
+        html += '<span class="res-label">' + lSci + '</span>';
         html += '<span class="res-line">' + htmlEscape(sciNotation(p)) + '</span>';
-        html += '<span class="res-label">普通十进制</span>';
+        html += '<span class="res-label">' + lDec + '</span>';
         html += '<span class="res-line">' + htmlEscape(expandDecimal(p)) + '</span>';
-        html += '<span class="res-label">工程计数法（指数为 3 的倍数）</span>';
+        html += '<span class="res-label">' + lEng + '</span>';
         html += '<span class="res-line">' + htmlEscape(engNotation(p)) + '</span>';
-        html += '<span class="res-label">有效数字位数</span>';
-        html += '<span class="res-line">' + htmlEscape(String(sigDigits)) + ' 位</span>';
-        html += '<span class="res-label">单位前缀对照（当前量级已高亮）</span>';
+        html += '<span class="res-label">' + lSig + '</span>';
+        html += '<span class="res-line">' + htmlEscape(String(sigDigits)) + lDigits + '</span>';
+        html += '<span class="res-label">' + lPref + '</span>';
         html += prefixTable(p);
         outputText.innerHTML = html;
         setStatus(t('ui.convertDone','转换完成'));

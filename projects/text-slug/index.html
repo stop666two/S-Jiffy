@@ -15,17 +15,17 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">文本 Slug 转换</h1>
     <p class="tool-desc" data-i18n="desc">将文本转换为 URL 友好的 slug。</p>
     <div class="card">
       <input id="inputText" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
       <div class="slug-options">
-        <label><input id="optLower" type="checkbox" checked> 转小写</label>
-        <label>分隔符 <input id="optSep" class="input" value="-" style="width:40px;height:32px;padding:0 6px;"></label>
-        <label><input id="optRemoveSpecial" type="checkbox" checked> 移除特殊字符</label>
-        <label>最大长度 <input id="optMaxLen" type="number" class="input" value="0" min="0" max="200" style="width:110px;height:32px;padding:0 6px;"> (0=不限)</label>
+        <label><input id="optLower" type="checkbox" checked> <span data-i18n="ui.lowercase">转小写</span></label>
+        <label><span data-i18n="ui.separator">分隔符</span> <input id="optSep" class="input" value="-" style="width:40px;height:32px;padding:0 6px;"></label>
+        <label><input id="optRemoveSpecial" type="checkbox" checked> <span data-i18n="ui.removeSpecial">移除特殊字符</span></label>
+        <label><span data-i18n="ui.maxLength">最大长度</span> <input id="optMaxLen" type="number" class="input" value="0" min="0" max="200" style="width:110px;height:32px;padding:0 6px;"> <span data-i18n="ui.unlimited">(0=不限)</span></label>
       </div>
     </div>
     <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
@@ -63,13 +63,13 @@
 
       document.getElementById('slugBtn').addEventListener('click', function () {
         var text = el.value;
-        if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
+        if (!text) { setStatus(t('ui.100','\u8bf7\u8f93\u5165\u6587\u672c'), 'error'); return; }
         o.textContent = generate(text);
         setStatus('');
       });
       el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { o.textContent = generate(el.value); setStatus(''); } });
       document.getElementById('clearBtn').addEventListener('click', function () { el.value = ''; o.textContent = ''; setStatus(''); el.focus(); });
-      document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('ui.copied','已复制')); } });
+      document.getElementById('copyBtn').addEventListener('click', function () {         if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('ui.copied','\u5df2\u590d\u5236')); } });
     })();
   </script>
 </body>

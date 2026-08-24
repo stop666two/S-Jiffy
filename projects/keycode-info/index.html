@@ -56,11 +56,11 @@
     var kvRepeat = document.getElementById('kvRepeat');
     var kvWhich = document.getElementById('kvWhich');
     function locationName(l) {
-      return [ t('ui.8','标准'), t('ui.7','左'), t('ui.6','右'), t('ui.5','数字键盘'), t('ui.4','移动设备'), t('ui.3','手柄')][l] || '未知';
+      return [ t('ui.8','标准'), t('ui.7','左'), t('ui.6','右'), t('ui.5','数字键盘'), t('ui.4','移动设备'), t('ui.3','手柄')][l] || t('ui.10','未知');
     }
     document.addEventListener('keydown', function(e) {
       display.textContent = e.key || ' ';
-      kvKey.textContent = e.key || '(空)';
+      kvKey.textContent = e.key || t('ui.9','(空)');
       kvKeyCode.textContent = e.keyCode;
       kvCode.textContent = e.code;
       kvLocation.textContent = e.location + ' (' + locationName(e.location) + ')';

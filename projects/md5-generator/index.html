@@ -16,7 +16,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">MD5 生成器</h1>
     <p class="tool-desc" data-i18n="desc">使用标准 MD5 算法计算文本或文件的哈希值。</p>
@@ -78,8 +78,8 @@
       }
 
       document.getElementById('calcBtn').addEventListener('click',function(){
-        var t=i.value.trim();if(!t){setStatus(t('ui.101','请输入内容'),'error');return;}
-        show(calcMD5(t));setStatus('');
+        var v=i.value.trim();if(!v){setStatus(t('ui.101','请输入内容'),'error');return;}
+        show(calcMD5(v));setStatus('');
       });
 
       document.getElementById('fileBtn').addEventListener('click',function(){fi.click();});
@@ -91,7 +91,7 @@
       document.getElementById('copy32u').addEventListener('click',function(){if(r32u.textContent){copyToClipboard(r32u.textContent,this);setStatus(t('ui.12','已复制 32位大写'));}});
       document.getElementById('copy16l').addEventListener('click',function(){if(r16l.textContent){copyToClipboard(r16l.textContent,this);setStatus(t('ui.11','已复制 16位小写'));}});
       document.getElementById('copy16u').addEventListener('click',function(){if(r16u.textContent){copyToClipboard(r16u.textContent,this);setStatus(t('ui.10','已复制 16位大写'));}});
-      document.getElementById('copyBtn').addEventListener('click',function(){var t=r32l.textContent;if(t){copyToClipboard(t('ui.9','32位小写: ') +t+'\n32位大写: '+r32u.textContent+'\n16位小写: '+r16l.textContent+'\n16位大写: '+r16u.textContent,this);setStatus(t('ui.8','已复制全部'));}});
+      document.getElementById('copyBtn').addEventListener('click',function(){var c=r32l.textContent;if(c){copyToClipboard(t('ui.9','32位小写: ')+c+t('ui.15','\n32位大写: ')+r32u.textContent+t('ui.16','\n16位小写: ')+r16l.textContent+t('ui.17','\n16位大写: ')+r16u.textContent,this);setStatus(t('ui.8','已复制全部'));}});
     })();
   </script>
 </body>

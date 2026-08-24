@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TLS 密码套件查询 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.suite-row{padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.suite-row:last-child{border:none;}.suite-name{font-family:var(--font-mono);font-weight:600;}.suite-meta{color:var(--color-text-secondary);margin-left:8px;}.security-high{color:var(--color-success);}.security-medium{color:#e37400;}.security-low{color:var(--color-error);}.security-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;margin-left:6px;}.search-bar{margin-bottom:var(--space-2);}.count-info{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}</style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">TLS 密码套件查询</h1><p class="tool-desc" data-i18n="desc">查询 TLS/SSL 密码套件名称、详情和安全等级</p>
 <div class="card"><div class="search-bar"><input id="searchInput" class="input js-focus-input" data-i18n-placeholder="ui.100" placeholder="搜索套件名称、关键词..."></div><div class="count-info" id="countInfo"></div><div id="suitesList"></div></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
@@ -23,7 +23,7 @@ function render(q){
     var tagStyle=s.security==='high'?'background:#e6f4ea;color:var(--color-success)':s.security==='medium'?'background:#fef7e0;color:#e37400':'background:#fce8e6;color:var(--color-error)';
     html+='<div class="suite-row"><span class="suite-name">'+htmlEscape(s.name)+'</span><span class="suite-meta">'+htmlEscape(s.desc)+'</span><span class="security-tag" style="'+tagStyle+'">'+s.security+'</span><span style="font-size:11px;color:var(--color-text-disabled);margin-left:6px;">'+s.rfc+'</span></div>';
   }
-  suitesList.innerHTML=html||'<div style="color:var(--color-text-secondary);padding:8px;">无匹配套件</div>';
+  suitesList.innerHTML=html||'<div style="color:var(--color-text-secondary);padding:8px;">'+t('ui.nomatch','无匹配套件')+'</div>';
   countInfo.textContent = t('ui.total','共 ')+count+ t('ui.2',' 个密码套件');
   outputText.textContent = t('ui.1','TLS 密码套件: ')+count+ t('ui.count',' 个');
   setStatus('');

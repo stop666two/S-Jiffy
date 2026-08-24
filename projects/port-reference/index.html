@@ -250,7 +250,7 @@
         document.getElementById('portBody').innerHTML = html;
         document.getElementById('countLine').textContent = t('ui.total','共 ') + PORTS.length + t('ui.13',' 个端口，当前显示 ') + rows.length + t('ui.count',' 个');
         var tail = lastCopied ? t('ui.12','｜最近复制：') + lastCopied : '';
-        output.innerHTML = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">当前显示 ' + rows.length + '/' + PORTS.length + t('ui.11',' 个端口。点击任意行复制该端口号。') + htmlEscape(tail) + '</span>';
+        output.innerHTML = '<span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + t('ui.14','当前显示 ') + rows.length + '/' + PORTS.length + t('ui.11',' 个端口。点击任意行复制该端口号。') + htmlEscape(tail) + '</span>';
         current = '';
         var list = [];
         for (var j = 0; j < rows.length; j++) list.push(rows[j].p + ' ' + rows[j].n);
@@ -259,10 +259,10 @@
 
       function catLabel(c) {
         if (c === 'web') return 'Web';
-        if (c === 'db') return '数据库';
-        if (c === 'mail') return '邮件';
-        if (c === 'remote') return '远程';
-        return '其他';
+        if (c === 'db') return t('ui.database','数据库');
+        if (c === 'mail') return t('ui.2','邮件');
+        if (c === 'remote') return t('ui.3','远程');
+        return t('ui.4','其他');
       }
 
       document.getElementById('portBody').addEventListener('click', function (e) {

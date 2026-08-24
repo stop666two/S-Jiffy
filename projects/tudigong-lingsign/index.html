@@ -79,7 +79,7 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
 </head>
 <body>
   <header class="global-header">
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html" data-i18n="common.back">← 返回</a>
     <span class="logo-text">S-Jiffy</span>
   </header>
   <main class="tool-workspace">
@@ -120,6 +120,9 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
   <script>
 (function () {
   var CFG = {"name":"土地公灵签","noLabel":"","noSuffix":"","nameField":"","jiField":"ji","poemField":"text","poemLabel":"签文","jieField":"","jieLabel":"解签","extra":[]};
+  CFG.name = t('ui.name','土地公灵签');
+  CFG.poemLabel = t('ui.poemLabel','签文');
+  CFG.jieLabel = t('ui.jieLabel','解签');
   var QIAN = [{"n":1,"no":"第 1 号签","ji":"上上签","text":"彩凤呈祥瑞，麒麟降帝都，祸除迎福至，喜气自然生。"},{"n":2,"no":"第 2 号签","ji":"上平签","text":"从革宜更变，时来合动迁，龙门鱼跃出，凡骨作神仙。"},{"n":3,"no":"第 3 号签","ji":"中平签","text":"动作因风便，求谋可托人，若逢戊己土，事事得遂心。"},{"n":4,"no":"第 4 号签","ji":"小平签","text":"船放江湖内，滩边获宝多，更宜将大用，灾散福来居。"},{"n":5,"no":"第 5 号签","ji":"下下签","text":"此签按南方，灾厄不可当，官司多不利，目下有灾殃。"},{"n":6,"no":"第 6 号签","ji":"中平签","text":"且安君子分，勿用小人言，凡事皆当谨，作福保安然。"},{"n":7,"no":"第 7 号签","ji":"上上签","text":"国治人安泰，家财渐渐兴，有财求望吉，有福亦平安。"},{"n":8,"no":"第 8 号签","ji":"上吉签","text":"好德承天佑，门招喜气新，有人相助力，获福尽欢欣。"},{"n":9,"no":"第 9 号签","ji":"中吉签","text":"目下如冬树，枯木未开花，看看春色动，渐渐发萌芽。"},{"n":10,"no":"第 10 号签","ji":"中平签","text":"时融逢和气，衰残物再兴，更逢微细雨，春色又还生。"},{"n":11,"no":"第 11 号签","ji":"大吉签","text":"灾散福门开，无边喜气来，目下相逢处，须当得横财。"},{"n":12,"no":"第 12 号签","ji":"上平签","text":"进取逢通达，寒儒衣锦归，何人占取卦，凡事任意为。"},{"n":13,"no":"第 13 号签","ji":"下凶签","text":"井底观明月，见影却无形，钱财多散失，谨守得安宁。"},{"n":14,"no":"第 14 号签","ji":"下中签","text":"心思多不定，求谋未得成，忍耐方为福，守分免灾星。"},{"n":15,"no":"第 15 号签","ji":"下凶签","text":"枯木逢霜雪，扁舟遇大风，惊心无可免，百事不行通。"},{"n":16,"no":"第 16 号签","ji":"平吉签","text":"日出临东海，光辉天下明，动用和合吉，百事自然成。"},{"n":17,"no":"第 17 号签","ji":"中吉签","text":"众恶皆消灭，端然福气生，如人行暗夜，今已得天明。"},{"n":18,"no":"第 18 号签","ji":"中平签","text":"服药将身保，缠绵词讼连，百凡宜守旧，作福自然安。"},{"n":19,"no":"第 19 号签","ji":"下下签","text":"签中多恍惚，钱财暗里磨，恩深成怨去，人事不须知。"},{"n":20,"no":"第 20 号签","ji":"上平签","text":"根实枝叶茂，林多格式高，经荣多得利，兰蕙似蓬蒿。"},{"n":21,"no":"第 21 号签","ji":"上吉签","text":"求名居禄位，笼鸟得逃生，出入多财宝，更宜远方行。"},{"n":22,"no":"第 22 号签","ji":"吉签","text":"明月清天上，今霄照绮筵，家家沾恩泽，万里净云烟。"},{"n":23,"no":"第 23 号签","ji":"吉签","text":"福禄得安康，荣华保吉昌，所得皆遂意，千里共兰香。"},{"n":24,"no":"第 24 号签","ji":"下签","text":"羸马登程去，饥人走远途，前人多阻厄，退后祸方无。"},{"n":25,"no":"第 25 号签","ji":"吉签","text":"三姓俱相伴，祥光得共生，更宜分造化，百福自然亨。"},{"n":26,"no":"第 26 号签","ji":"吉签","text":"此签占太和，求谋喜事多，远人归古里，身乐得欢歌。"},{"n":27,"no":"第 27 号签","ji":"大吉签","text":"霖雨滋稼穑，何愁不倍收，自然心得乐，安居总无忧。"},{"n":28,"no":"第 28 号签","ji":"下签","text":"迢递途中旅，云横日随山，羁心无可托，前后总皆难。"},{"n":29,"no":"第 29 号签","ji":"吉签","text":"畔中珠自见，石内玉争光，进财求望吉，有福不成殃。"},{"n":30,"no":"第 30 号签","ji":"吉签","text":"天兵诛贼寇，旌旗得胜回，功勋为将帅，门第有光辉。"},{"n":31,"no":"第 31 号签","ji":"平签","text":"履薄登水池，危桥得渡时，重重忧险过，春色自芳菲。"},{"n":32,"no":"第 32 号签","ji":"下签","text":"尘埋青钢钱，美玉陷淤泥，何时重出世，再得光辉显。"}];
 
   var drawBtn = document.getElementById("drawBtn");
@@ -178,9 +181,9 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
     var lines = [CFG.name + " · " + q.no];
     if (q.name) lines.push(q.name);
     if (q.ji) lines.push(q.ji);
-    if (q.poem) lines.push(CFG.poemLabel + "：" + q.poem);
-    if (q.jie) lines.push(CFG.jieLabel + "：" + q.jie);
-    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + "：" + q.extra[i].value);
+    if (q.poem) lines.push(CFG.poemLabel + t('ui.colon','：') + q.poem);
+    if (q.jie) lines.push(CFG.jieLabel + t('ui.colon','：') + q.jie);
+    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + t('ui.colon','：') + q.extra[i].value);
     return lines.join("\n");
   }
 
@@ -196,12 +199,12 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
     resPoem.style.display = q.poem ? "" : "none";
     resPoem.textContent = q.poem;
     resJie.style.display = q.jie ? "" : "none";
-    resJie.textContent = q.jie ? CFG.jieLabel + "：" + q.jie : "";
+    resJie.textContent = q.jie ? CFG.jieLabel + t('ui.colon','：') + q.jie : "";
     clearChildren(resExtra);
     for (var i = 0; i < q.extra.length; i++) {
       var line = document.createElement("div");
       line.className = "qian-extra-line";
-      line.textContent = q.extra[i].label + "：" + q.extra[i].value;
+      line.textContent = q.extra[i].label + t('ui.colon','：') + q.extra[i].value;
       resExtra.appendChild(line);
     }
     resultCard.style.display = "block";
@@ -248,7 +251,7 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
   allToggle.addEventListener("click", function () {
     var open = allList.style.display !== "none";
     allList.style.display = open ? "none" : "block";
-    allToggle.textContent = open ? "查看全部签文" : "收起全部签文";
+    allToggle.textContent = open ? t('ui.viewAllSigns','查看全部签文') : t('ui.hideAllSigns','收起全部签文');
   });
 
   (function buildAll() {
@@ -280,13 +283,13 @@ footer.tool-status { padding: var(--space-2) var(--space-3); border-top: 1px sol
       if (q.jie) {
         var j = document.createElement("div");
         j.className = "all-jie";
-        j.textContent = CFG.jieLabel + "：" + q.jie;
+        j.textContent = CFG.jieLabel + t('ui.colon','：') + q.jie;
         body.appendChild(j);
       }
       for (var k = 0; k < q.extra.length; k++) {
         var line = document.createElement("div");
         line.className = "all-jie";
-        line.textContent = q.extra[k].label + "：" + q.extra[k].value;
+        line.textContent = q.extra[k].label + t('ui.colon','：') + q.extra[k].value;
         body.appendChild(line);
       }
       row.appendChild(head);

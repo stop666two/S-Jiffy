@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">名人名言</h1>
@@ -61,7 +61,7 @@
 
     function render(list, randomMark) {
       if (!list.length) {
-        outputText.innerHTML = '<div class="my-none">没有找到匹配的名言，换个关键词试试。</div>';
+        outputText.innerHTML = '<div class="my-none">' + t('ui.100', '没有找到匹配的名言，换个关键词试试。') + '</div>';
         copyBtn.style.display = 'none';
         lastCopyText = '';
         return;
@@ -78,7 +78,7 @@
         shown++;
       }
       if (list.length > max) {
-        html += '<div class="my-more">共 ' + list.length + t('ui.11',' 条，仅显示前 ') + max + ' 条，请补充关键词缩小范围。</div>';
+        html += '<div class="my-more">' + t('ui.10', '共 ') + list.length + t('ui.11', ' 条，仅显示前 ') + max + t('ui.12', ' 条，请补充关键词缩小范围。') + '</div>';
       }
       outputText.innerHTML = html;
       lastCopyText = copyLines.join('\n');

@@ -76,7 +76,7 @@
 
     function render(list, randomMark) {
       if (!list.length) {
-        outputText.innerHTML = '<div class="xh-none">没有找到匹配的歇后语，换个关键词或范围试试。</div>';
+        outputText.innerHTML = '<div class="xh-none">' + t('ui.12','没有找到匹配的歇后语，换个关键词或范围试试。') + '</div>';
         copyBtn.style.display = 'none';
         lastCopyText = '';
         return;
@@ -94,7 +94,7 @@
         shown++;
       }
       if (list.length > max) {
-        html += '<div class="xh-more">共 ' + list.length + t('ui.11',' 条，仅显示前 ') + max + ' 条，请补充关键词缩小范围。</div>';
+        html += '<div class="xh-more">' + t('ui.13','共 ') + list.length + t('ui.11',' 条，仅显示前 ') + max + t('ui.14',' 条，请补充关键词缩小范围。') + '</div>';
       }
       outputText.innerHTML = html;
       lastCopyText = copyLines.join('\n');

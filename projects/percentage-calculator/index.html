@@ -90,7 +90,7 @@
         var newVal = parseFloat(pctNew.value);
         if (oldVal === 0) { outputEl.textContent = t('ui.11','原值不能为 0'); setStatus('', 'error'); return; }
         var change = ((newVal - oldVal) / oldVal) * 100;
-        var sign = change >= 0 ? '增长' : '下降';
+        var sign = change >= 0 ? t('ui.signUp','增长') : t('ui.signDown','下降');
         outputEl.textContent = t('ui.10','从 ') + oldVal + t('ui.9',' 到 ') + newVal + '：' + sign + ' ' + Math.abs(change).toFixed(2) + '%';
         setStatus('');
       });

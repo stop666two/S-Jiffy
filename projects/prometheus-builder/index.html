@@ -86,9 +86,9 @@
         var id = ++rowSeq;
         var div = document.createElement('div');
         div.className = 'label-row';
-        div.innerHTML = '<input class="label-key input" data-i18n-placeholder="ui.105" placeholder="标签名，如 method">'
-          + '<input class="label-val input" data-i18n-placeholder="ui.106" placeholder="示例值，如 GET">'
-          + '<button class="btn btn-secondary label-del" type="button">删</button>';
+        div.innerHTML = '<input class="label-key input" data-i18n-placeholder="ui.105" placeholder="' + t('ui.105','标签名，如 method') + '">'
+          + '<input class="label-val input" data-i18n-placeholder="ui.106" placeholder="' + t('ui.106','示例值，如 GET') + '">'
+          + '<button class="btn btn-secondary label-del" type="button">' + t('ui.del','删') + '</button>';
         div.querySelector('.label-del').addEventListener('click', function () {
           div.parentNode.removeChild(div);
         });
@@ -177,7 +177,7 @@
         code += '  http.Handle("/metrics", promhttp.Handler())\n';
         code += '  http.ListenAndServe(":8080", nil)\n';
         code += '}\n';
-        code += '\n// 埋点示例：' + varName + '.WithLabelValues(' + (labels.length ? quoteStr(labels[0].val || 'example') : '"example"') + ').Inc()\n';
+        code += '\n// ' + t('ui.sampleComment','埋点示例：') + varName + '.WithLabelValues(' + (labels.length ? quoteStr(labels[0].val || 'example') : '"example"') + ').Inc()\n';
         return { code: code, port: 8080 };
       }
 
@@ -209,7 +209,7 @@
       }
 
       function buildScrape(name, port) {
-        var s = '# prometheus.yml scrape 配置片段\n';
+        var s = '# ' + t('ui.scrapeComment','prometheus.yml scrape 配置片段') + '\n';
         s += 'scrape_configs:\n';
         s += '  - job_name: ' + quoteStr(name) + '\n';
         s += '    static_configs:\n';

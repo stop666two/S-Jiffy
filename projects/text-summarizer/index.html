@@ -8,7 +8,7 @@
 .summary-stat{display:flex;gap:16px;margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">文本摘要工具</h1><p class="tool-desc" data-i18n="desc">基于词频提取关键句子，可按句子数量限制摘要长度。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="粘贴长文章以生成摘要..." style="min-height:180px;"></textarea></div>
 <div class="opt-row">
@@ -16,7 +16,7 @@
 <button id="summarizeBtn" class="btn btn-primary" data-i18n="ui.7">生成摘要</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="summary-stat"><span>原文：<strong id="origSents">0</strong> 句</span><span>摘要：<strong id="sumSents">0</strong> 句</span><span>缩减：<strong id="reduction">0%</strong></span></div>
+<div class="summary-stat"><span><span data-i18n="ui.original">原文：</span><strong id="origSents">0</strong> <span data-i18n="ui.sents">句</span></span><span><span data-i18n="ui.summary">摘要：</span><strong id="sumSents">0</strong> <span data-i18n="ui.sents">句</span></span><span><span data-i18n="ui.reduction">缩减：</span><strong id="reduction">0%</strong></span></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -37,10 +37,10 @@ var selected={};for(var li=0;li<Math.min(limit,scores.length);li++){selected[sco
 var result=[];for(var ri=0;ri<sents.length;ri++){if(selected[ri])result.push(sents[ri].trim());}
 return result.join(' ');}
 
-function process(){var t=i.value.trim();if(!t){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus(t('ui.100','请输入文本'),'error');return;}
-var origSents=(t.match(/[^.!?\n]+[.!?]?/g)||[]).length;oS.textContent=origSents;
+function process(){var txt=i.value.trim();if(!txt){o.textContent='';oS.textContent='0';sS.textContent='0';rd.textContent='0%';setStatus(t('ui.100','请输入文本'),'error');return;}
+var origSents=(txt.match(/[^.!?\n]+[.!?]?/g)||[]).length;oS.textContent=origSents;
 var limit=parseInt(document.getElementById('lengthSelect').value);
-var summary=summarize(t,limit);o.textContent=summary;
+var summary=summarize(txt,limit);o.textContent=summary;
 var sumS=(summary.match(/[^.!?\n]+[.!?]?/g)||[]).length;sS.textContent=sumS;
 var pct=origSents>0?Math.round((1-sumS/origSents)*100):0;rd.textContent=pct+'%';
 setStatus(t('ui.9','已生成摘要，共 ') +sumS+ t('ui.8',' 句'));}

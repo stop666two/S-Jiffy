@@ -31,9 +31,9 @@ encodeBtn.addEventListener('click',function(){
     {label: t('ui.4','CSS 转义'),val:cssEncode(txt)},
     {label: t('ui.3','XML 实体编码'),val:xmlEncode(txt)},
     {label: t('ui.2','Base64 编码'),val:btoa(unescape(encodeURIComponent(txt)))},
-    {label:'Unicode 转义 (\\uXXXX)',val:txt.split('').map(function(c){var n=c.charCodeAt(0);return n<128?c:'\\u'+n.toString(16).padStart(4,'0');}).join('')},
-    {label:'十六进制 (每字符)',val:txt.split('').map(function(c){return'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0');}).join('')},
-    {label:'八进制 (每字符)',val:txt.split('').map(function(c){return'\\'+c.charCodeAt(0).toString(8).padStart(3,'0');}).join('')}
+    {label:t('ui.9','Unicode 转义 (\\uXXXX)'),val:txt.split('').map(function(c){var n=c.charCodeAt(0);return n<128?c:'\\u'+n.toString(16).padStart(4,'0');}).join('')},
+    {label:t('ui.10','十六进制 (每字符)'),val:txt.split('').map(function(c){return'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0');}).join('')},
+    {label:t('ui.11','八进制 (每字符)'),val:txt.split('').map(function(c){return'\\'+c.charCodeAt(0).toString(8).padStart(3,'0');}).join('')}
   ];
   var html='';
   for(var i=0;i<encoders.length;i++){

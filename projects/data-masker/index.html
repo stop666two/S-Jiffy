@@ -37,7 +37,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">数据脱敏器</h1>
@@ -45,11 +45,11 @@
     <div class="card">
       <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="粘贴包含敏感数据的文本，如日志、导出数据..."></textarea>
       <div class="mask-opts">
-        <label class="mask-opt"><input type="checkbox" id="optPhone" checked> 手机号（11 位 → 138****1234）</label>
-        <label class="mask-opt"><input type="checkbox" id="optEmail" checked> 邮箱（a***@domain.com）</label>
-        <label class="mask-opt"><input type="checkbox" id="optIdcard" checked> 身份证（18 位 → 前4后4）</label>
-        <label class="mask-opt"><input type="checkbox" id="optBank" checked> 银行卡（16-19 位 → 前4后4）</label>
-        <label class="mask-opt"><input type="checkbox" id="optSecret" checked> 密钥类长串（≥24 位 → 前6后4）</label>
+        <label class="mask-opt"><input type="checkbox" id="optPhone" checked><span data-i18n="ui.phone">手机号（11 位 → 138****1234）</span></label>
+        <label class="mask-opt"><input type="checkbox" id="optEmail" checked><span data-i18n="ui.email">邮箱（a***@domain.com）</span></label>
+        <label class="mask-opt"><input type="checkbox" id="optIdcard" checked><span data-i18n="ui.idcard">身份证（18 位 → 前4后4）</span></label>
+        <label class="mask-opt"><input type="checkbox" id="optBank" checked><span data-i18n="ui.bank">银行卡（16-19 位 → 前4后4）</span></label>
+        <label class="mask-opt"><input type="checkbox" id="optSecret" checked><span data-i18n="ui.secret">密钥类长串（≥24 位 → 前6后4）</span></label>
       </div>
       <div style="margin-top:12px;display:flex;gap:12px;">
         <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
@@ -161,13 +161,13 @@
         for (var i = 0; i < items.length; i++) {
           total += items[i].n;
           if (items[i].n > 0) {
-            html += items[i].label + ' <b>' + items[i].n + '</b> 处 · ';
+            html += items[i].label + ' <b>' + items[i].n + '</b>' + t('ui.8',' 处 · ');
           }
         }
         if (total === 0) {
           maskStats.textContent = t('ui.2','未发现可脱敏内容（或对应类型未勾选）');
         } else {
-          html = '共替换 <b>' + total + '</b> 处｜' + html;
+          html = t('ui.9','共替换 <b>{n}</b> 处｜').replace('{n}', total) + html;
           maskStats.innerHTML = html.slice(0, -3);
         }
         setStatus(t('ui.1','脱敏完成'));

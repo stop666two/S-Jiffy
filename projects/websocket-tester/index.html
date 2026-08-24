@@ -13,7 +13,7 @@
 .connected { color:var(--color-success); font-weight:600; }
 .disconnected { color:var(--color-error); font-weight:600; }
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">WebSocket 测试</h1><p class="tool-desc" data-i18n="desc">测试 WebSocket 连接发送和接收消息</p>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
   <div style="flex:1;min-width:240px;"><label style="display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">WebSocket URL</label><input id="wsUrl" class="input" placeholder="wss://echo.websocket.org" value="wss://echo.websocket.org" style="height:44px;"></div>
@@ -76,7 +76,7 @@
         setStatus(t('ui.14','收到消息'));
       };
       ws.onerror = function (e) {
-        log('连接错误', 'error');
+        log(t('ui.err','连接错误'), 'error');
         setStatus(t('ui.102','连接错误'), 'error');
       };
       ws.onclose = function (e) {
@@ -86,7 +86,7 @@
         sendBtn.disabled = true;
         statusBar.textContent = t('ui.13','已断开');
         statusBar.className = 'tool-status disconnected';
-        log('连接已关闭 (code: ' + e.code + ')', 'system');
+        log(t('ui.closed','连接已关闭 (code: ') + e.code + ')', 'system');
         setStatus(t('ui.12','连接已断开'));
         ws = null;
       };

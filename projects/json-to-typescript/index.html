@@ -29,7 +29,7 @@
         <div>
           <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.2">TypeScript 接口</label>
           <div class="output-box" style="min-height:340px;">
-            <textarea id="ts输出" readonly data-i18n-placeholder="ui.101" placeholder="生成的 TypeScript 接口..."></textarea>
+            <textarea id="tsOutput" readonly data-i18n-placeholder="ui.101" placeholder="生成的 TypeScript 接口..."></textarea>
             <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
           </div>
         </div>
@@ -50,7 +50,7 @@
   <script>
     (function () {
       var jsonInput = document.getElementById('jsonInput');
-      var ts输出 = document.getElementById(t('ui.4','ts输出'));
+      var tsOutput = document.getElementById(t('ui.4','tsOutput'));
       var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
       var interfaces = [];
@@ -122,17 +122,17 @@
             var arrayItemType = rootType.replace('[]', '');
             finalStr += '\n\nexport type ' + rootName + ' = ' + arrayItemType + '[];';
           }
-          ts输出.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
+          tsOutput.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
           setStatus(t('ui.convertOk','转换成功'));
         } catch (e) {
-          ts输出.value = '';
+          tsOutput.value = '';
           setStatus(t('ui.3','JSON 解析失败: ') + e.message, 'error');
         }
       }
 
       convertBtn.addEventListener('click', convert);
-      clearBtn.addEventListener('click', function () { jsonInput.value = ''; ts输出.value = ''; setStatus(''); jsonInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (ts输出.value) { copyToClipboard(ts输出.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
+      clearBtn.addEventListener('click', function () { jsonInput.value = ''; tsOutput.value = ''; setStatus(''); jsonInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (tsOutput.value) { copyToClipboard(tsOutput.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
       jsonInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') convert(); });
     })();
   </script>

@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">统计计算器</h1>
     <p class="tool-desc" data-i18n="desc">对一组数字计算总和、计数、均值、中位数、众数、最值、极差、方差和标准差。</p>
@@ -57,7 +57,7 @@
       var nums = [];
       for (var i = 0; i < parts.length; i++) {
         var n = parseFloat(parts[i]);
-        if (isNaN(n)) { setStatus('"' + parts[i] + '" 不是有效数字', 'error'); return; }
+        if (isNaN(n)) { setStatus('"' + parts[i] + t('ui.104','" 不是有效数字'), 'error'); return; }
         nums.push(n);
       }
       if (nums.length === 0) { setStatus(t('ui.101','请输入至少一个数字'), 'error'); return; }
@@ -86,7 +86,7 @@
         if (freq[keys[i]] > maxFreq) { maxFreq = freq[keys[i]]; modeVals = [keys[i]]; }
         else if (freq[keys[i]] === maxFreq) modeVals.push(keys[i]);
       }
-      var mode = modeVals.length === keys.length ? '无' : modeVals.join(', ');
+      var mode = modeVals.length === keys.length ? t('ui.103','无') : modeVals.join(', ');
 
       var min = sorted[0];
       var max = sorted[count-1];

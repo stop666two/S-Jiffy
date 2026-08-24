@@ -45,7 +45,7 @@
     </div>
 
     <div class="output-box">
-      <textarea id="html输出" readonly data-i18n-placeholder="ui.104" placeholder="HTML 代码将显示在这里..."></textarea>
+      <textarea id="htmlOutput" readonly data-i18n-placeholder="ui.104" placeholder="HTML 代码将显示在这里..."></textarea>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
@@ -60,7 +60,7 @@
       var csvInput = document.getElementById('csvInput');
       var optHeader = document.getElementById('optHeader');
       var optSep = document.getElementById('optSep');
-      var html输出 = document.getElementById(t('ui.7','html输出'));
+      var htmlOutput = document.getElementById('htmlOutput');
       var previewArea = document.getElementById('previewArea');
       var generateBtn = document.getElementById('generateBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
@@ -115,7 +115,7 @@
         }
         html += '  </tbody>\n</table>';
 
-        html输出.value = html;
+        htmlOutput.value = html;
 
         var previewHtml = '<table>\n';
         if (headerRow) {
@@ -140,8 +140,8 @@
       }
 
       generateBtn.addEventListener('click', generate);
-      clearBtn.addEventListener('click', function () { csvInput.value = ''; html输出.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (html输出.value) { copyToClipboard(html输出.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
+      clearBtn.addEventListener('click', function () { csvInput.value = ''; htmlOutput.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
+      copyBtn.addEventListener('click', function () { if (htmlOutput.value) { copyToClipboard(htmlOutput.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
       csvInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generate(); });
     })();
   </script>

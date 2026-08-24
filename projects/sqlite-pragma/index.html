@@ -27,7 +27,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">SQLite PRAGMA 速查</h1>
@@ -161,16 +161,19 @@
       }
       resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 条 PRAGMA');
       if (items.length === 0) {
-        pList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的 PRAGMA，换个关键词试试。</p>';
+        var noMatchMsg = t('ui.102','没有匹配的 PRAGMA，换个关键词试试。');
+        pList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + noMatchMsg + '</p>';
         return;
       }
+      var lParam = t('ui.103','参数：');
+      var lReturn = t('ui.104','返回：');
       var html = '';
       for (var j = 0; j < items.length; j++) {
         var it = items[j];
         html += '<div class="p-card" data-stmt="' + htmlEscape(it.name) + '">'
           + '<div class="p-head"><span class="p-name">' + htmlEscape(it.name) + '</span><span class="p-cat">' + htmlEscape(it.cat) + '</span></div>'
-          + '<div class="p-meta"><b>参数：</b>' + htmlEscape(it.param) + '</div>'
-          + '<div class="p-meta"><b>返回：</b>' + htmlEscape(it.returns) + '</div>'
+          + '<div class="p-meta"><b>' + lParam + '</b>' + htmlEscape(it.param) + '</div>'
+          + '<div class="p-meta"><b>' + lReturn + '</b>' + htmlEscape(it.returns) + '</div>'
           + '<div class="p-desc">' + htmlEscape(it.desc) + '</div>'
           + '</div>';
       }

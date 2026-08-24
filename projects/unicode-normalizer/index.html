@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Unicode 归一化 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.norm-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.norm-row:last-child{border:none;}.norm-label{font-weight:600;color:var(--color-text-secondary);margin-bottom:4px;}.norm-val{font-family:var(--font-mono);word-break:break-all;padding:6px 10px;background:var(--color-bg-soft);border-radius:var(--radius-sm);margin-top:2px;font-size:14px;}.norm-codepoints{font-size:12px;color:var(--color-text-disabled);margin-top:2px;font-family:var(--font-mono);word-break:break-all;}.norm-diff{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}</style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Unicode 归一化</h1><p class="tool-desc" data-i18n="desc">查看文本的 NFD / NFC / NFKD / NFKC 归一化形式和码点序列</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入文本（如 é, ﬃ, ①, ガ）..." style="min-height:80px;"></textarea></div>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="normalizeBtn" class="btn btn-primary" data-i18n="ui.1">归一化</button><button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button></div>
@@ -45,11 +45,11 @@ normalizeBtn.addEventListener('click',function(){
   for(var i=0;i<forms.length;i++){
     var f=forms[i];var d=charDisplay(f.val);var original=charDisplay(txt);
     var isSame=f.val===txt;
-    html+='<div class="norm-row"><div class="norm-label">'+htmlEscape(f.name)+(isSame?' <span style="color:var(--color-text-disabled);font-weight:400;">(与输入相同)</span>':'')+'</div>';
+    html+='<div class="norm-row"><div class="norm-label">'+htmlEscape(f.name)+(isSame?' <span style="color:var(--color-text-disabled);font-weight:400;">'+t('ui.same','(与输入相同)')+'</span>':'')+'</div>';
     html+='<div class="norm-val">'+htmlEscape(f.val)+'</div>';
     html+='<div class="norm-codepoints">'+d.hexSeq+'</div>';
-    html+='<div class="norm-codepoints">字符: '+d.charsSeq+'</div>';
-    html+='<div class="norm-diff">码点数量: '+d.count+' (输入: '+original.count+')'+(d.count!==original.count?' <span style="color:var(--color-error);">差异: '+(d.count-original.count)+'</span>':'')+'</div></div>';
+    html+='<div class="norm-codepoints">'+t('ui.chars','字符: ')+d.charsSeq+'</div>';
+    html+='<div class="norm-diff">'+t('ui.count','码点数量: ')+d.count+t('ui.inputCount',' (输入: ')+original.count+')'+(d.count!==original.count?' <span style="color:var(--color-error);">'+t('ui.diff','差异: ')+(d.count-original.count)+'</span>':'')+'</div></div>';
   }
   normResults.innerHTML=html;resultCard.style.display='block';
   outputText.textContent='NFD: '+forms[0].val+' | NFC: '+forms[1].val+' | NFKD: '+forms[2].val+' | NFKC: '+forms[3].val;

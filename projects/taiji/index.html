@@ -27,14 +27,14 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">旋转太极图</h1>
     <p class="tool-desc" data-i18n="desc">阴阳流转，动静随心；深色禅意画布上，让太极缓缓旋转，金色粒子随鼠标游走。</p>
     <div class="card zen-card">
       <div class="stage" id="stage">
-        <canvas id="taijiCanvas" role="img" aria-label="旋转的太极图"></canvas>
+        <canvas id="taijiCanvas" role="img" data-i18n-attr-aria-label="ui.11" aria-label="旋转的太极图"></canvas>
         <div class="zen-line" data-i18n="ui.1">阴阳相生 · 动静互见</div>
       </div>
       <div class="ctl-row">
@@ -206,15 +206,15 @@
 
       dirBtn.addEventListener('click', function () {
         dir = -dir;
-        dirBtn.textContent = t('ui.8','方向：') + (dir === 1 ? '顺时针' : '逆时针');
+        dirBtn.textContent = t('ui.8','方向：') + (dir === 1 ? t('ui.12','顺时针') : t('ui.13','逆时针'));
         setStatus(t('ui.7','旋转方向已切换'));
       });
 
       autoBtn.addEventListener('click', function () {
         auto = !auto;
-        autoBtn.textContent = t('ui.6','自动变速：') + (auto ? '开' : '关');
+        autoBtn.textContent = t('ui.6','自动变速：') + (auto ? t('ui.14','开') : t('ui.15','关'));
         autoBtn.className = 'btn zen-btn' + (auto ? ' on' : '');
-        setStatus(auto ? '已开启自动变速' : '已关闭自动变速');
+        setStatus(auto ? t('ui.16','已开启自动变速') : t('ui.17','已关闭自动变速'));
       });
 
       window.addEventListener('resize', resizeCanvas);

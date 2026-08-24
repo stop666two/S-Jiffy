@@ -34,7 +34,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">PDF分割</h1>
 <p class="tool-desc" data-i18n="desc">将PDF文件分割成单独的页面或范围。完全在浏览器中工作。</p>
@@ -171,13 +171,13 @@ function errLoad(){setStatus(t('badPdf','无法解析的PDF文件或PDF已损坏
   var dragEl=null,from=-1,to=-1,strip=$('pgStrip');
   function idxOf(el){var a=strip.querySelectorAll('.pg-cell'),i;for(i=0;i<a.length;i++){if(a[i]===el)return i;}return -1;}
   strip.addEventListener('pointerdown',function(e){
-    var t=closest(e.target,'.pg-cell',strip);
-    if(!t)return;
+    var cellEl=closest(e.target,'.pg-cell',strip);
+    if(!cellEl)return;
     if(closest(e.target,'.split-btn',strip))return;
     e.preventDefault();
-    dragEl=t;from=idxOf(t);
-    try{t.setPointerCapture(e.pointerId);}catch(err){}
-    t.classList.add('drag');
+    dragEl=cellEl;from=idxOf(cellEl);
+    try{cellEl.setPointerCapture(e.pointerId);}catch(err){}
+    cellEl.classList.add('drag');
   });
   strip.addEventListener('pointermove',function(e){
     if(!dragEl)return;

@@ -5,5 +5,5 @@
 document.getElementById("calcBtn").addEventListener("click",function(){var ht=parseFloat(h.value),gen=g.value;if(!ht){setStatus(t('ui.100','请输入身高'),"error");return}
 var broca=gen==="male"?ht-105:ht-110;var devin=gen==="male"?50+0.91*(ht-152.4):45.5+0.91*(ht-152.4);var hM=ht/100;var lowBmi=18.5*hM*hM,highBmi=24*hM*hM;
 bv.textContent=broca.toFixed(1)+" kg";dv.textContent=devin.toFixed(1)+" kg";bl.textContent=lowBmi.toFixed(1)+" kg";bh.textContent=highBmi.toFixed(1)+" kg";rv.textContent=lowBmi.toFixed(1)+" ~ "+highBmi.toFixed(1)+" kg";
-o.textContent="身高: "+ht+" cm | 标准: "+broca.toFixed(1)+" ~ "+devin.toFixed(1)+" kg | 健康范围: "+lowBmi.toFixed(1)+" ~ "+highBmi.toFixed(1)+" kg";setStatus(t('ui.101','计算完成'))});
+o.textContent=t('ui.10','身高: ')+ht+t('ui.11',' cm | 标准: ')+broca.toFixed(1)+" ~ "+devin.toFixed(1)+t('ui.12',' kg | 健康范围: ')+lowBmi.toFixed(1)+" ~ "+highBmi.toFixed(1)+" kg";setStatus(t('ui.101','计算完成'))});
 document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.102','已复制'))}});})();</script></body></html>

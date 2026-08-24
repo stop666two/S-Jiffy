@@ -17,14 +17,14 @@ var domainInput=document.getElementById('domainInput'),checkBtn=document.getElem
 checkBtn.addEventListener('click',function(){
   var domain=domainInput.value.trim();if(!domain){setStatus(t('ui.100','请输入域名'),'error');return;}
   if(domain.indexOf('://')>=0)domain=domain.replace(/^https?:\/\//,'').split('/')[0];
-  resultCard.style.display='block';hstsHeader.innerHTML='<div style="color:var(--color-text-secondary);">检查中...</div>';preflightChecks.innerHTML='';preloadStatus.innerHTML='';
+  resultCard.style.display='block';hstsHeader.innerHTML='<div style="color:var(--color-text-secondary);">'+t('ui.8','检查中...')+'</div>';preflightChecks.innerHTML='';preloadStatus.innerHTML='';
   var url='https://'+domain;
   fetch(url,{method:'HEAD',mode:'cors'}).then(function(resp){
     var hsts=resp.headers.get('Strict-Transport-Security');
-    hstsHeader.innerHTML='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:4px;">Strict-Transport-Security</div><div class="hsts-header-box">'+htmlEscape(hsts||'未设置')+'</div>';
+    hstsHeader.innerHTML='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:4px;">Strict-Transport-Security</div><div class="hsts-header-box">'+htmlEscape(hsts||t('ui.9','未设置'))+'</div>';
     if(!hsts){
-      preflightChecks.innerHTML='<div style="color:var(--color-error);font-weight:600;">❌ 未设置 HSTS 头部</div>';
-      preloadStatus.innerHTML='<div style="color:var(--color-text-secondary);">不符合 preload 条件：需要先配置 HSTS 头部。</div>';
+      preflightChecks.innerHTML='<div style="color:var(--color-error);font-weight:600;">'+t('ui.10','❌ 未设置 HSTS 头部')+'</div>';
+      preloadStatus.innerHTML='<div style="color:var(--color-text-secondary);">'+t('ui.11','不符合 preload 条件：需要先配置 HSTS 头部。')+'</div>';
       outputText.textContent = t('ui.7','HSTS: 未设置');
       setStatus(t('ui.2','检查完成'));return;
     }
@@ -32,25 +32,25 @@ checkBtn.addEventListener('click',function(){
     var hasIncludeSub=hsts.match(/includeSubDomains/i)!==null;
     var hasPreload=hsts.match(/preload/i)!==null;
     var checks='';var allPass=true;
-    checks+='<div class="check-row"><span class="check-name">max-age >= 10886400 (31536000)</span><span class="'+(maxAge>=31536000?'check-pass':'check-fail')+'">'+(maxAge>=31536000?'✓ 是 ('+maxAge+'s)':t('ui.6','✗ 当前 ') +maxAge+ t('ui.5','s，需要 ≥31536000'))+'</span></div>';
+    checks+='<div class="check-row"><span class="check-name">max-age >= 10886400 (31536000)</span><span class="'+(maxAge>=31536000?'check-pass':'check-fail')+'">'+(maxAge>=31536000?(t('ui.12','✓ 是 (')+maxAge+'s)'):t('ui.6','✗ 当前 ') +maxAge+ t('ui.5','s，需要 ≥31536000'))+'</span></div>';
     if(!hasMaxAge)allPass=false;
-    checks+='<div class="check-row"><span class="check-name">includeSubDomains</span><span class="'+(hasIncludeSub?'check-pass':'check-fail')+'">'+(hasIncludeSub?'✓ 已设置':'✗ 未设置')+'</span></div>';
+    checks+='<div class="check-row"><span class="check-name">includeSubDomains</span><span class="'+(hasIncludeSub?'check-pass':'check-fail')+'">'+(hasIncludeSub?t('ui.13','✓ 已设置'):t('ui.14','✗ 未设置'))+'</span></div>';
     if(!hasIncludeSub)allPass=false;
-    checks+='<div class="check-row"><span class="check-name">preload 标记</span><span class="'+(hasPreload?'check-pass':'check-fail')+'">'+(hasPreload?'✓ 已设置':'✗ 未设置')+'</span></div>';
+    checks+='<div class="check-row"><span class="check-name">'+t('ui.15','preload 标记')+'</span><span class="'+(hasPreload?'check-pass':'check-fail')+'">'+(hasPreload?t('ui.13','✓ 已设置'):t('ui.14','✗ 未设置'))+'</span></div>';
     if(!hasPreload)allPass=false;
-    checks+='<div class="check-row"><span class="check-name">HTTPS 可用</span><span class="check-pass">✓ 是</span></div>';
-    preflightChecks.innerHTML='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:6px;">Preload 条件检查</div>'+checks;
+    checks+='<div class="check-row"><span class="check-name">'+t('ui.16','HTTPS 可用')+'</span><span class="check-pass">'+t('ui.17','✓ 是')+'</span></div>';
+    preflightChecks.innerHTML='<div style="font-size:var(--font-size-sm);font-weight:600;margin-bottom:6px;">'+t('ui.18','Preload 条件检查')+'</div>'+checks;
     if(allPass&&maxAge>=31536000&&hasIncludeSub&&hasPreload){
-      preloadStatus.innerHTML='<div style="color:var(--color-success);font-weight:600;font-size:var(--font-size-base);padding:8px 0;">✅ 符合 HSTS preload 提交条件</div><div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">可提交至 <a href="https://hstspreload.org/" target="_blank" style="color:var(--color-accent);">https://hstspreload.org/</a></div>';
+      preloadStatus.innerHTML='<div style="color:var(--color-success);font-weight:600;font-size:var(--font-size-base);padding:8px 0;">'+t('ui.19','✅ 符合 HSTS preload 提交条件')+'</div><div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">'+t('ui.20','可提交至 ')+'<a href="https://hstspreload.org/" target="_blank" style="color:var(--color-accent);">https://hstspreload.org/</a></div>';
       outputText.textContent = t('ui.4','HSTS: 符合 preload 条件');
     }else{
-      preloadStatus.innerHTML='<div style="color:#e37400;font-weight:600;font-size:var(--font-size-base);padding:8px 0;">⚠️ 尚不符合 preload 条件</div><div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">修复以上问题后再提交至 hstspreload.org。</div>';
+      preloadStatus.innerHTML='<div style="color:#e37400;font-weight:600;font-size:var(--font-size-base);padding:8px 0;">'+t('ui.21','⚠️ 尚不符合 preload 条件')+'</div><div style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">'+t('ui.22','修复以上问题后再提交至 hstspreload.org。')+'</div>';
       outputText.textContent = t('ui.3','HSTS: 不符合 preload 条件');
     }
     setStatus(t('ui.2','检查完成'));
   }).catch(function(err){
-    hstsHeader.innerHTML='<div style="color:var(--color-error);">请求失败: '+htmlEscape(err.message)+'</div>';
-    preflightChecks.innerHTML='<div style="color:var(--color-text-secondary);">由于 CORS 限制无法完整检查。可以尝试直接访问 hstspreload.org 检查。</div>';
+    hstsHeader.innerHTML='<div style="color:var(--color-error);">'+t('ui.23','请求失败: ')+htmlEscape(err.message)+'</div>';
+    preflightChecks.innerHTML='<div style="color:var(--color-text-secondary);">'+t('ui.24','由于 CORS 限制无法完整检查。可以尝试直接访问 hstspreload.org 检查。')+'</div>';
     setStatus(t('ui.101','检查失败'),'error');
   });
 });

@@ -12,7 +12,7 @@
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 </div>
 <div class="result-group">
-<div><span class="chip" id="colorChip"></span>HSL: <span class="val" id="hsl结果">6°, 78%, 57%</span></div>
+<div><span class="chip" id="colorChip"></span>HSL: <span class="val" id="hslResult">6°, 78%, 57%</span></div>
 </div>
 <div class="result-group" style="font-size:14px;">
 <div>H: <b id="hVal">6</b>°</div>
@@ -29,7 +29,7 @@ var hexInput=document.getElementById('hexInput');
 var convertBtn=document.getElementById('convertBtn');
 var colorPreview=document.getElementById('colorPreview');
 var colorChip=document.getElementById('colorChip');
-var hsl结果=document.getElementById(t('ui.2','hsl结果'));
+var hslResult=document.getElementById('hslResult');
 var hVal=document.getElementById('hVal');
 var sVal=document.getElementById('sVal');
 var lVal=document.getElementById('lVal');
@@ -80,7 +80,7 @@ var hsl=rgbToHsl(r,g,b);
 hVal.textContent=hsl.h;
 sVal.textContent=hsl.s;
 lVal.textContent=hsl.l;
-hsl结果.textContent=hsl.h+'°, '+hsl.s+'%, '+hsl.l+'%';
+hslResult.textContent=hsl.h+'°, '+hsl.s+'%, '+hsl.l+'%';
 outputEl.textContent=c+' = HSL('+hsl.h+','+hsl.s+'%,'+hsl.l+'%)';
 setStatus('');
 }

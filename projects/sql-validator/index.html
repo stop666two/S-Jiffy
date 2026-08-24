@@ -3,7 +3,7 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .sql-input{min-height:200px;resize:vertical;font-family:var(--font-mono);font-size:14px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none;width:100%;display:block}.sql-input:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.issue{font-size:13px;padding:6px 10px;border-radius:var(--radius-sm);margin:4px 0}.issue.warn{background:#fff8e6;color:#8a6d00}.issue.err{background:#fce8e6;color:#9f2f2d}.issue.ok{background:#e6f4ea;color:#346538}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">SQL 校验器</h1><p class="tool-desc" data-i18n="desc">基础 SQL 语法检查：检查关键字拼写、引号匹配、常见语法错误。</p>
 <div class="card">
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -33,7 +33,7 @@ var keywords=['SELECT','FROM','WHERE','INSERT','INTO','VALUES','UPDATE','SET','D
 function check(){
 var sql=sqlInput.value;
 var issues=[];
-if(!sql.trim()){issues.push({type:'warn',msg: t('ui.13','SQL 语句为空')});render结果s(issues);return;}
+if(!sql.trim()){issues.push({type:'warn',msg: t('ui.13','SQL 语句为空')});renderIssues(issues);return;}
 var upper=sql.toUpperCase();
 var typos={'FORM':'FROM','SELEC':'SELECT','SELCT':'SELECT','DELTE':'DELETE','DELET':'DELETE','UDPATE':'UPDATE','UPDTE':'UPDATE','ISNERT':'INSERT','INSRT':'INSERT','WHRER':'WHERE','WAHERE':'WHERE','WERE':'WHERE','GRPOU':'GROUP','GRUOP':'GROUP','ODERR':'ORDER','ORDRE':'ORDER','HAVIG':'HAVING','HAVNG':'HAVING','DINSTINCT':'DISTINCT','UNOIN':'UNION','HTEN':'THEN','WHEEN':'WHEN','ELSEL':'ELSE','ND':'AND','OT':'NOT','TABEL':'TABLE','VAKUES':'VALUES','CLOUMN':'COLUMN','JOINN':'JOIN'};
 var tokenRe=/"([^"]*)"|'([^']*)'|`([^`]*)`|\S+/g;
@@ -42,9 +42,9 @@ var m;
 while((m=tokenRe.exec(sql))!==null)tokens.push({text:m[0],index:m.index});
 var reported={};
 for(var i=0;i<tokens.length;i++){
-var t=tokens[i].text;
-var up=t.toUpperCase();
-if(t.startsWith("'")||t.startsWith('"')||t.startsWith('`'))continue;
+var tok=tokens[i].text;
+var up=tok.toUpperCase();
+if(tok.startsWith("'")||tok.startsWith('"')||tok.startsWith('`'))continue;
 if(typos[up]&&!reported[up]){
 reported[up]=true;
 var line=sql.slice(0,tokens[i].index).split('\n').length;
@@ -68,8 +68,8 @@ for(var i=0;i<sql.length;i++){
 if(sql[i]==='(')paren++;
 if(sql[i]===')')paren--;
 }
-if(paren>0)issues.push({type:'err',msg: t('ui.8','括号未闭合：缺少 ') + paren + ' 个 )'});
-if(paren<0)issues.push({type:'err',msg: t('ui.7','括号多余：多了 ') + (-paren) + ' 个 )'});
+if(paren>0)issues.push({type:'err',msg: t('ui.8','括号未闭合：缺少 ') + paren + t('ui.17',' 个 )')});
+if(paren<0)issues.push({type:'err',msg: t('ui.7','括号多余：多了 ') + (-paren) + t('ui.17',' 个 )')});
 var startsWithKeyword=false;
 var firstToken=tokens[0];
 if(firstToken&&['SELECT','INSERT','UPDATE','DELETE','CREATE','DROP','ALTER','WITH'].indexOf(firstToken.text.toUpperCase())!==-1){
@@ -77,15 +77,15 @@ startsWithKeyword=true;
 }
 if(!startsWithKeyword&&tokens.length>0)issues.push({type:'warn',msg: t('ui.6','语句应以 SQL 关键字开头（SELECT/INSERT/UPDATE/DELETE 等）')});
 if(issues.length===0)issues.push({type:'ok',msg: t('ui.5','语法检查通过，未发现明显错误')});
-render结果s(issues);
+renderIssues(issues);
 outputEl.textContent = t('ui.4','发现 ')+(issues.filter(function(i){return i.type!=='ok';}).length)+ t('ui.3',' 个问题');
 }
 
-function render结果s(issues){
+function renderIssues(issues){
 var html='';
 for(var i=0;i<issues.length;i++){
 var cls=issues[i].type==='err'?'err':issues[i].type==='warn'?'warn':'ok';
-var label=issues[i].type==='err'?'错误':issues[i].type==='warn'?'警告':'通过';
+var label=issues[i].type==='err'?t('ui.14','错误'):issues[i].type==='warn'?t('ui.15','警告'):t('ui.16','通过');
 html+='<div class="issue '+cls+'">['+label+'] '+issues[i].msg+'</div>';
 }
 results.innerHTML=html;

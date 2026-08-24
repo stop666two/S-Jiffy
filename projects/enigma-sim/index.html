@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Enigma 模拟器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.enigma-grid{font-family:var(--font-mono);font-size:var(--font-size-xs);margin-top:var(--space-2)}.enigma-grid label{display:block;font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:var(--space-1)}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Enigma 模拟器</h1><p class="tool-desc" data-i18n="desc">简化版 Enigma 密码机模拟：3 转子、反射器、插线板。</p>
 <div class="card">
 <div class="enigma-grid">
@@ -96,11 +96,11 @@ r+=ch;
 return r;
 }
 processBtn.addEventListener('click',function(){
-var t=inputEl.value;
-if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
+var txt=inputEl.value;
+if(!txt){setStatus(t('ui.100','请输入文本'),'error');return;}
 var pos=positions.value.toUpperCase();
 if(pos.length!==3){setStatus(t('ui.101','转子位置需要 3 个字母'),'error');return;}
-var r=enigma(t,rotor1.value,rotor2.value,rotor3.value,pos,plugboard.value);
+var r=enigma(txt,rotor1.value,rotor2.value,rotor3.value,pos,plugboard.value);
 outputEl.textContent=r;
 setStatus('');
 });

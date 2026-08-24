@@ -42,8 +42,8 @@ crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:al
 return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(text));}).then(function(sig){var computed=fm.value==='hex'?hex(sig):b64(sig);
 o.textContent=computed;
 var expected=ei.value.trim();if(expected){var match=computed.toLowerCase()===expected.toLowerCase();
-vb.style.display='inline-block';vb.textContent=match?'验证通过 ✓':'验证失败 ✗';vb.className='result-badge '+(match?'ok':'fail');
-setStatus(match?'验证通过':'验证失败');}else{vb.style.display='none';setStatus(t('ui.6','HMAC 已计算'));}}).catch(function(e){setStatus(t('ui.5','错误: ') +e.message,'error');});}
+vb.style.display='inline-block';vb.textContent=(match?t('ui.7','验证通过 ✓'):t('ui.8','验证失败 ✗'));vb.className='result-badge '+(match?'ok':'fail');
+setStatus(match?t('ui.9','验证通过'):t('ui.10','验证失败'));}else{vb.style.display='none';setStatus(t('ui.6','HMAC 已计算'));}}).catch(function(e){setStatus(t('ui.5','错误: ') +e.message,'error');});}
 
 document.getElementById('calcBtn').addEventListener('click',compute);
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});

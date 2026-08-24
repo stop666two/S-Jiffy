@@ -9,7 +9,7 @@
 .output-format label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">TSV 转换器</h1><p class="tool-desc" data-i18n="desc">在制表符分隔（TSV）、逗号分隔（CSV）和 JSON 格式之间互相转换。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="粘贴 TSV、CSV 或 JSON 数据..." style="min-height:150px;"></textarea></div>
 <div class="format-opt">
@@ -45,11 +45,11 @@ out.push(obj);}return JSON.stringify(out,null,2);}
 function toMarkdown(rows){if(rows.length<1)return'';var out='| '+rows[0].join(' | ')+' |\n| '+rows[0].map(function(){return'---';}).join(' | ')+' |\n';
 for(var r=1;r<rows.length;r++){out+='| '+rows[r].join(' | ')+' |\n';}return out;}
 
-function convert(){var t=i.value.trim();if(!t){setStatus(t('ui.100','请输入数据'),'error');return;}
-var delim;if(inf.value==='auto'){delim=detectDelim(t);}else{delim=inf.value==='tsv'?'\t':',';}
-var rows;if(inf.value==='json'||(inf.value==='auto'&&t.trim().startsWith('['))){try{var arr=JSON.parse(t.trim());if(!Array.isArray(arr)||arr.length===0){setStatus(t('ui.101','JSON 必须是数组'),'error');return;}
+function convert(){var txt=i.value.trim();if(!t){setStatus(t('ui.100','请输入数据'),'error');return;}
+var delim;if(inf.value==='auto'){delim=detectDelim(txt);}else{delim=inf.value==='tsv'?'\t':',';}
+var rows;if(inf.value==='json'||(inf.value==='auto'&&txt.trim().startsWith('['))){try{var arr=JSON.parse(txt.trim());if(!Array.isArray(arr)||arr.length===0){setStatus(t('ui.101','JSON 必须是数组'),'error');return;}
 var headers=Object.keys(arr[0]);rows=[headers];for(var r=0;r<arr.length;r++){var rw=[];for(var h=0;h<headers.length;h++){rw.push(arr[r][headers[h]]!==undefined?String(arr[r][headers[h]]):'');}
-rows.push(rw);}}catch(e){setStatus(t('ui.102','无效 JSON'),'error');return;}}else{rows=parseTable(t,delim);}
+rows.push(rw);}}catch(e){setStatus(t('ui.102','无效 JSON'),'error');return;}}else{rows=parseTable(txt,delim);}
 if(rows.length<2){setStatus(t('ui.103','需要表头和数据行'),'error');return;}
 var fmt=document.querySelector('input[name="outFmt"]:checked').value;
 var result='';switch(fmt){case'tsv':result=toTSV(rows);break;case'csv':result=toCSV(rows);break;case'json':result=toJSON(rows);break;case'markdown':result=toMarkdown(rows);break;}

@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>URL 模式匹配 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.test-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);}.test-row:last-child{border:none;}.match-yes{color:var(--color-success);font-weight:600;}.match-no{color:var(--color-error);}.pattern-info{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}</style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">URL 模式匹配</h1><p class="tool-desc" data-i18n="desc">测试 URL 是否匹配 glob 模式（如 /api/*/users）或正则表达式</p>
 <div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.1">模式（支持 glob: * ? [abc] 或 /regex/ 格式）</label><input id="patternInput" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="/api/*/users 或 /^\\/api\\/.*\\/users$/"></div>
 <div class="card"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:6px;" data-i18n="ui.2">测试 URL（每行一个）</label><textarea id="urlsInput" class="input textarea" placeholder="/api/v1/users&#10;/api/v2/users&#10;/admin/users" style="min-height:120px;"></textarea></div>
@@ -45,7 +45,7 @@ matchBtn.addEventListener('click',function(){
     if(test)matched++;
     html+='<div class="test-row"><span class="'+(test?'match-yes':'match-no')+'">'+(test?'✓':'✗')+'</span><span style="font-family:var(--font-mono);font-size:var(--font-size-sm);">'+htmlEscape(u)+'</span></div>';
   }
-  patternInfo.textContent=(isRegex?'正则表达式':'Glob 模式')+ t('ui.6',' · 匹配 ')+matched+'/'+total;
+  patternInfo.textContent=(isRegex?t('ui.regex','正则表达式'):t('ui.glob','Glob 模式'))+ t('ui.6',' · 匹配 ')+matched+'/'+total;
   matchResults.innerHTML=html;resultCard.style.display='block';
   outputText.textContent = t('ui.5','匹配: ')+matched+'/'+total;
   setStatus(t('ui.4','测试完成'));

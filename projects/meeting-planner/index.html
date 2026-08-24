@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">跨时区会议安排器</h1>
@@ -32,7 +32,7 @@
     <div class="card">
       <div class="mtg-controls">
         <input id="timeInput" type="datetime-local" class="input js-focus-input">
-        <label><input type="checkbox" id="sydneyDst"> 悉尼夏令时（+11）</label>
+        <label><input type="checkbox" id="sydneyDst"> <span data-i18n="ui.102">悉尼夏令时（+11）</span></label>
       </div>
       <div class="mtg-zones" id="zoneList"></div>
     </div>
@@ -133,12 +133,12 @@
         var timeStr = fmtZone(utcMs, offset);
         var hour = parseInt(timeStr.slice(11, 13), 10);
         var inWork = hour >= 9 && hour < 17;
-        var mark = inWork ? '可参会（9:00-17:00 内）' : '非工作时段';
+        var mark = inWork ? t('ui.104', '可参会（9:00-17:00 内）') : t('ui.103', '非工作时段');
         var cls = inWork ? 'mtg-ok' : 'mtg-bad';
         html += '<div class="mtg-item"><span><span class="mtg-zone-name">' + htmlEscape(z.name) + '</span> (UTC' + (offset >= 0 ? '+' + offset : offset) + ')</span><span class="mtg-time">' + htmlEscape(timeStr) + '</span><span class="' + cls + '">' + htmlEscape(mark) + '</span></div>';
-        lines.push(z.name + ' (UTC' + (offset >= 0 ? '+' + offset : offset) + ')：' + timeStr + ' — ' + mark);
+        lines.push(z.name + ' (UTC' + (offset >= 0 ? '+' + offset : offset) + ')' + t('ui.105', '：') + timeStr + ' — ' + mark);
       }
-      html += '<div class="mtg-note">工作时段按各时区当地时间 9:00-17:00 判定；夏令时已简化处理，可在输入框下方勾选悉尼夏令时。</div>';
+      html += '<div class="mtg-note">' + t('ui.106', '工作时段按各时区当地时间 9:00-17:00 判定；夏令时已简化处理，可在输入框下方勾选悉尼夏令时。') + '</div>';
       outputText.innerHTML = html;
       copyBtn.onclick = function () { copyToClipboard(lines.join('\n'), copyBtn); };
       setStatus(t('ui.2','已换算 ') + selected.length + t('ui.1',' 个时区'));

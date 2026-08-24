@@ -13,7 +13,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">N-Gram 分析</h1>
     <p class="tool-desc" data-i18n="desc">从文本中提取 N-gram（连续 N 个单元），并按频率排序显示。</p>
@@ -27,13 +27,13 @@
       </div>
       <div class="ng-row">
         <label style="display:flex;align-items:center;gap:8px;">
-          单元类型
+          <span data-i18n="ui.unitType">单元类型</span>
           <select id="unitSel" class="input" style="width:auto;min-width:80px;">
             <option value="word" data-i18n="ui.3">单词</option>
             <option value="char" data-i18n="ui.chars">字符</option>
           </select>
         </label>
-        <label style="display:flex;align-items:center;gap:8px;"><input id="caseChk" type="checkbox" checked> 忽略大小写</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="caseChk" type="checkbox" checked> <span data-i18n="ui.ignoreCase">忽略大小写</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
@@ -88,12 +88,12 @@
       }
       entries.sort(function(a, b) { return b.count - a.count; });
 
-      var output = 'N = ' + n + t('ui.6',', 共 ') + entries.length + ' 个唯一 N-gram\n';
-      output += t('ui.5','单元类型: ') + (unit === 'word' ? '单词' : '字符') + '\n';
-      output += '\n频率排名:\n';
+      var output = 'N = ' + n + t('ui.6',', 共 ') + entries.length + t('ui.9',' 个唯一 N-gram') + '\n';
+      output += t('ui.5','单元类型: ') + (unit === 'word' ? t('ui.word','单词') : t('ui.chars','字符')) + '\n';
+      output += '\n' + t('ui.rankHeader','频率排名:') + '\n';
       var display = Math.min(limit, entries.length);
       for (var i = 0; i < display; i++) {
-        output += (i + 1) + '. "' + entries[i].gram + '" → ' + entries[i].count + ' 次\n';
+        output += (i + 1) + '. "' + entries[i].gram + '" → ' + entries[i].count + t('ui.times',' 次') + '\n';
       }
 
       outputEl.textContent = output;

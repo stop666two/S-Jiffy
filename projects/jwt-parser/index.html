@@ -15,7 +15,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">JWT 解析器</h1>
     <p class="tool-desc" data-i18n="desc">粘贴 JWT Token，解码查看 Header 和 Payload 内容（Base64 解码）。</p>
@@ -26,7 +26,7 @@
       <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
-    <div class="output-box" id="输出Container">
+    <div class="output-box" id="outputArea">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
@@ -86,13 +86,13 @@
           if (payloadObj && payloadObj.exp) {
             var expDate = new Date(payloadObj.exp * 1000);
             var now = new Date();
-            result += '═══════ 时效检查 ═══════\n';
+            result += t('ui.5','═══════ 时效检查 ═══════\n');
             result += t('ui.4','过期时间: ') + expDate.toLocaleString() + '\n';
             result += t('ui.3','当前时间: ') + now.toLocaleString() + '\n';
-            result += (expDate > now) ? '✅ Token 未过期' : '❌ Token 已过期';
+            result += (expDate > now) ? t('ui.6','✅ Token 未过期') : t('ui.7','❌ Token 已过期');
           }
 
-          result += '\n\n═══════ Signature (原始) ═══════\n';
+          result += t('ui.8','\n\n═══════ Signature (原始) ═══════\n');
           result += signatureB64.substring(0, 40) + '... (' + signatureB64.length + ' chars)';
 
           outputEl.textContent = result;

@@ -22,7 +22,7 @@
         <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="100"></div>
       </div>
       <div class="ri-row">
-        <label style="display:flex;align-items:center;gap:8px;">类型
+        <label style="display:flex;align-items:center;gap:8px;"><span data-i18n="ui.type">类型</span>
           <select id="typeSel" class="input" style="width:auto;min-width:80px;">
             <option value="ipv4">IPv4</option>
             <option value="ipv6">IPv6</option>
@@ -95,10 +95,10 @@
 
       var result = [];
       for (var i = 0; i < count; i++) {
-        var t = type;
-        if (t === 'both') t = cryptoByte() < 128 ? 'ipv4' : 'ipv6';
+        var v = type;
+        if (v === 'both') v = cryptoByte() < 128 ? 'ipv4' : 'ipv6';
         var ip;
-        if (t === 'ipv4') {
+        if (v === 'ipv4') {
           if (cidrMin !== null && cidrMax !== null) {
             var range = cidrMax - cidrMin;
             var val = cidrMin + (cryptoUint32() % (range + 1));

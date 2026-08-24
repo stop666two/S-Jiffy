@@ -25,9 +25,9 @@ parseBtn.addEventListener('click',function(){
   var isPublicKey=header.indexOf('-----BEGIN PGP PUBLIC KEY BLOCK-----')>=0;
   var isPrivateKey=header.indexOf('-----BEGIN PGP PRIVATE KEY BLOCK-----')>=0;
   if(!isPublicKey&&!isPrivateKey){
-    html+='<div class="info-row"><span class="info-label">格式验证</span><span class="info-val" style="color:var(--color-error);">⚠️ 未检测到 PGP 块头标记</span></div>';
+    html+='<div class="info-row"><span class="info-label">'+t('formatCheck','格式验证')+'</span><span class="info-val" style="color:var(--color-error);">'+t('headerNotFound','⚠️ 未检测到 PGP 块头标记')+'</span></div>';
   }else{
-    html+='<div class="info-row"><span class="info-label">密钥类型</span><span class="info-val" style="color:var(--color-success);">'+(isPublicKey?'公钥':'私钥')+'</span></div>';
+    html+='<div class="info-row"><span class="info-label">'+t('keyType','密钥类型')+'</span><span class="info-val" style="color:var(--color-success);">'+(isPublicKey?t('publicKey','公钥'):t('privateKey','私钥'))+'</span></div>';
   }
   var bodyLines=[];var inBlock=false;
   for(var i=0;i<lines.length;i++){
@@ -38,18 +38,18 @@ parseBtn.addEventListener('click',function(){
   }
   var body=bodyLines.join('');var keyBytes=null;
   try{var binary=atob(body);keyBytes=[];for(var i=0;i<binary.length;i++)keyBytes.push(binary.charCodeAt(i));}catch(e){}
-  html+='<div class="info-row"><span class="info-label">密钥长度（编码）</span><span class="info-val">'+body.length+' 字符 (Base64)</span></div>';
-  if(keyBytes)html+='<div class="info-row"><span class="info-label">密钥长度（原始）</span><span class="info-val">'+keyBytes.length+' 字节</span></div>';
-  html+='<div class="info-row"><span class="info-label">算法</span><span class="info-val">RSA / DSA / ECC（请使用专业工具获取精确解析）</span></div>';
-  html+='<div class="info-row"><span class="info-label">行数</span><span class="info-val">'+(bodyLines.length+2)+' 行</span></div>';
+  html+='<div class="info-row"><span class="info-label">'+t('keyLengthEncoded','密钥长度（编码）')+'</span><span class="info-val">'+body.length+' '+t('charsBase64','字符 (Base64)')+'</span></div>';
+  if(keyBytes)html+='<div class="info-row"><span class="info-label">'+t('keyLengthRaw','密钥长度（原始）')+'</span><span class="info-val">'+keyBytes.length+' '+t('bytesUnit','字节')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">'+t('algorithm','算法')+'</span><span class="info-val">'+t('algoHint','RSA / DSA / ECC（请使用专业工具获取精确解析）')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">'+t('lineCount','行数')+'</span><span class="info-val">'+(bodyLines.length+2)+' '+t('linesUnit','行')+'</span></div>';
   var versionMatch=text.match(/Version:\s*(.+)/i);
-  if(versionMatch)html+='<div class="info-row"><span class="info-label">版本</span><span class="info-val">'+htmlEscape(versionMatch[1].trim())+'</span></div>';
+  if(versionMatch)html+='<div class="info-row"><span class="info-label">'+t('version','版本')+'</span><span class="info-val">'+htmlEscape(versionMatch[1].trim())+'</span></div>';
   var commentMatch=text.match(/Comment:\s*(.+)/i);
-  if(commentMatch)html+='<div class="info-row"><span class="info-label">注释</span><span class="info-val">'+htmlEscape(commentMatch[1].trim())+'</span></div>';
-  html+='<div class="info-row" style="border-top:1px solid var(--color-border);padding-top:6px;margin-top:6px;"><span class="info-label">密钥块预览</span></div>';
-  html+='<div class="key-block">'+htmlEscape(text.substring(0,500)+(text.length>500?'\n... (截断)':''))+'</div>';
+  if(commentMatch)html+='<div class="info-row"><span class="info-label">'+t('comment','注释')+'</span><span class="info-val">'+htmlEscape(commentMatch[1].trim())+'</span></div>';
+  html+='<div class="info-row" style="border-top:1px solid var(--color-border);padding-top:6px;margin-top:6px;"><span class="info-label">'+t('keyBlockPreview','密钥块预览')+'</span></div>';
+  html+='<div class="key-block">'+htmlEscape(text.substring(0,500)+(text.length>500?'\n... ('+t('truncated','截断')+')':''))+'</div>';
   keyInfo.innerHTML=html;resultCard.style.display='block';
-  outputText.textContent=isPublicKey?'PGP 公钥 ('+body.length+' 字符)':'PGP 密钥块';
+  outputText.textContent=isPublicKey?t('pgpPublicKey','PGP 公钥 ({n} 字符)').replace('{n}',body.length):t('pgpKeyBlock','PGP 密钥块');
   setStatus(t('ui.1','解析完成'));
 });
 clearBtn.addEventListener('click',function(){keyInput.value='';resultCard.style.display='none';outputText.textContent='';setStatus('');keyInput.focus();});

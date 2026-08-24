@@ -24,8 +24,8 @@
         <div class="field"><label for="countVal" data-i18n="ui.quantity">数量</label><input id="countVal" class="input" type="number" value="5" min="1" max="1000"></div>
       </div>
       <div class="ri-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="uniqueChk" type="checkbox" checked> 唯一</label>
-        <label style="display:flex;align-items:center;gap:8px;"><input id="sortChk" type="checkbox"> 升序排序</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="uniqueChk" type="checkbox" checked><span data-i18n="ui.102">唯一</span></label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="sortChk" type="checkbox"><span data-i18n="ui.103">升序排序</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
     </div>
@@ -64,7 +64,7 @@
 
       var range = max - min + 1;
       if (unique && count > range) {
-        setStatus('唯一模式下数量不能超过范围 (' + range + ')', 'error');
+        setStatus(t('ui.101','唯一模式下数量不能超过范围 (') + range + ')', 'error');
         return;
       }
 

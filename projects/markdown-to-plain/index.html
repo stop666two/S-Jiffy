@@ -4,14 +4,14 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>.stat-row{display:flex;gap:16px;margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-text-secondary);}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Markdown 转纯文本</h1><p class="tool-desc" data-i18n="desc">去除所有 Markdown 格式，仅保留纯文本内容。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" placeholder="# Hello\nThis is **bold** and *italic* text." style="min-height:160px;"></textarea></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
 <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
-<div class="stat-row"><span>原始字符：<strong id="origChars">0</strong></span><span>去除后字符：<strong id="stripChars">0</strong></span><span>减少：<strong id="reduction">0%</strong></span></div>
+<div class="stat-row"><span><span data-i18n="statOrig">原始字符：</span><strong id="origChars">0</strong></span><span><span data-i18n="statStrip">去除后字符：</span><strong id="stripChars">0</strong></span><span><span data-i18n="statRed">减少：</span><strong id="reduction">0%</strong></span></div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -42,8 +42,8 @@ t=t.replace(/<[^>]+>/g,'');
 t=t.replace(/\n{3,}/g,'\n\n');
 return t.trim();}
 
-function convert(){var t=i.value;if(!t){o.textContent='';oc.textContent='0';sc.textContent='0';rd.textContent='0%';return;}
-var orig=t.length;var plain=stripMd(t);var stripped=plain.length;
+function convert(){var v=i.value;if(!v){o.textContent='';oc.textContent='0';sc.textContent='0';rd.textContent='0%';return;}
+var orig=v.length;var plain=stripMd(v);var stripped=plain.length;
 o.textContent=plain;oc.textContent=orig;sc.textContent=stripped;
 rd.textContent=orig>0?Math.round((1-stripped/orig)*100)+'%':'0%';
 setStatus(t('ui.2','已去除格式，共 ') +plain.split(/\s+/).length+ t('ui.1',' 个单词'));}

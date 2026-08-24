@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ROT 密码 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.rot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-2);margin-top:var(--space-2)}.rot-card{background:var(--color-bg-secondary);border-radius:var(--radius-md);padding:var(--space-2)}.rot-card h3{font-size:var(--font-size-sm);margin-bottom:4px}.rot-card .val{font-family:var(--font-mono);font-size:var(--font-size-sm);word-break:break-all}</style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">ROT13 密码</h1><p class="tool-desc" data-i18n="desc">ROT5/13/18/47 文本旋转密码，一键查看所有变体。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要加密/解密的文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
@@ -57,20 +57,20 @@ function rot18(text){
 return rot5(rot13(text));
 }
 function process(){
-var t=inputEl.value;
-if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
+var val=inputEl.value;
+if(!val){setStatus(t('ui.100','请输入文本'),'error');return;}
 var modes=[
-{name: t('ui.3','ROT5（数字）'),val:rot5(t)},
-{name: t('ui.2','ROT13（字母）'),val:rot13(t)},
-{name:'ROT18（ROT5+13）',val:rot18(t)},
-{name:'ROT47（ASCII）',val:rot47(t)}
+{name: t('ui.3','ROT5（数字）'),val:rot5(val)},
+{name: t('ui.2','ROT13（字母）'),val:rot13(val)},
+{name: t('ui.4','ROT18（ROT5+13）'),val:rot18(val)},
+{name: t('ui.5','ROT47（ASCII）'),val:rot47(val)}
 ];
 var html='';
 for(var i=0;i<modes.length;i++){
 html+='<div class="rot-card"><h3>'+modes[i].name+'</h3><div class="val">'+escapeHtml(modes[i].val)+'</div></div>';
 }
 results.innerHTML=html;
-outputEl.textContent='ROT5: '+rot5(t)+' | ROT13: '+rot13(t)+' | ROT18: '+rot18(t)+' | ROT47: '+rot47(t);
+outputEl.textContent='ROT5: '+rot5(val)+' | ROT13: '+rot13(val)+' | ROT18: '+rot18(val)+' | ROT47: '+rot47(val);
 setStatus('');
 }
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

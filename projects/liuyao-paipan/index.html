@@ -45,7 +45,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">六爻排盘</h1>
@@ -181,7 +181,7 @@
       var TRIGRAMS = [ t('ui.58','乾'), t('ui.57','兑'), t('ui.56','离'), t('ui.55','震'), t('ui.54','巽'), t('ui.53','坎'), t('ui.52','艮'), t('ui.51','坤')];
       var TRIG_LINES = ['111', '110', '101', '100', '011', '010', '001', '000'];
       var YAO_NAMES = [ t('ui.50','初爻'), t('ui.49','二爻'), t('ui.48','三爻'), t('ui.47','四爻'), t('ui.46','五爻'), t('ui.45','上爻')];
-      var YAO_TYPES = { 3: '老阳', 0: '老阴', 2: '少阳', 1: '少阴' };
+      var YAO_TYPES = { 3: t('ui.59','老阳'), 0: t('ui.60','老阴'), 2: t('ui.61','少阳'), 1: t('ui.62','少阴') };
       var MARK_TXT = { 3: '○', 0: '×' };
 
       var modeBtn = {};
@@ -260,8 +260,8 @@
         var coins = th.coins;
         var heads = 0;
         for (var i = 0; i < 3; i++) if (coins[i] === 1) heads++;
-        var desc = heads === 3 ? '三正' : heads === 0 ? '三反' : heads === 2 ? '二正一反' : '一正二反';
-        return t('ui.nth','第 ') + th.idx + t('ui.32',' 次：') + YAO_TYPES[th.v] + '（' + desc + '）';
+        var desc = heads === 3 ? t('ui.63','三正') : heads === 0 ? t('ui.64','三反') : heads === 2 ? t('ui.65','二正一反') : t('ui.66','一正二反');
+        return t('ui.nth','第 ') + th.idx + t('ui.32',' 次：') + YAO_TYPES[th.v] + t('ui.67','（') + desc + t('ui.68','）');
       }
 
       function doManualThrow() {
@@ -397,7 +397,7 @@
         if (ben) {
           var gBen = document.createElement('div');
           gBen.className = 'guaci';
-          gBen.innerHTML = '<span class="glabel">卦辞：</span>' + htmlEscape(ben.g);
+          gBen.innerHTML = '<span class="glabel">' + t('ui.69','卦辞：') + '</span>' + htmlEscape(ben.g);
           colBen.appendChild(gBen);
         }
         var mv = document.createElement('div');
@@ -405,7 +405,7 @@
         if (moving.length > 0) {
           var parts = [];
           for (var m = 0; m < moving.length; m++) {
-            parts.push(YAO_NAMES[moving[m]] + '（' + YAO_TYPES[lines[moving[m]]] + '）');
+            parts.push(YAO_NAMES[moving[m]] + t('ui.67','（') + YAO_TYPES[lines[moving[m]]] + t('ui.68','）'));
           }
           mv.textContent = t('ui.20','动爻：') + parts.join('、');
         } else {
@@ -429,7 +429,7 @@
           colBian.appendChild(buildYaoWrap(bianLines, true));
           var gBian = document.createElement('div');
           gBian.className = 'guaci';
-          gBian.innerHTML = '<span class="glabel">卦辞：</span>' + htmlEscape(bian.g);
+          gBian.innerHTML = '<span class="glabel">' + t('ui.69','卦辞：') + '</span>' + htmlEscape(bian.g);
           colBian.appendChild(gBian);
           grid.appendChild(colBian);
         }
@@ -439,7 +439,7 @@
         disc.textContent = t('ui.15','本工具为传统文化排盘参考，仅供娱乐。');
         resultArea.appendChild(disc);
         copyBtn.style.display = '';
-        lastCopyText = '【六爻排盘】\n起卦方式：' + method + '\n起卦时间：' + timeStr + '\n本卦：' + (ben ? ben.n : '') + '\n卦辞：' + (ben ? ben.g : '') + '\n' + mv.textContent + (bian ? '\n变卦：' + bian.n + '\n卦辞：' + bian.g : '') + '\n本工具为传统文化排盘参考，仅供娱乐。';
+        lastCopyText = t('ui.70','【六爻排盘】\n起卦方式：') + method + t('ui.71','\n起卦时间：') + timeStr + t('ui.72','\n本卦：') + (ben ? ben.n : '') + t('ui.73','\n卦辞：') + (ben ? ben.g : '') + '\n' + mv.textContent + (bian ? t('ui.74','\n变卦：') + bian.n + t('ui.73','\n卦辞：') + bian.g : '') + t('ui.75','\n本工具为传统文化排盘参考，仅供娱乐。');
       }
 
       function setMode(mode) {

@@ -3,5 +3,5 @@
   <script src="../../assets/js/i18n.js"></script><script>(function(){var fmt=document.getElementById("format"),len=document.getElementById("length"),cnt=document.getElementById("count"),o=document.getElementById("outputText");
 function randomBytes(n){var arr=new Uint8Array(n);crypto.getRandomValues(arr);return arr}
 document.getElementById("generateBtn").addEventListener("click",function(){var f=fmt.value,n=parseInt(len.value)||32,c=parseInt(cnt.value)||1;var result=[];for(var i=0;i<c;i++){var bytes=randomBytes(n);if(f==="hex"){result.push(Array.from(bytes).map(function(b){return b.toString(16).padStart(2,"0")}).join(""))}else if(f==="base64"){var s="";for(var j=0;j<bytes.length;j++)s+=String.fromCharCode(bytes[j]);result.push(btoa(s))}else{var chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";var r="";for(var k=0;k<n;k++)r+=chars[bytes[k]%chars.length];result.push(r)}}
-o.textContent=result.join("\n");setStatus("已生成 "+c+" 个令牌")});
+o.textContent=result.join("\n");setStatus(t('ui.101','已生成 ')+c+t('ui.102',' 个令牌'))});
 document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.100','已复制'))}});})();</script></body></html>

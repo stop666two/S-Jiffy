@@ -25,7 +25,7 @@
         <div class="field"><label for="pickCount" data-i18n="ui.3">选取数量</label><input id="pickCount" class="input" type="number" value="1" min="1" max="1000"></div>
       </div>
       <div class="rc-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="dupChk" type="checkbox" checked> 允许重复</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="dupChk" type="checkbox" checked><span data-i18n="ui.102">允许重复</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.4">选取</button></div>
     </div>
@@ -57,7 +57,7 @@
       var allowDup = dupChk.checked;
 
       if (!allowDup && pick > lines.length) {
-        setStatus('不允许重复时选取数量不能超过选项数 (' + lines.length + ')', 'error');
+        setStatus(t('ui.101','不允许重复时选取数量不能超过选项数 (') + lines.length + ')', 'error');
         return;
       }
 

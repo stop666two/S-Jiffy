@@ -78,11 +78,11 @@
 
       function execCommand(cmd, value) {
         if (cmd === 'createLink') {
-          showPrompt('插入链接', t('ui.8','输入链接 URL'), 'https://', function (url) { if (url) document.execCommand(cmd, false, url); });
+          showPrompt(t('ui.9','插入链接'), t('ui.8','输入链接 URL'), 'https://', function (url) { if (url) document.execCommand(cmd, false, url); });
           return;
         }
         if (cmd === 'insertImage') {
-          showPrompt('插入图片', t('ui.7','输入图片 URL'), 'https://', function (url) { if (url) document.execCommand(cmd, false, url); });
+          showPrompt(t('ui.10','插入图片'), t('ui.7','输入图片 URL'), 'https://', function (url) { if (url) document.execCommand(cmd, false, url); });
           return;
         }
         if (cmd === 'formatBlock' && value) {
@@ -126,7 +126,7 @@
 
       function update输出() {
         var html = isSourceMode ? sourceEditor.value : editor.innerHTML;
-        outputText.textContent = html || '(空)';
+        outputText.textContent = html || t('ui.11','(空)');
       }
 
       editor.addEventListener('input', update输出);

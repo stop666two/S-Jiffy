@@ -111,7 +111,7 @@
 
         var diffs = deepDiff(objA, objB, '');
         if (diffs.length === 0) {
-          outputEl.innerHTML = '<span style="color:#27ae60;">✅ 两个 JSON 完全一致</span>';
+          outputEl.innerHTML = '<span style="color:#27ae60;">' + t('ui.14','✅ 两个 JSON 完全一致') + '</span>';
           setStatus(t('ui.10','完全一致'));
           return;
         }
@@ -124,7 +124,7 @@
             html += '<div class="diff-added"><span class="diff-path">+ ' + htmlEscape(d.path) + '</span> → ' + htmlEscape(d.newVal) + '</div>';
             added++;
           } else if (d.type === 'removed') {
-            html += '<div class="diff-removed"><span class="diff-path">- ' + htmlEscape(d.path) + '</span> → (已删除) 原值: ' + htmlEscape(d.oldVal) + '</div>';
+            html += '<div class="diff-removed"><span class="diff-path">- ' + htmlEscape(d.path) + '</span> → ' + t('ui.15','(已删除) 原值: ') + htmlEscape(d.oldVal) + '</div>';
             removed++;
           } else {
             html += '<div class="diff-changed"><span class="diff-path">~ ' + htmlEscape(d.path) + '</span> ' + htmlEscape(d.oldVal) + ' → ' + htmlEscape(d.newVal) + '</div>';

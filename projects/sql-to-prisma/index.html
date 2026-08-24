@@ -18,7 +18,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">SQL 转 Prisma</h1>
@@ -90,19 +90,19 @@
     }
 
     function typeNameToPrisma(type, args) {
-      var t = type.toUpperCase();
-      if (t.indexOf('BIGINT') !== -1 || t === 'INT8') return 'BigInt';
-      if (t === 'TINYINT' && args === '1') return 'Boolean';
-      if (t === 'TINYINT' || t === 'SMALLINT' || t === 'MEDIUMINT' || t === 'INT' || t === 'INTEGER' || t === 'INT4') return 'Int';
-      if (t.indexOf('VARCHAR') !== -1 || t.indexOf('CHAR') !== -1 || t.indexOf('TEXT') !== -1 || t.indexOf('ENUM') !== -1 || t === 'STRING' || t === 'UUID' || t === 'CLOB') return 'String';
-      if (t === 'BOOLEAN' || t === 'BOOL') return 'Boolean';
-      if (t === 'DATETIME' || t === 'TIMESTAMP' || t === 'DATE' || t === 'TIME' || t === 'TIMESTAMPTZ' || t === 'DATETIME2') return 'DateTime';
-      if (t === 'FLOAT' || t === 'DOUBLE' || t === 'REAL' || t === 'FLOAT4' || t === 'FLOAT8') return 'Float';
-      if (t === 'DECIMAL' || t === 'NUMERIC' || t === 'MONEY') return 'Decimal';
-      if (t === 'JSON' || t === 'JSONB') return 'Json';
-      if (t.indexOf('BLOB') !== -1 || t.indexOf('BINARY') !== -1 || t === 'BYTEA' || t === 'VARBINARY') return 'Bytes';
-      if (t === 'SERIAL' || t === 'BIGSERIAL' || t === 'SERIAL4' || t === 'SERIAL8') return 'Int';
-      if (t === 'BIT') return 'Boolean';
+      var up = type.toUpperCase();
+      if (up.indexOf('BIGINT') !== -1 || up === 'INT8') return 'BigInt';
+      if (up === 'TINYINT' && args === '1') return 'Boolean';
+      if (up === 'TINYINT' || up === 'SMALLINT' || up === 'MEDIUMINT' || up === 'INT' || up === 'INTEGER' || up === 'INT4') return 'Int';
+      if (up.indexOf('VARCHAR') !== -1 || up.indexOf('CHAR') !== -1 || up.indexOf('TEXT') !== -1 || up.indexOf('ENUM') !== -1 || up === 'STRING' || up === 'UUID' || up === 'CLOB') return 'String';
+      if (up === 'BOOLEAN' || up === 'BOOL') return 'Boolean';
+      if (up === 'DATETIME' || up === 'TIMESTAMP' || up === 'DATE' || up === 'TIME' || up === 'TIMESTAMPTZ' || up === 'DATETIME2') return 'DateTime';
+      if (up === 'FLOAT' || up === 'DOUBLE' || up === 'REAL' || up === 'FLOAT4' || up === 'FLOAT8') return 'Float';
+      if (up === 'DECIMAL' || up === 'NUMERIC' || up === 'MONEY') return 'Decimal';
+      if (up === 'JSON' || up === 'JSONB') return 'Json';
+      if (up.indexOf('BLOB') !== -1 || up.indexOf('BINARY') !== -1 || up === 'BYTEA' || up === 'VARBINARY') return 'Bytes';
+      if (up === 'SERIAL' || up === 'BIGSERIAL' || up === 'SERIAL4' || up === 'SERIAL8') return 'Int';
+      if (up === 'BIT') return 'Boolean';
       return '';
     }
 
@@ -377,7 +377,7 @@
         stats.push({
           name: parsed.tableName,
           colCount: parsed.columns.length,
-          pk: parsed.pkCols.join(', ') || '无',
+          pk: parsed.pkCols.join(', ') || t('ui.15','无'),
           fks: fkInfo,
           uniq: parsed.columns.filter(function (c) { return c.unique; }).length + parsed.uniques.length
         });
@@ -396,7 +396,8 @@
       var statHtml = '';
       for (var s = 0; s < stats.length; s++) {
         var st = stats[s];
-        statHtml += '<li><b>' + htmlEscape(st.name) + '</b>：' + st.colCount + t('ui.6',' 个字段，主键 ') + htmlEscape(st.pk) + '，' + st.uniq + t('ui.5',' 处唯一约束') + (st.fks.length ? t('ui.4','，外键 ') + htmlEscape(st.fks.join('；')) : '') + '</li>';
+        var sepColon = t('ui.16','：');
+        statHtml += '<li><b>' + htmlEscape(st.name) + '</b>' + sepColon + st.colCount + t('ui.6',' 个字段，主键 ') + htmlEscape(st.pk) + '，' + st.uniq + t('ui.5',' 处唯一约束') + (st.fks.length ? t('ui.4','，外键 ') + htmlEscape(st.fks.join(t('ui.17','；'))) : '') + '</li>';
       }
       statList.innerHTML = statHtml;
       statList.style.display = 'block';

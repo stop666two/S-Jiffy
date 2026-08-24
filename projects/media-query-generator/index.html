@@ -19,7 +19,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">媒体查询生成器</h1>
@@ -140,7 +140,7 @@
         if (maxNum !== null) conds.push('(max-width: ' + maxNum + 'px)');
         if (scheme !== 'none') conds.push('(prefers-color-scheme: ' + scheme + ')');
         if (reduced) conds.push('(prefers-reduced-motion: reduce)');
-        currentCode = '@media screen and ' + conds.join(' and ') + ' {\n  /* 在此编写你的样式 */\n}';
+        currentCode = '@media screen and ' + conds.join(' and ') + ' {\n  /* ' + t('ui.comment', '在此编写你的样式') + ' */\n}';
         outputText.innerHTML = '<pre class="code-block">' + htmlEscape(currentCode) + '</pre>';
         setStatus(t('ui.10','已生成媒体查询代码'));
       }

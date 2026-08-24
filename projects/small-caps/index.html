@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>小型大写 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">小型大写字母</h1><p class="tool-desc" data-i18n="desc">将文本转换为 ᴜɴɪᴄᴏᴅᴇ sᴍᴀʟʟ ᴄᴀᴘs 小型大写字母。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入要转换的文本..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin:var(--space-2) 0;flex-wrap:wrap;align-items:center;">
@@ -33,9 +33,9 @@ r+=smallCapsMap[ch]!==undefined?smallCapsMap[ch]:ch;
 return r;
 }
 convertBtn.addEventListener('click',function(){
-var t=inputEl.value;
-if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
-outputEl.textContent=toSmallCaps(t);
+var txt=inputEl.value;
+if(!txt){setStatus(t('ui.100','请输入文本'),'error');return;}
+outputEl.textContent=toSmallCaps(txt);
 setStatus('');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});

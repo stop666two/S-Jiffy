@@ -15,7 +15,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">MessagePack 编解码</h1>
@@ -450,7 +450,7 @@
       try {
         var bytes = encodeValue(parsed);
         var hex = bytesToHex(bytes);
-        outputText.textContent = hex + '\n\n共 ' + bytes.length + t('ui.bytes',' 字节');
+        outputText.textContent = hex + t('ui.13', '\n\n共 ') + bytes.length + t('ui.bytes',' 字节');
         setStatus(t('ui.10','编码成功，共 ') + bytes.length + t('ui.bytes',' 字节'));
       } catch (e) {
         outputText.textContent = t('ui.9','编码失败：') + e.message;

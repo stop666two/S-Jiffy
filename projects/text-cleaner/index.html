@@ -3,16 +3,16 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>
 .clean-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:250px}@media(max-width:700px){.clean-layout{grid-template-columns:1fr}}.clean-layout textarea{height:250px;resize:vertical;font-family:var(--font-mono);font-size:13px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);outline:none}.clean-layout textarea:focus{border-color:var(--color-text-primary);box-shadow:var(--shadow-focus)}.option-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.option-grid label{display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 12px;border:1px solid var(--color-border);border-radius:20px;cursor:pointer;transition:all .15s;user-select:none}.option-grid label:hover{border-color:var(--color-text-primary)}.option-grid input[type=checkbox]{accent-color:var(--color-text-primary)}
 </style></head><body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">文本清理器</h1><p class="tool-desc" data-i18n="desc">清理文本：移除多余空格、特殊字符、空行，统一标点符号和空白字符。</p>
 <div class="card">
 <div class="option-grid">
-<label title="移除首尾多余空格"><input type="checkbox" id="optTrim" checked> 去除首尾空格</label>
-<label title="将连续多个空格合并为一个"><input type="checkbox" id="optExtraSpace" checked> 合并多余空格</label>
-<label title="删除空行（连续换行压缩）"><input type="checkbox" id="optEmptyLines" checked> 移除空行</label>
-<label title="删除所有不在白名单内的字符"><input type="checkbox" id="optSpecial" checked> 移除特殊字符</label>
-<label title="将中文标点（。，；：！？）统一为英文标点"><input type="checkbox" id="optNormalize" checked> 统一标点</label>
-<label title="按 Unicode NFKC 标准归一化全角/半角字符"><input type="checkbox" id="optUnicode"> Unicode 标准化</label>
+<label title="移除首尾多余空格"><input type="checkbox" id="optTrim" checked> <span data-i18n="ui.trim">去除首尾空格</span></label>
+<label title="将连续多个空格合并为一个"><input type="checkbox" id="optExtraSpace" checked> <span data-i18n="ui.collapse">合并多余空格</span></label>
+<label title="删除空行（连续换行压缩）"><input type="checkbox" id="optEmptyLines" checked> <span data-i18n="ui.emptyLines">移除空行</span></label>
+<label title="删除所有不在白名单内的字符"><input type="checkbox" id="optSpecial" checked> <span data-i18n="ui.special">移除特殊字符</span></label>
+<label title="将中文标点（。，；：！？）统一为英文标点"><input type="checkbox" id="optNormalize" checked> <span data-i18n="ui.punct">统一标点</span></label>
+<label title="按 Unicode NFKC 标准归一化全角/半角字符"><input type="checkbox" id="optUnicode"> <span data-i18n="ui.unicode">Unicode 标准化</span></label>
 </div>
 <div class="opt-hint" style="font-size:12px;color:var(--color-text-secondary);margin:-4px 0 12px 2px;" data-i18n="ui.103">移除特殊字符时保留：中文、字母数字、空格，以及常用符号 . , ! ? ; : ' &quot; ( ) [ ] { } - @ # $ % &amp; * + / = &lt; &gt; ~ ^ _ ` | \</div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -78,7 +78,7 @@ if(optTrim.checked)result=result.trim();
 outputEl.value=result;
 var origLen=text.length;
 var newLen=result.length;
-statusText.textContent = t('ui.3','原始: ')+origLen+ t('ui.2',' 字符 → 清理后: ')+newLen+' 字符 (减少 '+(origLen-newLen)+' 字符)';
+statusText.textContent = t('ui.3','原始: ')+origLen+ t('ui.2',' 字符 → 清理后: ')+newLen+t('ui.4',' 字符 (减少 ')+(origLen-newLen)+t('ui.5',' 字符)');
 setStatus('');
 }
 

@@ -12,7 +12,7 @@
 <div class="slider-row"><label style="color:var(--color-text-primary)">S%</label><input type="range" id="sSlider" min="0" max="100" value="70"><input type="number" id="sNum" min="0" max="100" value="70"></div>
 <div class="slider-row"><label style="color:var(--color-text-primary)">L%</label><input type="range" id="lSlider" min="0" max="100" value="53"><input type="number" id="lNum" min="0" max="100" value="53"></div>
 </div>
-<div class="result-row" id="hex结果">#3498DB</div>
+<div class="result-row" id="hexResult">#3498DB</div>
 </div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
@@ -26,7 +26,7 @@ var hNum=document.getElementById('hNum');
 var sNum=document.getElementById('sNum');
 var lNum=document.getElementById('lNum');
 var colorPreview=document.getElementById('colorPreview');
-var hex结果=document.getElementById(t('ui.1','hex结果'));
+var hexResult=document.getElementById('hexResult');
 var outputEl=document.getElementById('outputText');
 var copyBtn=document.getElementById('copyBtn');
 
@@ -67,7 +67,7 @@ if(g===undefined)g=parseInt(sSlider.value);
 if(l===undefined)l=parseInt(lSlider.value);
 var rgb=hslToRgb(h,g,l);
 var hex='#'+toHex(rgb.r)+toHex(rgb.g)+toHex(rgb.b);
-hex结果.textContent=hex;
+ hexResult.textContent=hex;
 colorPreview.style.background=hex;
 outputEl.textContent='HSL('+h+','+g+'%,'+l+'%) = '+hex;
 }
@@ -78,6 +78,6 @@ lSlider.addEventListener('input',function(){update('l');});
 hNum.addEventListener('input',function(){update('hn');});
 sNum.addEventListener('input',function(){update('sn');});
 lNum.addEventListener('input',function(){update('ln');});
-copyBtn.addEventListener('click',function(){if(hex结果.textContent){copyToClipboard(hex结果.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
+copyBtn.addEventListener('click',function(){if(hexResult.textContent){copyToClipboard(hexResult.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
 update('h');
 })();</script></body></html>

@@ -43,12 +43,12 @@ var hash;
 if(algo==='MD5'&&isText){hash=simpleMD5(data);}else{crypto.subtle.digest(algo,data).then(function(buf){var computed=fmt==='hex'?hex(buf):b64(buf);var match=computed.toLowerCase()===target;
 rb.textContent=match?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match?'match':'no-match');
       rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
-o.textContent=computed;setStatus(match?'匹配！':'不匹配');}).catch(function(e){setStatus(t('ui.6','错误: ') +e.message,'error');});
+o.textContent=computed;setStatus(match?t('ui.7','匹配！'):t('ui.8','不匹配'));}).catch(function(e){setStatus(t('ui.6','错误: ') +e.message,'error');});
 return;}
 var computed2=hash;var match2=computed2.toLowerCase()===target;
 rb.textContent=match2?'MATCH ✓':'NO MATCH ✗';rb.className='result-badge '+(match2?'match':'no-match');
 rd.innerHTML='Computed: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed2)+'</code><br>Expected: <code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(target)+'</code>';
-o.textContent=computed2;setStatus(match2?'匹配！':'不匹配');}
+o.textContent=computed2;setStatus(match2?t('ui.7','匹配！'):t('ui.8','不匹配'));}
 
 document.getElementById('compareBtn').addEventListener('click',function(){var text=i.value.trim();if(!text){setStatus(t('ui.101','请输入文本'),'error');return;}
 compare(new TextEncoder().encode(text),true);});

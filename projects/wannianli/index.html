@@ -34,7 +34,7 @@
 </head>
 <body>
   <header class="global-header">
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html" data-i18n="common.back">← 返回</a>
     <span class="logo-text">S-Jiffy</span>
   </header>
   <main class="tool-workspace">
@@ -146,8 +146,8 @@
       lines.push(t('ui.11','生肖：') +lunar.getShengxiao());
       lines.push(t('ui.10','星座：') +solar.getXingZuo()+ t('ui.6','座'));
       if(jq)lines.push(t('ui.9','节气：') +jq);
-      lines.push(t('ui.8','宜：') +(yi.length?yi.join('、'):'无'));
-      lines.push(t('ui.7','忌：') +(ji.length?ji.join('、'):'无'));
+      lines.push(t('ui.8','宜：') +(yi.length?yi.join(t('ui.join','、')):t('ui.none','无')));
+      lines.push(t('ui.7','忌：') +(ji.length?ji.join(t('ui.join','、')):t('ui.none','无')));
       return lines.join('\n');
     }
     function renderDetail(){
@@ -157,18 +157,18 @@
       var ji=lunar.getDayJi();
       var jq=lunar.getJieQi();
       var html='';
-      html+='<div class="detail-title">'+selY+ t('ui.year','年')+selM+ t('ui.month','月')+selD+'日</div>';
+      html+='<div class="detail-title">'+selY+ t('ui.year','年')+selM+ t('ui.month','月')+selD+t('ui.day','日')+'</div>';
       html+='<div class="detail-week">'+weekNames[new Date(selY,selM-1,selD).getDay()]+'</div>';
-      html+='<div class="dt-row"><span>农历</span><b>'+htmlEscape(lunar.getYearInChinese()+ t('ui.year','年 ')+lunar.getMonthInChinese()+ t('ui.month','月 ')+lunar.getDayInChinese())+'</b></div>';
-      html+='<div class="dt-row"><span>干支年</span><b>'+htmlEscape(lunar.getYearInGanZhi()+' '+lunar.getShengxiao()+ t('ui.year','年'))+'</b></div>';
-      html+='<div class="dt-row"><span>月干支</span><b>'+htmlEscape(lunar.getMonthInGanZhi())+'</b></div>';
-      html+='<div class="dt-row"><span>日干支</span><b>'+htmlEscape(lunar.getDayInGanZhi())+'</b></div>';
-      html+='<div class="dt-row"><span>生肖</span><b>'+htmlEscape(lunar.getShengxiao())+'</b></div>';
-      html+='<div class="dt-row"><span>星座</span><b>'+htmlEscape(solar.getXingZuo()+ t('ui.6','座'))+'</b></div>';
-      if(jq)html+='<div class="dt-row"><span>节气</span><b>'+htmlEscape(jq)+'</b></div>';
-      html+='<div class="dt-row yi"><span>宜</span><b>'+htmlEscape(yi.length?yi.join('、'):'无')+'</b></div>';
-      html+='<div class="dt-row ji"><span>忌</span><b>'+htmlEscape(ji.length?ji.join('、'):'无')+'</b></div>';
-      html+='<button class="btn btn-secondary detail-copy" id="detailCopyBtn">复制详情</button>';
+      html+='<div class="dt-row"><span>'+t('ui.lunar','农历')+'</span><b>'+htmlEscape(lunar.getYearInChinese()+ t('ui.year','年 ')+lunar.getMonthInChinese()+ t('ui.month','月 ')+lunar.getDayInChinese())+'</b></div>';
+      html+='<div class="dt-row"><span>'+t('ui.gzYear','干支年')+'</span><b>'+htmlEscape(lunar.getYearInGanZhi()+' '+lunar.getShengxiao()+ t('ui.year','年'))+'</b></div>';
+      html+='<div class="dt-row"><span>'+t('ui.gzMonth','月干支')+'</span><b>'+htmlEscape(lunar.getMonthInGanZhi())+'</b></div>';
+      html+='<div class="dt-row"><span>'+t('ui.gzDay','日干支')+'</span><b>'+htmlEscape(lunar.getDayInGanZhi())+'</b></div>';
+      html+='<div class="dt-row"><span>'+t('ui.zodiac','生肖')+'</span><b>'+htmlEscape(lunar.getShengxiao())+'</b></div>';
+      html+='<div class="dt-row"><span>'+t('ui.constellation','星座')+'</span><b>'+htmlEscape(solar.getXingZuo()+ t('ui.6','座'))+'</b></div>';
+      if(jq)html+='<div class="dt-row"><span>'+t('ui.jieqi','节气')+'</span><b>'+htmlEscape(jq)+'</b></div>';
+      html+='<div class="dt-row yi"><span>'+t('ui.yi','宜')+'</span><b>'+htmlEscape(yi.length?yi.join(t('ui.join','、')):t('ui.none','无'))+'</b></div>';
+      html+='<div class="dt-row ji"><span>'+t('ui.ji','忌')+'</span><b>'+htmlEscape(ji.length?ji.join(t('ui.join','、')):t('ui.none','无'))+'</b></div>';
+      html+='<button class="btn btn-secondary detail-copy" id="detailCopyBtn">'+t('ui.copyDetail','复制详情')+'</button>';
       detailPanel.innerHTML=html;
       document.getElementById('detailCopyBtn').addEventListener('click',function(){
         copyToClipboard(buildDetail(),this);

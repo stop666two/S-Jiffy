@@ -12,7 +12,7 @@
 .freq-bar{height:14px;background:var(--color-text-primary);border-radius:2px;min-width:2px;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">高级文本统计</h1><p class="tool-desc" data-i18n="desc">音节数、Flesch 可读性评分、年级水平、词频分析。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="粘贴你的文本..." style="min-height:180px;"></textarea></div>
 <div class="adv-stat-grid">
@@ -43,10 +43,10 @@ word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'');
 word=word.replace(/^y/,'');
 var m=word.match(/[aeiouy]{1,2}/g);return m?m.length:1;}
 
-function update(){var t=i.value;if(!t.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">输入文本以查看词频</p>';o.textContent='';return;}
-var cc=t.length;
-var words=t.trim().split(/\s+/);var wc=words.length;
-var sents=t.split(/[.!?]+/).filter(function(s){return s.trim().length>0;}).length||1;
+function update(){var txt=i.value;if(!txt.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">'+t('ui.12','\u8f93\u5165\u6587\u672c\u4ee5\u67e5\u770b\u8bcd\u9891')+'</p>';o.textContent='';return;}
+var cc=txt.length;
+var words=txt.trim().split(/\s+/);var wc=words.length;
+var sents=txt.split(/[.!?]+/).filter(function(s){return s.trim().length>0;}).length||1;
 var syl=0,cw=0;var freq={};
 for(var w=0;w<words.length;w++){var word=words[w].replace(/[^a-z]/gi,'');if(!word)continue;
 var cs=countSyllables(word);syl+=cs;
@@ -68,7 +68,7 @@ el.ld.textContent=ldVal+'%';el.cw.textContent=cwp+'%';
 
 var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];});
 var top=sorted.slice(0,15);var maxF=top.length>0?freq[top[0]]:1;
-var h='<table class="freq-table"><thead><tr><th>#</th><th>单词</th><th>计数</th><th>分布</th></tr></thead><tbody>';
+var h='<table class="freq-table"><thead><tr><th>#</th><th>'+t('ui.13','\u5355\u8bcd')+'</th><th>'+t('ui.14','\u8ba1\u6570')+'</th><th>'+t('ui.15','\u5206\u5e03')+'</th></tr></thead><tbody>';
 for(var i2=0;i2<top.length;i2++){var pct=(freq[top[i2]]/maxF*100).toFixed(0);h+='<tr><td>'+(i2+1)+'</td><td>'+htmlEscape(top[i2])+'</td><td>'+freq[top[i2]]+'</td><td><div class="freq-bar" style="width:'+pct+'%"></div></td></tr>';}
 h+='</tbody></table>';freqC.innerHTML=h;
 o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;

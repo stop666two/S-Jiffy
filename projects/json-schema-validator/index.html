@@ -68,8 +68,8 @@
         if (!schemaStr) { setStatus(t('ui.101','请输入 JSON Schema'), 'error'); return; }
 
         var data, schema;
-        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> JSON 数据解析失败: ' + htmlEscape(e.message); setStatus(t('ui.102','数据格式错误'), 'error'); return; }
-        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">无效</span> Schema 解析失败: ' + htmlEscape(e.message); setStatus(t('ui.103','Schema 格式错误'), 'error'); return; }
+        try { data = JSON.parse(dataStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">' + t('ui.10','无效') + '</span> ' + t('ui.11','JSON 数据解析失败: ') + htmlEscape(e.message); setStatus(t('ui.102','数据格式错误'), 'error'); return; }
+        try { schema = JSON.parse(schemaStr); } catch (e) { outputText.innerHTML = '<span class="invalid-badge">' + t('ui.12','无效') + '</span> ' + t('ui.13','Schema 解析失败: ') + htmlEscape(e.message); setStatus(t('ui.103','Schema 格式错误'), 'error'); return; }
 
         if (typeof ajv7 === 'undefined') {
           outputText.textContent = t('ui.4','验证库加载失败，请检查网络');
@@ -81,10 +81,10 @@
           var ajv = new ajv7.default();
           var valid = ajv.validate(schema, data);
           if (valid) {
-            outputText.innerHTML = '<span class="valid-badge">✓ 有效</span> 数据符合 Schema 规范';
+            outputText.innerHTML = '<span class="valid-badge">' + t('ui.14','✓ 有效') + '</span> ' + t('ui.15','数据符合 Schema 规范');
             setStatus(t('ui.3','验证通过'));
           } else {
-            outputText.innerHTML = '<span class="invalid-badge">✗ 无效</span> 数据不符合 Schema 规范';
+            outputText.innerHTML = '<span class="invalid-badge">' + t('ui.16','✗ 无效') + '</span> ' + t('ui.17','数据不符合 Schema 规范');
             var ul = errorList;
             for (var i = 0; i < ajv.errors.length; i++) {
               var err = ajv.errors[i];
@@ -95,7 +95,7 @@
             setStatus(t('ui.105','验证失败'), 'error');
           }
         } catch (e) {
-          outputText.innerHTML = '<span class="invalid-badge">错误</span> ' + htmlEscape(e.message);
+          outputText.innerHTML = '<span class="invalid-badge">' + t('ui.18','错误') + '</span> ' + htmlEscape(e.message);
           setStatus(t('ui.106','验证出错'), 'error');
         }
       });

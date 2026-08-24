@@ -5,5 +5,5 @@
 document.getElementById("lookupBtn").addEventListener("click",function(){var v=s.value.trim();if(!v){setStatus(t('ui.100','请输入字符或实体'),"error");return}
 var ch=v;if(v.charAt(0)==="&"&&v.charAt(v.length-1)===";"){var div=document.createElement("div");div.innerHTML=v;ch=div.textContent||div.innerText||""}
 if(ch.length===0){setStatus(t('ui.101','无效输入'),"error");return}var cp=ch.charCodeAt(0);cd.textContent=ch;ev.textContent="&#"+cp+";";uv.textContent="U+"+cp.toString(16).toUpperCase().padStart(4,"0");hv.textContent="0x"+cp.toString(16).toUpperCase();
-o.textContent="字符: "+ch+" | 实体: &#"+cp+"; | Unicode: U+"+cp.toString(16).toUpperCase();setStatus(t('ui.102','查询完成'))});
+o.textContent=t('ui.5','字符: ')+ch+t('ui.6',' | 实体: &#')+cp+";"+t('ui.7',' | Unicode: U+')+cp.toString(16).toUpperCase();setStatus(t('ui.102','查询完成'))});
 document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.103','已复制'))}});})();</script></body></html>

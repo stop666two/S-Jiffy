@@ -25,7 +25,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">论语全文</h1>
@@ -76,7 +76,7 @@
 
     function chapterHtml(no, ch, prefix) {
       var html = '<div class="ly-chapter">';
-      html += '<div class="ly-orig" data-copy="' + htmlEscape(ch[0]) + '" title="点击复制本章原文"><span class="ly-tag">' + (prefix ? htmlEscape(prefix) : '') + t('ui.nth','第 ') + no + ' 章</span>' + htmlEscape(ch[0]) + '</div>';
+      html += '<div class="ly-orig" data-copy="' + htmlEscape(ch[0]) + '" title="' + t('ui.16','点击复制本章原文') + '"><span class="ly-tag">' + (prefix ? htmlEscape(prefix) : '') + t('ui.nth','第 ') + no + ' 章</span>' + htmlEscape(ch[0]) + '</div>';
       if (ch[1]) {
         html += '<div class="ly-trans">' + htmlEscape(ch[1]) + '</div>';
       }
@@ -110,7 +110,7 @@
       }
       pianTitle.textContent = t('ui.3','全文检索：') + kw;
       if (!found.length) {
-        contentBox.innerHTML = '<div class="ly-no">未找到包含「' + htmlEscape(kw) + '」的章节，换个关键词试试。</div>';
+        contentBox.innerHTML = '<div class="ly-no">' + t('ui.12','未找到包含「') + htmlEscape(kw) + t('ui.13','」的章节，换个关键词试试。') + '</div>';
         setStatus(t('ui.100','未找到匹配章节'), 'error');
         return;
       }
@@ -123,7 +123,7 @@
         shown++;
       }
       if (found.length > max) {
-        html += '<div class="ly-no">匹配章节较多，仅显示前 ' + max + ' 条，请补充关键词缩小范围。</div>';
+        html += '<div class="ly-no">' + t('ui.14','匹配章节较多，仅显示前 ') + max + t('ui.15',' 条，请补充关键词缩小范围。') + '</div>';
       }
       contentBox.innerHTML = html;
       bindCopy();

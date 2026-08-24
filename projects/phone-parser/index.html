@@ -244,7 +244,7 @@
       if (!raw) { setStatus(t('ui.167','请输入电话号码'), 'error'); render(null); return; }
       var result = parsePhone(raw);
       render(result);
-      setStatus(result.isValid ? '解析完成' : '号码格式可能不完整');
+      setStatus(result.isValid ? t('ui.169','解析完成') : t('ui.170','号码格式可能不完整'));
     }
     document.getElementById('parseBtn').addEventListener('click', doParse);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') doParse(); });

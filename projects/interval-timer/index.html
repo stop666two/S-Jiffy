@@ -57,7 +57,7 @@ curRound++;curPhase='work';curSec=parseInt(wi.value)||30;}
 updateDisplay();}
 
 function updateDisplay(){var m=Math.floor(curSec/60);var s=curSec%60;dp.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-pl.textContent=curPhase==='prep'?'准备中':curPhase==='work'?'训练！':'休息';pl.className='phase-label '+(curPhase==='work'?'work':'rest');
+pl.textContent=curPhase==='prep'?t('ui.16','准备中'):curPhase==='work'?t('ui.17','训练！'):t('ui.18','休息');pl.className='phase-label '+(curPhase==='work'?'work':'rest');
 ri.textContent=curRound+' / '+totalRounds+' rounds';o.textContent=curPhase+' '+dp.textContent;}
 
 function startTimer(){if(running&&!paused)return;

@@ -42,15 +42,15 @@ function qpDecode(text){
 return text.replace(/=(?:[\r\n]+|$)/g,'').replace(/=([0-9A-Fa-f]{2})/g,function(m,h){return String.fromCharCode(parseInt(h,16));});
 }
 encodeBtn.addEventListener('click',function(){
-var t=inputEl.value;
-if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
-outputEl.textContent=qpEncode(t);
+var txt=inputEl.value;
+if(!txt){setStatus(t('ui.100','请输入文本'),'error');return;}
+outputEl.textContent=qpEncode(txt);
 setStatus('');
 });
 decodeBtn.addEventListener('click',function(){
-var t=inputEl.value.trim();
-if(!t){setStatus(t('ui.101','请输入 QP 字符串'),'error');return;}
-outputEl.textContent=qpDecode(t);
+var txt=inputEl.value.trim();
+if(!txt){setStatus(t('ui.101','请输入 QP 字符串'),'error');return;}
+outputEl.textContent=qpDecode(txt);
 setStatus('');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});

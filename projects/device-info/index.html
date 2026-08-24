@@ -17,7 +17,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">设备信息</h1>
     <p class="tool-desc" data-i18n="desc">查看浏览器、操作系统、屏幕、网络等设备环境信息。</p>
@@ -52,14 +52,14 @@
         lines.push(t('ui.31','═══════ 浏览器 ═══════'));
         lines.push('User Agent:         ' + nav.userAgent);
         lines.push(t('ui.30','语言:               ') + nav.language);
-        lines.push(t('ui.29','在线状态:           ') + (nav.onLine ? '在线' : '离线'));
-        lines.push(t('ui.28','Cookie 启用:        ') + (nav.cookieEnabled ? '是' : '否'));
+        lines.push(t('ui.29','在线状态:           ') + (nav.onLine ? t('ui.online','在线') : t('ui.offline','离线')));
+        lines.push(t('ui.28','Cookie 启用:        ') + (nav.cookieEnabled ? t('ui.yes','是') : t('ui.no','否')));
         lines.push(t('ui.27','硬件并发数:         ') + nav.hardwareConcurrency + t('ui.26',' 核'));
-        lines.push(t('ui.25','设备内存:           ') + (nav.deviceMemory || '未知') + ' GB');
+        lines.push(t('ui.25','设备内存:           ') + (nav.deviceMemory || t('ui.unknown','未知')) + ' GB');
         lines.push(t('ui.24','最大触控点数:       ') + nav.maxTouchPoints);
         lines.push('Platform:           ' + nav.platform);
         lines.push('Vendor:             ' + nav.vendor);
-        lines.push('Do Not Track:       ' + (navigator.doNotTrack || '未设置'));
+        lines.push('Do Not Track:       ' + (navigator.doNotTrack || t('ui.na','未设置')));
         lines.push('');
 
         lines.push(t('ui.23','═══════ 窗口 / 屏幕 ═══════'));
@@ -85,28 +85,28 @@
         lines.push(t('ui.8','协议:               ') + loc.protocol);
         if ('connection' in nav) {
           var conn = nav.connection;
-          lines.push(t('ui.7','连接类型:           ') + (conn.effectiveType || '未知'));
+          lines.push(t('ui.7','连接类型:           ') + (conn.effectiveType || t('ui.unknown','未知')));
           lines.push(t('ui.6','下行速度:           ') + (conn.downlink || '?') + ' Mbps');
           lines.push('RTT:                ' + (conn.rtt || '?') + ' ms');
         }
         lines.push('');
 
         lines.push(t('ui.5','═══════ 存储 ═══════'));
-        lines.push('LocalStorage:       ' + (typeof(Storage) !== 'undefined' ? '支持' : '不支持'));
-        lines.push('SessionStorage:     ' + (typeof(Storage) !== 'undefined' ? '支持' : '不支持'));
+        lines.push('LocalStorage:       ' + (typeof(Storage) !== 'undefined' ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('SessionStorage:     ' + (typeof(Storage) !== 'undefined' ? t('ui.sup','支持') : t('ui.unsup','不支持')));
         lines.push(t('ui.4','Cookie 数量:        ') + d.cookie.split(';').filter(function(c) { return c.trim(); }).length);
         lines.push('');
 
         lines.push(t('ui.3','═══════ 特性检测 ═══════'));
-        lines.push('WebGL:              ' + (function() { try { var c = d.createElement('canvas'); return !!c.getContext('webgl'); } catch(e) { return false; } }() ? '支持' : '不支持'));
-        lines.push('Web Worker:         ' + (typeof(Worker) !== 'undefined' ? '支持' : '不支持'));
-        lines.push('WebSocket:          ' + (typeof(WebSocket) !== 'undefined' ? '支持' : '不支持'));
-        lines.push('Service Worker:     ' + ('serviceWorker' in nav ? '支持' : '不支持'));
-        lines.push('Geolocation:        ' + ('geolocation' in nav ? '支持' : '不支持'));
-        lines.push('WebUSB:             ' + ('usb' in nav ? '支持' : '不支持'));
-        lines.push('WebBluetooth:       ' + ('bluetooth' in nav ? '支持' : '不支持'));
-        lines.push('WebRTC:             ' + ('RTCPeerConnection' in window ? '支持' : '不支持'));
-        lines.push('Canvas:             ' + (function() { try { var c = d.createElement('canvas'); return !!(c.getContext && c.getContext('2d')); } catch(e) { return false; } }() ? '支持' : '不支持'));
+        lines.push('WebGL:              ' + (function() { try { var c = d.createElement('canvas'); return !!c.getContext('webgl'); } catch(e) { return false; } }() ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('Web Worker:         ' + (typeof(Worker) !== 'undefined' ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('WebSocket:          ' + (typeof(WebSocket) !== 'undefined' ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('Service Worker:     ' + ('serviceWorker' in nav ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('Geolocation:        ' + ('geolocation' in nav ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('WebUSB:             ' + ('usb' in nav ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('WebBluetooth:       ' + ('bluetooth' in nav ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('WebRTC:             ' + ('RTCPeerConnection' in window ? t('ui.sup','支持') : t('ui.unsup','不支持')));
+        lines.push('Canvas:             ' + (function() { try { var c = d.createElement('canvas'); return !!(c.getContext && c.getContext('2d')); } catch(e) { return false; } }() ? t('ui.sup','支持') : t('ui.unsup','不支持')));
 
         return lines.join('\n');
       }

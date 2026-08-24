@@ -17,7 +17,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">演讲时长估算</h1>
@@ -92,10 +92,15 @@
         var high = seconds * 1.1;
         var html = [];
         html.push('<div class="spd-time">' + formatTime(seconds) + '</div>');
-        html.push('<div class="spd-range">时长区间（±10%）：' + formatTime(low) + ' ~ ' + formatTime(high) + '</div>');
-        html.push('<div class="spd-detail">中文 ' + cjkCount + t('ui.12',' 字 + 英文 ') + wordCount + t('ui.11',' 词 = 共 ') + units + ' 个计速单位<br>语速：' + speed + ' 单位/分</div>');
+        var lRange = t('ui.13','时长区间（±10%）：');
+        var lCjk = t('ui.14','中文 ');
+        var lUnitCount = t('ui.15',' 个计速单位');
+        var lRate = t('ui.16','语速：');
+        var lUnitPerMin = t('ui.17',' 单位/分');
+        html.push('<div class="spd-range">' + lRange + formatTime(low) + ' ~ ' + formatTime(high) + '</div>');
+        html.push('<div class="spd-detail">' + lCjk + cjkCount + t('ui.12',' 字 + 英文 ') + wordCount + t('ui.11',' 词 = 共 ') + units + lUnitCount + '<br>' + lRate + speed + lUnitPerMin + '</div>');
         outputEl.innerHTML = html.join('');
-        lastPlain = t('ui.10','预计时长：') + formatTime(seconds) + t('ui.9','（区间 ') + formatTime(low) + ' ~ ' + formatTime(high) + '）' + '\n中文 ' + cjkCount + t('ui.8',' 字，英文 ') + wordCount + t('ui.7',' 词，总计 ') + units + t('ui.6',' 单位，语速 ') + speed + t('ui.5','/分');
+        lastPlain = t('ui.10','预计时长：') + formatTime(seconds) + t('ui.9','（区间 ') + formatTime(low) + ' ~ ' + formatTime(high) + t('ui.19','）') + t('ui.18','\n中文 ') + cjkCount + t('ui.8',' 字，英文 ') + wordCount + t('ui.7',' 词，总计 ') + units + t('ui.6',' 单位，语速 ') + speed + t('ui.5','/分');
         setStatus(t('ui.4','估算完成：') + formatTime(seconds));
       }
 

@@ -26,7 +26,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Redis 命令速查</h1>
@@ -55,7 +55,8 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
   (function () {
-    var CATS = ['String', 'List', 'Hash', 'Set', 'ZSet', t('ui.keyManage','键管理'), t('ui.connect','连接'), t('ui.164','事务'), t('ui.163','发布订阅'), 'Geo', 'Stream'];
+    var CATS = ['String', 'List', 'Hash', 'Set', 'ZSet', 'key', 'conn', 'txn', 'pubsub', 'Geo', 'Stream'];
+    var CAT_LABELS = { String: 'String', List: 'List', Hash: 'Hash', Set: 'Set', ZSet: 'ZSet', key: t('ui.keyManage','键管理'), conn: t('ui.connect','连接'), txn: t('ui.164','事务'), pubsub: t('ui.163','发布订阅'), Geo: 'Geo', Stream: 'Stream' };
     var DATA = [
       { cat: 'String', name: 'SET', syntax: 'SET key value [NX|XX] [GET] [EX seconds|PX milliseconds|EXAT timestamp|PXAT timestamp|KEEPTTL]', desc: t('ui.162','设置键值；NX 仅当键不存在时写入，XX 仅当键存在时写入，可带过期时间。') },
       { cat: 'String', name: 'GET', syntax: 'GET key', desc: t('ui.161','返回键对应的字符串值，键不存在返回 nil。') },
@@ -148,7 +149,7 @@
       { cat: 'ZSet', name: 'ZCOUNT', syntax: 'ZCOUNT key min max', desc: t('ui.78','返回分数在区间内的成员数量。') },
       { cat: 'ZSet', name: 'ZRANGE', syntax: 'ZRANGE key start stop [BYSCORE|BYLEX] [REV] [LIMIT offset count] [WITHSCORES]', desc: t('ui.77','按下标（或分数/字典序）返回成员，支持反向与带分数。') },
       { cat: 'ZSet', name: 'ZREVRANGE', syntax: 'ZREVRANGE key start stop [WITHSCORES]', desc: t('ui.76','按分数从高到低返回下标区间内的成员。') },
-      { cat: 'ZSet', name: 'ZRANGEBYSCORE', syntax: 'ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]', desc: '返回分数区间内的成员，min/max 支持 ( 开区间与 +inf/-inf。' },
+      { cat: 'ZSet', name: 'ZRANGEBYSCORE', syntax: 'ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]', desc: t('ui.167','返回分数区间内的成员，min/max 支持 ( 开区间与 +inf/-inf。') },
       { cat: 'ZSet', name: 'ZREVRANGEBYSCORE', syntax: 'ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]', desc: t('ui.75','按分数从高到低返回分数区间内的成员。') },
       { cat: 'ZSet', name: 'ZRANGEBYLEX', syntax: 'ZRANGEBYLEX key min max [LIMIT offset count]', desc: t('ui.74','按字典序返回成员，要求所有成员分数相同。') },
       { cat: 'ZSet', name: 'ZRANK', syntax: 'ZRANK key member [WITHSCORE]', desc: t('ui.73','返回成员按分数升序的排名（0 起始）。') },
@@ -159,51 +160,51 @@
       { cat: 'ZSet', name: 'ZUNIONSTORE', syntax: 'ZUNIONSTORE destination numkeys key [key ...] [WEIGHTS weight ...] [AGGREGATE SUM|MIN|MAX]', desc: t('ui.68','计算多个有序集合的并集并存到目标键，可加权。') },
       { cat: 'ZSet', name: 'ZINTERSTORE', syntax: 'ZINTERSTORE destination numkeys key [key ...] [WEIGHTS weight ...] [AGGREGATE SUM|MIN|MAX]', desc: t('ui.67','计算多个有序集合的交集并存到目标键。') },
 
-      { cat: '键管理', name: 'DEL', syntax: 'DEL key [key ...]', desc: t('ui.66','删除一个或多个键，返回删除数量。') },
-      { cat: '键管理', name: 'UNLINK', syntax: 'UNLINK key [key ...]', desc: t('ui.65','异步删除键，释放内存不阻塞主线程。') },
-      { cat: '键管理', name: 'EXISTS', syntax: 'EXISTS key [key ...]', desc: t('ui.64','统计给定键中存在的数量。') },
-      { cat: '键管理', name: 'EXPIRE', syntax: 'EXPIRE key seconds [NX|XX|GT|LT]', desc: t('ui.63','设置秒级过期时间，可用 NX/XX/GT/LT 条件。') },
-      { cat: '键管理', name: 'EXPIREAT', syntax: 'EXPIREAT key unix-time-seconds [NX|XX|GT|LT]', desc: t('ui.62','设置键在指定绝对时间（秒）过期。') },
-      { cat: '键管理', name: 'PEXPIRE', syntax: 'PEXPIRE key milliseconds [NX|XX|GT|LT]', desc: t('ui.61','设置毫秒级过期时间。') },
-      { cat: '键管理', name: 'PEXPIREAT', syntax: 'PEXPIREAT key unix-time-milliseconds [NX|XX|GT|LT]', desc: t('ui.60','设置键在指定绝对时间（毫秒）过期。') },
-      { cat: '键管理', name: 'TTL', syntax: 'TTL key', desc: t('ui.59','返回剩余存活秒数，-1 表示永不过期，-2 表示键不存在。') },
-      { cat: '键管理', name: 'PTTL', syntax: 'PTTL key', desc: t('ui.58','返回剩余存活毫秒数。') },
-      { cat: '键管理', name: 'PERSIST', syntax: 'PERSIST key', desc: t('ui.57','移除键的过期时间，使其永不过期。') },
-      { cat: '键管理', name: 'TYPE', syntax: 'TYPE key', desc: t('ui.56','返回键存储的类型（string/list/set/zset/hash/stream 等）。') },
-      { cat: '键管理', name: 'RENAME', syntax: 'RENAME key newkey', desc: t('ui.55','重命名键，目标已存在则直接覆盖。') },
-      { cat: '键管理', name: 'RENAMENX', syntax: 'RENAMENX key newkey', desc: t('ui.54','仅当目标键不存在时重命名，成功返回 1。') },
-      { cat: '键管理', name: 'KEYS', syntax: 'KEYS pattern', desc: t('ui.53','返回匹配模式的所有键，生产环境慎用（阻塞），建议 SCAN。') },
-      { cat: '键管理', name: 'SCAN', syntax: 'SCAN cursor [MATCH pattern] [COUNT count] [TYPE type]', desc: t('ui.52','增量迭代数据库中的键，每次返回新游标与一批键。') },
-      { cat: '键管理', name: 'RANDOMKEY', syntax: 'RANDOMKEY', desc: t('ui.51','随机返回一个键名。') },
-      { cat: '键管理', name: 'DBSIZE', syntax: 'DBSIZE', desc: t('ui.50','返回当前数据库的键数量。') },
-      { cat: '键管理', name: 'DUMP', syntax: 'DUMP key', desc: t('ui.49','序列化键值，返回 RDB 格式的二进制转储。') },
-      { cat: '键管理', name: 'RESTORE', syntax: 'RESTORE key ttl serialized-value [REPLACE] [ABSTTL] [IDLETIME seconds] [FREQ frequency]', desc: t('ui.48','用 DUMP 产生的序列化数据重建键，ttl 0 表示永不过期。') },
-      { cat: '键管理', name: 'MOVE', syntax: 'MOVE key db', desc: t('ui.47','把键移动到另一个数据库（集群模式不可用）。') },
-      { cat: '键管理', name: 'COPY', syntax: 'COPY source destination [DB destination-db] [REPLACE]', desc: t('ui.46','复制键到目标键（可跨库），不复制过期时间。') },
-      { cat: '键管理', name: 'TOUCH', syntax: 'TOUCH key [key ...]', desc: t('ui.45','更新键的最后访问时间（配合 LRU 淘汰策略）。') },
+      { cat: 'key', name: 'DEL', syntax: 'DEL key [key ...]', desc: t('ui.66','删除一个或多个键，返回删除数量。') },
+      { cat: 'key', name: 'UNLINK', syntax: 'UNLINK key [key ...]', desc: t('ui.65','异步删除键，释放内存不阻塞主线程。') },
+      { cat: 'key', name: 'EXISTS', syntax: 'EXISTS key [key ...]', desc: t('ui.64','统计给定键中存在的数量。') },
+      { cat: 'key', name: 'EXPIRE', syntax: 'EXPIRE key seconds [NX|XX|GT|LT]', desc: t('ui.63','设置秒级过期时间，可用 NX/XX/GT/LT 条件。') },
+      { cat: 'key', name: 'EXPIREAT', syntax: 'EXPIREAT key unix-time-seconds [NX|XX|GT|LT]', desc: t('ui.62','设置键在指定绝对时间（秒）过期。') },
+      { cat: 'key', name: 'PEXPIRE', syntax: 'PEXPIRE key milliseconds [NX|XX|GT|LT]', desc: t('ui.61','设置毫秒级过期时间。') },
+      { cat: 'key', name: 'PEXPIREAT', syntax: 'PEXPIREAT key unix-time-milliseconds [NX|XX|GT|LT]', desc: t('ui.60','设置键在指定绝对时间（毫秒）过期。') },
+      { cat: 'key', name: 'TTL', syntax: 'TTL key', desc: t('ui.59','返回剩余存活秒数，-1 表示永不过期，-2 表示键不存在。') },
+      { cat: 'key', name: 'PTTL', syntax: 'PTTL key', desc: t('ui.58','返回剩余存活毫秒数。') },
+      { cat: 'key', name: 'PERSIST', syntax: 'PERSIST key', desc: t('ui.57','移除键的过期时间，使其永不过期。') },
+      { cat: 'key', name: 'TYPE', syntax: 'TYPE key', desc: t('ui.56','返回键存储的类型（string/list/set/zset/hash/stream 等）。') },
+      { cat: 'key', name: 'RENAME', syntax: 'RENAME key newkey', desc: t('ui.55','重命名键，目标已存在则直接覆盖。') },
+      { cat: 'key', name: 'RENAMENX', syntax: 'RENAMENX key newkey', desc: t('ui.54','仅当目标键不存在时重命名，成功返回 1。') },
+      { cat: 'key', name: 'KEYS', syntax: 'KEYS pattern', desc: t('ui.53','返回匹配模式的所有键，生产环境慎用（阻塞），建议 SCAN。') },
+      { cat: 'key', name: 'SCAN', syntax: 'SCAN cursor [MATCH pattern] [COUNT count] [TYPE type]', desc: t('ui.52','增量迭代数据库中的键，每次返回新游标与一批键。') },
+      { cat: 'key', name: 'RANDOMKEY', syntax: 'RANDOMKEY', desc: t('ui.51','随机返回一个键名。') },
+      { cat: 'key', name: 'DBSIZE', syntax: 'DBSIZE', desc: t('ui.50','返回当前数据库的键数量。') },
+      { cat: 'key', name: 'DUMP', syntax: 'DUMP key', desc: t('ui.49','序列化键值，返回 RDB 格式的二进制转储。') },
+      { cat: 'key', name: 'RESTORE', syntax: 'RESTORE key ttl serialized-value [REPLACE] [ABSTTL] [IDLETIME seconds] [FREQ frequency]', desc: t('ui.48','用 DUMP 产生的序列化数据重建键，ttl 0 表示永不过期。') },
+      { cat: 'key', name: 'MOVE', syntax: 'MOVE key db', desc: t('ui.47','把键移动到另一个数据库（集群模式不可用）。') },
+      { cat: 'key', name: 'COPY', syntax: 'COPY source destination [DB destination-db] [REPLACE]', desc: t('ui.46','复制键到目标键（可跨库），不复制过期时间。') },
+      { cat: 'key', name: 'TOUCH', syntax: 'TOUCH key [key ...]', desc: t('ui.45','更新键的最后访问时间（配合 LRU 淘汰策略）。') },
 
-      { cat: '连接', name: 'AUTH', syntax: 'AUTH [username] password', desc: t('ui.44','认证连接；Redis 6+ 支持用户名密码双参数。') },
-      { cat: '连接', name: 'PING', syntax: 'PING [message]', desc: t('ui.43','探测连接存活，可选返回自定义消息。') },
-      { cat: '连接', name: 'ECHO', syntax: 'ECHO message', desc: t('ui.42','原样返回给定消息。') },
-      { cat: '连接', name: 'SELECT', syntax: 'SELECT index', desc: t('ui.41','切换数据库（0-15，由配置决定数量）。') },
-      { cat: '连接', name: 'QUIT', syntax: 'QUIT', desc: t('ui.40','请求服务器关闭当前连接。') },
-      { cat: '连接', name: 'RESET', syntax: 'RESET', desc: t('ui.39','重置当前连接状态（退出 MULTI、取消 WATCH、认证等）。') },
-      { cat: '连接', name: 'SWAPDB', syntax: 'SWAPDB index1 index2', desc: t('ui.38','原子交换两个数据库的全部数据。') },
-      { cat: '连接', name: 'HELLO', syntax: 'HELLO [protover [AUTH username password] [SETNAME clientname]]', desc: t('ui.37','握手协议版本（如 3），同时返回服务器信息。') },
-      { cat: '连接', name: 'CLIENT LIST', syntax: 'CLIENT LIST [TYPE normal|master|replica|pubsub] [ID id ...]', desc: t('ui.36','列出当前连接的客户端信息。') },
+      { cat: 'conn', name: 'AUTH', syntax: 'AUTH [username] password', desc: t('ui.44','认证连接；Redis 6+ 支持用户名密码双参数。') },
+      { cat: 'conn', name: 'PING', syntax: 'PING [message]', desc: t('ui.43','探测连接存活，可选返回自定义消息。') },
+      { cat: 'conn', name: 'ECHO', syntax: 'ECHO message', desc: t('ui.42','原样返回给定消息。') },
+      { cat: 'conn', name: 'SELECT', syntax: 'SELECT index', desc: t('ui.41','切换数据库（0-15，由配置决定数量）。') },
+      { cat: 'conn', name: 'QUIT', syntax: 'QUIT', desc: t('ui.40','请求服务器关闭当前连接。') },
+      { cat: 'conn', name: 'RESET', syntax: 'RESET', desc: t('ui.39','重置当前连接状态（退出 MULTI、取消 WATCH、认证等）。') },
+      { cat: 'conn', name: 'SWAPDB', syntax: 'SWAPDB index1 index2', desc: t('ui.38','原子交换两个数据库的全部数据。') },
+      { cat: 'conn', name: 'HELLO', syntax: 'HELLO [protover [AUTH username password] [SETNAME clientname]]', desc: t('ui.37','握手协议版本（如 3），同时返回服务器信息。') },
+      { cat: 'conn', name: 'CLIENT LIST', syntax: 'CLIENT LIST [TYPE normal|master|replica|pubsub] [ID id ...]', desc: t('ui.36','列出当前连接的客户端信息。') },
 
-      { cat: '事务', name: 'MULTI', syntax: 'MULTI', desc: t('ui.35','开启事务，后续命令进入队列而非立即执行。') },
-      { cat: '事务', name: 'EXEC', syntax: 'EXEC', desc: t('ui.34','按顺序执行事务队列中的全部命令，返回各命令结果数组。') },
-      { cat: '事务', name: 'DISCARD', syntax: 'DISCARD', desc: t('ui.33','丢弃事务队列中全部命令并退出事务。') },
-      { cat: '事务', name: 'WATCH', syntax: 'WATCH key [key ...]', desc: t('ui.32','监视键，事务执行前若键被修改则事务中止（乐观锁）。') },
-      { cat: '事务', name: 'UNWATCH', syntax: 'UNWATCH', desc: t('ui.31','取消全部 WATCH 监视。') },
+      { cat: 'txn', name: 'MULTI', syntax: 'MULTI', desc: t('ui.35','开启事务，后续命令进入队列而非立即执行。') },
+      { cat: 'txn', name: 'EXEC', syntax: 'EXEC', desc: t('ui.34','按顺序执行事务队列中的全部命令，返回各命令结果数组。') },
+      { cat: 'txn', name: 'DISCARD', syntax: 'DISCARD', desc: t('ui.33','丢弃事务队列中全部命令并退出事务。') },
+      { cat: 'txn', name: 'WATCH', syntax: 'WATCH key [key ...]', desc: t('ui.32','监视键，事务执行前若键被修改则事务中止（乐观锁）。') },
+      { cat: 'txn', name: 'UNWATCH', syntax: 'UNWATCH', desc: t('ui.31','取消全部 WATCH 监视。') },
 
-      { cat: '发布订阅', name: 'PUBLISH', syntax: 'PUBLISH channel message', desc: t('ui.30','向频道发布消息，返回接收者数量。') },
-      { cat: '发布订阅', name: 'SUBSCRIBE', syntax: 'SUBSCRIBE channel [channel ...]', desc: t('ui.29','订阅一个或多个频道，进入监听模式。') },
-      { cat: '发布订阅', name: 'PSUBSCRIBE', syntax: 'PSUBSCRIBE pattern [pattern ...]', desc: t('ui.28','按模式订阅频道（支持 * 通配符）。') },
-      { cat: '发布订阅', name: 'UNSUBSCRIBE', syntax: 'UNSUBSCRIBE [channel [channel ...]]', desc: t('ui.27','退订指定频道，不传参数则退订全部。') },
-      { cat: '发布订阅', name: 'PUNSUBSCRIBE', syntax: 'PUNSUBSCRIBE [pattern [pattern ...]]', desc: t('ui.26','退订指定模式，不传参数则退订全部模式。') },
-      { cat: '发布订阅', name: 'PUBSUB CHANNELS', syntax: 'PUBSUB CHANNELS [pattern]', desc: t('ui.25','列出当前活跃频道，可按模式过滤。') },
+      { cat: 'pubsub', name: 'PUBLISH', syntax: 'PUBLISH channel message', desc: t('ui.30','向频道发布消息，返回接收者数量。') },
+      { cat: 'pubsub', name: 'SUBSCRIBE', syntax: 'SUBSCRIBE channel [channel ...]', desc: t('ui.29','订阅一个或多个频道，进入监听模式。') },
+      { cat: 'pubsub', name: 'PSUBSCRIBE', syntax: 'PSUBSCRIBE pattern [pattern ...]', desc: t('ui.28','按模式订阅频道（支持 * 通配符）。') },
+      { cat: 'pubsub', name: 'UNSUBSCRIBE', syntax: 'UNSUBSCRIBE [channel [channel ...]]', desc: t('ui.27','退订指定频道，不传参数则退订全部。') },
+      { cat: 'pubsub', name: 'PUNSUBSCRIBE', syntax: 'PUNSUBSCRIBE [pattern [pattern ...]]', desc: t('ui.26','退订指定模式，不传参数则退订全部模式。') },
+      { cat: 'pubsub', name: 'PUBSUB CHANNELS', syntax: 'PUBSUB CHANNELS [pattern]', desc: t('ui.25','列出当前活跃频道，可按模式过滤。') },
 
       { cat: 'Geo', name: 'GEOADD', syntax: 'GEOADD key [NX|XX] [CH] longitude latitude member [longitude latitude member ...]', desc: t('ui.24','添加地理位置成员（经度在前，纬度在后）。') },
       { cat: 'Geo', name: 'GEOPOS', syntax: 'GEOPOS key member [member ...]', desc: t('ui.23','返回成员的经纬度坐标。') },
@@ -222,7 +223,7 @@
       { cat: 'Stream', name: 'XDEL', syntax: 'XDEL key id [id ...]', desc: t('ui.11','删除流中的一条或多条消息。') },
       { cat: 'Stream', name: 'XTRIM', syntax: 'XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]', desc: t('ui.10','裁剪流：MAXLEN 按长度截断，MINID 删除小于阈值的消息。') },
       { cat: 'Stream', name: 'XGROUP', syntax: 'XGROUP CREATE|SETID|DESTROY|CREATECONSUMER|DELCONSUMER key group [id|$] [MKSTREAM]', desc: t('ui.9','管理消费者组：创建、设置、销毁、增删消费者。') },
-      { cat: 'Stream', name: 'XREADGROUP', syntax: 'XREADGROUP GROUP group consumer [COUNT count] [BLOCK ms] [NOACK] STREAMS key [key ...] id [id ...]', desc: '以消费者组身份读取消息，> 表示读取未投递的新消息。' },
+      { cat: 'Stream', name: 'XREADGROUP', syntax: 'XREADGROUP GROUP group consumer [COUNT count] [BLOCK ms] [NOACK] STREAMS key [key ...] id [id ...]', desc: t('ui.168','以消费者组身份读取消息，> 表示读取未投递的新消息。') },
       { cat: 'Stream', name: 'XACK', syntax: 'XACK key group id [id ...]', desc: t('ui.8','确认消息已处理完成，从 Pending 列表移除。') },
       { cat: 'Stream', name: 'XPENDING', syntax: 'XPENDING key group [[IDLE min-idle-time] start end count [consumer]]', desc: t('ui.7','查看消费者组待确认（Pending）消息详情。') },
       { cat: 'Stream', name: 'XCLAIM', syntax: 'XCLAIM key group consumer min-idle-time id [id ...] [IDLE ms] [TIME ms-unix-time] [RETRYCOUNT count] [FORCE] [JUSTID]', desc: t('ui.6','把超时未确认的消息重新分配给指定消费者。') },
@@ -241,7 +242,7 @@
       for (var i = 0; i < CATS.length; i++) {
         var opt = document.createElement('option');
         opt.value = CATS[i];
-        opt.textContent = CATS[i];
+        opt.textContent = CAT_LABELS[CATS[i]];
         catSelect.appendChild(opt);
       }
     }
@@ -261,14 +262,15 @@
       }
       resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 条命令');
       if (items.length === 0) {
-        cmdList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的命令，换个关键词试试。</p>';
+        var noMatchMsg = t('ui.nomatch','没有匹配的命令，换个关键词试试。');
+        cmdList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">' + noMatchMsg + '</p>';
         return;
       }
       var html = '';
       for (var j = 0; j < items.length; j++) {
         var it = items[j];
         html += '<div class="cmd-card" data-syntax="' + htmlEscape(it.syntax) + '">'
-          + '<div class="cmd-head"><span class="cmd-name">' + htmlEscape(it.name) + '</span><span class="cmd-cat">' + htmlEscape(it.cat) + '</span></div>'
+          + '<div class="cmd-head"><span class="cmd-name">' + htmlEscape(it.name) + '</span><span class="cmd-cat">' + htmlEscape(CAT_LABELS[it.cat] || it.cat) + '</span></div>'
           + '<div class="cmd-syntax">' + htmlEscape(it.syntax) + '</div>'
           + '<div class="cmd-desc">' + htmlEscape(it.desc) + '</div>'
           + '</div>';

@@ -43,7 +43,7 @@ function render(val){
   if(Array.isArray(val)){
     if(val.length===0)return'<span class="bracket">[</span><span class="bracket">]</span>';
     var items=val.map(function(v,i){return'<li>'+render(v)+(i<val.length-1?',':'')+'</li>';}).join('');
-    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">[</span><span class="count">'+val.length+'项</span><ul>'+items+'</ul><span class="bracket">]</span>';
+    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">[</span><span class="count">'+val.length+t('ui.7','项')+'</span><ul>'+items+'</ul><span class="bracket">]</span>';
   }
   if(typeof val==='object'){
     var keys=Object.keys(val);
@@ -51,7 +51,7 @@ function render(val){
     var items=keys.map(function(k,i){
       return'<li><span class="key">"'+esc(k)+'"</span>: '+render(val[k])+(i<keys.length-1?',':'');
     }).join('');
-    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">{</span><span class="count">'+keys.length+'项</span><ul>'+items+'</ul><span class="bracket">}</span>';
+    return'<span class="toggle" onclick="this.parentNode.classList.toggle(\'collapsed\')">▼</span><span class="bracket">{</span><span class="count">'+keys.length+t('ui.7','项')+'</span><ul>'+items+'</ul><span class="bracket">}</span>';
   }
   return esc(String(val));
 }

@@ -24,7 +24,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">时间单位转换器</h1>
@@ -128,17 +128,17 @@
       var converted = totalMs / to.ms;
       var html = '<div class="conv-result">' + htmlEscape(fmt(n)) + ' ' + htmlEscape(from.name) + ' = ' + htmlEscape(fmt(converted)) + ' ' + htmlEscape(to.name) + '</div>';
       var perOne = from.ms / to.ms;
-      html += '<div class="conv-reverse">反向换算：1 ' + htmlEscape(to.name) + ' = ' + htmlEscape(fmt(perOne)) + ' ' + htmlEscape(from.name) + '</div>';
-      html += '<table class="conv-table"><thead><tr><th>单位</th><th>数值</th></tr></thead><tbody>';
+      html += '<div class="conv-reverse">' + t('ui.reverse','\u53cd\u5411\u6362\u7b97\uff1a') + '1 ' + htmlEscape(to.name) + ' = ' + htmlEscape(fmt(perOne)) + ' ' + htmlEscape(from.name) + '</div>';
+      html += '<table class="conv-table"><thead><tr><th>' + t('ui.unit','\u5355\u4f4d') + '</th><th>' + t('ui.value','\u6570\u503c') + '</th></tr></thead><tbody>';
       for (var i = 0; i < units.length; i++) {
         var val = totalMs / units[i].ms;
         html += '<tr><td>' + htmlEscape(units[i].name) + '</td><td>' + htmlEscape(fmt(val)) + ' ' + htmlEscape(units[i].id) + '</td></tr>';
       }
       html += '</tbody></table>';
-      html += '<div class="conv-tips"><b>常用场景：</b><br>';
+      html += '<div class="conv-tips"><b>' + t('ui.scenarios','\u5e38\u7528\u573a\u666f\uff1a') + '</b><br>';
       for (var j = 0; j < scenarios.length; j++) {
         var hit = Math.abs(totalMs - scenarios[j].ms) < 0.5;
-        var mark = hit ? ' ✓ 当前输入' : '';
+        var mark = hit ? t('ui.currentInput',' ✓ 当前输入') : '';
         html += '<span class="' + (hit ? 'conv-tip-hit' : '') + '">' + htmlEscape(scenarios[j].label + mark) + '</span><br>';
       }
       html += '</div>';

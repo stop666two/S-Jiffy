@@ -94,14 +94,14 @@
 
       var output = t('ui.2','数字: ') + nums.join(', ') + '\n';
       output += t('ui.total','共 ') + nums.length + ' 个数字\n';
-      output += '\n最大公约数 (GCD): ' + g + '\n';
-      output += '最小公倍数 (LCM): ' + l + '\n';
+      output += '\n' + t('ui.3','最大公约数 (GCD): ') + g + '\n';
+      output += t('ui.4','最小公倍数 (LCM): ') + l + '\n';
 
-      output += '\n--- 质因数分解 ---\n';
+      output += '\n' + t('ui.5','--- 质因数分解 ---') + '\n';
       for (var i = 0; i < nums.length; i++) {
         var pf = primeFactors(nums[i]);
         if (pf.length === 0) {
-          output += nums[i] + ' = ' + nums[i] + ' (质数)\n';
+          output += nums[i] + ' = ' + nums[i] + ' (' + t('ui.6','质数') + ')\n';
         } else {
           var fc = factorCount(pf);
           var partsArr = [];

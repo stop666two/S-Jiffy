@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Unicode 转义 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">Unicode 转义</h1><p class="tool-desc" data-i18n="desc">Unicode \\uXXXX 编码与解码，支持 BMP 和代理对。</p>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="输入文本或 \\uXXXX 编码..." style="min-height:100px;"></textarea></div>
 <div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-2);flex-wrap:wrap;align-items:center;">
@@ -36,15 +36,15 @@ function decode(text){
 return text.replace(/\\u([0-9A-Fa-f]{4})/g,function(m,c){return String.fromCharCode(parseInt(c,16));});
 }
 encodeBtn.addEventListener('click',function(){
-var t=inputEl.value;
-if(!t){setStatus(t('ui.100','请输入文本'),'error');return;}
-outputEl.textContent=encode(t);
+var txt=inputEl.value;
+if(!txt){setStatus(t('ui.100','请输入文本'),'error');return;}
+outputEl.textContent=encode(txt);
 setStatus('');
 });
 decodeBtn.addEventListener('click',function(){
-var t=inputEl.value.trim();
-if(!t){setStatus(t('ui.101','请输入编码'),'error');return;}
-outputEl.textContent=decode(t);
+var txt=inputEl.value.trim();
+if(!txt){setStatus(t('ui.101','请输入编码'),'error');return;}
+outputEl.textContent=decode(txt);
 setStatus('');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';setStatus('');inputEl.focus();});

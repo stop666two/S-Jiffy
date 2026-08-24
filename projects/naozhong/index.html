@@ -21,7 +21,7 @@
 @media (max-width:600px){.clock-display{font-size:48px;}.setting-row label{min-width:100%;}}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">在线闹钟</h1><p class="tool-desc" data-i18n="desc">网页定时闹钟，到点播放铃声提醒，支持整点报时，全程本地运行。</p>
 <div class="card">
 <div class="clock-date" id="clockDate"></div>
@@ -172,7 +172,7 @@ setBtn.addEventListener('click',function(){ensureCtx();setAlarm();});
 cancelBtn.addEventListener('click',cancelAlarm);
 document.getElementById('previewBtn').addEventListener('click',function(){ensureCtx();playOnce();setStatus(t('ui.25','试听中…'));});
 stopRingBtn.addEventListener('click',function(){stopRing();setStatus(t('ui.24','闹钟已停止'));});
-chimeCheck.addEventListener('change',function(){chimeEnabled=chimeCheck.checked;setStatus(chimeEnabled?'整点报时已开启':'整点报时已关闭');});
+chimeCheck.addEventListener('change',function(){chimeEnabled=chimeCheck.checked;setStatus(chimeEnabled?t('ui.26','整点报时已开启'):t('ui.27','整点报时已关闭'));});
 setInterval(tick,1000);
 tick();
 })();

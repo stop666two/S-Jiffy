@@ -20,15 +20,15 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">URL 编解码</h1>
     <p class="tool-desc" data-i18n="desc">URL 编码/解码：标准编码、RFC 3986、表单编码，以及 URL 解析与查询参数提取。</p>
     <div class="card">
       <div class="mode-radio">
-        <label><input type="radio" name="urlMode" value="standard" checked> 标准（encodeURIComponent）</label>
+        <label><input type="radio" name="urlMode" value="standard" checked> <span data-i18n="ui.modeStandard">标准（encodeURIComponent）</span></label>
         <label><input type="radio" name="urlMode" value="rfc3986"> RFC 3986</label>
-        <label><input type="radio" name="urlMode" value="form"> 表单编码</label>
+        <label><input type="radio" name="urlMode" value="form"> <span data-i18n="ui.modeForm">表单编码</span></label>
       </div>
       <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.104" placeholder="输入链接或文本..." style="min-height:120px;"></textarea>
     </div>
@@ -38,11 +38,11 @@
       <button id="parseBtn" class="btn btn-secondary" data-i18n="ui.1">解析 URL</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
-    <div id="parse结果" style="display:none;">
+    <div id="parseResult" style="display:none;">
       <div class="card"><div class="url-part-grid" id="urlParts"></div></div>
       <div class="card" id="queryCard" style="display:none;"><table class="query-table"><thead><tr><th data-i18n="ui.2">参数</th><th data-i18n="ui.3">值</th></tr></thead><tbody id="queryBody"></tbody></table></div>
     </div>
-    <div class="output-box" id="输出Container"><span id="outputText" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
+    <div class="output-box" id="outputContainer"><span id="outputText" style="display:block; padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
   <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
   <script src="../../assets/js/global.js"></script>
@@ -50,7 +50,7 @@
   <script>
     (function () {
       var i = document.getElementById('inputText'), o = document.getElementById('outputText');
-      var parse结果 = document.getElementById(t('ui.10','parse结果')), urlParts = document.getElementById('urlParts');
+      var parseResult = document.getElementById('parseResult'), urlParts = document.getElementById('urlParts');
       var queryCard = document.getElementById('queryCard'), queryBody = document.getElementById('queryBody');
 
       function getMode() {
@@ -74,7 +74,7 @@
       function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
       document.getElementById('encodeBtn').addEventListener('click', function () {
-        parse结果.style.display = 'none';
+        parseResult.style.display = 'none';
         var mode = getMode();
         try {
           if (mode === 'rfc3986') o.textContent = rfc3986Encode(i.value);
@@ -84,7 +84,7 @@
         } catch (e) { setStatus(t('ui.100','编码错误'), 'error'); }
       });
       document.getElementById('decodeBtn').addEventListener('click', function () {
-        parse结果.style.display = 'none';
+        parseResult.style.display = 'none';
         var mode = getMode();
         try {
           if (mode === 'form') o.textContent = formDecode(i.value);
@@ -95,14 +95,14 @@
       document.getElementById('parseBtn').addEventListener('click', function () {
         var val = i.value.trim();
         if (!val) { setStatus(t('ui.102','请输入链接'), 'error'); return; }
-        parse结果.style.display = 'block';
+        parseResult.style.display = 'block';
         try {
           var url = new URL(val);
           var parts = [
             { label: t('ui.9','协议'), value: url.protocol }, { label: t('ui.8','主机'), value: url.host },
-            { label: t('ui.7','主机名'), value: url.hostname }, { label: t('ui.6','端口'), value: url.port || '（默认）' },
-            { label: t('ui.5','路径'), value: url.pathname }, { label: t('ui.query','查询'), value: url.search || '（无）' },
-            { label: t('ui.4','哈希'), value: url.hash || '（无）' }
+            { label: t('ui.7','主机名'), value: url.hostname },             { label: t('ui.6','端口'), value: url.port || t('ui.default','（默认）') },
+            { label: t('ui.5','路径'), value: url.pathname }, { label: t('ui.query','查询'), value: url.search || t('ui.none','（无）') },
+            { label: t('ui.4','哈希'), value: url.hash || t('ui.none','（无）') }
           ];
           urlParts.innerHTML = parts.map(function(p) {
             return '<div class="url-part-row"><span class="url-part-label">' + escapeHtml(p.label) + '</span><span class="url-part-value">' + escapeHtml(p.value) + '</span></div>';
@@ -117,12 +117,12 @@
           o.textContent = val;
           setStatus('');
         } catch (e) {
-          urlParts.innerHTML = '<div style="color:var(--color-error);font-size:var(--font-size-sm);">链接无效</div>';
+          urlParts.innerHTML = '<div style="color:var(--color-error);font-size:var(--font-size-sm);">' + t('ui.103','链接无效') + '</div>';
           queryCard.style.display = 'none';
           setStatus(t('ui.103','链接无效'), 'error');
         }
       });
-      document.getElementById('clearBtn').addEventListener('click', function () { i.value = ''; o.textContent = ''; parse结果.style.display = 'none'; setStatus(''); i.focus(); });
+      document.getElementById('clearBtn').addEventListener('click', function () { i.value = ''; o.textContent = ''; parseResult.style.display = 'none'; setStatus(''); i.focus(); });
       document.getElementById('copyBtn').addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, this); setStatus(t('ui.copied','已复制')); } });
     })();
   </script>

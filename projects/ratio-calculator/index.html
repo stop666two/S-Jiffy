@@ -24,7 +24,7 @@
       </div>
       <p style="text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-3);" data-i18n="ui.1">留空要计算的项，其余三项填数字</p>
       <div class="rc-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="simplifyChk" type="checkbox"> 也化简比例</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="simplifyChk" type="checkbox"><span data-i18n="ui.simplify">也化简比例</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
@@ -99,7 +99,7 @@
         if (allVals.every(function(v) { return v > 0; })) {
           var g = gcd(allVals[0], gcd(allVals[1], gcd(allVals[2], allVals[3])));
           if (g > 1) {
-            output += '\n\n化简比例:\n' + allVals.map(function(v){return v/g;}).join(' : ');
+            output += '\n\n' + t('ui.simplifyOut','化简比例:') + '\n' + allVals.map(function(v){return v/g;}).join(' : ');
           }
         }
       }

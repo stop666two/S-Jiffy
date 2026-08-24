@@ -35,7 +35,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Markdown 速查卡</h1>
@@ -65,42 +65,44 @@
     var mdGrid = document.getElementById('mdGrid');
     var outputText = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
-    var currentCat = '全部';
+    var currentCat = 'all';
     var lastCopy = '';
 
     var items = [
-      { cat: '标题', name: t('ui.10','标题'), syntax: '# 一级标题\n## 二级标题\n### 三级标题', preview: '<h4 style="margin:2px 0;">一级标题</h4><h5 style="margin:2px 0;">二级标题</h5><h6 style="margin:2px 0;">三级标题</h6>' },
-      { cat: '文本样式', name: t('ui.25','粗体'), syntax: '**加粗文字**', preview: '<strong>加粗文字</strong>' },
-      { cat: '文本样式', name: t('ui.24','斜体'), syntax: '*斜体文字*', preview: '<em>斜体文字</em>' },
-      { cat: '文本样式', name: t('ui.23','删除线'), syntax: '~~删除线文字~~', preview: '<del>删除线文字</del>' },
-      { cat: '列表', name: t('ui.22','无序列表'), syntax: '- 项目一\n- 项目二', preview: '<ul><li>项目一</li><li>项目二</li></ul>' },
-      { cat: '列表', name: t('ui.21','有序列表'), syntax: '1. 第一项\n2. 第二项', preview: '<ol><li>第一项</li><li>第二项</li></ol>' },
-      { cat: '列表', name: t('ui.20','任务列表'), syntax: '- [x] 已完成任务\n- [ ] 待办任务', preview: '<ul><li><input type="checkbox" checked disabled> 已完成任务</li><li><input type="checkbox" disabled> 待办任务</li></ul>' },
-      { cat: '链接与图片', name: t('ui.19','链接'), syntax: '[链接文字](https://example.com)', preview: '<a href="#">链接文字</a>' },
-      { cat: '链接与图片', name: t('ui.18','图片'), syntax: '![替代文字](图片地址)', preview: '<span style="color:var(--color-text-secondary);">[图片] 替代文字</span>' },
-      { cat: '代码', name: t('ui.17','行内代码'), syntax: '这是 `code` 行内代码', preview: '这是 <code>code</code> 行内代码' },
-      { cat: '代码', name: t('ui.16','代码块'), syntax: '```js\nconst x = 1;\nconsole.log(x);\n```', preview: '<pre><code>const x = 1;\nconsole.log(x);</code></pre>' },
-      { cat: '表格', name: t('ui.5','表格'), syntax: '| 列1 | 列2 |\n| --- | --- |\n| A | B |', preview: '<table><thead><tr><th>列1</th><th>列2</th></tr></thead><tbody><tr><td>A</td><td>B</td></tr></tbody></table>' },
-      { cat: '引用与分割线', name: t('ui.15','引用'), syntax: '> 引用的文字', preview: '<blockquote>引用的文字</blockquote>' },
-      { cat: '引用与分割线', name: t('ui.14','水平线'), syntax: '---', preview: '<hr style="margin:4px 0;">' },
-      { cat: '特殊', name: t('ui.13','转义字符'), syntax: '\\*星号不被解析\\*', preview: '*星号不被解析*' },
-      { cat: '特殊', name: 'HTML', syntax: '<span style="color:red">红色文字</span>', preview: '<span style="color:var(--color-error);">红色文字</span>' },
-      { cat: '特殊', name: t('ui.12','行尾换行'), syntax: '第一行结尾加两个空格  \n换到第二行', preview: '第一行结尾加两个空格<br>换到第二行' },
-      { cat: '特殊', name: t('ui.11','引用代码块'), syntax: '```\n纯文本代码块\n```', preview: '<pre><code>纯文本代码块</code></pre>' }
+      { cat: 'headings', name: t('ui.10','标题'), syntax: t('ui.26','# 一级标题\n## 二级标题\n### 三级标题'), preview: t('ui.27','<h4 style="margin:2px 0;">一级标题</h4><h5 style="margin:2px 0;">二级标题</h5><h6 style="margin:2px 0;">三级标题</h6>') },
+      { cat: 'text', name: t('ui.25','粗体'), syntax: t('ui.28','**加粗文字**'), preview: t('ui.29','<strong>加粗文字</strong>') },
+      { cat: 'text', name: t('ui.24','斜体'), syntax: t('ui.30','*斜体文字*'), preview: t('ui.31','<em>斜体文字</em>') },
+      { cat: 'text', name: t('ui.23','删除线'), syntax: t('ui.32','~~删除线文字~~'), preview: t('ui.33','<del>删除线文字</del>') },
+      { cat: 'lists', name: t('ui.22','无序列表'), syntax: t('ui.34','- 项目一\n- 项目二'), preview: t('ui.35','<ul><li>项目一</li><li>项目二</li></ul>') },
+      { cat: 'lists', name: t('ui.21','有序列表'), syntax: t('ui.36','1. 第一项\n2. 第二项'), preview: t('ui.37','<ol><li>第一项</li><li>第二项</li></ol>') },
+      { cat: 'lists', name: t('ui.20','任务列表'), syntax: t('ui.38','- [x] 已完成任务\n- [ ] 待办任务'), preview: t('ui.39','<ul><li><input type="checkbox" checked disabled> 已完成任务</li><li><input type="checkbox" disabled> 待办任务</li></ul>') },
+      { cat: 'links-images', name: t('ui.19','链接'), syntax: t('ui.40','[链接文字](https://example.com)'), preview: t('ui.41','<a href="#">链接文字</a>') },
+      { cat: 'links-images', name: t('ui.18','图片'), syntax: t('ui.42','![替代文字](图片地址)'), preview: t('ui.43','<span style="color:var(--color-text-secondary);">[图片] 替代文字</span>') },
+      { cat: 'code', name: t('ui.17','行内代码'), syntax: t('ui.44','这是 `code` 行内代码'), preview: t('ui.45','这是 <code>code</code> 行内代码') },
+      { cat: 'code', name: t('ui.16','代码块'), syntax: '```js\nconst x = 1;\nconsole.log(x);\n```', preview: '<pre><code>const x = 1;\nconsole.log(x);</code></pre>' },
+      { cat: 'table', name: t('ui.5','表格'), syntax: t('ui.47','| 列1 | 列2 |\n| --- | --- |\n| A | B |'), preview: t('ui.48','<table><thead><tr><th>列1</th><th>列2</th></tr></thead><tbody><tr><td>A</td><td>B</td></tr></tbody></table>') },
+      { cat: 'quotes', name: t('ui.15','引用'), syntax: t('ui.49','> 引用的文字'), preview: t('ui.50','<blockquote>引用的文字</blockquote>') },
+      { cat: 'quotes', name: t('ui.14','水平线'), syntax: '---', preview: '<hr style="margin:4px 0;">' },
+      { cat: 'special', name: t('ui.13','转义字符'), syntax: t('ui.52','\\*星号不被解析\\*'), preview: t('ui.53','*星号不被解析*') },
+      { cat: 'special', name: 'HTML', syntax: t('ui.54','<span style="color:red">红色文字</span>'), preview: t('ui.55','<span style="color:var(--color-error);">红色文字</span>') },
+      { cat: 'special', name: t('ui.12','行尾换行'), syntax: t('ui.56','第一行结尾加两个空格  \n换到第二行'), preview: t('ui.57','第一行结尾加两个空格<br>换到第二行') },
+      { cat: 'special', name: t('ui.11','引用代码块'), syntax: t('ui.58','```\n纯文本代码块\n```'), preview: t('ui.59','<pre><code>纯文本代码块</code></pre>') }
     ];
 
-    var cats = [ t('ui.all','全部'), t('ui.10','标题'), t('ui.9','文本样式'), t('ui.8','列表'), t('ui.7','链接与图片'), t('ui.6','代码'), t('ui.5','表格'), t('ui.4','引用与分割线'), t('ui.3','特殊')];
+    var cats = [ { c: 'all', l: t('ui.all','全部') }, { c: 'headings', l: t('ui.10','标题') }, { c: 'text', l: t('ui.9','文本样式') }, { c: 'lists', l: t('ui.8','列表') }, { c: 'links-images', l: t('ui.7','链接与图片') }, { c: 'code', l: t('ui.6','代码') }, { c: 'table', l: t('ui.5','表格') }, { c: 'quotes', l: t('ui.4','引用与分割线') }, { c: 'special', l: t('ui.3','特殊') } ];
+    var catLabel = {};
+    for (var ci = 0; ci < cats.length; ci++) catLabel[cats[ci].c] = cats[ci].l;
 
     function buildCats() {
       var html = '';
       for (var i = 0; i < cats.length; i++) {
-        html += '<button class="md-cat-btn' + (cats[i] === currentCat ? ' on' : '') + '" data-cat="' + cats[i] + '">' + htmlEscape(cats[i]) + '</button>';
+        html += '<button class="md-cat-btn' + (cats[i].c === currentCat ? ' on' : '') + '" data-cat="' + cats[i].c + '">' + htmlEscape(cats[i].l) + '</button>';
       }
       catBar.innerHTML = html;
       var btns = catBar.querySelectorAll('.md-cat-btn');
       for (var j = 0; j < btns.length; j++) {
         btns[j].onclick = (function (cat) {
-          return function () { currentCat = cat; buildCats(); render(); };
+          return function () { currentCat = cat.c; buildCats(); render(); };
         })(cats[j]);
       }
     }
@@ -110,19 +112,19 @@
       var filtered = [];
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
-        if (currentCat !== '全部' && it.cat !== currentCat) { continue; }
+        if (currentCat !== 'all' && it.cat !== currentCat) { continue; }
         if (q && (it.name.toLowerCase().indexOf(q) === -1) && (it.syntax.toLowerCase().indexOf(q) === -1)) { continue; }
         filtered.push(it);
       }
       if (!filtered.length) {
-        mdGrid.innerHTML = '<div class="md-empty">没有匹配的条目</div>';
+        mdGrid.innerHTML = '<div class="md-empty">' + t('ui.101','没有匹配的条目') + '</div>';
         outputText.innerHTML = '';
         return;
       }
       var html = '';
       for (var k = 0; k < filtered.length; k++) {
         html += '<div class="md-item" data-idx="' + k + '">';
-        html += '<div class="md-item-head"><span class="md-item-name">' + htmlEscape(filtered[k].name) + '</span><span class="md-item-cat">' + htmlEscape(filtered[k].cat) + '</span></div>';
+        html += '<div class="md-item-head"><span class="md-item-name">' + htmlEscape(filtered[k].name) + '</span><span class="md-item-cat">' + htmlEscape(catLabel[filtered[k].cat] || filtered[k].cat) + '</span></div>';
         html += '<div class="md-syntax">' + htmlEscape(filtered[k].syntax) + '</div>';
         html += '<div class="md-preview">' + filtered[k].preview + '</div>';
         html += '</div>';
@@ -134,7 +136,7 @@
           return function () {
             var it = filtered[idx];
             lastCopy = it.syntax;
-            outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · <span class="md-item-cat">' + htmlEscape(it.cat) + '</span></div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.syntax) + '</div>';
+            outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · <span class="md-item-cat">' + htmlEscape(catLabel[it.cat] || it.cat) + '</span></div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.syntax) + '</div>';
             copyBtn.onclick = function () { copyToClipboard(lastCopy, copyBtn); };
             setStatus(t('ui.2','已选中「') + it.name + t('ui.1','」，点击复制按钮可复制语法'));
           };

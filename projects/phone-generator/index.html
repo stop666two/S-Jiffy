@@ -20,7 +20,7 @@
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script><script>(function(){
 var countries=[
-{code:"+86",name:"中国",format:"1[3-9]XXXXXXXX"},{code:"+1",name:"美国/加拿大",format:"[2-9]XX XXX XXXX"},{code:"+44",name:"英国",format:"7XXX XXXXXX"},{code:"+81",name:"日本",format:"[7-9]0 XXXX XXXX"},{code:"+82",name:"韩国",format:"10 XXXX XXXX"},{code:"+91",name:"印度",format:"[6-9]XXXXXXXXX"},{code:"+49",name:"德国",format:"1XX XXXXXXXX"},{code:"+33",name:"法国",format:"6 XX XX XX XX"},{code:"+39",name:"意大利",format:"3XX XXX XXXX"},{code:"+55",name:"巴西",format:"[6-9]9 XXXX XXXX"},{code:"+7",name:"俄罗斯",format:"9XX XXX XX XX"},{code:"+61",name:"澳大利亚",format:"4XX XXX XXX"},{code:"+62",name:"印度尼西亚",format:"8XX XXXX XXXX"},{code:"+63",name:"菲律宾",format:"9XX XXX XXXX"},{code:"+66",name:"泰国",format:"[6-9]X XXXX XXXX"},{code:"+84",name:"越南",format:"[3-9]X XXXXXXX"},{code:"+60",name:"马来西亚",format:"1X-XXX XXXX"},{code:"+65",name:"新加坡",format:"8XXX XXXX"},{code:"+31",name:"荷兰",format:"6 XXXXXXXX"},{code:"+46",name:"瑞典",format:"7X-XXX XX XX"},{code:"+41",name:"瑞士",format:"7X XXX XX XX"},{code:"+34",name:"西班牙",format:"6XX XXX XXX"},{code:"+351",name:"葡萄牙",format:"9XX XXX XXX"},{code:"+30",name:"希腊",format:"69X XXXX XXXX"},{code:"+90",name:"土耳其",format:"5XX XXX XX XX"},{code:"+27",name:"南非",format:"[6-8]X XXX XXXX"},{code:"+52",name:"墨西哥",format:"1XX XXX XXXX"},{code:"+54",name:"阿根廷",format:"11 XXXX XXXX"},{code:"+56",name:"智利",format:"9 XXXX XXXX"},{code:"+64",name:"新西兰",format:"2X XXX XXXX"}
+{code:"+86",name:"中国",labelKey:"c.cn",format:"1[3-9]XXXXXXXX"},{code:"+1",name:"美国/加拿大",labelKey:"c.usCa",format:"[2-9]XX XXX XXXX"},{code:"+44",name:"英国",labelKey:"c.uk",format:"7XXX XXXXXX"},{code:"+81",name:"日本",labelKey:"c.jp",format:"[7-9]0 XXXX XXXX"},{code:"+82",name:"韩国",labelKey:"c.kr",format:"10 XXXX XXXX"},{code:"+91",name:"印度",labelKey:"c.in",format:"[6-9]XXXXXXXXX"},{code:"+49",name:"德国",labelKey:"c.de",format:"1XX XXXXXXXX"},{code:"+33",name:"法国",labelKey:"c.fr",format:"6 XX XX XX XX"},{code:"+39",name:"意大利",labelKey:"c.it",format:"3XX XXX XXXX"},{code:"+55",name:"巴西",labelKey:"c.br",format:"[6-9]9 XXXX XXXX"},{code:"+7",name:"俄罗斯",labelKey:"c.ru",format:"9XX XXX XX XX"},{code:"+61",name:"澳大利亚",labelKey:"c.au",format:"4XX XXX XXX"},{code:"+62",name:"印度尼西亚",labelKey:"c.id",format:"8XX XXXX XXXX"},{code:"+63",name:"菲律宾",labelKey:"c.ph",format:"9XX XXX XXXX"},{code:"+66",name:"泰国",labelKey:"c.th",format:"[6-9]X XXXX XXXX"},{code:"+84",name:"越南",labelKey:"c.vn",format:"[3-9]X XXXXXXX"},{code:"+60",name:"马来西亚",labelKey:"c.my",format:"1X-XXX XXXX"},{code:"+65",name:"新加坡",labelKey:"c.sg",format:"8XXX XXXX"},{code:"+31",name:"荷兰",labelKey:"c.nl",format:"6 XXXXXXXX"},{code:"+46",name:"瑞典",labelKey:"c.se",format:"7X-XXX XX XX"},{code:"+41",name:"瑞士",labelKey:"c.ch",format:"7X XXX XX XX"},{code:"+34",name:"西班牙",labelKey:"c.es",format:"6XX XXX XXX"},{code:"+351",name:"葡萄牙",labelKey:"c.pt",format:"9XX XXX XXX"},{code:"+30",name:"希腊",labelKey:"c.gr",format:"69X XXXX XXXX"},{code:"+90",name:"土耳其",labelKey:"c.tr",format:"5XX XXX XX XX"},{code:"+27",name:"南非",labelKey:"c.za",format:"[6-8]X XXX XXXX"},{code:"+52",name:"墨西哥",labelKey:"c.mx",format:"1XX XXX XXXX"},{code:"+54",name:"阿根廷",labelKey:"c.ar",format:"11 XXXX XXXX"},{code:"+56",name:"智利",labelKey:"c.cl",format:"9 XXXX XXXX"},{code:"+64",name:"新西兰",labelKey:"c.nz",format:"2X XXX XXXX"}
 ];
 var countrySelect=document.getElementById('countrySelect');
 var countInput=document.getElementById('countInput');
@@ -85,13 +85,14 @@ if(count<1)count=1;if(count>100)count=100;
 var lines=[];
 for(var i=0;i<count;i++)lines.push(generatePhone(c.code));
 outputEl.textContent=lines.join('\n');
-setStatus(t('ui.generate','生成 ') +count+ t('ui.count',' 个 ')+c.name+ t('ui.1',' 号码'));
+  setStatus(t('ui.generate','生成')+' '+count+' '+t('ui.count','个')+' '+cname(c)+' '+t('ui.1','号码'));
 }
 
+function cname(c){return c.labelKey?t(c.labelKey,c.name):c.name;}
 function populateSelect(){
 var html='';
 for(var i=0;i<countries.length;i++){
-html+='<option value="'+i+'">'+countries[i].code+' '+countries[i].name+'</option>';
+html+='<option value="'+i+'">'+countries[i].code+' '+cname(countries[i])+'</option>';
 }
 countrySelect.innerHTML=html;
 }
@@ -101,7 +102,7 @@ var html='';
 for(var i=0;i<Math.min(countries.length,12);i++){
 (function(idx){
 var c=countries[idx];
-html+='<div class="preset-btn" data-idx="'+idx+'"><div class="code">'+c.code+'</div><div style="font-size:11px;color:var(--color-text-secondary)">'+c.name+'</div></div>';
+html+='<div class="preset-btn" data-idx="'+idx+'"><div class="code">'+c.code+'</div><div style="font-size:11px;color:var(--color-text-secondary)">'+cname(c)+'</div></div>';
 })(i);
 }
 presetGrid.innerHTML=html;

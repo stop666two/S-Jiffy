@@ -3,9 +3,9 @@
 <div class="row"><button id="toCurlyBtn" class="btn btn-primary" data-i18n="ui.1">转弯引号</button><button id="toStraightBtn" class="btn btn-secondary" data-i18n="ui.2">转直引号</button><button id="clearBtn" class="btn btn-secondary" style="min-width:auto;padding:0 12px" data-i18n="ui.clear">清空</button></div></div><div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main><footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer><script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script><script>(function(){var inp=document.getElementById("inputText"),o=document.getElementById("outputText");
 function smartQuotes(t){var r="",openD=true,openS=true;for(var i=0;i<t.length;i++){var c=t.charAt(i);if(c==='"'){r+=openD?"\u201C":"\u201D";openD=!openD}else if(c==="'"){r+=openS?"\u2018":"\u2019";openS=!openS}else{r+=c}}return r}
-document.getElementById("toCurlyBtn").addEventListener("click",function(){var t=inp.value;if(!t){setStatus(t('ui.100','请输入文本'),"error");return}
-t=smartQuotes(t).replace(/<</g,"\u300A").replace(/>>/g,"\u300B");o.textContent=t;setStatus(t('ui.101','转换完成'))});
-document.getElementById("toStraightBtn").addEventListener("click",function(){var t=inp.value;if(!t){setStatus(t('ui.102','请输入文本'),"error");return}
-t=t.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u300A\u300B]/g,"");o.textContent=t;setStatus(t('ui.103','转换完成'))});
+document.getElementById("toCurlyBtn").addEventListener("click",function(){var txt=inp.value;if(!txt){setStatus(t('ui.100','请输入文本'),"error");return}
+txt=smartQuotes(txt).replace(/<</g,"\u300A").replace(/>>/g,"\u300B");o.textContent=txt;setStatus(t('ui.101','转换完成'))});
+document.getElementById("toStraightBtn").addEventListener("click",function(){var txt=inp.value;if(!txt){setStatus(t('ui.102','请输入文本'),"error");return}
+txt=txt.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u300A\u300B]/g,"");o.textContent=txt;setStatus(t('ui.103','转换完成'))});
 document.getElementById("clearBtn").addEventListener("click",function(){inp.value="";o.textContent="";setStatus("")});
 document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.104','已复制'))}});})();</script></body></html>

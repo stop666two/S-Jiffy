@@ -13,7 +13,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">模运算计算器</h1>
     <p class="tool-desc" data-i18n="desc">计算 a mod b、模逆元和模幂运算。</p>
@@ -26,7 +26,7 @@
         <div class="field"><label for="expVal" data-i18n="ui.3">指数 (mod pow)</label><input id="expVal" class="input" type="number" value="3" min="0"></div>
       </div>
       <div class="mc-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="showPowChk" type="checkbox"> 模幂运算</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="showPowChk" type="checkbox"> <span data-i18n="ui.4">模幂运算</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.calc">计算</button></div>
     </div>
@@ -85,18 +85,18 @@
       var inv = modInverse(a, b);
       var output = 'a = ' + a + ', b = ' + b + '\n';
       output += '\na mod b = ' + a + ' % ' + b + ' = ' + modVal + '\n';
-      output += '\n模逆元: ' + a + '⁻¹ mod ' + b + ' = ';
+      output += '\n' + t('ui.102', '模逆元: ') + a + '⁻¹ mod ' + b + ' = ';
       if (inv === null) {
-        output += '不存在（gcd(' + a + ', ' + b + ') = ' + gcd(a, b) + ' ≠ 1）';
+        output += t('ui.103', '不存在（gcd(') + a + ', ' + b + ') = ' + gcd(a, b) + t('ui.104', ' ≠ 1）');
       } else {
-        output += inv + ' (验证: ' + a + ' × ' + inv + ' % ' + b + ' = ' + (a * inv % b) + ')';
+        output += inv + t('ui.105', ' (验证: ') + a + ' × ' + inv + ' % ' + b + ' = ' + (a * inv % b) + ')';
       }
 
       if (showPowChk.checked) {
         var exp = parseInt(expEl.value, 10) || 0;
         if (exp < 0) exp = 0;
-        var pow结果 = modPow(a, exp, b);
-        output += '\n\n模幂运算: ' + a + '^' + exp + ' mod ' + b + ' = ' + pow结果;
+        var powRes = modPow(a, exp, b);
+        output += '\n\n' + t('ui.106', '模幂运算: ') + a + '^' + exp + ' mod ' + b + ' = ' + powRes;
       }
 
       outputEl.textContent = output;

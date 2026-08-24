@@ -28,13 +28,13 @@
     </div>
     <div class="tool-row">
       <button id="formatBtn" class="btn btn-primary" data-i18n="formatXml">格式化XML</button>
-      <button id="minifyBtn" class="btn btn-secondary">压缩</button>
+      <button id="minifyBtn" class="btn btn-secondary" data-i18n="ui.minify">压缩</button>
       <button id="validateBtn" class="btn btn-secondary" data-i18n="validateXml">验证XML</button>
-      <button id="clearBtn" class="btn btn-secondary">清空</button>
+      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
     <div class="output-box" id="outputContainer">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn">复制</button>
+      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
   <footer class="global-footer">
@@ -139,7 +139,7 @@
             } else {
               outputEl.textContent = '';
               var lineInfo = '';
-              if (res.line) lineInfo = '（line ' + res.line + (res.col ? ', column ' + res.col : '') + '）';
+              if (res.line) lineInfo = t('ui.lineInfo','（line ') + res.line + (res.col ? ', column ' + res.col : '') + t('ui.lineInfoEnd','）');
               errorDetail.innerHTML = t('invalidXml','无效 XML') + lineInfo + '<br>' + htmlEscape(res.error);
               errorDetail.style.display = 'block';
               setStatus(t('invalidXml','无效 XML'),'error');

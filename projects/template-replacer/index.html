@@ -21,7 +21,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">模板替换器</h1>
@@ -62,9 +62,15 @@
       function addRow(name, value) {
         var tr = document.createElement('tr');
         tr.setAttribute('data-seq', String(rowSeq));
-        tr.innerHTML = '<td><input type="text" class="input js-var-name" data-i18n-placeholder="ui.101" placeholder="变量名，如 name" value="' + htmlEscape(name || '') + '"></td>' +
-          '<td><input type="text" class="input js-var-val" data-i18n-placeholder="ui.102" placeholder="值" value="' + htmlEscape(value || '') + '"></td>' +
-          '<td><button type="button" class="btn btn-secondary js-var-del">删除</button></td>';
+        tr.innerHTML = '<td><input type="text" class="input js-var-name" placeholder="' + t('ui.101','变量名，如 name') + '" value="' + htmlEscape(name || '') + '"></td>' +
+          '<td><input type="text" class="input js-var-val" placeholder="' + t('ui.102','值') + '" value="' + htmlEscape(value || '') + '"></td>';
+        var td = document.createElement('td');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-secondary js-var-del';
+        btn.textContent = t('ui.6','删除');
+        td.appendChild(btn);
+        tr.appendChild(td);
         varBody.appendChild(tr);
         rowSeq++;
       }
@@ -100,24 +106,35 @@
           return all;
         });
         var html = [];
-        html.push('<div class="out-panel">' + htmlEscape(result) + '</div>');
+        var panel = document.createElement('div');
+        panel.className = 'out-panel';
+        panel.textContent = result;
+        html.push(panel);
         if (tpl.indexOf('${') !== -1 || tpl.indexOf('{{') !== -1) {
-          html.push('<div class="warn-line">');
+          var warn = document.createElement('div');
+          warn.className = 'warn-line';
           var keys = Object.keys(unmatched);
           if (keys.length) {
             var parts = [];
             for (var i = 0; i < keys.length; i++) {
               parts.push(htmlEscape(keys[i]) + ' ×' + unmatched[keys[i]]);
             }
-            html.push('<span class="bad">⚠ 未替换占位符：' + parts.join('，') + '</span>');
+            var bad = document.createElement('span');
+            bad.className = 'bad';
+            bad.textContent = t('ui.7','⚠ 未替换占位符：') + parts.join(t('ui.9','，'));
+            warn.appendChild(bad);
           } else {
-            html.push('<span class="ok">✓ 全部占位符已替换</span>');
+            var ok = document.createElement('span');
+            ok.className = 'ok';
+            ok.textContent = t('ui.8','✓ 全部占位符已替换');
+            warn.appendChild(ok);
           }
-          html.push('</div>');
+          html.push(warn);
         }
-        outputEl.innerHTML = html.join('');
+        outputEl.innerHTML = '';
+        for (var h = 0; h < html.length; h++) outputEl.appendChild(html[h]);
         lastPlain = result;
-        setStatus(t('ui.5','已替换 ') + (Object.keys(unmatched).length ? '部分' : '全部') + t('ui.4',' 占位符'));
+        setStatus(t('ui.5','已替换 ') + (Object.keys(unmatched).length ? t('ui.10','部分') : t('ui.11','全部')) + t('ui.4',' 占位符'));
       }
 
       addBtn.addEventListener('click', function () {
@@ -125,9 +142,9 @@
       });
       varBody.addEventListener('input', render);
       varBody.addEventListener('click', function (e) {
-        var t = e.target;
-        if (t && t.className && t.className.indexOf('js-var-del') !== -1) {
-          var tr = t.parentNode.parentNode;
+        var tgt = e.target;
+        if (tgt && tgt.className && tgt.className.indexOf('js-var-del') !== -1) {
+          var tr = tgt.parentNode.parentNode;
           if (tr && tr.parentNode === varBody) {
             varBody.removeChild(tr);
             render();

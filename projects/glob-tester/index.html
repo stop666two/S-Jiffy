@@ -37,7 +37,7 @@ function globMatch(pattern,path){
   return new RegExp('^'+p+'$').test(path);
 }
 function renderTest(pattern,path,result){
-  var badge=result?'<span class="match-badge match-yes">✓ 匹配</span>':'<span class="match-badge match-no">✗ 不匹配</span>';
+  var badge=result?'<span class="match-badge match-yes">'+t('ui.7','✓ 匹配')+'</span>':'<span class="match-badge match-no">'+t('ui.8','✗ 不匹配')+'</span>';
   return '<div class="test-row"><span style="min-width:120px;font-family:var(--font-mono);font-size:12px;">'+htmlEscape(pattern)+'</span><span style="flex:1;font-family:var(--font-mono);font-size:12px;">'+htmlEscape(path)+'</span>'+badge+'</div>';
 }
 document.getElementById('testBtn').addEventListener('click',function(){
@@ -46,14 +46,14 @@ document.getElementById('testBtn').addEventListener('click',function(){
   var matched=globMatch(p,pt);
   tr.innerHTML=renderTest(p,pt,matched);
   tests.push({pattern:p,path:pt,matched:matched});
-  o.textContent = t('ui.6','模式: ')+p+ t('ui.5',' | 路径: ')+pt+' | '+(matched?'匹配':'不匹配');
-  setStatus(matched?'匹配成功':'不匹配');
+  o.textContent = t('ui.6','模式: ')+p+ t('ui.5',' | 路径: ')+pt+' | '+(matched?t('ui.9','匹配'):t('ui.10','不匹配'));
+  setStatus(matched?t('ui.11','匹配成功'):t('ui.12','不匹配'));
 });
 document.getElementById('addToListBtn').addEventListener('click',function(){
   var p=pat.value.trim(),pt=tp.value.trim();
   if(!p||!pt){setStatus(t('ui.101','请输入模式和路径'),'error');return;}
   tests.push({pattern:p,path:pt,matched:globMatch(p,pt)});
-  tl.innerHTML='<div style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:4px;">测试列表:</div>'+tests.map(function(t){return renderTest(t.pattern,t.path,t.matched);}).join('');
+  tl.innerHTML='<div style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-bottom:4px;">'+t('ui.13','测试列表:')+'</div>'+tests.map(function(t){return renderTest(t.pattern,t.path,t.matched);}).join('');
   setStatus(t('ui.4','已添加，共 ') +tests.length+ t('ui.items',' 项'));
 });
 document.getElementById('clearBtn').addEventListener('click',function(){tests=[];tl.innerHTML='';tr.innerHTML='';o.textContent='';setStatus('');});

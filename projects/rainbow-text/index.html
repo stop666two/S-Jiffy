@@ -5,6 +5,6 @@
   <script src="../../assets/js/i18n.js"></script><script>(function(){var inp=document.getElementById("inputText"),sat=document.getElementById("saturation"),sv=document.getElementById("satVal"),lit=document.getElementById("lightness"),lv=document.getElementById("litVal"),ro=document.getElementById("rainbowOutput"),o=document.getElementById("outputText");
 function gen(){var text=inp.value||" ",s=parseInt(sat.value),l=parseInt(lit.value);sv.textContent=s+"%";lv.textContent=l+"%";
 var html="";for(var i=0;i<text.length;i++){var hue=i*360/text.length;html+="<span style='color:hsl("+hue+","+s+"%,"+l+"%)'>"+htmlEscape(text[i])+"</span>"}
-ro.innerHTML=html;o.textContent=text+" (彩虹效果)";setStatus(t('ui.100','已生成'))}
+ro.innerHTML=html;o.textContent=text+" "+t('ui.101','(彩虹效果)');setStatus(t('ui.100','已生成'))}
 document.getElementById("generateBtn").addEventListener("click",gen);sat.addEventListener("input",gen);lit.addEventListener("input",gen);
 document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.101','已复制'))}});gen();})();</script></body></html>

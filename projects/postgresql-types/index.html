@@ -131,6 +131,9 @@
       }
     }
 
+    var CAT_KEYS = { '数值': 'cat.numeric', '字符': 'cat.text', '二进制': 'cat.binary', '日期时间': 'cat.datetime', 'JSON': 'cat.json', '几何': 'cat.geometry', '网络': 'cat.network', '数组': 'cat.array', '其他': 'cat.other' };
+    function catName(c) { return t(CAT_KEYS[c] || '', c); }
+
     var searchInput = document.getElementById('searchInput');
     var catSelect = document.getElementById('catSelect');
     var typeList = document.getElementById('typeList');
@@ -143,7 +146,7 @@
       for (var i = 0; i < CATS.length; i++) {
         var opt = document.createElement('option');
         opt.value = CATS[i];
-        opt.textContent = CATS[i];
+        opt.textContent = catName(CATS[i]);
         catSelect.appendChild(opt);
       }
     }
@@ -163,14 +166,14 @@
       }
       resultCount.textContent = t('ui.total','共 ') + items.length + ' / ' + DATA.length + t('ui.4',' 种类型');
       if (items.length === 0) {
-        typeList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">没有匹配的类型，换个关键词试试。</p>';
+        typeList.innerHTML = '<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">'+t('ui.101','没有匹配的类型，换个关键词试试。')+'</p>';
         return;
       }
       var html = '';
       for (var j = 0; j < items.length; j++) {
         var it = items[j];
         html += '<div class="type-card">'
-          + '<div class="type-head"><span class="type-name" data-name="' + htmlEscape(it.name) + '">' + htmlEscape(it.name) + '</span><span class="type-cat">' + htmlEscape(it.cat) + '</span></div>'
+          + '<div class="type-head"><span class="type-name" data-name="' + htmlEscape(it.name) + '">' + htmlEscape(it.name) + '</span><span class="type-cat">' + htmlEscape(catName(it.cat)) + '</span></div>'
           + '<div class="type-meta">' + htmlEscape(it.size) + ' · ' + htmlEscape(it.range) + '</div>'
           + '<div class="type-desc">' + htmlEscape(it.desc) + '</div>'
           + '</div>';

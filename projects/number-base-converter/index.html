@@ -16,7 +16,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">数字进制转换</h1>
     <p class="tool-desc" data-i18n="desc">2-36 进制任意互转，多进制同时显示。</p>
@@ -62,7 +62,7 @@
       var o = document.getElementById('outputText'), tableArea = document.getElementById('tableArea');
       var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
 
-      var baseNames = { 2: '二进制', 3: '三进制', 4: '四进制', 5: '五进制', 6: '六进制', 7: '七进制', 8: '八进制', 9: '九进制', 10: '十进制', 11: '十一进制', 12: '十二进制', 13: '十三进制', 14: '十四进制', 15: '十五进制', 16: '十六进制', 17: '十七进制', 18: '十八进制', 19: '十九进制', 20: '二十进制', 21: '二十进制', 22: '二十二进制', 23: '二十三进制', 24: '二十四进制', 25: '二十五进制', 26: '二十六进制', 27: '二十七进制', 28: '二十八进制', 29: '二十九进制', 30: '三十进制', 31: '三十一进制', 32: '三十二进制', 33: '三十三进制', 34: '三十四进制', 35: '三十五进制', 36: '三十六进制' };
+      var baseNames = { 2: t('bn.2','二进制'), 3: t('bn.3','三进制'), 4: t('bn.4','四进制'), 5: t('bn.5','五进制'), 6: t('bn.6','六进制'), 7: t('bn.7','七进制'), 8: t('bn.8','八进制'), 9: t('bn.9','九进制'), 10: t('bn.10','十进制'), 11: t('bn.11','十一进制'), 12: t('bn.12','十二进制'), 13: t('bn.13','十三进制'), 14: t('bn.14','十四进制'), 15: t('bn.15','十五进制'), 16: t('bn.16','十六进制'), 17: t('bn.17','十七进制'), 18: t('bn.18','十八进制'), 19: t('bn.19','十九进制'), 20: t('bn.20','二十进制'), 21: t('bn.21','二十进制'), 22: t('bn.22','二十二进制'), 23: t('bn.23','二十三进制'), 24: t('bn.24','二十四进制'), 25: t('bn.25','二十五进制'), 26: t('bn.26','二十六进制'), 27: t('bn.27','二十七进制'), 28: t('bn.28','二十八进制'), 29: t('bn.29','二十九进制'), 30: t('bn.30','三十进制'), 31: t('bn.31','三十一进制'), 32: t('bn.32','三十二进制'), 33: t('bn.33','三十三进制'), 34: t('bn.34','三十四进制'), 35: t('bn.35','三十五进制'), 36: t('bn.36','三十六进制') };
 
       var showBases = [2, 8, 10, 16, 32, 36];
 
@@ -80,9 +80,9 @@
         if (isNaN(dec)) { setStatus(t('ui.102','输入与所选进制不匹配'), 'error'); o.textContent = ''; tableArea.innerHTML = ''; return; }
 
         var result = dec.toString(to).toUpperCase();
-        o.textContent = baseNames[to] + ': ' + result + '  (十进制: ' + dec + ')';
+        o.textContent = baseNames[to] + ': ' + result + t('ui.dec', '  (十进制: ') + dec + ')';
 
-        var html = '<table class="base-table"><thead><tr><th>进制</th><th>名称</th><th>值</th></tr></thead><tbody>';
+        var html = '<table class="base-table"><thead><tr><th>' + t('ui.thBase', '进制') + '</th><th>' + t('ui.thName', '名称') + '</th><th>' + t('ui.thValue', '值') + '</th></tr></thead><tbody>';
         for (var i = 0; i < showBases.length; i++) {
           var b = showBases[i];
           var val = dec.toString(b).toUpperCase();

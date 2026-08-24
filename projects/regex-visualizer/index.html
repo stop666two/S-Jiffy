@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">正则表达式可视化</h1>
     <p class="tool-desc" data-i18n="desc">可视化调试正则表达式匹配过程</p>
@@ -61,30 +61,31 @@
       var copyBtn = document.getElementById('copyBtn');
 
       var tokenExplanations = {
-        '\\d': '匹配数字 (0-9)',
-        '\\D': '匹配非数字',
-        '\\w': '匹配单词字符 (字母、数字、下划线)',
-        '\\W': '匹配非单词字符',
-        '\\s': '匹配空白字符 (空格、制表符、换行)',
-        '\\S': '匹配非空白字符',
-        '\\b': '匹配单词边界',
-        '\\B': '匹配非单词边界',
-        '^': '匹配字符串开头',
-        '$': '匹配字符串结尾',
-        '.': '匹配任意单个字符（除换行）',
-        '*': '匹配前一个字符 0 次或多次',
-        '+': '匹配前一个字符 1 次或多次',
-        '?': '匹配前一个字符 0 次或 1 次',
-        '|': '逻辑或',
-        '\\t': '匹配制表符',
-        '\\n': '匹配换行符',
-        '\\r': '匹配回车符',
-        '\\f': '匹配换页符',
-        '\\v': '匹配垂直制表符'
+        '\\d': t('tok.d','匹配数字 (0-9)'),
+        '\\D': t('tok.D','匹配非数字'),
+        '\\w': t('tok.w','匹配单词字符 (字母、数字、下划线)'),
+        '\\W': t('tok.W','匹配非单词字符'),
+        '\\s': t('tok.s','匹配空白字符 (空格、制表符、换行)'),
+        '\\S': t('tok.S','匹配非空白字符'),
+        '\\b': t('tok.b','匹配单词边界'),
+        '\\B': t('tok.B','匹配非单词边界'),
+        '^': t('tok.caret','匹配字符串开头'),
+        '$': t('tok.dollar','匹配字符串结尾'),
+        '.': t('tok.dot','匹配任意单个字符（除换行）'),
+        '*': t('tok.star','匹配前一个字符 0 次或多次'),
+        '+': t('tok.plus','匹配前一个字符 1 次或多次'),
+        '?': t('tok.qmark','匹配前一个字符 0 次或 1 次'),
+        '|': t('tok.pipe','逻辑或'),
+        '\\t': t('tok.t','匹配制表符'),
+        '\\n': t('tok.n','匹配换行符'),
+        '\\r': t('tok.r','匹配回车符'),
+        '\\f': t('tok.f','匹配换页符'),
+        '\\v': t('tok.v','匹配垂直制表符')
       };
 
       function explainPattern(pat) {
-        var html = '<div class="token-explain"><strong>模式解析:</strong><br>';
+        var parseLabel = t('ui.parseLabel','模式解析');
+        var html = '<div class="token-explain"><strong>' + parseLabel + ':</strong><br>';
         var i = 0;
         while (i < pat.length) {
           var token = pat[i];
@@ -103,9 +104,9 @@
           if (tokenExplanations[token]) {
             html += '<code>' + token + '</code> → ' + tokenExplanations[token] + '<br>';
           } else if (token === '(' || token === ')' || token === '[' || token === ']' || token === '{' || token === '}') {
-            html += '<code>' + token + '</code> 分组/量词标记<br>';
+            html += '<code>' + token + '</code> ' + t('ui.groupMark','分组/量词标记') + '<br>';
           } else {
-            html += '<code>' + htmlEscape(token) + '</code> 字面量<br>';
+            html += '<code>' + htmlEscape(token) + '</code> ' + t('ui.literal','字面量') + '<br>';
           }
           i++;
         }
@@ -145,7 +146,7 @@
           if (matches.length === 0) {
             outputText.innerHTML = t('ui.2','无匹配结果');
           } else {
-            outputText.innerHTML = '共 <strong>' + matches.length + '</strong> 处匹配:<br><br>' + matches.join('<br>');
+            outputText.innerHTML = t('ui.totalMatches','共 <strong>') + matches.length + t('ui.matchesSuffix','</strong> 处匹配:<br><br>') + matches.join('<br>');
           }
           setStatus('');
         } catch (e) {

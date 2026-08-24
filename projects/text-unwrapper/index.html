@@ -13,7 +13,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">文本解包工具</h1>
     <p class="tool-desc" data-i18n="desc">将多行文本合并为单行，移除换行符和多余空格。</p>
@@ -25,8 +25,8 @@ lines and needs
 to be unwrapped.</textarea></div>
       </div>
       <div class="tu-row">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="collapseChk" type="checkbox" checked> 合并多余空格</label>
-        <label style="display:flex;align-items:center;gap:8px;"><input id="trimChk" type="checkbox" checked> 去除首尾空格</label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="collapseChk" type="checkbox" checked> <span data-i18n="ui.collapse">合并多余空格</span></label>
+        <label style="display:flex;align-items:center;gap:8px;"><input id="trimChk" type="checkbox" checked> <span data-i18n="ui.trim">去除首尾空格</span></label>
       </div>
       <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.1">解包</button></div>
     </div>
@@ -45,7 +45,7 @@ to be unwrapped.</textarea></div>
 
     function generate() {
       var text = inputEl.value;
-      if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
+      if (!text) { setStatus(t('ui.100','\u8bf7\u8f93\u5165\u6587\u672c'), 'error'); return; }
       var collapse = collapseChk.checked;
       var doTrim = trimChk.checked;
 
@@ -58,11 +58,11 @@ to be unwrapped.</textarea></div>
       }
 
       outputEl.textContent = result;
-      setStatus(t('ui.2','解包完成，共 ') + result.length + t('ui.chars',' 字符'));
+      setStatus(t('ui.2','\u89e3\u5305\u5b8c\u6210\uff0c\u5171 ') + result.length + t('ui.chars',' \u5b57\u7b26'));
     }
 
     genBtn.addEventListener('click', generate);
-    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
+    copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','\u5df2\u590d\u5236')); } });
   })();</script>
 </body>
 </html>

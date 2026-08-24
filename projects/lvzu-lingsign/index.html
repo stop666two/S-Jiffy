@@ -59,7 +59,7 @@
 </head>
 <body>
   <header class="global-header">
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a class="back-btn" href="../../index.html" data-i18n="common.back">← 返回</a>
     <span class="logo-text">S-Jiffy</span>
   </header>
   <main class="tool-workspace">
@@ -136,7 +136,7 @@
 
   function normalize(q) {
     var n = {
-      no: q.no || ("第 " + q.n + " 号签"),
+      no: q.no || (t('ui.signNo','第 ') + q.n + t('ui.signNoSuffix',' 号签')),
       ji: q.ji || "",
       poem: q.text || q.name || "",
       jie: (CFG.jieField && q[CFG.jieField]) || q.jie || q.jieyue || "",
@@ -150,11 +150,11 @@
   }
 
   function buildText(q) {
-    var lines = [CFG.name + " · " + q.no];
+    var lines = [t('ui.toolName', CFG.name) + " · " + q.no];
     if (q.ji) lines.push(q.ji);
-    if (q.poem) lines.push(CFG.poemLabel + "：" + q.poem);
-    lines.push(CFG.jieLabel + "：" + q.jie);
-    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + "：" + q.extra[i].value);
+    if (q.poem) lines.push(t('ui.poemLabel', CFG.poemLabel + "：") + q.poem);
+    lines.push(t('ui.jieLabel', CFG.jieLabel + "：") + q.jie);
+    for (var i = 0; i < q.extra.length; i++) lines.push(q.extra[i].label + t('ui.colon','：') + q.extra[i].value);
     return lines.join("\n");
   }
 
@@ -167,12 +167,12 @@
     }
     resPoem.style.display = q.poem ? "" : "none";
     resPoem.textContent = q.poem;
-    resJie.textContent = CFG.jieLabel + "：" + q.jie;
+    resJie.textContent = t('ui.jieLabel', CFG.jieLabel + "：") + q.jie;
     clearChildren(resExtra);
     for (var i = 0; i < q.extra.length; i++) {
       var line = document.createElement("div");
       line.className = "qian-extra-line";
-      line.textContent = q.extra[i].label + "：" + q.extra[i].value;
+      line.textContent = q.extra[i].label + t('ui.colon','：') + q.extra[i].value;
       resExtra.appendChild(line);
     }
     resultCard.style.display = "block";
@@ -219,7 +219,7 @@
   allToggle.addEventListener("click", function () {
     var open = allList.style.display !== "none";
     allList.style.display = open ? "none" : "block";
-    allToggle.textContent = open ? "查看全部签文" : "收起全部签文";
+    allToggle.textContent = open ? t('ui.viewAllSigns','查看全部签文') : t('ui.viewLessSigns','收起全部签文');
   });
 
   (function buildAll() {
@@ -250,12 +250,12 @@
       body.appendChild(p);
       var j = document.createElement("div");
       j.className = "all-jie";
-      j.textContent = CFG.jieLabel + "：" + q.jie;
+      j.textContent = t('ui.jieLabel', CFG.jieLabel + "：") + q.jie;
       body.appendChild(j);
       for (var k = 0; k < q.extra.length; k++) {
         var line = document.createElement("div");
         line.className = "all-jie";
-        line.textContent = q.extra[k].label + "：" + q.extra[k].value;
+        line.textContent = q.extra[k].label + t('ui.colon','：') + q.extra[k].value;
         body.appendChild(line);
       }
       row.appendChild(head);

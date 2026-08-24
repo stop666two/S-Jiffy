@@ -22,7 +22,7 @@
 </style>
 </head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">Word 转 PDF</h1>
 <p class="tool-desc" data-i18n="desc">在浏览器中将 Word 文档（.docx）转换为 PDF。格式本地保留，无需服务器上传。</p>
@@ -65,7 +65,7 @@ function readAB(f,cb,eb){var r=new FileReader();r.onload=function(){cb(r.result)
 function loadFile(f){
   var isD=(f.type==='application/vnd.openxmlformats-officedocument.wordprocessingml.document')||(f.name&&f.name.toLowerCase().indexOf('.docx')!==-1);
   if(!isD){setStatus(t('notDocx','请选择 .docx Word 文档'),'error');return;}
-  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+'MB）','error');return;}
+  if(f.size>MAX_MB*1048576){setStatus(t('tooLarge','文件过大（超过')+' '+MAX_MB+t('mbSuffix','MB）'),'error');return;}
   file=f;
   $('workCard').style.display='block';
   $('fileName').textContent=f.name;

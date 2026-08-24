@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
-  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">SemVer 版本比较</h1>
     <p class="tool-desc" data-i18n="desc">语义化版本号比较与校验</p>
@@ -101,7 +101,8 @@
         var a = parseVersion(aRaw);
         var b = parseVersion(bRaw);
         if (!a || !b) {
-          return '<div class="comparison-result cmp-invalid">版本号格式无效。请使用语义化版本号，如 "1.2.3"</div>';
+          var invalidMsg = t('ui.101','版本号格式无效。请使用语义化版本号，如 "1.2.3"');
+          return '<div class="comparison-result cmp-invalid">' + invalidMsg + '</div>';
         }
         var cmp = compareVersions(a, b);
         var symbol, cls;

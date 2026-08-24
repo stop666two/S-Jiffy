@@ -104,7 +104,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">视频剪切</h1>
@@ -182,6 +182,7 @@
       var downloadBtn = document.getElementById('downloadBtn');
       var currentFile = null;
       var engineReady = false;
+      var engineFailed = false;
       var cutting = false;
       var resultUrl = null;
       var lastLog = '';
@@ -199,7 +200,8 @@
         script.src = UMD_URL;
         script.onload = function () {
           if (!window.FFmpegWASM || !window.FFmpegWASM.FFmpeg) {
-            setEnginePill('引擎：加载异常', 'bad');
+            setEnginePill(t('ui.err','引擎：加载异常'), 'bad');
+            engineFailed = true;
             setStatus(t('ui.100','引擎脚本异常，请刷新页面重试'), 'error');
             return;
           }
@@ -220,15 +222,17 @@
           }).then(function () {
             engineReady = true;
             ffmpegInst = inst;
-            setEnginePill('引擎：就绪', 'ok');
+            setEnginePill(t('ui.ready','引擎：就绪'), 'ok');
             setStatus(t('ui.27','视频处理引擎就绪'));
           }).catch(function (e) {
-            setEnginePill('引擎：加载失败', 'bad');
-            setStatus(t('ui.26','引擎核心加载失败：') + (e && e.message ? e.message : '网络异常，请检查网络后刷新'), 'error');
+            setEnginePill(t('ui.loadFail','引擎：加载失败'), 'bad');
+            engineFailed = true;
+            setStatus(t('ui.26','引擎核心加载失败：') + (e && e.message ? e.message : t('ui.netErr','网络异常，请检查网络后刷新')), 'error');
           });
         };
         script.onerror = function () {
-          setEnginePill('引擎：加载失败', 'bad');
+          setEnginePill(t('ui.loadFail','引擎：加载失败'), 'bad');
+          engineFailed = true;
           setStatus(t('ui.101','引擎加载失败：无法连接脚本服务，请检查网络后刷新页面'), 'error');
         };
         document.body.appendChild(script);
@@ -258,7 +262,7 @@
       function onFileSelected(file) {
         if (!acceptFile(file)) return;
         currentFile = file;
-        fileName.textContent = file.name + '（' + formatSize(file.size) + '）';
+        fileName.textContent = file.name + t('ui.parenL','（') + formatSize(file.size) + t('ui.parenR','）');
         player.src = URL.createObjectURL(file);
         player.load();
         setupCard.style.display = 'block';
@@ -300,14 +304,14 @@
 
       setStartBtn.addEventListener('click', function () {
         if (!currentFile) return;
-        var t = player.currentTime;
-        if (isFinite(t)) startTime.value = Math.round(t * 10) / 10;
+        var tm = player.currentTime;
+        if (isFinite(tm)) startTime.value = Math.round(tm * 10) / 10;
         setStatus(t('ui.23','已将当前播放位置设为开始时间'));
       });
       setEndBtn.addEventListener('click', function () {
         if (!currentFile) return;
-        var t = player.currentTime;
-        if (isFinite(t)) endTime.value = Math.round(t * 10) / 10;
+        var tm = player.currentTime;
+        if (isFinite(tm)) endTime.value = Math.round(tm * 10) / 10;
         setStatus(t('ui.22','已将当前播放位置设为结束时间'));
       });
 
@@ -320,7 +324,7 @@
         if (cutting) return;
         if (!currentFile) { setStatus(t('ui.103','请先选择视频文件'), 'error'); return; }
         if (!engineReady) {
-          setStatus(enginePill.textContent.indexOf(t('ui.21','失败')) !== -1 ? '处理引擎未就绪，请刷新页面重试' : '处理引擎仍在加载，请稍候再试', 'error');
+          setStatus(engineFailed ? t('ui.notReady','处理引擎未就绪，请刷新页面重试') : t('ui.stillLoading','处理引擎仍在加载，请稍候再试'), 'error');
           return;
         }
         var start = readInput(startTime);
@@ -373,8 +377,8 @@
           setStatus(t('ui.13','剪切完成，可预览或下载结果'));
         }).catch(function (e) {
           progressText.textContent = t('ui.12','处理失败');
-          var msg = e && e.message ? e.message : '未知错误';
-          setStatus(t('ui.11','剪切失败：') + msg + (lastLog ? '（' + lastLog.slice(-120) + '）' : ''), 'error');
+          var msg = e && e.message ? e.message : t('ui.unknownError','未知错误');
+          setStatus(t('ui.11','剪切失败：') + msg + (lastLog ? t('ui.parenL','（') + lastLog.slice(-120) + t('ui.parenR','）') : ''), 'error');
         }).then(function () {
           cutting = false;
           cutBtn.disabled = false;

@@ -27,7 +27,7 @@
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a>
+    <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a>
   </header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">TypeScript 速查卡</h1>
@@ -57,51 +57,56 @@
     var tsGrid = document.getElementById('tsGrid');
     var outputText = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
-    var currentCat = '全部';
+    var currentCat = 'all';
     var lastCopy = '';
 
     var items = [
-      { cat: '基础类型', name: t('ui.14','基础类型'), syntax: 'let n: number = 1;\nlet s: string = "hi";\nlet b: boolean = true;', example: 'let age: number = 30;\nlet name: string = "Tom";\nlet done: boolean = false;' },
-      { cat: '基础类型', name: t('ui.30','数组与元组'), syntax: 'let arr: number[];\nlet tup: [string, number];', example: 'const list: number[] = [1, 2, 3];\nconst tup: [string, number] = ["a", 1];' },
-      { cat: '基础类型', name: t('ui.29','联合与字面量'), syntax: 'type T = "a" | "b";\nlet v: number | string;', example: 'type Direction = "up" | "down";\nconst d: Direction = "up";' },
-      { cat: '基础类型', name: 'any / unknown / never', syntax: 'let a: any;\nlet u: unknown;\nfunction f(): never {}', example: 'const u: unknown = 42;\nif (typeof u === "number") { console.log(u + 1); }' },
-      { cat: '接口', name: t('ui.28','接口定义'), syntax: 'interface User {\n  id: number;\n  name: string;\n}', example: 'interface User { id: number; name: string }\nconst u: User = { id: 1, name: "Tom" };' },
-      { cat: '接口', name: t('ui.27','可选与只读属性'), syntax: 'interface T {\n  a?: string;\n  readonly b: number;\n}', example: 'interface Config { timeout?: number; readonly url: string }\nconst c: Config = { url: "https://x.com" };' },
-      { cat: '接口', name: t('ui.26','接口继承'), syntax: 'interface A extends B {}', example: 'interface Animal { eat(): void }\ninterface Dog extends Animal { bark(): void }' },
-      { cat: '类型别名', name: t('ui.12','类型别名'), syntax: 'type Name = string;\ntype Pair = [number, number];', example: 'type ID = number | string;\nconst uid: ID = "abc123";' },
-      { cat: '泛型', name: t('ui.25','泛型函数'), syntax: 'function f<T>(x: T): T {\n  return x;\n}', example: 'function identity<T>(x: T): T { return x; }\nidentity<number>(5);' },
-      { cat: '泛型', name: t('ui.24','泛型约束'), syntax: 'function f<T extends U>(x: T) {}', example: 'function getLen<T extends { length: number }>(x: T): number {\n  return x.length;\n}' },
-      { cat: '枚举', name: t('ui.23','数字枚举'), syntax: 'enum Color {\n  Red,\n  Green,\n}', example: 'enum Color { Red, Green, Blue }\nconst c: Color = Color.Green; // 1' },
-      { cat: '枚举', name: t('ui.22','字符串枚举'), syntax: 'enum E {\n  A = "a",\n  B = "b",\n}', example: 'enum HttpMethod { GET = "GET", POST = "POST" }\nHttpMethod.GET; // "GET"' },
-      { cat: '函数类型', name: t('ui.21','函数类型标注'), syntax: 'type Fn = (a: number) => string;', example: 'const double: (n: number) => number = (n) => n * 2;' },
-      { cat: '函数类型', name: t('ui.20','可选参数与默认值'), syntax: 'function f(a: number, b?: string) {}', example: 'function greet(name: string, prefix = "Hi"): string {\n  return prefix + " " + name;\n}' },
-      { cat: '函数类型', name: t('ui.19','函数重载'), syntax: 'function f(a: number): number;\nfunction f(a: string): string;', example: 'function pick(x: number): number;\nfunction pick(x: string): string;\nfunction pick(x: any): any { return x; }' },
-      { cat: '类', name: t('ui.18','类与访问修饰符'), syntax: 'class A {\n  private x: number;\n  protected y: string;\n  public z: boolean;\n}', example: 'class Animal {\n  constructor(public name: string) {}\n  speak(): void { console.log(this.name); }\n}' },
-      { cat: '类', name: t('ui.17','抽象类'), syntax: 'abstract class A {\n  abstract f(): void;\n}', example: 'abstract class Shape {\n  abstract area(): number;\n}\nclass Circle extends Shape {\n  area() { return 3.14; }\n}' },
-      { cat: '装饰器', name: t('ui.16','类装饰器'), syntax: '@decorator\nclass A {}', example: 'function sealed(target: Function) {}\n@sealed\nclass ApiService {}' },
-      { cat: '工具类型', name: 'Partial / Required', syntax: 'Partial<T>  // 全部可选\nRequired<T> // 全部必选', example: 'interface User { id: number; name: string }\nconst u: Partial<User> = { name: "Tom" };' },
-      { cat: '工具类型', name: 'Pick / Omit', syntax: 'Pick<T, K>    // 选取键\nOmit<T, K>    // 排除键', example: 'interface User { id: number; name: string; age: number }\ntype Brief = Pick<User, "id" | "name">;' },
-      { cat: '工具类型', name: 'Record / Readonly', syntax: 'Record<K, V>    // 键值映射\nReadonly<T>    // 全部只读', example: 'const map: Record<string, number> = { a: 1 };\nconst r: Readonly<User> = { id: 1 };' },
-      { cat: '工具类型', name: 'NonNullable / ReturnType', syntax: 'NonNullable<T>     // 去 null/undefined\nReturnType<F>     // 函数返回类型', example: 'type A = NonNullable<string | null>; // string\ntype R = ReturnType<() => number>;    // number' },
-      { cat: '键操作', name: 'keyof / typeof', syntax: 'type K = keyof T;\ntype V = typeof obj;', example: 'interface P { x: number; y: number }\ntype K = keyof P; // "x" | "y"' },
-      { cat: '映射类型', name: t('ui.4','映射类型'), syntax: 'type M<T> = {\n  [K in keyof T]: T[K];\n};', example: 'type Mutable<T> = { -readonly [K in keyof T]: T[K] };\ntype Getters<T> = { [K in keyof T as `get${Capitalize<K & string>}`]: () => T[K] };' },
-      { cat: '条件类型', name: t('ui.3','条件类型'), syntax: 'type R = T extends U ? X : Y;', example: 'type IsString<T> = T extends string ? true : false;\ntype A = IsString<"a">; // true' },
-      { cat: '条件类型', name: t('ui.15','infer 推导'), syntax: 'type R = T extends (infer U)[] ? U : never;', example: 'type Elem<T> = T extends (infer U)[] ? U : never;\ntype E = Elem<number[]>; // number' }
+      { cat: 'basic', name: t('ui.14','基础类型'), syntax: 'let n: number = 1;\nlet s: string = "hi";\nlet b: boolean = true;', example: 'let age: number = 30;\nlet name: string = "Tom";\nlet done: boolean = false;' },
+      { cat: 'basic', name: t('ui.30','数组与元组'), syntax: 'let arr: number[];\nlet tup: [string, number];', example: 'const list: number[] = [1, 2, 3];\nconst tup: [string, number] = ["a", 1];' },
+      { cat: 'basic', name: t('ui.29','联合与字面量'), syntax: 'type T = "a" | "b";\nlet v: number | string;', example: 'type Direction = "up" | "down";\nconst d: Direction = "up";' },
+      { cat: 'basic', name: 'any / unknown / never', syntax: 'let a: any;\nlet u: unknown;\nfunction f(): never {}', example: 'const u: unknown = 42;\nif (typeof u === "number") { console.log(u + 1); }' },
+      { cat: 'interface', name: t('ui.28','接口定义'), syntax: 'interface User {\n  id: number;\n  name: string;\n}', example: 'interface User { id: number; name: string }\nconst u: User = { id: 1, name: "Tom" };' },
+      { cat: 'interface', name: t('ui.27','可选与只读属性'), syntax: 'interface T {\n  a?: string;\n  readonly b: number;\n}', example: 'interface Config { timeout?: number; readonly url: string }\nconst c: Config = { url: "https://x.com" };' },
+      { cat: 'interface', name: t('ui.26','接口继承'), syntax: 'interface A extends B {}', example: 'interface Animal { eat(): void }\ninterface Dog extends Animal { bark(): void }' },
+      { cat: 'alias', name: t('ui.12','类型别名'), syntax: 'type Name = string;\ntype Pair = [number, number];', example: 'type ID = number | string;\nconst uid: ID = "abc123";' },
+      { cat: 'generic', name: t('ui.25','泛型函数'), syntax: 'function f<T>(x: T): T {\n  return x;\n}', example: 'function identity<T>(x: T): T { return x; }\nidentity<number>(5);' },
+      { cat: 'generic', name: t('ui.24','泛型约束'), syntax: 'function f<T extends U>(x: T) {}', example: 'function getLen<T extends { length: number }>(x: T): number {\n  return x.length;\n}' },
+      { cat: 'enum', name: t('ui.23','数字枚举'), syntax: 'enum Color {\n  Red,\n  Green,\n}', example: 'enum Color { Red, Green, Blue }\nconst c: Color = Color.Green; // 1' },
+      { cat: 'enum', name: t('ui.22','字符串枚举'), syntax: 'enum E {\n  A = "a",\n  B = "b",\n}', example: 'enum HttpMethod { GET = "GET", POST = "POST" }\nHttpMethod.GET; // "GET"' },
+      { cat: 'func', name: t('ui.21','函数类型标注'), syntax: 'type Fn = (a: number) => string;', example: 'const double: (n: number) => number = (n) => n * 2;' },
+      { cat: 'func', name: t('ui.20','可选参数与默认值'), syntax: 'function f(a: number, b?: string) {}', example: 'function greet(name: string, prefix = "Hi"): string {\n  return prefix + " " + name;\n}' },
+      { cat: 'func', name: t('ui.19','函数重载'), syntax: 'function f(a: number): number;\nfunction f(a: string): string;', example: 'function pick(x: number): number;\nfunction pick(x: string): string;\nfunction pick(x: any): any { return x; }' },
+      { cat: 'class', name: t('ui.18','类与访问修饰符'), syntax: 'class A {\n  private x: number;\n  protected y: string;\n  public z: boolean;\n}', example: 'class Animal {\n  constructor(public name: string) {}\n  speak(): void { console.log(this.name); }\n}' },
+      { cat: 'class', name: t('ui.17','抽象类'), syntax: 'abstract class A {\n  abstract f(): void;\n}', example: 'abstract class Shape {\n  abstract area(): number;\n}\nclass Circle extends Shape {\n  area() { return 3.14; }\n}' },
+      { cat: 'decorator', name: t('ui.16','类装饰器'), syntax: '@decorator\nclass A {}', example: 'function sealed(target: Function) {}\n@sealed\nclass ApiService {}' },
+      { cat: 'utility', name: 'Partial / Required', syntax: t('ui.31','Partial<T>  // 全部可选\nRequired<T> // 全部必选'), example: 'interface User { id: number; name: string }\nconst u: Partial<User> = { name: "Tom" };' },
+      { cat: 'utility', name: 'Pick / Omit', syntax: t('ui.32','Pick<T, K>    // 选取键\nOmit<T, K>    // 排除键'), example: 'interface User { id: number; name: string; age: number }\ntype Brief = Pick<User, "id" | "name">;' },
+      { cat: 'utility', name: 'Record / Readonly', syntax: t('ui.33','Record<K, V>    // 键值映射\nReadonly<T>    // 全部只读'), example: 'const map: Record<string, number> = { a: 1 };\nconst r: Readonly<User> = { id: 1 };' },
+      { cat: 'utility', name: 'NonNullable / ReturnType', syntax: t('ui.34','NonNullable<T>     // 去 null/undefined\nReturnType<F>     // 函数返回类型'), example: 'type A = NonNullable<string | null>; // string\ntype R = ReturnType<() => number>;    // number' },
+      { cat: 'keys', name: 'keyof / typeof', syntax: 'type K = keyof T;\ntype V = typeof obj;', example: 'interface P { x: number; y: number }\ntype K = keyof P; // "x" | "y"' },
+      { cat: 'mapped', name: t('ui.4','映射类型'), syntax: 'type M<T> = {\n  [K in keyof T]: T[K];\n};', example: 'type Mutable<T> = { -readonly [K in keyof T]: T[K] };\ntype Getters<T> = { [K in keyof T as `get${Capitalize<K & string>}`]: () => T[K] };' },
+      { cat: 'conditional', name: t('ui.3','条件类型'), syntax: 'type R = T extends U ? X : Y;', example: 'type IsString<T> = T extends string ? true : false;\ntype A = IsString<"a">; // true' },
+      { cat: 'conditional', name: t('ui.15','infer 推导'), syntax: 'type R = T extends (infer U)[] ? U : never;', example: 'type Elem<T> = T extends (infer U)[] ? U : never;\ntype E = Elem<number[]>; // number' }
     ];
 
-    var cats = [ t('ui.all','全部'), t('ui.14','基础类型'), t('ui.13','接口'), t('ui.12','类型别名'), t('ui.11','泛型'), t('ui.10','枚举'), t('ui.9','函数类型'), t('ui.8','类'), t('ui.7','装饰器'), t('ui.6','工具类型'), t('ui.5','键操作'), t('ui.4','映射类型'), t('ui.3','条件类型')];
+    var cats = [ {c:'all', l:t('ui.all','全部')}, {c:'basic', l:t('ui.14','基础类型')}, {c:'interface', l:t('ui.13','接口')}, {c:'alias', l:t('ui.12','类型别名')}, {c:'generic', l:t('ui.11','泛型')}, {c:'enum', l:t('ui.10','枚举')}, {c:'func', l:t('ui.9','函数类型')}, {c:'class', l:t('ui.8','类')}, {c:'decorator', l:t('ui.7','装饰器')}, {c:'utility', l:t('ui.6','工具类型')}, {c:'keys', l:t('ui.5','键操作')}, {c:'mapped', l:t('ui.4','映射类型')}, {c:'conditional', l:t('ui.3','条件类型')}];
+
+    function catLabel(c) {
+      for (var i = 0; i < cats.length; i++) { if (cats[i].c === c) return cats[i].l; }
+      return c;
+    }
 
     function buildCats() {
       var html = '';
       for (var i = 0; i < cats.length; i++) {
-        html += '<button class="ts-cat-btn' + (cats[i] === currentCat ? ' on' : '') + '" data-cat="' + cats[i] + '">' + htmlEscape(cats[i]) + '</button>';
+        html += '<button class="ts-cat-btn' + (cats[i].c === currentCat ? ' on' : '') + '" data-cat="' + cats[i].c + '">' + htmlEscape(cats[i].l) + '</button>';
       }
       catBar.innerHTML = html;
       var btns = catBar.querySelectorAll('.ts-cat-btn');
       for (var j = 0; j < btns.length; j++) {
-        btns[j].onclick = (function (cat) {
-          return function () { currentCat = cat; buildCats(); render(); };
-        })(cats[j]);
+        btns[j].onclick = (function (c) {
+          return function () { currentCat = c; buildCats(); render(); };
+        })(cats[j].c);
       }
     }
 
@@ -110,19 +115,19 @@
       var filtered = [];
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
-        if (currentCat !== '全部' && it.cat !== currentCat) { continue; }
+        if (currentCat !== 'all' && it.cat !== currentCat) { continue; }
         if (q && it.name.toLowerCase().indexOf(q) === -1 && it.syntax.toLowerCase().indexOf(q) === -1) { continue; }
         filtered.push(it);
       }
       if (!filtered.length) {
-        tsGrid.innerHTML = '<div class="ts-empty">没有匹配的条目</div>';
+        tsGrid.innerHTML = '<div class="ts-empty">' + t('ui.nomatch','没有匹配的条目') + '</div>';
         return;
       }
       var html = '';
       for (var k = 0; k < filtered.length; k++) {
         var f = filtered[k];
         html += '<div class="ts-item" data-idx="' + k + '">';
-        html += '<div class="ts-item-head"><span class="ts-name">' + htmlEscape(f.name) + '</span><span class="ts-cat">' + htmlEscape(f.cat) + '</span></div>';
+        html += '<div class="ts-item-head"><span class="ts-name">' + htmlEscape(f.name) + '</span><span class="ts-cat">' + htmlEscape(catLabel(f.cat)) + '</span></div>';
         html += '<div class="ts-syntax">' + htmlEscape(f.syntax) + '</div>';
         html += '<div class="ts-example">' + htmlEscape(f.example) + '</div>';
         html += '</div>';
@@ -134,7 +139,7 @@
           return function () {
             var it = filtered[idx];
             lastCopy = it.example;
-            outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · ' + htmlEscape(it.cat) + '</div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.example) + '</div>';
+            outputText.innerHTML = '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-1);"><b>' + htmlEscape(it.name) + '</b> · ' + htmlEscape(catLabel(it.cat)) + '</div><div style="font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;">' + htmlEscape(it.example) + '</div>';
             copyBtn.onclick = function () { copyToClipboard(lastCopy, copyBtn); };
             setStatus(t('ui.2','已选中「') + it.name + t('ui.1','」，点击复制按钮可复制示例'));
           };

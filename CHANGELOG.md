@@ -4,6 +4,21 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] 代理检测增强：WebRTC 泄漏检测 + DNS 泄漏检测
+
+### Added
+
+- 代理检测（proxy-detect）新增 **DNS 泄漏检测**：基于 browserleaks 开放检测协议（随机子域 + 权威 DNS 记录递归解析者），30 个随机子域（15 IPv4-only + 15 IPv6-only）15 并发探测，收集 DNS 服务器 IP/ISP/位置列表；结果表格按 IPv4/IPv6 排序，汇总「N 个 DNS 服务器、M 个 ISP、K 个位置」；与出口位置（ipleak.net）一致性对比判断（含 DoH 加密 DNS 正常性提示）；短路加速（≥4 台服务器或连续空响应即提前结束），进度实时显示
+- WebRTC 检测升级至 browserleaks 级别：RTCPeerConnection 支持检测、本地 IP（host，含 mDNS 混淆标记）、公网 IP（STUN srflx/prflx）、Relay（TURN）、IPv6 候选单独展示
+
+### Changed
+
+- proxy-detect 描述更新（6 语言词典 + 主页卡片）：补充 WebRTC IP 泄漏与 DNS 泄漏检测说明
+
+### Fixed
+
+- proxy-detect 移除基于 HTTP 响应头的伪信号检测（浏览器 JS 无法读取响应头，原结果存在误导）
+
 ## [2026-08-24] 合并相似工具
 
 ### Added

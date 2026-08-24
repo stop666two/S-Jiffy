@@ -1,4 +1,4 @@
-> 共 **548 个**工具，覆盖 **36 个分类**。分类计数与工具清单由首页注册数据自动生成。
+> 共 **550 个**工具，覆盖 **36 个分类**。分类计数与工具清单由首页注册数据自动生成。
 
 | 分类 | 数量 |
 |---|---|
@@ -8,9 +8,9 @@
 | 格式转换 | 70 |
 | 网页工具 | 65 |
 | 文档工具 | 65 |
-| 安全工具 | 61 |
+| 安全工具 | 63 |
 | 数据生成 | 55 |
-| 网络工具 | 51 |
+| 网络工具 | 53 |
 | 文本处理 | 51 |
 | 前端开发 | 49 |
 | 字符串 | 48 |
@@ -57,14 +57,14 @@ CSS 选择器测试 · HTML 净化器 · 在线录音 · 条码生成器 · 拍�
 ### 文档工具 (65)
 Git 提交信息生成器 · ASCII 码表 · 字符映射表 · 颜色名称查询 · Git 备忘录 · HTML 参考手册 · HTTP 状态码 · Markdown 预览 · Markdown 转 HTML · MIME 类型查询 · 数字签名解析 · 正则备忘录 · Unicode 查询 · 字数统计 · CSV 转 Markdown · Markdown 转纯文本 · 高级文本统计 · 文字分栏 · 开发者速查表 · 关键词提取 · 文件魔术签名 · Markdown 表格生成 · .gitignore 生成 · Changelog 生成 · 分支名生成 · 开源许可证生成 · Big-O 速查表 · 字符码点查询 · 快捷键可视化 · 无障碍检查清单 · OpenAPI 查看器 · 常用端口速查 · Redis 命令速查 · PostgreSQL 类型速查 · MySQL 函数速查 · SQLite PRAGMA 速查 · 部署检查清单 · Markdown 目录生成器 · README 生成器 · 代码审查清单 · npm 版本范围解释器 · Conventional Commits 速查 · Markdown 表格格式化器 · 加密算法对比 · 演讲时长估算 · JS 数组方法速查 · AI 提示词模板 · 开发者每日清单 · 论语全文 · 歇后语大全 · 名人名言 · 周易六十四卦 · 图片转PDF · PDF合并 · PDF分割 · PDF压缩 · PDF加密 · PDF解密 · PDF水印 · PDF转文本 · PDF转CSV · PDF 转 Word · Word 转 PDF · Markdown编辑器 · 图片文字识别
 
-### 安全工具 (61)
-HTML 净化器 · Basic Auth 生成 · BIP39 助记词 · 校验和计算器 · Chmod 计算器 · 维吉尼亚密码 · 信用卡号验证 · 加密工具 · 哈希生成器 · Hash 识别 · HMAC 生成/验证器 · IBAN 验证器 · JWT 解析器 · MD5 生成器 · OTP 生成器 · 密码检测 · 密码强度分析 · 数字签名解析 · RSA 密钥对生成器 · SafeLink 解码 · SSL 检查器 · 字符串混淆器 · XOR 加密 · Atbash 密码 · Rail Fence 密码 · 仿射密码 · API 密钥生成器 · 自动密钥密码 · 博福特密码 · Enigma 模拟器 · Playfair 密码 · ROT13 密码 · 安全令牌生成器 · OAuth Token 解码 · CORS 检测 · TLS 密码套件查询 · TOTP 验证码生成 · CSP 策略构建器 · 安全头检测 · XSS 编码器 · SQL 注入模式参考 · 熵值计算 · JWT 签名验证 · SRI 哈希生成 · PGP 公钥解析 · OAuth2 授权流程 · 点击劫持检测 · HSTS Preload 检查 · X.509 证书解析 · CSP 报告配置生成 · SSH 密钥格式 · 密码破解时间估算 · 敏感信息扫描器 · 2FA 备份码生成器 · URL 跟踪参数清理器 · CSRF 防护生成器 · 加密算法对比 · 数据脱敏器 · 加密便签 · PDF加密 · PDF解密
+### 安全工具 (63)
+HTML 净化器 · Basic Auth 生成 · BIP39 助记词 · 校验和计算器 · Chmod 计算器 · 维吉尼亚密码 · 信用卡号验证 · 加密工具 · 哈希生成器 · Hash 识别 · HMAC 生成/验证器 · IBAN 验证器 · JWT 解析器 · MD5 生成器 · OTP 生成器 · 密码检测 · 密码强度分析 · 数字签名解析 · RSA 密钥对生成器 · SafeLink 解码 · SSL 检查器 · 字符串混淆器 · XOR 加密 · Atbash 密码 · Rail Fence 密码 · 仿射密码 · API 密钥生成器 · 自动密钥密码 · 博福特密码 · Enigma 模拟器 · Playfair 密码 · ROT13 密码 · 安全令牌生成器 · OAuth Token 解码 · CORS 检测 · TLS 密码套件查询 · TOTP 验证码生成 · CSP 策略构建器 · 安全头检测 · XSS 编码器 · SQL 注入模式参考 · 熵值计算 · JWT 签名验证 · SRI 哈希生成 · PGP 公钥解析 · OAuth2 授权流程 · 点击劫持检测 · HSTS Preload 检查 · X.509 证书解析 · CSP 报告配置生成 · SSH 密钥格式 · 密码破解时间估算 · 敏感信息扫描器 · 2FA 备份码生成器 · URL 跟踪参数清理器 · CSRF 防护生成器 · 加密算法对比 · 数据脱敏器 · 加密便签 · PDF加密 · PDF解密 · WebRTC 泄漏检测 · DNS 泄漏检测
 
 ### 数据生成 (55)
 ASCII 文字画 · 条码生成器 · CSS Border 生成器 · Box Shadow 生成器 · 调色板生成器 · 配色方案 · Crontab 生成器 · CSS 动画生成器 · Flexbox 生成器 · 渐变生成器 · IPv6 ULA 生成器 · Lorem Ipsum 生成器 · MAC 地址生成器 · Meta 标签生成器 · Numeronym 生成器 · 密码生成器 · 电话号码生成 · QR 码工具 · SVG 占位图 · Text Shadow 生成器 · NanoID 生成器 · API 密钥生成器 · 气泡文字 · 色彩和谐搭配 · 翻转文字 · HTML 表格生成 · Leet 语转换 · Lorem Pixel 图 · 彩票号码生成 · 可记忆密码 · PIN 码生成器 · 随机日期生成 · 随机邮箱生成 · 随机姓名生成 · 随机句子生成 · 随机时间生成 · 随机用户名生成 · 删除线文字 · 字谜生成器 · Zalgo 文字 · CSS Grid 生成器 · CSS 滤镜生成器 · Clip-Path 生成器 · CSS Transform 生成器 · 彩虹文字生成器 · 安全令牌生成器 · 图标生成器 · OG 分享图生成器 · Webhook 负载生成器 · SQL 数据生成器 · 徽章生成器 · 正态分布计算器 · 日历生成器 · 二维码生成器 · 美国地址生成器
 
-### 网络工具 (51)
-API 请求测试器 · Basic Auth 生成 · HTTP 状态码 · 印尼区号查询 · IPv4 地址转换 · IPv4 范围展开 · IPv4 子网计算 · IPv6 ULA 生成器 · MAC 地址生成器 · MIME 类型查询 · 随机端口生成 · SSL 检查器 · 子网计算器 · User-Agent 解析器 · 带宽计算器 · Gravatar 查询 · IP 段计算器 · 随机 IP 地址 · Nginx 配置生成 · WebSocket 测试 · GraphQL 查询构建 · OAuth Token 解码 · CORS 检测 · HTTP 请求头构建 · Cookie 解析 · Cache-Control 分析 · 内容协商测试 · REST URI 模板测试 · HTTP 方法速查表 · IP 格式转换 · URL 模式匹配 · TLS 密码套件查询 · DNS 查询 · 代理检测 · CSP 策略构建器 · 安全头检测 · OAuth2 授权流程 · 点击劫持检测 · HSTS Preload 检查 · OpenAPI 查看器 · REST CRUD 脚手架 · gRPC JSON 互转 · API 请求签名器 · Webhook 负载生成器 · Mock API 设计器 · 常用端口速查 · SSE 事件流测试器 · URL 查询参数构建器 · Redis 命令速查 · IP地址查询 · IP/子网计算器
+### 网络工具 (53)
+API 请求测试器 · Basic Auth 生成 · HTTP 状态码 · 印尼区号查询 · IPv4 地址转换 · IPv4 范围展开 · IPv4 子网计算 · IPv6 ULA 生成器 · MAC 地址生成器 · MIME 类型查询 · 随机端口生成 · SSL 检查器 · 子网计算器 · User-Agent 解析器 · 带宽计算器 · Gravatar 查询 · IP 段计算器 · 随机 IP 地址 · Nginx 配置生成 · WebSocket 测试 · GraphQL 查询构建 · OAuth Token 解码 · CORS 检测 · HTTP 请求头构建 · Cookie 解析 · Cache-Control 分析 · 内容协商测试 · REST URI 模板测试 · HTTP 方法速查表 · IP 格式转换 · URL 模式匹配 · TLS 密码套件查询 · DNS 查询 · 代理检测 · CSP 策略构建器 · 安全头检测 · OAuth2 授权流程 · 点击劫持检测 · HSTS Preload 检查 · OpenAPI 查看器 · REST CRUD 脚手架 · gRPC JSON 互转 · API 请求签名器 · Webhook 负载生成器 · Mock API 设计器 · 常用端口速查 · SSE 事件流测试器 · URL 查询参数构建器 · Redis 命令速查 · IP地址查询 · WebRTC 泄漏检测 · DNS 泄漏检测 · IP/子网计算器
 
 ### 文本处理 (51)
 ASCII 文字画 · DNA 互补链 · 邮箱规范化 · 行号添加器 · 列表格式转换 · Lorem Ipsum 生成器 · 摩斯密码 · Numeronym 生成器 · 电话号码解析 · 文本清理器 · 文本去重 · 文本对比 · 文本重复器 · 文本反转器 · 文本排序器 · 字数统计 · HTML 标签去除 · 正则替换工具 · 字谜生成器 · 文本缩进工具 · N-Gram 分析 · 文本填充工具 · 回文检测器 · 高级文本统计 · 文本摘要工具 · 文本解包工具 · 文本换行工具 · 查找替换 · 繁简体转换 · 文字分栏 · 实时字数统计 · 文本规范化 · 引号转换 · 字符串相似度 · 关键词提取 · 列对齐工具 · 缩写生成器 · 代码注释去除 · Markdown 目录生成器 · 行编辑器 · 文件名重命名器 · 演讲时长估算 · 文本分块器 · 模板替换器 · 剪贴板格式化器 · 部首查字 · 汉字偏旁查询 · 文本大小写转换 · 字符串分析器 · 文本编码转换器 · 在线记事本

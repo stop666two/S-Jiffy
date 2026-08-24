@@ -4,6 +4,12 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] WebRTC 泄漏检测友好降级
+
+### Changed
+
+- webrtc-leak-test：浏览器不支持 WebRTC 或插件拦截导致无法获取公网地址时，不再显示「无法完成检测」，改为显示「✅ 正常（浏览器不支持或插件拦截，已跳过泄漏对比）」并列出 WebRTC 支持行；6 语言文案
+
 ## [2026-08-24] 新增独立 WebRTC 泄漏检测与 DNS 泄漏检测工具
 
 ### Added

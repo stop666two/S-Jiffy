@@ -78,8 +78,12 @@ function fetchPublicIP(cb){
 }
 testBtn.addEventListener('click',function(){
   testBtn.disabled=true;testStatus.textContent=t('ui.checking','正在检测…');resultArea.innerHTML='';resultCard.style.display='none';
+  function summaryRow(text,cls){return '<div class="detect-row"><span class="detect-label"></span><span class="detect-val '+(cls||'')+'" style="font-size:12px;border-top:1px solid var(--color-border);padding-top:8px;width:100%;text-align:left;">'+text+'</span></div>';}
   gatherOnce(0,function(items){
-    if(items===null){testStatus.textContent='';testBtn.disabled=false;setStatus(t('summaryUnsupported','当前浏览器不支持 WebRTC'));return;}
+    if(items===null){
+      resultArea.innerHTML=row(t('webrtcSupportLabel','WebRTC 支持'),t('noWord','否'),'no')+summaryRow(t('summaryOk','✅ 正常：未能获取 WebRTC 公网地址（浏览器不支持或插件拦截），已跳过泄漏对比。'));
+      resultCard.style.display='block';testStatus.textContent='';testBtn.disabled=false;setStatus(t('ui.2','检测完成'));return;
+    }
     var localItems=items.filter(function(e){return e.typ==='host';});
     var pubItems=items.filter(function(e){return e.typ==='srflx'||e.typ==='prflx';});
     var relayItems=items.filter(function(e){return e.typ==='relay';});
@@ -105,8 +109,8 @@ testBtn.addEventListener('click',function(){
       var cls='';
       if(mismatch){summary=t('summaryLeak','⚠️ 检测到 WebRTC IP 泄漏：WebRTC 暴露的公网 IP 与页面出口 IP 不一致。');cls='yes';}
       else if(pubArr.length&&publicIp){summary=t('summaryNoLeak','✅ 未检测到 WebRTC IP 泄漏：公网 IP 与出口 IP 一致。');}
-      else{summary=t('summaryUnknown','无法完成检测');cls='unknown';}
-      resultArea.innerHTML=rows2.join('')+'<div class="detect-row"><span class="detect-label"></span><span class="detect-val '+cls+'" style="font-size:12px;border-top:1px solid var(--color-border);padding-top:8px;width:100%;text-align:left;">'+summary+'</span></div>';
+      else{summary=t('summaryOk','✅ 正常：未能获取 WebRTC 公网地址（浏览器不支持或插件拦截），已跳过泄漏对比。');}
+      resultArea.innerHTML=rows2.join('')+summaryRow(summary,cls);
       resultCard.style.display='block';
       testStatus.textContent='';
       testBtn.disabled=false;

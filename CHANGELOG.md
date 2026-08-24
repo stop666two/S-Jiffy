@@ -4,6 +4,29 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24]
+
+### Fixed
+
+- 全站 683 个工具页未包裹中文文案清零：570+ 功能工具 JS/HTML 文案接入六语言词典（t() 包裹 / data-i18n / labelKey 数据模式），含全角标点盲区（：；，。！？（））专项修复
+- 修复一类「非中文语言下页面脚本崩溃」根因：中文元素 ID + `getElementById(t('键','中文id'))` 在 en/es/ja 下返回 null 导致整页失效（30+ 工具，如 bytes-formatter / css-minifier / html-to-markdown / timestamp 等），已全部改为 ASCII ID
+- 修复「局部 `var t` 遮蔽全局 t()」导致空输入路径 TypeError 崩溃（20+ 工具，如 csv-validate / meta-preview / sql-validator / playfair-cipher 等）
+- 修复「t() 结果当状态码/分类比较值」导致非中文语言下筛选/高亮失效（python-cheatsheet / typescript-cheatsheet / js-array-cheatsheet / crypto-algorithm-comparison / markdown-cheatsheet 等）
+- 修复 42 个词典文件 JSON 损坏（上次会话追加键时写入闭合花括号之后，i18n 静默失败回退中文）——已按原键序重建
+- 修复 569 个页面冗余 `</script></script>` 闭合标签
+- 修复词典值字面 `\n`（两字符）导致复制文本无换行（badge-generator / log-analyzer / matrix-calculator 等 6 工具）
+- 修复词典值拼接缺空格（"total1requests" 类，log-analyzer 等）
+- 修复 16 个灵敏度转换器 sensNoteXAxis 缺键、resize-image 16 个 preset 动态键缺失（fallback 中文外显）
+- 修复 csp-validator 内联 JS 字符串未闭合（整页脚本失效）
+- 修复 ai-prompt-templates / csv-formatter 等动态行 i18n 失效与分类筛选失效
+- 修复硬编码 locale `toLocaleDateString('zh-CN')`（moon-phase / timestamp 等，改用 I18N.lang）
+- 主页 6 语言缺 home.cat.图片处理/音频处理 键、zh-CN/zh-TW/zh-HK 的 DevOps 未本地化
+- 主页 .tool-card 溢出：固定高 168px 改 min-height，长描述内部滚动条改 3 行截断，标签行不再溢出卡片
+
+### Changed
+
+- server.js gzip 缓存 ETag 改为内容哈希（修改文件后旧缓存不再误服）；i18n 词典响应头改 no-cache（原 24h 缓存导致翻译修复不可见）
+
 ## [2026-08-23]
 
 ### Added

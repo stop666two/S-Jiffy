@@ -7,8 +7,6 @@
 <main class="tool-workspace"><h1 data-i18n="h1">代理检测</h1><p class="tool-desc" data-i18n="desc">分析浏览器环境，检测是否通过代理服务器连接网络</p>
 <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="detectResults"></div><div id="detectSummary" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
-<div class="card" id="rtcCard"><h2 data-i18n="ui.webrtcTitle">WebRTC 泄漏检测</h2><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button id="rtcBtn" class="btn btn-primary" data-i18n="ui.rtcBtn">开始检测</button><span id="rtcStatus" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span></div><div id="rtcResults" style="margin-top:8px;"></div></div>
-<div class="card" id="dnsCard"><h2 data-i18n="ui.dnsTitle">DNS 泄漏检测</h2><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button id="dnsBtn" class="btn btn-primary" data-i18n="ui.rtcBtn">开始检测</button></div><div id="dnsProgress" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin:8px 0;"></div><div id="dnsResults"></div><div id="dnsSummary" style="margin-top:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
@@ -20,25 +18,22 @@ var IP4_RE=/^\d{1,3}(\.\d{1,3}){3}$/;
 function row(label,value,cls){return '<div class="detect-row"><span class="detect-label">'+label+'</span><span class="detect-val'+(cls?' '+cls:'')+'" style="font-size:12px;">'+value+'</span></div>';}
 function escapeH(v){return htmlEscape(String(v));}
 function getWebRTCIPs(cb){
-  var items=[];var pc=null;var finished=false;var supported=true;
-  function finish(){if(finished)return;finished=true;if(pc){try{pc.close();}catch(e){}}cb({items:items,supported:supported});}
+  var local=[];var pub=[];var pc=null;var finished=false;
+  function finish(){if(finished)return;finished=true;if(pc){try{pc.close();}catch(e){}}cb({local:local,pub:pub});}
   try{
     var Ctor=window.RTCPeerConnection||window.webkitRTCPeerConnection;
-    if(!Ctor){supported=false;finish();return;}
+    if(!Ctor){finish();return;}
     pc=new Ctor({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});
     pc.createDataChannel('probe');
     pc.onicecandidate=function(e){
       if(!e.candidate){finish();return;}
       var parts=(e.candidate.candidate||'').split(' ');
-      if(parts.length<8)return;
-      var ip=parts[4];var typ=parts[7];
-      if(ip.indexOf(':')>=0){}
-      else if(!IP4_RE.test(ip))return;
-      var dup=false;
-      for(var i=0;i<items.length;i++){if(items[i].ip===ip&&items[i].typ===typ){dup=true;break;}}
-      if(!dup)items.push({ip:ip,typ:typ,ipv6:ip.indexOf(':')>=0,mdns:/.local$/i.test(ip)});
+      if(parts.length<8||!IP4_RE.test(parts[4]))return;
+      var typ=parts[7];
+      if(typ==='srflx'||typ==='prflx'){if(pub.indexOf(parts[4])<0)pub.push(parts[4]);}
+      else if(typ==='host'){if(local.indexOf(parts[4])<0)local.push(parts[4]);}
     };
-    pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).then(function(){setTimeout(finish,2500);}).catch(finish);
+    pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).then(function(){setTimeout(finish,3000);}).catch(finish);
   }catch(e){finish();}
 }
 function fetchPublicIP(cb){
@@ -101,143 +96,39 @@ function detect(){
   }else{
     rows.push(row('Network Info API',t('unavailable','不可用'),'unknown'));
   }
-  var publicIp=null;
-  var render=function(){
-    var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
-    rows.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
-    var summary='';
-    var cls='';
-    if(score>=4){summary=t('summaryHigh','⚠️ 检测到多个代理/匿名化特征。');cls='yes';}
-    else if(score>=2){summary=t('summaryMedium','ℹ️ 部分特征可能与代理环境相关。');cls='unknown';}
-    else if(score>=1){summary=t('summaryLow','✅ 未检测到明显代理特征。');}
-    else{summary=t('summaryLow','✅ 未检测到明显代理特征。');}
-    detectResults.innerHTML=rows.join('');
-    detectSummary.textContent=summary;
-    outputText.textContent=summary;
-    resultCard.style.display='block';
-    detectBtn.disabled=false;
-    setStatus(t('ui.2','检测完成'));
-  };
-  fetchPublicIP(function(ip){publicIp=ip;render();});
+  getWebRTCIPs(function(webrtc){
+    var webrtcIPs=webrtc.local.concat(webrtc.pub);
+    var publicIp=null;
+    var render=function(){
+      var webrtcPublic=webrtc.pub;
+      var webrtcVal=webrtcIPs.length?webrtcIPs.join(', '):t('unavailable','不可用');
+      if(webrtcIPs.length===0)rows.push(row(t('webrtcLabel','WebRTC IP 泄漏'),webrtcVal,'unknown'));
+      else rows.push(row(t('webrtcLabel','WebRTC IP 泄漏'),escapeH(webrtcVal),webrtcPublic.length?'yes':'no'));
+      var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
+      rows.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
+      var mismatch=webrtcPublic.length&&publicIp&&webrtcPublic.indexOf(publicIp)<0;
+      var same=publicIp&&webrtcPublic.length&&webrtcPublic.indexOf(publicIp)>=0;
+      var cmpVal=mismatch?t('ipMismatchVal','不一致（疑似代理/VPN）'):(same?t('ipMatchVal','一致'):t('ipUnknownVal','无法判断'));
+      rows.push(row(t('ipCompareLabel','IP 一致性'),cmpVal,mismatch?'yes':(same?'yes':'unknown')));
+      if(mismatch)score+=4;
+      var summary='';
+      var cls='';
+      if(score>=4){summary=t('summaryHigh','⚠️ 检测到多个代理/匿名化特征。');cls='yes';}
+      else if(score>=2){summary=t('summaryMedium','ℹ️ 部分特征可能与代理环境相关。');cls='unknown';}
+      else if(score>=1){summary=t('summaryLow','✅ 未检测到明显代理特征。');}
+      else if(!webrtcPublic.length&&!publicIp){summary=t('summaryUnknown','无法完成检测');cls='unknown';}
+      else{summary=t('summaryLow','✅ 未检测到明显代理特征。');}
+      detectResults.innerHTML=rows.join('');
+      detectSummary.textContent=summary;
+      outputText.textContent=summary;
+      resultCard.style.display='block';
+      detectBtn.disabled=false;
+      setStatus(t('ui.2','检测完成'));
+    };
+    fetchPublicIP(function(ip){publicIp=ip;render();});
+  });
 }
 detectBtn.addEventListener('click',detect);
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
-var dnsBtn=document.getElementById('dnsBtn'),dnsCard=document.getElementById('dnsCard'),dnsProgress=document.getElementById('dnsProgress'),dnsResults=document.getElementById('dnsResults'),dnsSummary=document.getElementById('dnsSummary');
-var CHARS_BL='abcdefghijkmnopqrstuvwyz0123456789';
-function randSub(){var n='';if(window.crypto&&window.crypto.getRandomValues){var b=new Uint8Array(12);window.crypto.getRandomValues(b);for(var i=0;i<12;i++)n+=CHARS_BL[b[i]%CHARS_BL.length];}else{for(var i=0;i<12;i++)n+=CHARS_BL[Math.floor(Math.random()*CHARS_BL.length)];}return n;}
-function fetchGeo(cb){
-  var xhr=new XMLHttpRequest();var timer=setTimeout(function(){try{xhr.abort();}catch(e){}cb(null);},8000);
-  xhr.onreadystatechange=function(){
-    if(xhr.readyState!==4)return;clearTimeout(timer);
-    if(xhr.status===200){try{var d=JSON.parse(xhr.responseText);if(d&&d.ip){cb({ip:d.ip,cc:d.country_code||d.country_code_iso2||d.country_iso_code||'',isp:d.isp_name||d.isp||''});return;}}catch(e){}}
-    cb(null);
-  };
-  xhr.open('GET','https://ipleak.net/json',true);xhr.send();
-}
-function runDnsTest(onProg,onDone){
-  var subs=[];
-  for(var i=0;i<15;i++)subs.push(randSub()+'.dns4.browserleaks.net');
-  for(var i=0;i<15;i++)subs.push(randSub()+'.dns6.browserleaks.net');
-  var servers={};var idx=0;var done=0;var emptyStreak=0;var finished=false;
-  function maybeFinish(){
-    if(finished)return;
-    var n=Object.keys(servers).length;
-    if(n>=4||emptyStreak>=4||done>=subs.length){finished=true;onDone(servers);}
-  }
-  function tick(){done++;onProg(done,subs.length,Object.keys(servers).length);maybeFinish();if(!finished)worker();}
-  function worker(){
-    if(finished)return;
-    if(idx>=subs.length)return;
-    var sub=subs[idx++];var xhr=new XMLHttpRequest();
-    var timer=setTimeout(function(){try{xhr.abort();}catch(e){}tick();},6000);
-    xhr.onreadystatechange=function(){
-      if(xhr.readyState!==4)return;clearTimeout(timer);
-      if(xhr.status===200){
-        try{
-          var d=JSON.parse(xhr.responseText);
-          var before=Object.keys(servers).length;
-          for(var k in d){if(k!=='error'&&d[k]&&Object.prototype.toString.call(d[k])==='[object Array]'&&!servers[k])servers[k]=d[k];}
-          emptyStreak=(Object.keys(servers).length===before)?emptyStreak+1:0;
-        }catch(e){}
-      }
-      tick();
-    };
-    xhr.open('GET','https://'+sub,true);xhr.send();
-  }
-  for(var w=0;w<15;w++)worker();
-}
-function renderDnsTable(servers){
-  var keys=Object.keys(servers);
-  keys.sort(function(a,b){var ai=a.indexOf(':')>=0?1:0,bi=b.indexOf(':')>=0?1:0;if(ai!==bi)return ai-bi;return a<b?-1:(a>b?1:0);});
-  var html='<table style="width:100%;border-collapse:collapse;font-size:var(--font-size-sm);">';
-  html+='<tr style="border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);"><td style="padding:4px 6px;">'+t('ui.dnsColIp','IP 地址')+'</td><td style="padding:4px 6px;">'+t('ui.dnsColIsp','ISP')+'</td><td style="padding:4px 6px;">'+t('ui.dnsColLocation','位置')+'</td></tr>';
-  for(var i=0;i<keys.length;i++){
-    var k=keys[i];var v=servers[k]||[];
-    var cc=(v[0]||'').toUpperCase();
-    html+='<tr style="border-bottom:1px solid var(--color-border);"><td style="padding:4px 6px;font-family:var(--font-mono);font-weight:500;">'+(cc?'<span style="display:inline-block;min-width:30px;padding:0 4px;margin-right:6px;border:1px solid var(--color-border);border-radius:4px;font-size:11px;text-align:center;">'+escapeH(cc)+'</span>':'')+escapeH(k)+'</td><td style="padding:4px 6px;">'+escapeH(v[2]||'')+'</td><td style="padding:4px 6px;">'+escapeH(v[1]||'')+'</td></tr>';
-  }
-  html+='</table>';
-  return {html:html,keys:keys};
-}
-dnsBtn.addEventListener('click',function(){
-  dnsBtn.disabled=true;dnsResults.innerHTML='';dnsSummary.textContent='';
-  dnsProgress.textContent=t('ui.dnsTesting','正在检测 DNS 服务器…');
-  fetchGeo(function(geo){
-    runDnsTest(function(done,total,n){
-      var prog=t('ui.dnsTesting','正在检测 DNS 服务器… ')+done+'/'+total;
-      if(n)prog+=' ('+t('ui.dnsFoundPrefix','已发现 ')+n+')';
-      dnsProgress.textContent=prog;
-    },function(servers){
-      var n=Object.keys(servers).length;
-      if(!n){
-        dnsProgress.textContent='';
-        dnsSummary.textContent=t('ui.dnsError','DNS 检测失败，请重试');
-        dnsBtn.disabled=false;return;
-      }
-      var r=renderDnsTable(servers);
-      dnsResults.innerHTML=r.html;
-      dnsProgress.textContent='';
-      var ispSet={},locSet={},ccSet={};
-      r.keys.forEach(function(k){var v=servers[k];if(v[2])ispSet[v[2]]=1;if(v[1])locSet[v[1]]=1;var cc=(v[0]||'').toUpperCase();if(cc)ccSet[cc]=1;});
-      var found=t('ui.dnsFoundPrefix','发现 ')+n+t('ui.dnsServers',' 个 DNS 服务器')+', '+Object.keys(ispSet).length+t('ui.dnsIsps',' 个 ISP')+', '+Object.keys(locSet).length+t('ui.dnsLocs',' 个位置');
-      var note='';
-      if(geo&&geo.cc){note=ccSet[geo.cc.toUpperCase()]?t('ui.dnsMatch','DNS 解析位置与出口位置一致'):t('ui.dnsMismatch','DNS 解析位置与出口位置不同');}
-      dnsSummary.textContent=found+(note?(' · '+note):'');
-      dnsBtn.disabled=false;
-      setStatus(t('ui.2','检测完成'));
-    });
-  });
-});
-var rtcBtn=document.getElementById('rtcBtn'),rtcStatus=document.getElementById('rtcStatus'),rtcResults=document.getElementById('rtcResults');
-rtcBtn.addEventListener('click',function(){
-  rtcBtn.disabled=true;rtcResults.innerHTML='';rtcStatus.textContent=t('ui.checking','正在检测…');
-  getWebRTCIPs(function(webrtc){
-    var localItems=webrtc.items.filter(function(e){return e.typ==='host';});var pubItems=webrtc.items.filter(function(e){return e.typ==='srflx'||e.typ==='prflx';});var relayItems=webrtc.items.filter(function(e){return e.typ==='relay';});var ipv6Items=webrtc.items.filter(function(e){return e.ipv6;});
-    var rows2=[];
-    rows2.push(row(t('ui.webrtcSupportLabel','WebRTC 支持'),webrtc.supported?t('yesWord','是'):t('unavailable','不可用'),webrtc.supported?'yes':'unknown'));
-    if(webrtc.supported){
-      var localVal=localItems.length?localItems.map(function(e){return e.ip+(e.mdns?' '+t('ui.webrtcMdns','(mDNS 混淆)'):'');}).join(', '):t('unavailable','不可用');
-      rows2.push(row(t('ui.webrtcLocal','本地 IP'),escapeH(localVal),localItems.length?'yes':'unknown'));
-      var pubVal=pubItems.length?pubItems.map(function(e){return e.ip;}).join(', '):t('unavailable','不可用');
-      rows2.push(row(t('ui.webrtcPublic','公网 IP（STUN）'),escapeH(pubVal),pubItems.length?'yes':'unknown'));
-      var relayVal=relayItems.length?relayItems.map(function(e){return e.ip;}).join(', '):t('none','(无)');
-      rows2.push(row(t('ui.webrtcRelay','Relay（TURN）'),escapeH(relayVal),relayItems.length?'unknown':'no'));
-      rows2.push(row(t('ui.webrtcIpv6Label','IPv6 候选'),ipv6Items.length?t('yesWord','是'):t('noWord','否'),ipv6Items.length?'yes':'no'));
-    }
-    fetchPublicIP(function(publicIp){
-      var pubArr=pubItems.map(function(e){return e.ip;});
-      var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
-      rows2.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
-      var mismatch=pubArr.length&&publicIp&&pubArr.indexOf(publicIp)<0;
-      var same=publicIp&&pubArr.length&&pubArr.indexOf(publicIp)>=0;
-      var cmpVal=mismatch?t('ipMismatchVal','不一致（疑似代理/VPN）'):(same?t('ipMatchVal','一致'):t('ipUnknownVal','无法判断'));
-      rows2.push(row(t('ipCompareLabel','IP 一致性'),cmpVal,mismatch?'yes':(same?'yes':'unknown')));
-      rtcResults.innerHTML=rows2.join('');
-      rtcStatus.textContent='';
-      rtcBtn.disabled=false;
-      setStatus(t('ui.2','检测完成'));
-    });
-  });
-});
 })();</script>
 </body></html>

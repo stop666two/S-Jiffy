@@ -4,6 +4,22 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] 新增独立 WebRTC 泄漏检测与 DNS 泄漏检测工具
+
+### Added
+
+- 新增独立工具 **WebRTC 泄漏检测**（projects/webrtc-leak-test/）：8 个 STUN 服务器收集候选（本地/公网/Relay/IPv6），无公网候选自动重试一轮，对比 STUN 公网 IP 与页面出口 IP 判断泄漏；结果区可滚动
+- 新增独立工具 **DNS 泄漏检测**（projects/dns-leak-test/）：基于 browserleaks 开放检测协议探测实际 DNS 服务器（IP/ISP/位置表格，IPv4 前 IPv6 后），汇总 N 服务器/M ISP/K 位置并与出口位置一致性判断；结果表可滚动
+- 两个工具均接入主页（工具卡 + 6 语言词典 + 分类计数自动更新）
+
+### Changed
+
+- proxy-detect 回退：移除页面内 WebRTC/DNS 泄漏检测子卡片与 DNS 按钮（泄漏检测改为独立工具），环境检测保留 WebRTC IP 泄漏行与出口 IP 一致性判断
+
+### Fixed
+
+- 修复主页 tools 数组语法错误（新条目曾被错误插入 ip-lookup 条目内部导致整页 JS 失效）
+
 ## [2026-08-24] 代理检测：WebRTC 与 DNS 泄漏检测拆分为独立卡片
 
 ### Changed

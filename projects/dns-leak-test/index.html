@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DNS 泄漏检测 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.detect-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;}.detect-row:last-child{border:none;}.detect-label{color:var(--color-text-secondary);flex-shrink:0;margin-right:16px;}.detect-val{font-family:var(--font-mono);font-weight:500;word-break:break-all;text-align:right;}.yes{color:var(--color-success);}.no{color:var(--color-text-disabled);}.unknown{color:#e37400;}.scroll-area{max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.14) transparent;-webkit-overflow-scrolling:touch;}.scroll-area::-webkit-scrollbar{width:5px;}.scroll-area::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:4px;}.dns-note{margin-top:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
+<main class="tool-workspace"><h1 data-i18n="h1">DNS 泄漏检测</h1><p class="tool-desc" data-i18n="desc">检测浏览器 DNS 请求是否绕过 VPN/代理，泄露给你真实的 DNS 服务商</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="testBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button><span id="testStatus" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);align-self:center;"></span></div>
+<div class="card" id="resultCard" style="display:none;"><div id="dnsProgress" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;"></div><div class="scroll-area" id="resultArea"></div><div id="dnsSummary" class="dns-note"></div></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+<script>(function(){
+var testBtn=document.getElementById('testBtn'),testStatus=document.getElementById('testStatus'),resultCard=document.getElementById('resultCard'),dnsProgress=document.getElementById('dnsProgress'),resultArea=document.getElementById('resultArea'),dnsSummary=document.getElementById('dnsSummary');
+function escapeH(v){return htmlEscape(String(v));}
+var CHARS_BL='abcdefghijkmnopqrstuvwyz0123456789';
+function randSub(){var n='';if(window.crypto&&window.crypto.getRandomValues){var b=new Uint8Array(12);window.crypto.getRandomValues(b);for(var i=0;i<12;i++)n+=CHARS_BL[b[i]%CHARS_BL.length];}else{for(var i=0;i<12;i++)n+=CHARS_BL[Math.floor(Math.random()*CHARS_BL.length)];}return n;}
+function fetchGeo(cb){
+  var xhr=new XMLHttpRequest();var timer=setTimeout(function(){try{xhr.abort();}catch(e){}cb(null);},8000);
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4)return;clearTimeout(timer);
+    if(xhr.status===200){try{var d=JSON.parse(xhr.responseText);if(d&&d.ip){cb({ip:d.ip,cc:d.country_code||d.country_code_iso2||d.country_iso_code||'',isp:d.isp_name||d.isp||''});return;}}catch(e){}}
+    cb(null);
+  };
+  xhr.open('GET','https://ipleak.net/json',true);xhr.send();
+}
+function runDnsTest(onProg,onDone){
+  var subs=[];
+  for(var i=0;i<15;i++)subs.push(randSub()+'.dns4.browserleaks.net');
+  for(var i=0;i<15;i++)subs.push(randSub()+'.dns6.browserleaks.net');
+  var servers={};var idx=0;var done=0;var emptyStreak=0;var finished=false;
+  function maybeFinish(){
+    if(finished)return;
+    var n=Object.keys(servers).length;
+    if(n>=4||emptyStreak>=4||done>=subs.length){finished=true;onDone(servers);}
+  }
+  function tick(){done++;onProg(done,subs.length,Object.keys(servers).length);maybeFinish();if(!finished)worker();}
+  function worker(){
+    if(finished)return;
+    if(idx>=subs.length)return;
+    var sub=subs[idx++];var xhr=new XMLHttpRequest();
+    var timer=setTimeout(function(){try{xhr.abort();}catch(e){}tick();},6000);
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState!==4)return;clearTimeout(timer);
+      if(xhr.status===200){
+        try{
+          var d=JSON.parse(xhr.responseText);
+          var before=Object.keys(servers).length;
+          for(var k in d){if(k!=='error'&&d[k]&&Object.prototype.toString.call(d[k])==='[object Array]'&&!servers[k])servers[k]=d[k];}
+          emptyStreak=(Object.keys(servers).length===before)?emptyStreak+1:0;
+        }catch(e){}
+      }
+      tick();
+    };
+    xhr.open('GET','https://'+sub,true);xhr.send();
+  }
+  for(var w=0;w<15;w++)worker();
+}
+function renderDnsTable(servers){
+  var keys=Object.keys(servers);
+  keys.sort(function(a,b){var ai=a.indexOf(':')>=0?1:0,bi=b.indexOf(':')>=0?1:0;if(ai!==bi)return ai-bi;return a<b?-1:(a>b?1:0);});
+  var html='<table style="width:100%;border-collapse:collapse;font-size:var(--font-size-sm);">';
+  html+='<tr style="border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);"><td style="padding:4px 6px;">'+t('dnsColIp','IP 地址')+'</td><td style="padding:4px 6px;">'+t('dnsColIsp','ISP')+'</td><td style="padding:4px 6px;">'+t('dnsColLocation','位置')+'</td></tr>';
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];var v=servers[k]||[];
+    var cc=(v[0]||'').toUpperCase();
+    html+='<tr style="border-bottom:1px solid var(--color-border);"><td style="padding:4px 6px;font-family:var(--font-mono);font-weight:500;white-space:nowrap;">'+(cc?'<span style="display:inline-block;min-width:30px;padding:0 4px;margin-right:6px;border:1px solid var(--color-border);border-radius:4px;font-size:11px;text-align:center;">'+escapeH(cc)+'</span>':'')+escapeH(k)+'</td><td style="padding:4px 6px;">'+escapeH(v[2]||'')+'</td><td style="padding:4px 6px;">'+escapeH(v[1]||'')+'</td></tr>';
+  }
+  html+='</table>';
+  return {html:html,keys:keys};
+}
+testBtn.addEventListener('click',function(){
+  testBtn.disabled=true;resultArea.innerHTML='';dnsSummary.textContent='';dnsProgress.textContent='';resultCard.style.display='none';
+  testStatus.textContent=t('ui.checking','正在检测…');
+  fetchGeo(function(geo){
+    runDnsTest(function(done,total,n){
+      var prog=t('dnsTesting','正在检测 DNS 服务器… ')+done+'/'+total;
+      if(n)prog+=' ('+t('dnsFoundPrefix','已发现 ')+n+')';
+      dnsProgress.textContent=prog;
+    },function(servers){
+      var n=Object.keys(servers).length;
+      if(!n){
+        dnsProgress.textContent='';
+        dnsSummary.textContent=t('dnsError','DNS 检测失败，请重试');
+        testStatus.textContent='';
+        testBtn.disabled=false;return;
+      }
+      var r=renderDnsTable(servers);
+      resultArea.innerHTML=r.html;
+      resultCard.style.display='block';
+      dnsProgress.textContent='';
+      var ispSet={},locSet={},ccSet={};
+      r.keys.forEach(function(k){var v=servers[k];if(v[2])ispSet[v[2]]=1;if(v[1])locSet[v[1]]=1;var cc=(v[0]||'').toUpperCase();if(cc)ccSet[cc]=1;});
+      var found=t('dnsFoundPrefix','发现 ')+n+t('dnsServers',' 个 DNS 服务器')+', '+Object.keys(ispSet).length+t('dnsIsps',' 个 ISP')+', '+Object.keys(locSet).length+t('dnsLocs',' 个位置');
+      var note='';
+      if(geo&&geo.cc){note=ccSet[geo.cc.toUpperCase()]?t('dnsMatch','DNS 解析位置与出口位置一致'):t('dnsMismatch','DNS 解析位置与出口位置不同，可能存在 DNS 泄漏');}
+      dnsSummary.textContent=found+(note?(' · '+note):'');
+      testStatus.textContent='';
+      testBtn.disabled=false;
+      setStatus(t('ui.2','检测完成'));
+    });
+  });
+});
+})();</script>
+</body></html>

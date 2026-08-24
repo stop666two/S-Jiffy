@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>WebRTC 泄漏检测 - S-Jiffy</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
+<style>.detect-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;}.detect-row:last-child{border:none;}.detect-label{color:var(--color-text-secondary);flex-shrink:0;margin-right:16px;}.detect-val{font-family:var(--font-mono);font-weight:500;word-break:break-all;text-align:right;}.yes{color:var(--color-success);}.no{color:var(--color-text-disabled);}.unknown{color:#e37400;}.scroll-area{max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.14) transparent;-webkit-overflow-scrolling:touch;}.scroll-area::-webkit-scrollbar{width:5px;}.scroll-area::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:4px;}</style></head><body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
+<main class="tool-workspace"><h1 data-i18n="h1">WebRTC 泄漏检测</h1><p class="tool-desc" data-i18n="desc">检测 WebRTC 是否向网站泄露你的本地或公网 IP 地址</p>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="testBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button><span id="testStatus" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);align-self:center;"></span></div>
+<div class="card" id="resultCard" style="display:none;"><div class="scroll-area" id="resultArea"></div></div>
+</main>
+<footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
+<script src="../../assets/js/global.js"></script>
+  <script src="../../assets/js/i18n.js"></script>
+<script>(function(){
+var testBtn=document.getElementById('testBtn'),testStatus=document.getElementById('testStatus'),resultCard=document.getElementById('resultCard'),resultArea=document.getElementById('resultArea');
+var IP4_RE=/^\d{1,3}(\.\d{1,3}){3}$/;
+var STUNS=[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun2.l.google.com:19302'},
+  {urls:'stun:stun3.l.google.com:19302'},
+  {urls:'stun:stun4.l.google.com:19302'},
+  {urls:'stun:stun.cloudflare.com:3478'},
+  {urls:'stun:global.stun.twilio.com:3478'},
+  {urls:'stun:stun.stunprotocol.org:3478'}
+];
+function row(label,value,cls){return '<div class="detect-row"><span class="detect-label">'+label+'</span><span class="detect-val'+(cls?' '+cls:'')+'" style="font-size:12px;">'+value+'</span></div>';}
+function escapeH(v){return htmlEscape(String(v));}
+function gatherOnce(attempts,cb){
+  var items=[];var pc=null;var finished=false;
+  function finish(){if(finished)return;finished=true;if(pc){try{pc.close();}catch(e){}}cb(items);}
+  try{
+    var Ctor=window.RTCPeerConnection||window.webkitRTCPeerConnection;
+    if(!Ctor){finished=true;cb(null);return;}
+    pc=new Ctor({iceServers:STUNS});
+    pc.createDataChannel('probe');
+    var gotSrflx=false;
+    pc.onicecandidate=function(e){
+      if(!e.candidate){finish();return;}
+      var parts=(e.candidate.candidate||'').split(' ');
+      if(parts.length<8)return;
+      var ip=parts[4];var typ=parts[7];
+      if(ip.indexOf(':')>=0){}
+      else if(!IP4_RE.test(ip))return;
+      if(typ==='srflx'||typ==='prflx')gotSrflx=true;
+      var dup=false;
+      for(var i=0;i<items.length;i++){if(items[i].ip===ip&&items[i].typ===typ){dup=true;break;}}
+      if(!dup)items.push({ip:ip,typ:typ,ipv6:ip.indexOf(':')>=0,mdns:/.local$/i.test(ip)});
+    };
+    if(pc.onicegatheringstatechange!==undefined){pc.onicegatheringstatechange=function(){if(pc&&pc.iceGatheringState==='complete')finish();};}
+    pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).then(function(){
+      setTimeout(function(){if(!gotSrflx&&attempts<2){try{pc.close();}catch(e){}finished=false;pc=null;gatherOnce(attempts+1,function(items2){cb(items.concat(items2));});return;}finish();},5000);
+    }).catch(finish);
+  }catch(e){finish();}
+}
+function fetchPublicIP(cb){
+  var apis=[
+    {url:'https://api.ipify.org?format=json',parse:function(d){return d&&d.ip;}},
+    {url:'https://ipapi.co/json/',parse:function(d){return d&&d.ip;}},
+    {url:'https://ipinfo.io/json',parse:function(d){return d&&d.ip;}}
+  ];
+  var i=0;
+  function next(){
+    if(i>=apis.length){cb(null);return;}
+    var a=apis[i++];var xhr=new XMLHttpRequest();
+    var timer=setTimeout(function(){try{xhr.abort();}catch(e){}next();},8000);
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState!==4)return;
+      clearTimeout(timer);
+      if(xhr.status===200){
+        try{var ip=a.parse(JSON.parse(xhr.responseText));if(ip){cb(ip);return;}}catch(e){}
+      }
+      next();
+    };
+    xhr.open('GET',a.url,true);xhr.send();
+  }
+  next();
+}
+testBtn.addEventListener('click',function(){
+  testBtn.disabled=true;testStatus.textContent=t('ui.checking','正在检测…');resultArea.innerHTML='';resultCard.style.display='none';
+  gatherOnce(0,function(items){
+    if(items===null){testStatus.textContent='';testBtn.disabled=false;setStatus(t('summaryUnsupported','当前浏览器不支持 WebRTC'));return;}
+    var localItems=items.filter(function(e){return e.typ==='host';});
+    var pubItems=items.filter(function(e){return e.typ==='srflx'||e.typ==='prflx';});
+    var relayItems=items.filter(function(e){return e.typ==='relay';});
+    var ipv6Items=items.filter(function(e){return e.ipv6;});
+    var rows2=[];
+    rows2.push(row(t('webrtcSupportLabel','WebRTC 支持'),t('yesWord','是'),'yes'));
+    var localVal=localItems.length?localItems.map(function(e){return e.ip+(e.mdns?' '+t('webrtcMdns','(mDNS 混淆)'):'');}).join(', '):t('unavailable','不可用');
+    rows2.push(row(t('webrtcLocal','本地 IP'),escapeH(localVal),localItems.length?'yes':'unknown'));
+    var pubVal=pubItems.length?pubItems.map(function(e){return e.ip;}).join(', '):t('unavailable','不可用');
+    rows2.push(row(t('webrtcPublic','公网 IP（STUN）'),escapeH(pubVal),pubItems.length?'yes':'unknown'));
+    var relayVal=relayItems.length?relayItems.map(function(e){return e.ip;}).join(', '):t('none','(无)');
+    rows2.push(row(t('webrtcRelay','Relay（TURN）'),escapeH(relayVal),relayItems.length?'unknown':'no'));
+    rows2.push(row(t('webrtcIpv6Label','IPv6 候选'),ipv6Items.length?t('yesWord','是'):t('noWord','否'),ipv6Items.length?'yes':'no'));
+    fetchPublicIP(function(publicIp){
+      var pubArr=pubItems.map(function(e){return e.ip;});
+      var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
+      rows2.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
+      var mismatch=pubArr.length&&publicIp&&pubArr.indexOf(publicIp)<0;
+      var same=publicIp&&pubArr.length&&pubArr.indexOf(publicIp)>=0;
+      var cmpVal=mismatch?t('ipMismatchVal','不一致（疑似代理/VPN）'):(same?t('ipMatchVal','一致'):t('ipUnknownVal','无法判断'));
+      rows2.push(row(t('ipCompareLabel','IP 一致性'),cmpVal,mismatch?'yes':(same?'yes':'unknown')));
+      var summary='';
+      var cls='';
+      if(mismatch){summary=t('summaryLeak','⚠️ 检测到 WebRTC IP 泄漏：WebRTC 暴露的公网 IP 与页面出口 IP 不一致。');cls='yes';}
+      else if(pubArr.length&&publicIp){summary=t('summaryNoLeak','✅ 未检测到 WebRTC IP 泄漏：公网 IP 与出口 IP 一致。');}
+      else{summary=t('summaryUnknown','无法完成检测');cls='unknown';}
+      resultArea.innerHTML=rows2.join('')+'<div class="detect-row"><span class="detect-label"></span><span class="detect-val '+cls+'" style="font-size:12px;border-top:1px solid var(--color-border);padding-top:8px;width:100%;text-align:left;">'+summary+'</span></div>';
+      resultCard.style.display='block';
+      testStatus.textContent='';
+      testBtn.disabled=false;
+      setStatus(t('ui.2','检测完成'));
+    });
+  });
+});
+})();</script>
+</body></html>

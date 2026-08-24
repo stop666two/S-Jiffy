@@ -1,3 +1,4 @@
+﻿4082 chars
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
@@ -103,17 +104,6 @@ http.createServer(function (req, res) {
     return;
   }
   if (url === '/') url = '/index.html';
-
-  var redirects = {
-    '/projects/ip-location': '/projects/ip-lookup/',
-    '/projects/ip-location/': '/projects/ip-lookup/'
-  };
-  if (redirects[url]) {
-    res.writeHead(301, { 'Location': redirects[url] });
-    res.end();
-    return;
-  }
-
   var filePath = path.resolve(__dirname, '.' + url);
 
   if (filePath !== __dirname && filePath.indexOf(__dirname + path.sep) !== 0) {
@@ -126,7 +116,7 @@ http.createServer(function (req, res) {
     fs.readFile(filePath, function (err2, data) {
       if (err2) {
         res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<!DOCTYPE html><meta charset="utf-8"><title>404 - S-Jiffy</title><body style="font-family:monospace;padding:2em"><h1>404</h1><a href="/" style="color:#111">返回首页</a></body>');
+        res.end('<!DOCTYPE html><meta charset="utf-8"><title>404 - S-Jiffy</title><body style="font-family:monospace;padding:2em"><h1>404</h1><a href="/" style="color:#111">杩斿洖棣栭〉</a></body>');
         return;
       }
       serveFile(res, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
@@ -138,3 +128,4 @@ http.createServer(function (req, res) {
   fs.writeFileSync(pidFile, String(process.pid));
   console.log('S-Jiffy running at http://localhost:' + port);
 });
+

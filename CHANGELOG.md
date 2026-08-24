@@ -4,6 +4,12 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] 移除随机邮箱生成工具
+
+### Removed
+
+- 随机邮箱生成（random-email）：功能与邮箱规范化重叠且提供一次性邮箱选项，完全移除（主页卡片、工具页、6 语言词典、home.json 键），工具总数 550 → 549；README 工具总览与分类计数同步重新生成
+
 ## [2026-08-24] WebRTC 泄漏检测友好降级
 
 ### Changed

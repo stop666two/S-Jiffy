@@ -74,11 +74,16 @@
       margin-bottom: 8px;
       flex: 1;
       min-height: 44px;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      max-height: 66px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.14) transparent;
+      -webkit-overflow-scrolling: touch;
     }
+    .tool-card p::-webkit-scrollbar { width: 5px; }
+    .tool-card p::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.14); border-radius: 3px; }
+    .tool-card p::-webkit-scrollbar-track { background: transparent; }
+    .tool-card:hover p::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.3); }
     .tool-card .tags {
       display: flex;
       flex-wrap: wrap;

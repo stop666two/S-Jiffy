@@ -4,6 +4,18 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] 代理检测：WebRTC 与 DNS 泄漏检测拆分为独立卡片
+
+### Changed
+
+- proxy-detect 页面重构：WebRTC 泄漏检测与 DNS 泄漏检测从「开始检测」与环境检测中拆出，成为两个独立的常显卡片（各带独立「开始检测」按钮与结果区），卡片标题随 6 语言本地化
+- 「开始检测」（环境检测）不再包含 WebRTC 相关行，评分仅基于 UA/Tor/Cookie 特征；WebRTC 支持/本地 IP/公网 IP/Relay/IPv6 与 IP 一致性对比全部归入 WebRTC 泄漏检测卡片
+- 修复 proxy-detect 页面两行重复 dnsCard HTML（历史补丁残留）
+
+### Fixed
+
+- 词典清理：移除不再引用的 ui.dnsBtn、webrtcLabel、summaryUnknown 键（6 语言）
+
 ## [2026-08-24] 代理检测增强：WebRTC 泄漏检测 + DNS 泄漏检测
 
 ### Added

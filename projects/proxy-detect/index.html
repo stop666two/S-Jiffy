@@ -5,10 +5,10 @@
 <style>.detect-row{padding:8px 0;border-bottom:1px solid var(--color-border);font-size:var(--font-size-sm);display:flex;justify-content:space-between;}.detect-row:last-child{border:none;}.detect-label{color:var(--color-text-secondary);}.detect-val{font-family:var(--font-mono);font-weight:500;}.yes{color:var(--color-success);}.no{color:var(--color-text-disabled);}.unknown{color:#e37400;}</style></head><body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace"><h1 data-i18n="h1">代理检测</h1><p class="tool-desc" data-i18n="desc">分析浏览器环境，检测是否通过代理服务器连接网络</p>
-<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button><button id="dnsBtn" class="btn" data-i18n="ui.dnsBtn">DNS 泄漏检测</button></div>
+<div class="card" style="display:flex;gap:12px;flex-wrap:wrap;"><button id="detectBtn" class="btn btn-primary" data-i18n="ui.1">开始检测</button></div>
 <div class="card" id="resultCard" style="display:none;"><div id="detectResults"></div><div id="detectSummary" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border);font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
-<div class="card" id="dnsCard" style="display:none;"><div id="dnsProgress" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;"></div><div id="dnsResults"></div><div id="dnsSummary" style="margin-top:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
-<div class="card" id="dnsCard" style="display:none;"><div id="dnsProgress" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;"></div><div id="dnsResults"></div><div id="dnsSummary" style="margin-top:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
+<div class="card" id="rtcCard"><h2 data-i18n="ui.webrtcTitle">WebRTC 泄漏检测</h2><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button id="rtcBtn" class="btn btn-primary" data-i18n="ui.rtcBtn">开始检测</button><span id="rtcStatus" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);"></span></div><div id="rtcResults" style="margin-top:8px;"></div></div>
+<div class="card" id="dnsCard"><h2 data-i18n="ui.dnsTitle">DNS 泄漏检测</h2><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"><button id="dnsBtn" class="btn btn-primary" data-i18n="ui.rtcBtn">开始检测</button></div><div id="dnsProgress" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin:8px 0;"></div><div id="dnsResults"></div><div id="dnsSummary" style="margin-top:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"></div></div>
 <div class="output-box"><span id="outputText"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
@@ -101,44 +101,24 @@ function detect(){
   }else{
     rows.push(row('Network Info API',t('unavailable','不可用'),'unknown'));
   }
-  getWebRTCIPs(function(webrtc){
-    var localItems=webrtc.items.filter(function(e){return e.typ==='host';});var pubItems=webrtc.items.filter(function(e){return e.typ==='srflx'||e.typ==='prflx';});var relayItems=webrtc.items.filter(function(e){return e.typ==='relay';});var ipv6Items=webrtc.items.filter(function(e){return e.ipv6;});var webrtcIPs=webrtc.items.map(function(e){return e.ip;});var webrtcPublic=pubItems.map(function(e){return e.ip;});
-    var publicIp=null;
-    var render=function(){
-      var webrtcVal=webrtcIPs.length?webrtcIPs.join(', '):t('unavailable','不可用');
-      rows.push(row(t('ui.webrtcSupportLabel','WebRTC 支持'),webrtc.supported?t('yesWord','是'):t('unavailable','不可用'),webrtc.supported?'yes':'unknown'));
-      if(webrtc.supported){
-        var localVal=localItems.length?localItems.map(function(e){return e.ip+(e.mdns?' '+t('ui.webrtcMdns','(mDNS 混淆)'):'');}).join(', '):t('unavailable','不可用');
-        rows.push(row(t('ui.webrtcLocal','本地 IP'),escapeH(localVal),localItems.length?'yes':'unknown'));
-        var pubVal=pubItems.length?pubItems.map(function(e){return e.ip;}).join(', '):t('unavailable','不可用');
-        rows.push(row(t('ui.webrtcPublic','公网 IP（STUN）'),escapeH(pubVal),pubItems.length?'yes':'unknown'));
-        var relayVal=relayItems.length?relayItems.map(function(e){return e.ip;}).join(', '):t('none','(无)');
-        rows.push(row(t('ui.webrtcRelay','Relay（TURN）'),escapeH(relayVal),relayItems.length?'unknown':'no'));
-        rows.push(row(t('ui.webrtcIpv6Label','IPv6 候选'),ipv6Items.length?t('yesWord','是'):t('noWord','否'),ipv6Items.length?'yes':'no'));
-      }
-      var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
-      rows.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
-      var mismatch=webrtcPublic.length&&publicIp&&webrtcPublic.indexOf(publicIp)<0;
-      var same=publicIp&&webrtcPublic.length&&webrtcPublic.indexOf(publicIp)>=0;
-      var cmpVal=mismatch?t('ipMismatchVal','不一致（疑似代理/VPN）'):(same?t('ipMatchVal','一致'):t('ipUnknownVal','无法判断'));
-      rows.push(row(t('ipCompareLabel','IP 一致性'),cmpVal,mismatch?'yes':(same?'yes':'unknown')));
-      if(mismatch)score+=4;
-      var summary='';
-      var cls='';
-      if(score>=4){summary=t('summaryHigh','⚠️ 检测到多个代理/匿名化特征。');cls='yes';}
-      else if(score>=2){summary=t('summaryMedium','ℹ️ 部分特征可能与代理环境相关。');cls='unknown';}
-      else if(score>=1){summary=t('summaryLow','✅ 未检测到明显代理特征。');}
-      else if(!webrtcPublic.length&&!publicIp){summary=t('summaryUnknown','无法完成检测');cls='unknown';}
-      else{summary=t('summaryLow','✅ 未检测到明显代理特征。');}
-      detectResults.innerHTML=rows.join('');
-      detectSummary.textContent=summary;
-      outputText.textContent=summary;
-      resultCard.style.display='block';
-      detectBtn.disabled=false;
-      setStatus(t('ui.2','检测完成'));
-    };
-    fetchPublicIP(function(ip){publicIp=ip;render();});
-  });
+  var publicIp=null;
+  var render=function(){
+    var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
+    rows.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
+    var summary='';
+    var cls='';
+    if(score>=4){summary=t('summaryHigh','⚠️ 检测到多个代理/匿名化特征。');cls='yes';}
+    else if(score>=2){summary=t('summaryMedium','ℹ️ 部分特征可能与代理环境相关。');cls='unknown';}
+    else if(score>=1){summary=t('summaryLow','✅ 未检测到明显代理特征。');}
+    else{summary=t('summaryLow','✅ 未检测到明显代理特征。');}
+    detectResults.innerHTML=rows.join('');
+    detectSummary.textContent=summary;
+    outputText.textContent=summary;
+    resultCard.style.display='block';
+    detectBtn.disabled=false;
+    setStatus(t('ui.2','检测完成'));
+  };
+  fetchPublicIP(function(ip){publicIp=ip;render();});
 }
 detectBtn.addEventListener('click',detect);
 copyBtn.addEventListener('click',function(){if(outputText.textContent){copyToClipboard(outputText.textContent,this);setStatus(t('ui.copied','已复制'));}});
@@ -200,7 +180,7 @@ function renderDnsTable(servers){
   return {html:html,keys:keys};
 }
 dnsBtn.addEventListener('click',function(){
-  dnsBtn.disabled=true;dnsCard.style.display='block';dnsResults.innerHTML='';dnsSummary.textContent='';
+  dnsBtn.disabled=true;dnsResults.innerHTML='';dnsSummary.textContent='';
   dnsProgress.textContent=t('ui.dnsTesting','正在检测 DNS 服务器…');
   fetchGeo(function(geo){
     runDnsTest(function(done,total,n){
@@ -224,6 +204,37 @@ dnsBtn.addEventListener('click',function(){
       if(geo&&geo.cc){note=ccSet[geo.cc.toUpperCase()]?t('ui.dnsMatch','DNS 解析位置与出口位置一致'):t('ui.dnsMismatch','DNS 解析位置与出口位置不同');}
       dnsSummary.textContent=found+(note?(' · '+note):'');
       dnsBtn.disabled=false;
+      setStatus(t('ui.2','检测完成'));
+    });
+  });
+});
+var rtcBtn=document.getElementById('rtcBtn'),rtcStatus=document.getElementById('rtcStatus'),rtcResults=document.getElementById('rtcResults');
+rtcBtn.addEventListener('click',function(){
+  rtcBtn.disabled=true;rtcResults.innerHTML='';rtcStatus.textContent=t('ui.checking','正在检测…');
+  getWebRTCIPs(function(webrtc){
+    var localItems=webrtc.items.filter(function(e){return e.typ==='host';});var pubItems=webrtc.items.filter(function(e){return e.typ==='srflx'||e.typ==='prflx';});var relayItems=webrtc.items.filter(function(e){return e.typ==='relay';});var ipv6Items=webrtc.items.filter(function(e){return e.ipv6;});
+    var rows2=[];
+    rows2.push(row(t('ui.webrtcSupportLabel','WebRTC 支持'),webrtc.supported?t('yesWord','是'):t('unavailable','不可用'),webrtc.supported?'yes':'unknown'));
+    if(webrtc.supported){
+      var localVal=localItems.length?localItems.map(function(e){return e.ip+(e.mdns?' '+t('ui.webrtcMdns','(mDNS 混淆)'):'');}).join(', '):t('unavailable','不可用');
+      rows2.push(row(t('ui.webrtcLocal','本地 IP'),escapeH(localVal),localItems.length?'yes':'unknown'));
+      var pubVal=pubItems.length?pubItems.map(function(e){return e.ip;}).join(', '):t('unavailable','不可用');
+      rows2.push(row(t('ui.webrtcPublic','公网 IP（STUN）'),escapeH(pubVal),pubItems.length?'yes':'unknown'));
+      var relayVal=relayItems.length?relayItems.map(function(e){return e.ip;}).join(', '):t('none','(无)');
+      rows2.push(row(t('ui.webrtcRelay','Relay（TURN）'),escapeH(relayVal),relayItems.length?'unknown':'no'));
+      rows2.push(row(t('ui.webrtcIpv6Label','IPv6 候选'),ipv6Items.length?t('yesWord','是'):t('noWord','否'),ipv6Items.length?'yes':'no'));
+    }
+    fetchPublicIP(function(publicIp){
+      var pubArr=pubItems.map(function(e){return e.ip;});
+      var ipVal=publicIp?escapeH(publicIp):t('ipUnknownVal','无法判断');
+      rows2.push(row(t('publicIpLabel','页面出口 IP'),ipVal,publicIp?'yes':'unknown'));
+      var mismatch=pubArr.length&&publicIp&&pubArr.indexOf(publicIp)<0;
+      var same=publicIp&&pubArr.length&&pubArr.indexOf(publicIp)>=0;
+      var cmpVal=mismatch?t('ipMismatchVal','不一致（疑似代理/VPN）'):(same?t('ipMatchVal','一致'):t('ipUnknownVal','无法判断'));
+      rows2.push(row(t('ipCompareLabel','IP 一致性'),cmpVal,mismatch?'yes':(same?'yes':'unknown')));
+      rtcResults.innerHTML=rows2.join('');
+      rtcStatus.textContent='';
+      rtcBtn.disabled=false;
       setStatus(t('ui.2','检测完成'));
     });
   });

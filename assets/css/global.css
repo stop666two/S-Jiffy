@@ -433,3 +433,85 @@ body {
   display: none;
 }
 
+
+
+/* ---- 全局浮动按钮：返回顶部 / 复制当前链接 ---- */
+.floating-actions {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.floating-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s, opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+}
+.floating-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.floating-btn.go-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.floating-btn.copy-link { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.floating-btn:hover { background: var(--color-bg-soft); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18); }
+.floating-btn:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.floating-btn .tip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 5px 10px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.floating-btn .tip::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+  transform: translateY(-50%) rotate(45deg);
+}
+.floating-btn:hover .tip,
+.floating-btn .tip.show { opacity: 1; }
+@media (max-width: 640px) {
+  .floating-actions { right: 16px; bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-btn, .floating-btn .tip { transition: none; }
+}

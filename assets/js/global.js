@@ -150,3 +150,100 @@ document.addEventListener('DOMContentLoaded', function () {
   var focusInput = document.querySelector('.js-focus-input');
   if (focusInput) focusInput.focus();
 });
+
+/* ---- Global floating buttons: back to top / copy current link ---- */
+document.addEventListener('DOMContentLoaded', function () {
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function svgIcon(paths) {
+    var s = document.createElementNS(SVG_NS, 'svg');
+    s.setAttribute('viewBox', '0 0 24 24');
+    paths.forEach(function (d) {
+      var p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      s.appendChild(p);
+    });
+    return s;
+  }
+
+  function makeBtn(paths, key, fallback, extraClass) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'floating-btn' + (extraClass ? ' ' + extraClass : '');
+    btn.setAttribute('aria-label', t(key, fallback));
+    var tip = document.createElement('span');
+    tip.className = 'tip';
+    tip.textContent = t(key, fallback);
+    btn.appendChild(tip);
+    btn.appendChild(svgIcon(paths));
+    return btn;
+  }
+
+  var wrap = document.createElement('div');
+  wrap.className = 'floating-actions';
+
+  /* Back to top */
+  var goTop = makeBtn(['M12 19V5', 'M5 12l7-7 7 7'], 'common.backToTop', '返回顶部', 'go-top');
+  goTop.addEventListener('click', function () {
+    if ('scrollBehavior' in document.documentElement.style) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  });
+
+  /* Copy current link (raw location.href) */
+  var copyLink = makeBtn(
+    ['M10 14a5 5 0 0 0 7.07 0l3.54-3.54a5 5 0 0 0-7.07-7.07L12 4.93', 'M14 10a5 5 0 0 0-7.07 0L3.39 13.54a5 5 0 0 0 7.07 7.07L10 18.07'],
+    'common.copyLink', '复制链接', 'copy-link'
+  );
+  var tipEl = copyLink.querySelector('.tip');
+  var tipTimer = null;
+  copyLink.addEventListener('click', function () {
+    var href = window.location.href;
+    var done = function (msg) {
+      tipEl.textContent = msg;
+      tipEl.classList.add('show');
+      clearTimeout(tipTimer);
+      tipTimer = setTimeout(function () {
+        tipEl.classList.remove('show');
+        tipEl.textContent = t('common.copyLink', '复制链接');
+      }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(href)
+        .then(function () { done(t('common.copied', '已复制')); })
+        .catch(function () { done(t('common.copyFailed', '复制失败')); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = href;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      done(ok ? t('common.copied', '已复制') : t('common.copyFailed', '复制失败'));
+    }
+  });
+
+  wrap.appendChild(copyLink);
+  wrap.appendChild(goTop);
+  document.body.appendChild(wrap);
+
+  /* Show back-to-top only after scrolling 300px+ */
+  var ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        var y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        goTop.classList.toggle('show', y > 300);
+        ticking = false;
+      });
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+});

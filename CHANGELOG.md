@@ -4,6 +4,32 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-08-24] 合并相似工具
+
+### Added
+
+- 新增 image-converter（12 个图片转换方向合一：PNG↔JPG/WebP、JPG↔WebP、HEIC→PNG/JPG、AVIF→PNG/JPG、SVG→PNG/JPG，批量 ≤20 张 ≤50MB，全程本地）
+- sensitivity-converter 升级为 13 款游戏全矩阵双向互转（含 CS2、Valorant、Apex、PUBG、Fortnite、使命召唤、战地 2042、光环、Warframe 等，公式逐一核对）
+- json-to-typescript 扩展为 12 语言输出（C#/Go/Rust/Swift/Kotlin/Dart/Java/Python/TS/JSON Schema/GraphQL/JS）
+
+### Changed
+
+- 合并 134 个相似/重复工具为 46 个统一工具（功能全部融合不丢失），总数 682 → 548：
+  - 编码转换：base64 集成 10 种编码（Base32/36/45/58/62/85/91/92/Ascii85），text-encoder 集成 encoding-converter（+检测 tab、UTF-16LE 视图）
+  - 图片/哈希/表格/日期/文本类：html-entities、html-table-generator、hash-generator、mime-lookup、mac-address-generator、date-calculator、text-diff、text-statistics-adv、json-formatter、dockerfile-generator、docker-compose-converter、ascii-table、crontab-generator、uuid-generator（+v1/v6）、percentage-calculator、emoji-search、user-agent-parser、dice-dnd、hex-converter、hmac-generator、base64-to-image、number-base-converter、image-converter 等均以 tab/select 模式融合原被合并工具全部功能
+  - 灵签类：zhougong-lingsign 融合 10 位神祇签文（周公/车公/土地公/王公/吕祖/佛祖/关帝/玉帝/月老/黄大仙/观音，共 857 签）
+  - 计时/速查/二维码/安全类：timer-stopwatch（秒表/倒计时/间歇）、git-cheatsheet（5 主题）、qr-code-generator（生成/解码/WiFi）、csp-builder（+验证）、api-key-generator（+识别）、systemd-unit-generator（+定时器）、env-converter（+命名）、length-converter（长度/面积/体积/速度）、age-calculator（+生肖）、date-formatter（+序列）
+  - 修复被合并工具中原有缺陷：base36/62/91/92/ascii85/base45 算法字节序错误、chinese-zodiac 生肖错位、AVIF「伪转换」等
+- 全部保留工具的描述更新为完整功能描述（index.html 主页卡片 + 6 语言词典 desc/meta.description 五处一致）
+- 被合并工具路径全部 301 重定向至保留工具（server.js + netlify.toml，135 条规则）；修复 server.js 历史性双 server/重复 redirects 块损坏（重建为 409 行干净单 server）
+- server.js 显式绑定 IPv4（0.0.0.0）修复 Windows 下 IPv6 端口保留导致 EADDRINUSE
+
+### Fixed
+
+- 主页删除 134 个被合并工具卡片残留及词典残留键（含漏删的 encoding-converter → 404 卡）
+- image-converter 卡片标签双重嵌套数组 `cats: [["..."]]` 导致 en 模式显示未翻译标签
+- text-encoder 检测页复制按钮缺 ui.copy/ui.copied 六语言键（en 模式回退中文）
+
 ## [2026-08-24]
 
 ### Fixed

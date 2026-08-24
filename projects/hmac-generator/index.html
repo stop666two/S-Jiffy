@@ -3,30 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HMAC 生成器 - S-Jiffy</title>
+  <title>HMAC 生成/验证器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); flex-wrap: wrap; }
+    .dc-tabs button { flex: 1; min-width: 120px; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .hrow { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .hrow label { font-size:var(--font-size-sm); color:var(--color-text-secondary); }
+    .result-badge { padding:4px 16px; border-radius:9999px; font-size:var(--font-size-sm); font-weight:600; display:inline-block; }
+    .result-badge.ok { background:#e8f5e9; color:#2e7d32; }
+    .result-badge.fail { background:#ffebee; color:#c62828; }
+  </style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">HMAC 生成器</h1>
-    <p class="tool-desc" data-i18n="desc">使用密钥和消息生成 HMAC 签名（MD5/SHA1/SHA256/SHA512）。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入消息 (message)..." style="min-height:80px;"></textarea>
+    <h1 data-i18n="h1">HMAC 生成/验证器</h1>
+    <p class="tool-desc" data-i18n="desc">使用密钥生成或验证 HMAC 签名（SHA-1/SHA-256/SHA-384/SHA-512），支持 Hex/Base64 输出。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.1">⚠ 需 HTTPS/localhost 环境</span></p>
+    <div class="dc-tabs">
+      <button class="tab-btn active" data-mode="gen" data-i18n="ui.tab1">生成</button>
+      <button class="tab-btn" data-mode="verify" data-i18n="ui.tab2">验证</button>
     </div>
-    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <input id="keyInput" class="input" data-i18n-placeholder="ui.104" placeholder="密钥 (secret)" style="width:220px;">
-      <select id="algoSelect" class="input" style="width:auto;min-width:120px;">
-        <option value="SHA-256">SHA-256</option>
-        <option value="SHA-1">SHA-1</option>
-        <option value="SHA-384">SHA-384</option>
-        <option value="SHA-512">SHA-512</option>
-      </select>
-      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.2">生成 HMAC</button>
-      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+    <div id="panel-gen" class="tab-panel">
+      <div class="card">
+        <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入消息 (message)..." style="min-height:80px;"></textarea>
+      </div>
+      <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input id="keyInput" class="input" data-i18n-placeholder="ui.104" placeholder="密钥 (secret)" style="width:220px;">
+        <select id="algoSelect" class="input" style="width:auto;min-width:120px;">
+          <option value="SHA-256">SHA-256</option>
+          <option value="SHA-1">SHA-1</option>
+          <option value="SHA-384">SHA-384</option>
+          <option value="SHA-512">SHA-512</option>
+        </select>
+        <select id="fmtSelect" class="input" style="width:auto;">
+          <option value="hex">Hex</option>
+          <option value="base64">Base64</option>
+        </select>
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.2">生成 HMAC</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+      </div>
+    </div>
+    <div id="panel-verify" class="tab-panel" style="display:none;">
+      <div class="card">
+        <textarea id="vInput" class="input textarea js-focus-input" data-i18n-placeholder="ui.vPlaceholder" placeholder="输入要计算 HMAC 的文本..." style="min-height:80px;"></textarea>
+      </div>
+      <div class="card">
+        <div class="hrow">
+          <label data-i18n="ui.2">密钥</label>
+          <input id="vKeyInput" class="input" type="password" data-i18n-placeholder="ui.vKeyPlaceholder" placeholder="HMAC 密钥" style="flex:1;min-width:150px;">
+        </div>
+        <div class="hrow">
+          <label data-i18n="ui.algorithm">算法</label>
+          <select id="vAlgoSelect" class="input" style="width:auto;">
+            <option value="SHA-256">SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+            <option value="SHA-1">SHA-1</option>
+          </select>
+          <label data-i18n="ui.format">格式化</label>
+          <select id="vFmtSelect" class="input" style="width:auto;">
+            <option value="hex">Hex</option>
+            <option value="base64">Base64</option>
+          </select>
+        </div>
+        <div class="hrow">
+          <label data-i18n="ui.4">期望 HMAC</label>
+          <input id="vExpected" class="input" data-i18n-placeholder="ui.103" placeholder="粘贴期望的 HMAC 以验证" style="flex:1;min-width:200px;">
+        </div>
+        <div class="hrow">
+          <button id="verifyBtn" class="btn btn-primary" data-i18n="ui.verify">验证</button>
+        </div>
+        <div style="text-align:center;margin-top:var(--space-2);"><span id="verifyBadge" class="result-badge" style="display:none;"></span></div>
+      </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -41,29 +94,46 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var tabBtns = document.querySelectorAll('.tab-btn');
+      var panelIds = { gen: 'panel-gen', verify: 'panel-verify' };
+      for (var ti = 0; ti < tabBtns.length; ti++) {
+        tabBtns[ti].addEventListener('click', function () {
+          var mode = this.getAttribute('data-mode');
+          for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+          this.classList.add('active');
+          for (var k in panelIds) document.getElementById(panelIds[k]).style.display = (k === mode) ? '' : 'none';
+        });
+      }
+
+      function hex(buf) { return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join(''); }
+      function b64(buf) {
+        var b = new Uint8Array(buf), s = '';
+        for (var x = 0; x < b.length; x++) s += String.fromCharCode(b[x]);
+        return btoa(s);
+      }
+      function computeSig(text, key, algo) {
+        return crypto.subtle.importKey('raw', new TextEncoder().encode(key), { name: 'HMAC', hash: { name: algo } }, false, ['sign'])
+          .then(function (cryptoKey) { return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(text)); });
+      }
+      function formatSig(buf, fmt) { return fmt === 'base64' ? b64(buf) : hex(buf); }
+
       var inputEl = document.getElementById('inputText');
       var keyEl = document.getElementById('keyInput');
       var algoEl = document.getElementById('algoSelect');
-      var outputEl = document.getElementById('outputText');
+      var fmtEl = document.getElementById('fmtSelect');
       var generateBtn = document.getElementById('generateBtn');
       var clearBtn = document.getElementById('clearBtn');
-      var copyBtn = document.getElementById('copyBtn');
 
       function generate() {
         var msg = inputEl.value;
         var key = keyEl.value.trim();
         if (!msg) { setStatus(t('ui.100','请输入消息'), 'error'); return; }
         if (!key) { setStatus(t('ui.101','请输入密钥'), 'error'); return; }
-
-        var encoder = new TextEncoder();
-        var keyData = encoder.encode(key);
-        var msgData = encoder.encode(msg);
-
-        crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: { name: algoEl.value } }, false, ['sign']).then(function (cryptoKey) {
-          return crypto.subtle.sign('HMAC', cryptoKey, msgData);
-        }).then(function (sig) {
-          var hex = Array.from(new Uint8Array(sig)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-          outputEl.textContent = hex;
+        computeSig(msg, key, algoEl.value).then(function (sig) {
+          outputEl.textContent = formatSig(sig, fmtEl.value);
           setStatus('');
         }).catch(function () {
           setStatus(t('ui.102','HMAC 生成失败'), 'error');
@@ -73,6 +143,38 @@
       generateBtn.addEventListener('click', generate);
       clearBtn.addEventListener('click', function () { inputEl.value = ''; keyEl.value = ''; outputEl.textContent = ''; setStatus(''); inputEl.focus(); });
       copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
+
+      var vInput = document.getElementById('vInput');
+      var vKeyInput = document.getElementById('vKeyInput');
+      var vAlgoSelect = document.getElementById('vAlgoSelect');
+      var vFmtSelect = document.getElementById('vFmtSelect');
+      var vExpected = document.getElementById('vExpected');
+      var verifyBadge = document.getElementById('verifyBadge');
+      var verifyBtn = document.getElementById('verifyBtn');
+
+      function verify() {
+        var text = vInput.value.trim();
+        var key = vKeyInput.value;
+        if (!text || !key) { setStatus(t('ui.100','请输入文本和密钥'), 'error'); return; }
+        computeSig(text, key, vAlgoSelect.value).then(function (sig) {
+          var computed = formatSig(sig, vFmtSelect.value);
+          outputEl.textContent = computed;
+          var expected = vExpected.value.trim();
+          if (expected) {
+            var match = computed.toLowerCase() === expected.toLowerCase();
+            verifyBadge.style.display = 'inline-block';
+            verifyBadge.textContent = match ? t('ui.7','验证通过 ✓') : t('ui.8','验证失败 ✗');
+            verifyBadge.className = 'result-badge ' + (match ? 'ok' : 'fail');
+            setStatus(match ? t('ui.9','验证通过') : t('ui.10','验证失败'));
+          } else {
+            verifyBadge.style.display = 'none';
+            setStatus(t('ui.6','HMAC 已计算'));
+          }
+        }).catch(function (e) {
+          setStatus(t('ui.5','错误: ') + e.message, 'error');
+        });
+      }
+      verifyBtn.addEventListener('click', verify);
     })();
   if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}</script>
 </body>

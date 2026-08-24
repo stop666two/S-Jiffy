@@ -16,19 +16,26 @@
   <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">文本换行工具</h1>
-    <p class="tool-desc" data-i18n="desc">将文本按指定宽度换行，支持单词截断和缩进选项。</p>
+    <p class="tool-desc" data-i18n="desc">将文本按指定宽度换行，支持按单词/软换行/硬截断三种模式，并支持缩进与取消换行。</p>
     <div class="card">
       <div class="tw-row">
         <div class="field" style="flex:2;"><label for="inputText" data-i18n="ui.inputText">输入文本</label><textarea id="inputText" class="input textarea" style="min-height:80px;">This is a long text that needs to be wrapped at a specified column width for better readability.</textarea></div>
       </div>
       <div class="tw-row">
+        <div class="field"><label for="wrapMode" data-i18n="ui.mode">换行模式</label>
+          <select id="wrapMode" class="input" style="width:100%;">
+            <option value="word" data-i18n="ui.modeWord">词语断行</option>
+            <option value="soft" data-i18n="ui.modeSoft">空格优先 (Soft Wrap)</option>
+            <option value="hard" data-i18n="ui.modeHard">强制截断 (Hard Wrap)</option>
+          </select>
+        </div>
         <div class="field"><label for="widthVal" data-i18n="ui.1">换行宽度</label><input id="widthVal" class="input" type="number" value="30" min="1" max="200"></div>
         <div class="field"><label for="indentVal" data-i18n="ui.2">缩进空格数</label><input id="indentVal" class="input" type="number" value="0" min="0" max="20"></div>
       </div>
       <div class="tw-row">
         <label style="display:flex;align-items:center;gap:8px;"><input id="breakWordChk" type="checkbox"> <span data-i18n="ui.breakWord">允许单词内断行</span></label>
       </div>
-      <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.3">换行</button></div>
+      <div style="display:flex;gap:12px;"><button id="genBtn" class="btn btn-primary" data-i18n="ui.3">换行</button><button id="unwrapBtn" class="btn btn-secondary" data-i18n="ui.unwrap">取消换行</button></div>
     </div>
     <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
@@ -39,10 +46,32 @@
     var inputEl = document.getElementById('inputText');
     var widthEl = document.getElementById('widthVal');
     var indentEl = document.getElementById('indentVal');
+    var wrapModeEl = document.getElementById('wrapMode');
     var breakWordChk = document.getElementById('breakWordChk');
     var genBtn = document.getElementById('genBtn');
+    var unwrapBtn = document.getElementById('unwrapBtn');
     var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
+
+    function hardWrap(text, width, indentStr, soft) {
+      var lines = text.split('\n');
+      var result = [];
+      for (var li = 0; li < lines.length; li++) {
+        var line = lines[li];
+        while (line.length > width) {
+          var breakAt = width;
+          if (soft) {
+            for (var j = width; j > 0; j--) {
+              if (line[j] === ' ') { breakAt = j; break; }
+            }
+          }
+          result.push(indentStr + line.substring(0, breakAt));
+          line = line.substring(breakAt).trim();
+        }
+        result.push(indentStr + line);
+      }
+      return result.join('\n');
+    }
 
     function generate() {
       var text = inputEl.value;
@@ -54,38 +83,52 @@
       if (indent < 0) indent = 0;
       if (indent > 20) indent = 20;
       var breakWord = breakWordChk.checked;
+      var mode = wrapModeEl.value;
 
       var indentStr = '';
       for (var i = 0; i < indent; i++) indentStr += ' ';
       var availWidth = width - indent;
+      var lines;
 
-      var words = text.split(/\s+/);
-      var lines = [];
-      var currentLine = '';
-      for (var i = 0; i < words.length; i++) {
-        var word = words[i];
-        if (breakWord && word.length > availWidth) {
-          if (currentLine) {
+      if (mode === 'soft' || mode === 'hard') {
+        var wrapped = hardWrap(text, width, indentStr, mode === 'soft');
+        lines = wrapped.split('\n');
+        outputEl.textContent = wrapped;
+      } else {
+        var words = text.split(/\s+/);
+        lines = [];
+        var currentLine = '';
+        for (var i2 = 0; i2 < words.length; i2++) {
+          var word = words[i2];
+          if (breakWord && word.length > availWidth) {
+            if (currentLine) {
+              lines.push(indentStr + currentLine);
+              currentLine = '';
+            }
+            for (var j2 = 0; j2 < word.length; j2 += availWidth) {
+              lines.push(indentStr + word.substring(j2, j2 + availWidth));
+            }
+          } else if ((currentLine + ' ' + word).length <= availWidth || currentLine === '') {
+            currentLine = currentLine ? currentLine + ' ' + word : word;
+          } else {
             lines.push(indentStr + currentLine);
-            currentLine = '';
+            currentLine = word;
           }
-          for (var j = 0; j < word.length; j += availWidth) {
-            lines.push(indentStr + word.substring(j, j + availWidth));
-          }
-        } else if ((currentLine + ' ' + word).length <= availWidth || currentLine === '') {
-          currentLine = currentLine ? currentLine + ' ' + word : word;
-        } else {
-          lines.push(indentStr + currentLine);
-          currentLine = word;
         }
+        if (currentLine) lines.push(indentStr + currentLine);
+        outputEl.textContent = lines.join('\n');
       }
-      if (currentLine) lines.push(indentStr + currentLine);
 
-      outputEl.textContent = lines.join('\n');
       setStatus(t('ui.4','换行完成，共 ') + lines.length + t('ui.rows',' 行'));
     }
 
     genBtn.addEventListener('click', generate);
+    unwrapBtn.addEventListener('click', function() {
+      var text = inputEl.value.trim();
+      if (!text) { setStatus(t('ui.100','请输入文本'), 'error'); return; }
+      outputEl.textContent = text.replace(/\n\s*/g, ' ');
+      setStatus('');
+    });
     copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>
 </body>

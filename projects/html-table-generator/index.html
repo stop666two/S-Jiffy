@@ -7,46 +7,78 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); }
+    .dc-tabs button { flex: 1; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
     .table-options { display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:var(--space-2); }
     .table-preview { overflow-x:auto; margin-top:var(--space-2); }
     .table-preview table { border-collapse:collapse; font-size:var(--font-size-sm); }
     .table-preview th, .table-preview td { padding:6px 12px; border:1px solid #ccc; text-align:left; }
     .table-preview th { background:#f5f5f5; font-weight:600; }
     .output-box textarea { width:100%; min-height:120px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .xte-table { font-family: var(--font-mono); font-size: var(--font-size-xs); border-collapse: collapse; width: 100%; margin-top: var(--space-2); }
+    .xte-table th, .xte-table td { border: 1px solid var(--color-border); padding: 4px 8px; }
+    .xte-out { font-family: var(--font-mono); font-size: var(--font-size-xs); white-space: pre-wrap; word-break: break-all; }
+    .xte-bar { display: flex; gap: 12px; margin: var(--space-2) 0; flex-wrap: wrap; align-items: center; }
   </style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
-  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+  <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">HTML 表格生成</h1>
-    <p class="tool-desc" data-i18n="desc">从 CSV 数据生成 HTML 表格代码。</p>
-
-    <div class="card">
-      <textarea id="csvInput" class="input textarea" data-i18n-placeholder="ui.103" placeholder="粘贴 CSV/TSV 数据...&#10;&#10;name,age,city&#10;Alice,30,New York&#10;Bob,25,London&#10;Charlie,35,Beijing" style="min-height:160px;"></textarea>
+    <p class="tool-desc" data-i18n="desc">从 CSV 生成 HTML 表格代码，或从现有 HTML 中提取表格数据（CSV/JSON 输出）。</p>
+    <div class="dc-tabs">
+      <button id="tabGen" class="active" type="button" data-i18n="ui.tabGen">生成</button>
+      <button id="tabExtract" type="button" data-i18n="ui.tabExtract">提取</button>
     </div>
 
-    <div class="card">
-      <div class="table-options">
-        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;"><input id="optHeader" type="checkbox" checked> 首行为表头</label>
-        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;">分隔符
-          <select id="optSep" class="input" style="width:auto;min-width:60px;height:32px;padding:0 6px;">
-            <option value="," data-i18n="ui.1">逗号 (,)</option>
-            <option value="\t" data-i18n="ui.2">制表符 (\t)</option>
-            <option value=";" data-i18n="ui.3">分号 (;)</option>
-            <option value="|" data-i18n="ui.4">竖线 (|)</option>
+    <div id="panelGen">
+      <div class="card">
+        <textarea id="csvInput" class="input textarea" data-i18n-placeholder="ui.103" placeholder="粘贴 CSV/TSV 数据...&#10;&#10;name,age,city&#10;Alice,30,New York&#10;Bob,25,London&#10;Charlie,35,Beijing" style="min-height:160px;"></textarea>
+      </div>
+      <div class="card">
+        <div class="table-options">
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;"><input id="optHeader" type="checkbox" checked> 首行为表头</label>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;">分隔符
+            <select id="optSep" class="input" style="width:auto;min-width:60px;height:32px;padding:0 6px;">
+              <option value="," data-i18n="ui.1">逗号 (,)</option>
+              <option value="\t" data-i18n="ui.2">制表符 (\t)</option>
+              <option value=";" data-i18n="ui.3">分号 (;)</option>
+              <option value="|" data-i18n="ui.4">竖线 (|)</option>
+            </select>
+          </label>
+          <button id="generateBtn" class="btn btn-primary" data-i18n="ui.5">生成表格</button>
+          <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+        </div>
+        <div id="previewArea" class="table-preview"></div>
+      </div>
+      <div class="output-box">
+        <textarea id="htmlOutput" readonly data-i18n-placeholder="ui.104" placeholder="HTML 代码将显示在这里..."></textarea>
+        <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
+      </div>
+    </div>
+
+    <div id="panelExtract" style="display:none;">
+      <div class="card">
+        <textarea id="xInput" class="input textarea js-focus-input" data-i18n-placeholder="x.ph" placeholder="粘贴包含表格的 HTML..." style="min-height:150px;font-family:var(--font-mono);font-size:var(--font-size-xs);"></textarea>
+      </div>
+      <div class="xte-bar">
+        <button id="extractBtn" class="btn btn-primary" data-i18n="x.extract">提取表格</button>
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;"><span data-i18n="x.fmt">输出格式</span>
+          <select id="xFormat" class="input" style="width:auto;min-width:80px;height:32px;padding:0 6px;">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
           </select>
         </label>
-        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.5">生成表格</button>
-        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+        <button id="xClearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
       </div>
-      <div id="previewArea" class="table-preview"></div>
-    </div>
-
-    <div class="output-box">
-      <textarea id="htmlOutput" readonly data-i18n-placeholder="ui.104" placeholder="HTML 代码将显示在这里..."></textarea>
-      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
+      <div class="output-box">
+        <span id="xOutput" class="xte-out" style="display:block;padding-right:60px;"></span>
+        <button class="copy-btn" id="xCopyBtn" data-i18n="ui.copy">复制</button>
+      </div>
+      <div id="xPreview" style="overflow-x:auto;"></div>
     </div>
   </main>
   <footer class="global-footer">
@@ -57,6 +89,7 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
+      /* ============ generate tab (original) ============ */
       var csvInput = document.getElementById('csvInput');
       var optHeader = document.getElementById('optHeader');
       var optSep = document.getElementById('optSep');
@@ -143,6 +176,89 @@
       clearBtn.addEventListener('click', function () { csvInput.value = ''; htmlOutput.value = ''; previewArea.innerHTML = ''; setStatus(''); csvInput.focus(); });
       copyBtn.addEventListener('click', function () { if (htmlOutput.value) { copyToClipboard(htmlOutput.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
       csvInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') generate(); });
+
+      /* ============ extract tab (merged from html-table-extractor) ============ */
+      var tabGen = document.getElementById('tabGen'), tabExtract = document.getElementById('tabExtract');
+      var panelGen = document.getElementById('panelGen'), panelExtract = document.getElementById('panelExtract');
+      function switchTab(which) {
+        if (which === 'gen') {
+          tabGen.className = 'active'; tabExtract.className = '';
+          panelGen.style.display = ''; panelExtract.style.display = 'none';
+        } else {
+          tabExtract.className = 'active'; tabGen.className = '';
+          panelExtract.style.display = ''; panelGen.style.display = 'none';
+        }
+      }
+      tabGen.addEventListener('click', function () { switchTab('gen'); });
+      tabExtract.addEventListener('click', function () { switchTab('extract'); });
+
+      var xInput = document.getElementById('xInput');
+      var xOutput = document.getElementById('xOutput');
+      var extractBtn = document.getElementById('extractBtn');
+      var xClearBtn = document.getElementById('xClearBtn');
+      var xCopyBtn = document.getElementById('xCopyBtn');
+      var xFormat = document.getElementById('xFormat');
+      var xPreview = document.getElementById('xPreview');
+
+      function extractTables(html) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var tables = doc.querySelectorAll('table');
+        var results = [];
+        tables.forEach(function (table, idx) {
+          var rows = table.querySelectorAll('tr');
+          var data = [];
+          rows.forEach(function (row) {
+            var cells = row.querySelectorAll('td,th');
+            var rowData = [];
+            cells.forEach(function (cell) { rowData.push(cell.textContent.trim()); });
+            if (rowData.length > 0) data.push(rowData);
+          });
+          if (data.length > 0) results.push({ index: idx + 1, data: data });
+        });
+        return results;
+      }
+
+      function dataToCSV(data) {
+        return data.map(function (row) {
+          return row.map(function (cell) {
+            var c = String(cell);
+            return c.indexOf(',') !== -1 || c.indexOf('"') !== -1 ? '"' + c.replace(/"/g, '""') + '"' : c;
+          }).join(',');
+        }).join('\n');
+      }
+
+      extractBtn.addEventListener('click', function () {
+        var html = xInput.value.trim();
+        if (!html) { setStatus(t('x.enterHtml','请输入 HTML'), 'error'); return; }
+        var tables = extractTables(html);
+        if (tables.length === 0) { setStatus(t('x.noTable','未找到表格'), 'error'); xOutput.textContent = ''; xPreview.innerHTML = ''; return; }
+        var fmt = xFormat.value;
+        var output = '';
+        var previewHtml = '';
+        for (var i = 0; i < tables.length; i++) {
+          var tbl = tables[i];
+          if (fmt === 'csv') { output += t('x.tblSep','--- 表格 ') + (i + 1) + ' ---\n' + dataToCSV(tbl.data) + '\n\n'; }
+          else { output += t('x.tblSep','--- 表格 ') + (i + 1) + ' ---\n' + JSON.stringify(tbl.data, null, 2) + '\n\n'; }
+          var ph = '<table class="xte-table"><tbody>';
+          for (var r = 0; r < Math.min(tbl.data.length, 20); r++) {
+            ph += '<tr>';
+            for (var c = 0; c < tbl.data[r].length; c++) {
+              var tag = r === 0 ? 'th' : 'td';
+              ph += '<' + tag + '>' + htmlEscape(tbl.data[r][c]) + '</' + tag + '>';
+            }
+            ph += '</tr>';
+          }
+          if (tbl.data.length > 20) ph += '<tr><td colspan="' + (tbl.data[0] ? tbl.data[0].length : 1) + '" style="text-align:center;color:var(--color-text-secondary)">... ' + t('x.total','共 ') + tbl.data.length + t('x.rows',' 行') + '</td></tr>';
+          ph += '</tbody></table>';
+          previewHtml += ph;
+        }
+        xOutput.textContent = output.trim();
+        xPreview.innerHTML = previewHtml;
+        setStatus(t('x.done','已提取 ') + tables.length + t('x.count',' 个表格'));
+      });
+      xClearBtn.addEventListener('click', function () { xInput.value = ''; xOutput.textContent = ''; xPreview.innerHTML = ''; setStatus(''); xInput.focus(); });
+      xCopyBtn.addEventListener('click', function () { if (xOutput.textContent) { copyToClipboard(xOutput.textContent, xCopyBtn); setStatus(t('ui.copied','已复制')); } });
     })();
   </script>
 </body>

@@ -11,62 +11,232 @@
 .preset-btn:hover{background:var(--color-bg-soft);}
 .lap-list{max-height:200px;overflow-y:auto;font-family:var(--font-mono);font-size:var(--font-size-sm);}
 .lap-list div{padding:4px 8px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;}
+.mode-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3);}
+.mode-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.mode-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.cd-display{display:flex;gap:var(--space-2);justify-content:center;margin:var(--space-3) 0;}
+.cd-unit{text-align:center;min-width:80px;}
+.cd-unit .val{font-size:48px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;}
+.cd-unit .lbl{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.cd-expired{text-align:center;font-size:var(--font-size-xl);color:var(--color-error);}
+.phase-label{text-align:center;font-size:var(--font-size-lg);font-weight:600;padding:var(--space-2);border-radius:var(--radius-md);margin-bottom:var(--space-2);}
+.phase-label.work{background:#e8f5e9;color:#2e7d32;}
+.phase-label.rest{background:#fff3e0;color:#e65100;}
+.phase-label.done{background:#e3f2fd;color:#1565c0;}
+.ctrl-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-3);}
+.ctrl-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.ctrl-row .field{min-width:80px;}
+.ctrl-row input{width:70px;}
+.round-info{text-align:center;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);}
+.opt-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-3);}
+.opt-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
-<main class="tool-workspace"><h1 data-i18n="h1">秒表计时器</h1><p class="tool-desc" data-i18n="desc">带预设的倒计时器，以及支持计圈记录的秒表。</p>
-<div class="card">
+<main class="tool-workspace"><h1 data-i18n="h1">秒表计时器</h1><p class="tool-desc" data-i18n="desc">秒表、倒计时与间歇训练三合一计时器：支持计圈、预设时长、目标时间与轮次提示音。</p>
+<div class="mode-tabs">
+<button id="tabStopwatch" class="active" type="button" data-i18n="ui.1">秒表</button>
+<button id="tabCountdown" type="button" data-i18n="ui.2">倒计时</button>
+<button id="tabInterval" type="button" data-i18n="ui.tabInterval">间歇</button>
+</div>
+<div class="card" id="panelStopwatch">
+<div class="time-display" id="display">00:00.000</div>
+<div class="time-sub" id="statusSub" data-i18n="ui.9">准备</div>
+<div class="time-btns">
+<button id="startBtn" class="btn btn-primary" data-i18n="ui.10">开始</button>
+<button id="pauseBtn" class="btn btn-secondary" data-i18n="ui.11">暂停</button>
+<button id="lapBtn" class="btn btn-secondary" data-i18n="ui.12">计圈</button>
+<button id="resetBtn" class="btn btn-secondary" data-i18n="ui.13">重置</button>
+</div>
+<div class="card" style="margin-top:var(--space-2);"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);" data-i18n="ui.14">计圈记录</h3><div class="lap-list" id="lapList"><div style="color:var(--color-text-disabled);" data-i18n="ui.15">暂无计圈记录</div></div></div>
+</div>
+<div class="card" id="panelCountdown" style="display:none;">
+<div class="opt-row">
+<select id="cdMode" class="input" style="width:auto;">
+<option value="duration" data-i18n="ui.durMode">计时时长</option>
+<option value="datetime" data-i18n="ui.dtMode">目标时间</option>
+</select>
+</div>
+<div id="durationPanel">
 <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-2);">
-<select id="modeSelect" class="input" style="width:auto;"><option value="stopwatch" data-i18n="ui.1">秒表</option><option value="timer" data-i18n="ui.2">倒计时</option></select>
 <div id="timerInputs" style="display:flex;gap:8px;align-items:center;">
 <input id="minInput" class="input" type="number" value="5" min="1" style="width:110px;"><label style="font-size:var(--font-size-sm);" data-i18n="ui.minute">分钟</label>
 <input id="secInput" class="input" type="number" value="0" min="0" max="59" style="width:110px;"><label style="font-size:var(--font-size-sm);" data-i18n="ui.second">秒</label>
 </div>
 </div>
 <div class="preset-grid" id="presetGrid"><button class="preset-btn" data-min="1" data-i18n="ui.3">1 分钟</button><button class="preset-btn" data-min="3" data-i18n="ui.4">3 分钟</button><button class="preset-btn" data-min="5" data-i18n="ui.5">5 分钟</button><button class="preset-btn" data-min="10" data-i18n="ui.6">10 分钟</button><button class="preset-btn" data-min="15" data-i18n="ui.7">15 分钟</button><button class="preset-btn" data-min="30" data-i18n="ui.8">30 分钟</button></div>
-<div class="time-display" id="display">00:00.0</div>
-<div class="time-sub" id="statusSub" data-i18n="ui.9">准备</div>
+<div class="time-display" id="cdDisp" style="font-size:48px;padding:var(--space-2);">05:00.0</div>
+<div class="time-sub" id="cdStatusSub" data-i18n="ui.9">准备</div>
 <div class="time-btns">
-<button id="startBtn" class="btn btn-primary" data-i18n="ui.10">开始</button>
-<button id="pauseBtn" class="btn btn-secondary" data-i18n="ui.11">暂停</button>
-<button id="lapBtn" class="btn btn-secondary" id="lapBtn" data-i18n="ui.12">计圈</button>
-<button id="resetBtn" class="btn btn-secondary" data-i18n="ui.13">重置</button>
+<button id="cdStartBtn" class="btn btn-primary" data-i18n="ui.10">开始</button>
+<button id="cdPauseBtn" class="btn btn-secondary" data-i18n="ui.11">暂停</button>
+<button id="cdResetBtn" class="btn btn-secondary" data-i18n="ui.13">重置</button>
 </div>
 </div>
-<div class="card"><h3 style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);" data-i18n="ui.14">计圈记录</h3><div class="lap-list" id="lapList"><div style="color:var(--color-text-disabled);" data-i18n="ui.15">暂无计圈记录</div></div></div>
+<div id="datetimePanel" style="display:none;">
+<div style="display:flex;justify-content:center;margin-bottom:var(--space-2);">
+<label for="targetDatetime" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.cdTarget">目标日期时间</label>
+<input id="targetDatetime" class="input" type="datetime-local" style="max-width:280px;">
+</div>
+<div class="cd-display" id="cdDisplay">
+<div class="cd-unit"><div class="val" id="cdDays">--</div><div class="lbl" data-i18n="ui.cdDay">天</div></div>
+<div class="cd-unit"><div class="val" id="cdHours">--</div><div class="lbl" data-i18n="ui.cdHour">时</div></div>
+<div class="cd-unit"><div class="val" id="cdMins">--</div><div class="lbl" data-i18n="ui.cdMin">分</div></div>
+<div class="cd-unit"><div class="val" id="cdSecs">--</div><div class="lbl" data-i18n="ui.second">秒</div></div>
+</div>
+<div class="cd-expired" id="cdExpired" style="display:none;" data-i18n="ui.18">时间到！</div>
+<div class="time-sub" id="cdDtStatus" data-i18n="ui.9">准备</div>
+<div class="time-btns">
+<button id="cdDtStartBtn" class="btn btn-primary" data-i18n="ui.10">开始</button>
+<button id="cdDtPauseBtn" class="btn btn-secondary" data-i18n="ui.11">暂停</button>
+<button id="cdDtResetBtn" class="btn btn-secondary" data-i18n="ui.13">重置</button>
+</div>
+</div>
+</div>
+<div class="card" id="panelInterval" style="display:none;">
+<div class="ctrl-row">
+<div class="field"><label data-i18n="ui.ivWork">训练（秒）</label><input id="workInput" class="input" type="number" value="30" min="1" max="600"></div>
+<div class="field"><label data-i18n="ui.ivRest">休息（秒）</label><input id="restInput" class="input" type="number" value="10" min="1" max="600"></div>
+<div class="field"><label data-i18n="ui.ivRounds">轮数</label><input id="roundsInput" class="input" type="number" value="8" min="1" max="99"></div>
+<div class="field"><label data-i18n="ui.ivPrep">准备（秒）</label><input id="prepInput" class="input" type="number" value="5" min="0" max="60"></div>
+</div>
+<div class="phase-label" id="phaseLabel" data-i18n="ui.ivPhaseReady">准备</div>
+<div class="time-display" id="ivDisplay" style="font-size:48px;padding:var(--space-2);">00:00</div>
+<div class="round-info" id="roundInfo" data-i18n="ui.ivRoundInfo">第 0 / 0 轮</div>
+<div class="time-btns">
+<button id="ivStartBtn" class="btn btn-primary" data-i18n="ui.ivStart">开始</button>
+<button id="ivPauseBtn" class="btn btn-secondary" data-i18n="ui.ivPause">暂停</button>
+<button id="ivResetBtn" class="btn btn-secondary" data-i18n="ui.ivReset">重置</button>
+</div>
+</div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script>
 <script>
-(function(){var dp=document.getElementById('display'),sub=document.getElementById('statusSub'),ms=document.getElementById('modeSelect');
-var mi=document.getElementById('minInput'),si=document.getElementById('secInput'),ti=document.getElementById('timerInputs');
+(function(){
+/* ---- stopwatch (chronometer precision: 0.001s) ---- */
+var dp=document.getElementById('display'),sub=document.getElementById('statusSub');
 var st=document.getElementById('startBtn'),pa=document.getElementById('pauseBtn'),lb=document.getElementById('lapBtn'),rs=document.getElementById('resetBtn');
 var ll=document.getElementById('lapList'),o=document.getElementById('outputText');
-var startTime=0,elapsed=0,lastLap=0,running=false,laps=[],timerId=null,targetMs=0;
+var startTime=0,elapsed=0,lastLap=0,running=false,laps=[],timerId=null;
 
-function fmt(ms){var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);var d=Math.floor((ms%1000)/100);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;}
-function fmt2(ms){if(ms<60000)return(ms/1000).toFixed(1)+'s';var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);return m+'m '+s+'s';}
+function fmt(ms){var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);var msx=Math.floor(ms%1000);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(msx).padStart(3,'0');}
+function fmt2(ms){if(ms<60000)return(ms/1000).toFixed(2)+'s';var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);return m+'m '+s+'s';}
 
 function tick(){if(!running)return;
-var now=Date.now();if(ms.value==='timer'){var remaining=Math.max(0,targetMs-(now-startTime));elapsed=remaining;
-if(remaining<=0){running=false;elapsed=0;dp.textContent='00:00.0';sub.textContent = t('ui.18','时间到！');clearInterval(timerId);return;}}else{elapsed=now-startTime;}
+elapsed=Date.now()-startTime;
 dp.textContent=fmt(elapsed);o.textContent=dp.textContent;}
 
-function startTimer(){if(running)return;if(ms.value==='timer'){var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus(t('ui.100','请设置有效时间'),'error');return;}
-targetMs=total;startTime=Date.now();elapsed=total;}else{startTime=Date.now()-elapsed;}
-running=true;sub.textContent = t('ui.17','运行中...');clearInterval(timerId);timerId=setInterval(tick,100);}
+function startTimer(){if(running)return;startTime=Date.now()-elapsed;
+running=true;sub.textContent = t('ui.17','运行中...');clearInterval(timerId);timerId=setInterval(tick,33);}
 
 function pauseTimer(){if(!running)return;running=false;clearInterval(timerId);sub.textContent = t('ui.16','已暂停');}
-function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.0';sub.textContent = t('ui.9','准备');ll.innerHTML='<div style="color:var(--color-text-disabled);">'+t('ui.15','\u6682\u65e0\u8ba1\u5708\u8bb0\u5f55')+'</div>';o.textContent='';}
-function recordLap(){if(!running||ms.value!=='stopwatch')return;var now=elapsed;var lapTime=now-lastLap;laps.push({total:now,split:lapTime});lastLap=now;
-var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>'+t('ui.lap','\u7b2c {n} \u5708').replace('{n}',String(i+1))+'</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
+function resetTimer(){running=false;clearInterval(timerId);elapsed=0;lastLap=0;laps=[];dp.textContent='00:00.000';sub.textContent = t('ui.9','准备');ll.innerHTML='<div style="color:var(--color-text-disabled);">'+t('ui.15','暂无计圈记录')+'</div>';o.textContent='';}
+function recordLap(){if(!running)return;var now=elapsed;var lapTime=now-lastLap;laps.push({total:now,split:lapTime});lastLap=now;
+var h='';for(var i=laps.length-1;i>=0;i--){h+='<div><span>'+t('ui.lap','第 {n} 圈').replace('{n}',String(i+1))+'</span><span>'+fmt(laps[i].total)+' (+'+fmt2(laps[i].split)+')</span></div>';}
 ll.innerHTML=h;o.textContent=fmt(elapsed);}
 
 st.addEventListener('click',startTimer);pa.addEventListener('click',pauseTimer);rs.addEventListener('click',resetTimer);lb.addEventListener('click',recordLap);
-ms.addEventListener('change',function(){resetTimer();ti.style.display=ms.value==='timer'?'flex':'none';lb.style.display=ms.value==='timer'?'none':'inline-flex';});
-lb.style.display='none';ti.style.display='flex';
-var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){mi.value=this.dataset.min;si.value='0';ms.value='timer';ti.style.display='flex';lb.style.display='none';resetTimer();});}
+
+/* ---- countdown: duration mode ---- */
+var mi=document.getElementById('minInput'),si=document.getElementById('secInput');
+var cDisp=document.getElementById('cdDisp'),cSub=document.getElementById('cdStatusSub');
+var cdStart=document.getElementById('cdStartBtn'),cdPause=document.getElementById('cdPauseBtn'),cdReset=document.getElementById('cdResetBtn');
+var cdRunning=false,cdTargetMs=0,cdStartTime=0,cdTimerId=null;
+function fmt10(ms){var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);var d=Math.floor((ms%1000)/100);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d;}
+function cdTick(){if(!cdRunning)return;
+var remaining=Math.max(0,cdTargetMs-(Date.now()-cdStartTime));
+if(remaining<=0){cdRunning=false;cdRemaining=0;clearInterval(cdTimerId);cDisp.textContent='00:00.0';cSub.textContent = t('ui.18','时间到！');beep();setStatus(t('ui.18','时间到！'));return;}
+cDisp.textContent=fmt10(remaining);o.textContent=cDisp.textContent;}
+var cdRemaining=0;
+function cdStartFn(){if(cdRunning)return;
+var total=(parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000;if(total<=0){setStatus(t('ui.cdNeedValid','请设置有效时间'),'error');return;}
+cdTargetMs=total;cdStartTime=Date.now();cdRemaining=total;cdRunning=true;cSub.textContent = t('ui.17','运行中...');clearInterval(cdTimerId);cdTimerId=setInterval(cdTick,100);cdTick();}
+function cdPauseFn(){if(!cdRunning)return;cdRunning=false;clearInterval(cdTimerId);cSub.textContent = t('ui.16','已暂停');}
+function cdResetFn(){cdRunning=false;clearInterval(cdTimerId);cdRemaining=0;cDisp.textContent=fmt10((parseInt(mi.value)||0)*60000+(parseInt(si.value)||0)*1000);cSub.textContent = t('ui.9','准备');o.textContent='';}
+cdStart.addEventListener('click',cdStartFn);cdPause.addEventListener('click',cdPauseFn);cdReset.addEventListener('click',cdResetFn);
+
+var presets=document.querySelectorAll('.preset-btn');for(var i=0;i<presets.length;i++){presets[i].addEventListener('click',function(){mi.value=this.dataset.min;si.value='0';cdResetFn();});}
+
+function beep(){try{var ctx=new(window.AudioContext||window.webkitAudioContext)();var osc=ctx.createOscillator();osc.frequency.value=880;osc.type='sine';var gain=ctx.createGain();gain.gain.setValueAtTime(0.3,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.3);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.3);}catch(e){}}
+
+/* ---- countdown: datetime mode ---- */
+var targetEl=document.getElementById('targetDatetime');
+var cDays=document.getElementById('cdDays'),cHours=document.getElementById('cdHours'),cMins=document.getElementById('cdMins'),cSecs=document.getElementById('cdSecs'),cExp=document.getElementById('cdExpired');
+var dtStart=document.getElementById('cdDtStartBtn'),dtPause=document.getElementById('cdDtPauseBtn'),dtReset=document.getElementById('cdDtResetBtn'),dtSub=document.getElementById('cdDtStatus');
+var dtRunning=false,dtTimerId=null;
+function pad2(n){return String(n).padStart(2,'0');}
+function dtTick(){if(!dtRunning)return;
+var tgt=new Date(targetEl.value).getTime();var remain=Math.max(0,tgt-Date.now());
+if(remain<=0){dtRunning=false;clearInterval(dtTimerId);cDays.textContent='00';cHours.textContent='00';cMins.textContent='00';cSecs.textContent='00';cExp.style.display='block';dtSub.textContent = t('ui.18','时间到！');beep();setStatus(t('ui.18','时间到！'));o.textContent=t('ui.cdPassed','目标时间已过');return;}
+cExp.style.display='none';
+var totalSecs=Math.floor(remain/1000);
+cDays.textContent=Math.floor(totalSecs/86400);
+cHours.textContent=pad2(Math.floor((totalSecs%86400)/3600));
+cMins.textContent=pad2(Math.floor((totalSecs%3600)/60));
+cSecs.textContent=pad2(totalSecs%60);
+o.textContent=t('ui.cdRemain','剩余 ')+cDays.textContent+t('ui.cdDay',' 天 ')+cHours.textContent+t('ui.cdHour',' 时 ')+cMins.textContent+t('ui.cdMin',' 分 ')+cSecs.textContent+t('ui.second',' 秒');}
+function dtStartFn(){if(dtRunning)return;
+if(!targetEl.value){setStatus(t('ui.cdNeedTarget','请设置目标时间'),'error');return;}
+var tgt=new Date(targetEl.value).getTime();
+if(isNaN(tgt)||tgt<=Date.now()){setStatus(t('ui.cdPassed','目标时间已过'),'error');return;}
+dtRunning=true;dtSub.textContent = t('ui.17','运行中...');clearInterval(dtTimerId);dtTimerId=setInterval(dtTick,500);dtTick();setStatus(t('ui.cdStarted','倒计时已开始'));}
+function dtPauseFn(){if(!dtRunning)return;dtRunning=false;clearInterval(dtTimerId);dtSub.textContent = t('ui.16','已暂停');}
+function dtResetFn(){dtRunning=false;clearInterval(dtTimerId);cDays.textContent='--';cHours.textContent='--';cMins.textContent='--';cSecs.textContent='--';cExp.style.display='none';dtSub.textContent = t('ui.9','准备');o.textContent='';}
+dtStart.addEventListener('click',dtStartFn);dtPause.addEventListener('click',dtPauseFn);dtReset.addEventListener('click',dtResetFn);
+
+/* ---- interval timer ---- */
+var pl=document.getElementById('phaseLabel'),ivD=document.getElementById('ivDisplay'),ri=document.getElementById('roundInfo');
+var wi=document.getElementById('workInput'),re=document.getElementById('restInput'),ru=document.getElementById('roundsInput'),pr=document.getElementById('prepInput');
+var ivRunning=false,ivPaused=false,curPhase='prep',curSec=0,curRound=0,totalRounds=0,ivTimerId=null;
+
+function ivTick(){if(!ivRunning||ivPaused)return;
+curSec--;
+if(curSec<=0){beep();ivNextPhase();}
+ivUpdateDisplay();}
+
+function ivNextPhase(){if(curPhase==='prep'){curPhase='work';curSec=parseInt(wi.value)||30;curRound=1;}
+else if(curPhase==='work'){curPhase='rest';curSec=parseInt(re.value)||10;}
+else if(curPhase==='rest'){if(curRound>=totalRounds){curPhase='done';curSec=0;ivRunning=false;pl.textContent = t('ui.ivDone','完成！');pl.className='phase-label done';ivD.textContent='00:00';ri.textContent = t('ui.ivAllDone','全部轮次完成');setStatus(t('ui.ivComplete','训练完成！'));clearInterval(ivTimerId);return;}
+curRound++;curPhase='work';curSec=parseInt(wi.value)||30;}
+ivUpdateDisplay();}
+
+function ivUpdateDisplay(){var m=Math.floor(curSec/60);var s=curSec%60;ivD.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+if(curPhase==='done')return;
+pl.textContent=curPhase==='prep'?t('ui.ivPhasePrep','准备中'):curPhase==='work'?t('ui.ivPhaseWork','训练！'):t('ui.ivPhaseRest','休息');pl.className='phase-label '+(curPhase==='work'?'work':'rest');
+ri.textContent=curRound+' / '+totalRounds;o.textContent=curPhase+' '+ivD.textContent;}
+
+function ivStartFn(){if(ivRunning&&!ivPaused)return;
+if(!ivRunning){var prep=parseInt(pr.value)||0;if(prep>0){curPhase='prep';curSec=prep;curRound=0;}else{curPhase='work';curSec=parseInt(wi.value)||30;curRound=1;}
+totalRounds=parseInt(ru.value)||1;ivRunning=true;ivPaused=false;clearInterval(ivTimerId);ivTimerId=setInterval(ivTick,1000);ivUpdateDisplay();}
+else{ivPaused=false;setStatus(t('ui.ivResumed','已恢复'));}}
+
+function ivPauseFn(){if(!ivRunning)return;ivPaused=true;setStatus(t('ui.ivPaused','已暂停'));}
+function ivResetFn(){ivRunning=false;ivPaused=false;clearInterval(ivTimerId);curPhase='prep';curSec=0;curRound=0;ivD.textContent='00:00';pl.textContent = t('ui.ivReady','就绪');pl.className='phase-label';ri.textContent='0 / 0';o.textContent='';setStatus('');}
+document.getElementById('ivStartBtn').addEventListener('click',ivStartFn);
+document.getElementById('ivPauseBtn').addEventListener('click',ivPauseFn);
+document.getElementById('ivResetBtn').addEventListener('click',ivResetFn);
+
+/* ---- tabs ---- */
+var tabSW=document.getElementById('tabStopwatch'),tabCD=document.getElementById('tabCountdown'),tabIV=document.getElementById('tabInterval');
+var pSW=document.getElementById('panelStopwatch'),pCD=document.getElementById('panelCountdown'),pIV=document.getElementById('panelInterval');
+function switchTab(which){
+tabSW.className=which==='stopwatch'?'active':'';tabCD.className=which==='countdown'?'active':'';tabIV.className=which==='interval'?'active':'';
+pSW.style.display=which==='stopwatch'?'':'none';pCD.style.display=which==='countdown'?'':'none';pIV.style.display=which==='interval'?'':'none';
+}
+tabSW.addEventListener('click',function(){switchTab('stopwatch');});
+tabCD.addEventListener('click',function(){switchTab('countdown');});
+tabIV.addEventListener('click',function(){switchTab('interval');});
+
+/* ---- countdown mode select ---- */
+var cdMode=document.getElementById('cdMode'),durPanel=document.getElementById('durationPanel'),dtPanel=document.getElementById('datetimePanel');
+cdMode.addEventListener('change',function(){
+durPanel.style.display=cdMode.value==='duration'?'':'none';
+dtPanel.style.display=cdMode.value==='datetime'?'':'none';
+cdResetFn();dtResetFn();
+});
+
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

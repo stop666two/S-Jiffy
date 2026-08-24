@@ -14,15 +14,29 @@
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1 data-i18n="b64.h1">Base64 编解码</h1>
-<p class="tool-desc" data-i18n="b64.desc">文本与 Base64 标准/URL安全模式互相转换，支持文件上传。</p>
+<h1 data-i18n="b64.h1">Base64 及多进制编解码</h1>
+<p class="tool-desc" data-i18n="b64.desc">支持 10 种编码互转（Base64/32/36/45/58/62/85/91/92/Ascii85），含文件上传、URL 安全模式与图片预览。</p>
 <div class="card">
 <div class="opt-row">
+<label style="margin-right:4px;" data-i18n="ui.enc">编码方式</label>
+<select id="encSelect" class="input" style="width:auto;min-width:120px;">
+  <option value="base64">Base64</option>
+  <option value="base32">Base32</option>
+  <option value="base36">Base36</option>
+  <option value="base45">Base45</option>
+  <option value="base58">Base58</option>
+  <option value="base62">Base62</option>
+  <option value="base85">Base85</option>
+  <option value="base91">Base91</option>
+  <option value="base92">Base92</option>
+  <option value="ascii85">Ascii85</option>
+</select>
 <label><input type="radio" name="b64mode" value="standard" checked> <span data-i18n="b64.optStandard">标准 Base64</span></label>
 <label><input type="radio" name="b64mode" value="urlsafe"> <span data-i18n="b64.optUrlSafe">URL 安全</span></label>
 <label><input type="checkbox" id="chkValidate"> <span data-i18n="b64.chkValidate">解码时校验输入合法性</span></label>
+<label id="wrapRow" style="display:none;"><input type="checkbox" id="chkAscii85Wrap" checked> <span data-i18n="b64.chkWrap">Ascii85 使用 ~&lt;~ ~&gt;~ 包裹</span></label>
 </div>
-<textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="输入要编码或解码的文本..." data-i18n-placeholder="b64.placeholder" style="min-height:120px;"></textarea>
+<textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="b64.placeholder" placeholder="输入要编码或解码的文本..." style="min-height:120px;"></textarea>
 </div>
 <div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
     <button id="fileBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="common.fileSelect">📁 选择文件</button>
@@ -52,8 +66,10 @@
   'use strict';
   var inputEl=document.getElementById('inputText'),outputEl=document.getElementById('outputText'),fileInput=document.getElementById('fileInput'),fileBtn=document.getElementById('fileBtn'),fileInfo=document.getElementById('fileInfo');
   var previewArea=document.getElementById('previewArea'),previewImage=document.getElementById('previewImage'),downloadImgBtn=document.getElementById('downloadImgBtn'),vr=document.getElementById('validationResult');
+  var encSelect=document.getElementById('encSelect'),wrapRow=document.getElementById('wrapRow');
   var MAX_FILE_MB=20;
 
+  function getEnc(){return encSelect.value;}
   function getMode(){var r=document.getElementsByName('b64mode');for(var i=0;i<r.length;i++){if(r[i].checked)return r[i].value;}return'standard';}
 
   function toStandard(b64){return b64.replace(/-/g,'+').replace(/_/g,'/');}
@@ -61,18 +77,328 @@
 
   function isValidBase64(str){try{var s=toStandard(str);return btoa(atob(s))===s;}catch(e){return false;}}
 
+  function utf8ToBytes(str){return Array.from(new TextEncoder().encode(str));}
+  function bytesToUtf8(bytes){try{return new TextDecoder().decode(new Uint8Array(bytes));}catch(e){return '';}}
+
+  /* ---- Base32 (RFC 4648) ---- */
+  var B32_ALPHABET='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  function base32Encode(bytes){
+    var result='',bits=0,bitCount=0;
+    for(var i=0;i<bytes.length;i++){
+      bits=(bits<<8)|bytes[i];bitCount+=8;
+      while(bitCount>=5){bitCount-=5;result+=B32_ALPHABET[(bits>>bitCount)&31];}
+    }
+    if(bitCount>0)result+=B32_ALPHABET[(bits<<(5-bitCount))&31];
+    while(result.length%8)result+='=';
+    return result;
+  }
+  function base32Decode(str){
+    str=str.replace(/=+$/,'').toUpperCase();
+    var result=[],bits=0,bitCount=0;
+    for(var i=0;i<str.length;i++){
+      var idx=B32_ALPHABET.indexOf(str[i]);
+      if(idx===-1)continue;
+      bits=(bits<<5)|idx;bitCount+=5;
+      if(bitCount>=8){bitCount-=8;result.push((bits>>bitCount)&255);}
+    }
+    return new Uint8Array(result);
+  }
+
+  /* ---- Base36 / Base62: hex big-int division ---- */
+  function hexToBaseN(str,base,charset){
+    var bytes=[];
+    for(var i=0;i<str.length;i++)bytes.push(str.charCodeAt(i));
+    var hex='';
+    for(var j=0;j<bytes.length;j++)hex+=bytes[j].toString(16).padStart(2,'0');
+    if(hex==='')return '';
+    var bigInt=hex,result='';
+    while(bigInt.length>0&&bigInt!=='0'){
+      var remainder=0,next='';
+      for(var k=0;k<bigInt.length;k++){
+        remainder=remainder*16+parseInt(bigInt[k],16);
+        next+=Math.floor(remainder/base).toString(16);
+        remainder=remainder%base;
+      }
+      result=charset[remainder]+result;
+      bigInt=next.replace(/^0+/,'')||'0';
+    }
+    return result||'0';
+  }
+  function baseNToHex(str, base, charset) {
+    var num = BigInt(0);
+    var B = BigInt(base);
+    for (var i = 0; i < str.length; i++) {
+      var d = charset.indexOf(str[i]);
+      if (d === -1) return null;
+      num = num * B + BigInt(d);
+    }
+    if (num === BigInt(0)) return '';
+    var out = [];
+    while (num > BigInt(0)) {
+      out.unshift(Number(num & BigInt(255)));
+      num = num >> BigInt(8);
+    }
+    var r = '';
+    for (var j = 0; j < out.length; j++) r += String.fromCharCode(out[j]);
+    return r;
+  }
+  var B36='0123456789abcdefghijklmnopqrstuvwxyz';
+  var B62='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+  /* ---- Base45 (RFC 9285) ---- */
+  var B45_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function base45Encode(text){
+    var bytes=[];
+    for(var i=0;i<text.length;i++)bytes.push(text.charCodeAt(i));
+    var r='';
+    for(var j=0;j<bytes.length;j+=2){
+      if(j+1<bytes.length){
+        var val=bytes[j]*256+bytes[j+1];
+        r+=B45_ALPHABET[val%45];
+        r+=B45_ALPHABET[Math.floor(val/45)%45];
+        r+=B45_ALPHABET[Math.floor(val/45/45)%45];
+      }else{
+        var v=bytes[j];
+        r+=B45_ALPHABET[v%45];
+        r+=B45_ALPHABET[Math.floor(v/45)%45];
+      }
+    }
+    return r;
+  }
+  function base45Decode(b45){
+    var chars=[];
+    for(var i=0;i<b45.length;i++){
+      var idx=B45_ALPHABET.indexOf(b45[i]);
+      if(idx===-1)throw new Error('invalid char');
+      chars.push(idx);
+    }
+    var bytes=[];
+    for(var j=0;j<chars.length;j+=3){
+      if(j+2<chars.length){
+        var val=chars[j]+chars[j+1]*45+chars[j+2]*2025;
+        bytes.push(val>>8);bytes.push(val&255);
+      }else if(j+1<chars.length){
+        var v=chars[j]+chars[j+1]*45;
+        bytes.push(v);
+      }else{
+        throw new Error('tail length');
+      }
+    }
+    var r='';
+    for(var k=0;k<bytes.length;k++)r+=String.fromCharCode(bytes[k]);
+    return r;
+  }
+
+  /* ---- Base58 (Bitcoin) ---- */
+  var B58_ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  function bytesToBase58(bytes){
+    if(bytes.length===0)return '';
+    var num=BigInt(0);
+    for(var i=0;i<bytes.length;i++)num=num*BigInt(256)+BigInt(bytes[i]);
+    var result='';
+    while(num>0){var rem=num%BigInt(58);result=B58_ALPHABET[Number(rem)]+result;num=num/BigInt(58);}
+    for(var j=0;j<bytes.length&&bytes[j]===0;j++)result='1'+result;
+    return result;
+  }
+  function base58ToBytes(base58){
+    if(base58==='')return [];
+    var num=BigInt(0);
+    for(var i=0;i<base58.length;i++){
+      var idx=B58_ALPHABET.indexOf(base58[i]);
+      if(idx===-1)continue;
+      num=num*BigInt(58)+BigInt(idx);
+    }
+    var bytes=[];
+    while(num>0){var byteVal=Number(num%BigInt(256));bytes.unshift(byteVal);num=num/BigInt(256);}
+    for(var j=0;j<base58.length&&base58[j]==='1';j++)bytes.unshift(0);
+    return bytes;
+  }
+
+  /* ---- Base85 (Adobe Ascii85, UTF-8, fixed wrap) ---- */
+  function encodeAscii85Bytes(bytes){
+    var result='<~',i=0;
+    while(i<bytes.length){
+      if(bytes.length-i>=4){
+        var val=(bytes[i]<<24)|(bytes[i+1]<<16)|(bytes[i+2]<<8)|bytes[i+3];
+        if(val===0){result+='z';i+=4;continue;}
+        var buf='';
+        for(var j=4;j>=0;j--){buf=String.fromCharCode((val%85)+33)+buf;val=Math.floor(val/85);}
+        result+=buf;i+=4;
+      }else{
+        var chunk=[bytes[i],bytes[i+1]||0,bytes[i+2]||0,bytes[i+3]||0];
+        var v=(chunk[0]<<24)|(chunk[1]<<16)|(chunk[2]<<8)|chunk[3];
+        var b2='';
+        for(var k=4;k>=0;k--){b2=String.fromCharCode((v%85)+33)+b2;v=Math.floor(v/85);}
+        result+=b2.slice(0,bytes.length-i+1);
+        i=bytes.length;
+      }
+    }
+    result+='~>';
+    return result;
+  }
+  function decodeAscii85Bytes(str){
+    str=str.replace(/\s+/g,'');
+    str=str.replace(/<~|~>/g,'');
+    var bytes=[],i=0;
+    while(i<str.length){
+      if(str[i]==='z'){bytes.push(0,0,0,0);i++;continue;}
+      if(str[i]==='~')break;
+      var chunk=str.slice(i,i+5);
+      if(chunk.length<5)chunk=chunk+'u'.repeat(5-chunk.length);
+      var val=0;
+      for(var j=0;j<chunk.length;j++)val=val*85+(chunk.charCodeAt(j)-33);
+      var out=[(val>>24)&255,(val>>16)&255,(val>>8)&255,val&255];
+      if(str.slice(i,i+5).length<5){
+        bytes=bytes.concat(out.slice(0,str.slice(i,i+5).length-1));
+      }else{
+        bytes=bytes.concat(out);
+      }
+      i+=chunk.length;
+    }
+    return new Uint8Array(bytes);
+  }
+
+  /* ---- Base91 / Base92 ---- */
+  var B91_ALPHABET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"';
+  var B92_ALPHABET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"\\';
+  function base9xEncode(text,alphabet){
+    var base=alphabet.length;
+    var bytes=[];
+    for(var i=0;i<text.length;i++)bytes.push(text.charCodeAt(i));
+    var r='',b=0,n=0;
+    for(var j=0;j<bytes.length;j++){
+      b|=bytes[j]<<n;n+=8;
+      if(n>13){
+        var v=b&8191;
+        if(v>88){b>>=13;n-=13;}else{v=b&16383;b>>=14;n-=14;}
+        r+=alphabet[v%base];
+        r+=alphabet[Math.floor(v/base)];
+      }
+    }
+    if(n){
+      r+=alphabet[b%base];
+      if(n>7||b>90)r+=alphabet[Math.floor(b/base)];
+    }
+    return r;
+  }
+  function base9xDecode(b9x,alphabet){
+    var base=alphabet.length;
+    var v=-1,b=0,n=0,out=[];
+    for(var i=0;i<b9x.length;i++){
+      var c=alphabet.indexOf(b9x[i]);
+      if(c===-1)continue;
+      if(v===-1){v=c;}else{
+        v+=c*base;
+        b|=v<<n;
+        n+=(v&8191)>88?13:14;
+        while(n>7){out.push(b&255);b>>=8;n-=8;}
+        v=-1;
+      }
+    }
+    if(v!==-1){out.push((b|v<<n)&255);}
+    var r='';
+    for(var j=0;j<out.length;j++)r+=String.fromCharCode(out[j]);
+    return r;
+  }
+
+  /* ---- Ascii85 (charCodeAt, optional wrap) ---- */
+  function ascii85Encode(text,wrap){
+    var bytes=[];
+    for(var i=0;i<text.length;i++)bytes.push(text.charCodeAt(i));
+    var r=wrap?'~<':'';
+    for(var j=0;j<bytes.length;j+=4){
+      if(j+3<bytes.length&&bytes[j]===0&&bytes[j+1]===0&&bytes[j+2]===0&&bytes[j+3]===0){r+='z';continue;}
+      var val=((bytes[j]||0)<<24)|((bytes[j+1]||0)<<16)|((bytes[j+2]||0)<<8)|(bytes[j+3]||0);
+      if(val===0){r+='z';continue;}
+      var parts='';
+      for(var k=0;k<5;k++){parts=String.fromCharCode(33+(val%85))+parts;val=Math.floor(val/85);}
+      r+=parts.slice(0,Math.min(4,bytes.length-j)+1);
+    }
+    if(wrap)r+='~>';
+    return r;
+  }
+  function ascii85Decode(b85,wrap){
+    var t=b85.trim();
+    if(wrap){t=t.replace(/^~</,'').replace(/~>$/,'');}
+    t=t.replace(/\s/g,'');
+    var bytes=[];
+    for(var i=0;i<t.length;){
+      if(t[i]==='z'){bytes.push(0,0,0,0);i++;continue;}
+      var chunk=t.slice(i,i+5);
+      var n=chunk.length;
+      if(n<5)chunk=chunk+'u'.repeat(5-n);
+      var val=0;
+      for(var j=0;j<chunk.length;j++){
+        var c=chunk.charCodeAt(j)-33;
+        if(c<0||c>84)throw new Error('invalid char');
+        val=val*85+c;
+      }
+      var out=[(val>>24)&255,(val>>16)&255,(val>>8)&255,val&255];
+      if(n<5){bytes=bytes.concat(out.slice(0,n-1));}else{bytes=bytes.concat(out);}
+      i+=n;
+    }
+    var r='';
+    for(var k=0;k<bytes.length;k++)r+=String.fromCharCode(bytes[k]);
+    return r;
+  }
+
+  encSelect.addEventListener('change',function(){wrapRow.style.display=getEnc()==='ascii85'?'':'none';});
+
+  function encodeText(text,enc){
+    if(enc==='base64'){
+      var encoded=btoa(unescape(encodeURIComponent(text)));
+      return getMode()==='urlsafe'?toUrlSafe(encoded):encoded;
+    }
+    if(enc==='base32')return base32Encode(utf8ToBytes(text));
+    if(enc==='base36')return hexToBaseN(text,36,B36);
+    if(enc==='base45')return base45Encode(text);
+    if(enc==='base58')return bytesToBase58(utf8ToBytes(text));
+    if(enc==='base62')return hexToBaseN(text,62,B62);
+    if(enc==='base85')return encodeAscii85Bytes(utf8ToBytes(text));
+    if(enc==='base91')return base9xEncode(text,B91_ALPHABET);
+    if(enc==='base92')return base9xEncode(text,B92_ALPHABET);
+    if(enc==='ascii85')return ascii85Encode(text,document.getElementById('chkAscii85Wrap').checked);
+    throw new Error('unknown');
+  }
+
+  function decodeText(text,enc){
+    if(enc==='base64'){
+      var processed=getMode()==='urlsafe'?toStandard(text):text;
+      return decodeURIComponent(escape(atob(processed)));
+    }
+    if(enc==='base32')return bytesToUtf8(base32Decode(text));
+    if(enc==='base36'){
+      var r36=baseNToHex(text,36,B36);
+      if(r36===null)throw new Error('invalid');
+      return r36;
+    }
+    if(enc==='base45')return base45Decode(text);
+    if(enc==='base58')return bytesToUtf8(base58ToBytes(text));
+    if(enc==='base62'){
+      var r62=baseNToHex(text,62,B62);
+      if(r62===null)throw new Error('invalid');
+      return r62;
+    }
+    if(enc==='base85')return bytesToUtf8(decodeAscii85Bytes(text));
+    if(enc==='base91')return base9xDecode(text,B91_ALPHABET);
+    if(enc==='base92')return base9xDecode(text,B92_ALPHABET);
+    if(enc==='ascii85')return ascii85Decode(text,document.getElementById('chkAscii85Wrap').checked);
+    throw new Error('unknown');
+  }
+
   function process(type){
-    var text=inputEl.value.trim(),mode=getMode(),validate=document.getElementById('chkValidate').checked;
+    var text=inputEl.value.trim(),enc=getEnc(),validate=document.getElementById('chkValidate').checked;
     if(!text){outputEl.textContent='';previewArea.style.display='none';vr.innerHTML='';setStatus(t('b64.emptyInput','请先输入文本或选择文件'),'error');return;}
     try{
       var result;
       if(type==='encode'){
-        var encoded=btoa(unescape(encodeURIComponent(text)));
-        result=mode==='urlsafe'?toUrlSafe(encoded):encoded;
-        if(validate){var validMsg=t('b64.validEncode','编码结果已就绪');vr.innerHTML='<span class="valid-msg ok">'+validMsg+'</span>';}
+        result=encodeText(text,enc);
+        if(validate&&enc==='base64'){
+          var validMsg=t('b64.validEncode','编码结果已就绪');
+          vr.innerHTML='<span class="valid-msg ok">'+validMsg+'</span>';
+        }else{vr.innerHTML='';}
       }else{
-        var processed=mode==='urlsafe'?toStandard(text):text;
-        if(validate&&!isValidBase64(processed)){
+        if(validate&&enc==='base64'&&!isValidBase64(getMode()==='urlsafe'?toStandard(text):text)){
           var invalidMsg=t('b64.invalidInput','输入不是有效的 Base64');
           vr.innerHTML='<span class="valid-msg fail">'+invalidMsg+'</span>';
           outputEl.textContent='';
@@ -80,10 +406,10 @@
           return;
         }
         vr.innerHTML='';
-        result=decodeURIComponent(escape(atob(processed)));
+        result=decodeText(text,enc);
       }
       outputEl.textContent=result;
-      if(type==='decode'){
+      if(type==='decode'&&enc==='base64'){
         if(text.indexOf('data:image/')===0){
           previewArea.style.display='block';previewImage.src=text;
           var mime=text.match(/^data:([^;]+);/);
@@ -92,14 +418,14 @@
             setStatus(t('b64.downloaded','图片已开始下载'));
           };
         }else{previewArea.style.display='none';}
-      }
+      }else{previewArea.style.display='none';}
       setStatus('');
     }catch(e){
       outputEl.textContent='';previewArea.style.display='none';
       if(type==='decode'){
-        setStatus(t('b64.invalidInput','输入不是有效的 Base64'),'error');
+        setStatus(t('b64.decodeFailed','解码失败：输入格式无效'),'error');
       }else{
-        setStatus(t('b64.invalidFormat','当前输出不是有效的图片数据'),'error');
+        setStatus(t('b64.encodeFailed','编码失败'),'error');
       }
     }
   }

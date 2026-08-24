@@ -24,6 +24,8 @@
       <textarea id="uaInput" class="input textarea js-focus-input" style="min-height:80px;" data-i18n-placeholder="ui.101" placeholder="粘贴 User-Agent 字符串..."></textarea>
     </div>
     <button id="parseBtn" class="btn btn-primary" data-i18n="ui.parse">解析</button>
+    <button id="myUABtn" class="btn" data-i18n="ui.myUA">我的 UA</button>
+    <button id="copyUABtn" class="btn" data-i18n="ui.copyUA">复制 UA</button>
     <div class="ua-grid" id="uaGrid"></div>
   </main>
   <footer class="global-footer">
@@ -43,6 +45,7 @@
       else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) { browser = 'Opera ' + match(ua, /(?:OPR|Opera)\/([\d.]+)/); }
       else if (/Chrome\//i.test(ua)) { browser = 'Chrome ' + match(ua, /Chrome\/([\d.]+)/); }
       else if (/Firefox\//i.test(ua)) { browser = 'Firefox ' + match(ua, /Firefox\/([\d.]+)/); }
+      else if (/Trident\//i.test(ua) || /MSIE/i.test(ua)) { browser = 'IE ' + match(ua, /MSIE ([\d.]+)/); }
       else if (/Safari\//i.test(ua)) { browser = 'Safari ' + match(ua, /Version\/([\d.]+)/); }
       if (/Windows NT/i.test(ua)) { os = 'Windows ' + match(ua, /Windows NT ([\d.]+)/); }
       else if (/Mac OS X/i.test(ua)) { os = 'macOS ' + match(ua, /Mac OS X ([\d_]+)/).replace(/_/g, '.'); }
@@ -61,7 +64,10 @@
         { label: t('ui.5','浏览器'), val: d.browser },
         { label: t('ui.4','操作系统'), val: d.os },
         { label: t('ui.3','渲染引擎'), val: d.engine },
-        { label: t('ui.2','设备类型'), val: d.device }
+        { label: t('ui.2','设备类型'), val: d.device },
+        { label: t('ui.lang','语言'), val: navigator.language || navigator.userLanguage || t('unknown','未知') },
+        { label: t('ui.platform','平台'), val: navigator.platform || t('unknown','未知') },
+        { label: t('ui.browserVersion','浏览器版本'), val: navigator.appVersion || t('unknown','未知') }
       ];
       var html = '';
       for (var i = 0; i < items.length; i++) {
@@ -77,6 +83,12 @@
       setStatus(t('ui.1','解析完成'));
     }
     document.getElementById('parseBtn').addEventListener('click', doParse);
+    document.getElementById('myUABtn').addEventListener('click', function() { inputEl.value = navigator.userAgent; doParse(); });
+    document.getElementById('copyUABtn').addEventListener('click', function() {
+      var v = inputEl.value.trim();
+      if (!v) { setStatus(t('ui.100','请输入 User-Agent'), 'error'); return; }
+      copyToClipboard(v, this);
+    });
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && e.ctrlKey) doParse(); });
     inputEl.value = navigator.userAgent;
     doParse();

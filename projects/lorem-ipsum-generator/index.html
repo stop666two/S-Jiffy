@@ -31,7 +31,11 @@
 <select id="loremLocale" class="input" style="width:auto;">
 <option value="latin" data-i18n="ui.8">拉丁语</option><option value="english" data-i18n="ui.9">英语</option><option value="chinese" data-i18n="ui.10">中文</option>
 </select></div>
-<div><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
+<div class="field" style="display:flex;flex-direction:column;gap:6px;padding-bottom:4px;">
+<label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0;"><input type="checkbox" id="classicChk" checked><span data-i18n="ui.classic">以 "Lorem ipsum..." 开头</span></label>
+<label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0;"><input type="checkbox" id="punctChk" checked><span data-i18n="ui.punct">添加标点（逗号/句号）</span></label>
+</div>
+<div style="align-self:center;"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
 </div>
 <div class="gen-stats" id="genStats">
 <span class="stat">单词：<strong id="statWords">0</strong></span>
@@ -47,28 +51,43 @@
 <script>
 (function(){
   var loremUnit=document.getElementById('loremUnit'),loremCount=document.getElementById('loremCount'),loremFormat=document.getElementById('loremFormat'),loremLocale=document.getElementById('loremLocale');
+  var classicChk=document.getElementById('classicChk'),punctChk=document.getElementById('punctChk');
   var generateBtn=document.getElementById('generateBtn'),outputEl=document.getElementById('outputText');
   var statWords=document.getElementById('statWords'),statChars=document.getElementById('statChars'),statParas=document.getElementById('statParas'),statSents=document.getElementById('statSents');
 
   var wordLists={
-    latin:['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','aliquip','ex','ea','commodo','consequat','duis','aute','irure','reprehenderit','voluptate','velit','esse','cillum','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','officia','deserunt','mollit','anim','id','est','laborum'],
+    latin:['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','aliquip','ex','ea','commodo','consequat','duis','aute','irure','reprehenderit','voluptate','velit','esse','cillum','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','officia','deserunt','mollit','anim','id','est','laborum','perspiciatis','unde','omnis','iste','natus','error','voluptatem','accusantium','doloremque','laudantium','totam','rem','aperiam','eaque','ipsa','quae','ab','illo','inventore','veritatis','quasi','architecto','beatae','vitae','dicta','explicabo','nemo','voluptas','aspernatur','aut','odit','fugit','quia','consequuntur','magni','dolores','eos','ratione','sequi','nesciunt','neque','porro','quisquam','est','qui','dolorem','adipisci','velit','non','numquam','modi','tempora','incidunt','dolore','magnam','aliquam','quaerat','minima','nostrum','exercitationem','ullam','corporis','suscipit','laboriosam','aliquid','commodi','consequatur','autem','vel','eum','iure','reprehenderit','in','ea','quam','nihil','molestiae','illum','quo','voluptas'],
     english:['the','quick','brown','fox','jumps','over','lazy','dog','hello','world','example','sample','text','generate','random','content','placeholder','data','value','test','demo','user','input', t('ui.23','输出'),'format','parser','builder','maker','tool','utility','function','method','variable','constant','string','number','array','object','boolean','null','undefined'],
     chinese:[ t('ui.33','你好'), t('ui.32','世界'), t('ui.31','示例'), t('ui.30','文本'), t('ui.generate','生成'), t('ui.29','随机'), t('ui.28','内容'), t('ui.27','占位'), t('ui.26','数据'), t('ui.test','测试'), t('ui.25','用户'), t('ui.24','输入'), t('ui.23','输出'), t('ui.22','格式'), t('ui.parse','解析'), t('ui.21','构建'), t('ui.20','工具'), t('ui.19','功能'), t('ui.18','方法'), t('ui.17','变量'), t('ui.16','常量'), t('ui.string','字符串'), t('ui.15','数字'), t('ui.14','数组'), t('ui.13','对象'), t('ui.12','布尔'), t('ui.11','空值')]
   };
+  var CLASSIC=['Lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua'];
   function getWords(){return wordLists[loremLocale.value]||wordLists.latin;}
   function randomWord(){var w=getWords();return w[Math.floor(Math.random()*w.length)];}
   function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
-  function makeSentence(){var len=5+Math.floor(Math.random()*10),sent=[];for(var i=0;i<len;i++)sent.push(randomWord());return capitalize(sent.join(' '))+'.';}
+  function makeSentence(isFirst){
+    var len=5+Math.floor(Math.random()*10),sent=[];
+    var classic=classicChk.checked&&isFirst;
+    for(var i=0;i<len;i++){sent.push(classic&&i<CLASSIC.length?CLASSIC[i]:randomWord());}
+    var text='';
+    var punct=punctChk.checked;
+    for(var j=0;j<sent.length;j++){
+      if(j===0){text+=sent[j];continue;}
+      var commaEvery=Math.floor(sent.length/3);
+      if(punct&&commaEvery>0&&j%commaEvery===0&&j<sent.length-1){text+=', '+sent[j];}
+      else{text+=' '+sent[j];}
+    }
+    return capitalize(text)+'.';
+  }
 
   function generate(){
     var unit=loremUnit.value,count=parseInt(loremCount.value,10)||1;if(count<1)count=1;
     var max=unit==='chars'||unit==='bytes'?10000:500;if(count>max)count=max;
     var format=loremFormat.value,result=[];
     if(unit==='words'){for(var i=0;i<count;i++)result.push(randomWord());outputEl.textContent=result.join(' ');}
-    else if(unit==='chars'){var str='';while(str.replace(/\s/g,'').length<count)str+=makeSentence()+' ';outputEl.textContent=str.trim();}
-    else if(unit==='bytes'){var str2='',target=count;while(new TextEncoder().encode(str2).length<target)str2+=makeSentence()+' ';outputEl.textContent=str2.trim();}
-    else if(unit==='sentences'){for(var i=0;i<count;i++)result.push(makeSentence());outputEl.textContent=result.join(' ');}
-    else{for(var p=0;p<count;p++){var para=[],sentCount=3+Math.floor(Math.random()*5);for(var i=0;i<sentCount;i++)para.push(makeSentence());result.push(para.join(' '));}
+    else if(unit==='chars'){var str='';while(str.replace(/\s/g,'').length<count)str+=makeSentence(str==='')+' ';outputEl.textContent=str.trim();}
+    else if(unit==='bytes'){var str2='',target=count;while(new TextEncoder().encode(str2).length<target)str2+=makeSentence(str2==='')+' ';outputEl.textContent=str2.trim();}
+    else if(unit==='sentences'){for(var i=0;i<count;i++)result.push(makeSentence(i===0));outputEl.textContent=result.join(' ');}
+    else{for(var p=0;p<count;p++){var para=[],sentCount=3+Math.floor(Math.random()*5);for(var i=0;i<sentCount;i++)para.push(makeSentence(p===0&&i===0));result.push(para.join(' '));}
     outputEl.textContent=result.join('\n\n');}
 
     var raw=outputEl.textContent;

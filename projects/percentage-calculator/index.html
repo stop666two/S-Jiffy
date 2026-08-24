@@ -12,6 +12,15 @@
     .pc-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); display:block; margin-bottom:4px; }
     .pc-row .field { flex:1; min-width:120px; }
     .pc-row .op { font-size:var(--font-size-lg); padding-bottom:12px; color:var(--color-text-secondary); }
+    .pc-tabs { display:flex; gap:var(--space-1); margin-bottom:var(--space-3); }
+    .pc-tabs button { flex:1; height:44px; font-size:var(--font-size-sm); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; transition:all .15s; }
+    .pc-tabs button.active { background:var(--color-text-primary); color:#fff; border-color:var(--color-text-primary); }
+    .two-cols { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); margin-bottom:var(--space-2); }
+    .stat-row { display:flex; gap:var(--space-2); margin-bottom:var(--space-3); flex-wrap:wrap; }
+    .stat-item { padding:var(--space-2); border:1px solid var(--color-border); border-radius:var(--radius-md); text-align:center; flex:1; min-width:100px; }
+    .stat-item .stat-value { font-size:var(--font-size-xl); font-weight:600; display:block; }
+    .stat-item .stat-label { font-size:var(--font-size-xs); color:var(--color-text-secondary); }
+    @media(max-width:600px){.two-cols{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -20,8 +29,12 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">百分比计算器</h1>
-    <p class="tool-desc" data-i18n="desc">百分比快速计算：求百分比、求占比、求变化率。</p>
-    <div class="card">
+    <p class="tool-desc" data-i18n="desc">百分比快速计算：求百分比、求占比、求变化率，并可对比两段文本的相似度与差异百分比。</p>
+    <div class="pc-tabs">
+      <button id="tabCalc" class="active" type="button" data-i18n="ui.tabCalc">百分比计算</button>
+      <button id="tabDiff" type="button" data-i18n="ui.tabDiff">文本差异</button>
+    </div>
+    <div class="card" id="panelCalc">
       <div class="pc-form">
         <div class="pc-row">
           <div class="field"><label for="pctA" data-i18n="ui.1">数值 A</label><input id="pctA" class="input" type="number" value="20"></div>
@@ -41,6 +54,19 @@
           <div class="field"><label for="pctNew" data-i18n="ui.7">新值</label><input id="pctNew" class="input" type="number" value="150"></div>
           <div><button id="pctChangeBtn" class="btn btn-primary" data-i18n="ui.8">求变化率</button></div>
         </div>
+      </div>
+    </div>
+    <div class="card" id="panelDiff" style="display:none;">
+      <div class="two-cols">
+        <div><label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.textA">文本 A...</label><textarea id="textA" class="input textarea" style="min-height:120px;"></textarea></div>
+        <div><label style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.textB">文本 B...</label><textarea id="textB" class="input textarea" style="min-height:120px;"></textarea></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-item"><span class="stat-value" id="diffPct">—</span><span class="stat-label" data-i18n="ui.diffPct">差异百分比</span></div>
+        <div class="stat-item"><span class="stat-value" id="simPct">—</span><span class="stat-label" data-i18n="ui.simPct">相似度</span></div>
+        <div class="stat-item"><span class="stat-value" id="sameChars">—</span><span class="stat-label" data-i18n="ui.sameChars">相同字符数</span></div>
+        <div class="stat-item"><span class="stat-value" id="diffChars">—</span><span class="stat-label" data-i18n="ui.diffChars">差异字符数</span></div>
+        <div class="stat-item"><span class="stat-value" id="lenDiff">—</span><span class="stat-label" data-i18n="ui.lenDiff">长度差</span></div>
       </div>
     </div>
     <div class="output-box">
@@ -67,6 +93,48 @@
       var pctOfBtn = document.getElementById('pctOfBtn');
       var pctWhatBtn = document.getElementById('pctWhatBtn');
       var pctChangeBtn = document.getElementById('pctChangeBtn');
+
+      var tabCalc = document.getElementById('tabCalc'), tabDiff = document.getElementById('tabDiff');
+      var panelCalc = document.getElementById('panelCalc'), panelDiff = document.getElementById('panelDiff');
+      function switchTab(which) {
+        if (which === 'calc') {
+          tabCalc.className = 'active'; tabDiff.className = '';
+          panelCalc.style.display = ''; panelDiff.style.display = 'none';
+        } else {
+          tabDiff.className = 'active'; tabCalc.className = '';
+          panelDiff.style.display = ''; panelCalc.style.display = 'none';
+          computeDiff();
+        }
+      }
+      tabCalc.addEventListener('click', function () { switchTab('calc'); });
+      tabDiff.addEventListener('click', function () { switchTab('diff'); });
+
+      var textA = document.getElementById('textA'), textB = document.getElementById('textB');
+      var dpEl = document.getElementById('diffPct'), spEl = document.getElementById('simPct');
+      var scEl = document.getElementById('sameChars'), dcEl = document.getElementById('diffChars'), ldEl = document.getElementById('lenDiff');
+
+      function computeDiff() {
+        var a = textA.value, b = textB.value;
+        var maxLen = Math.max(a.length, b.length);
+        if (maxLen === 0) {
+          dpEl.textContent = '—'; spEl.textContent = '—'; scEl.textContent = '—'; dcEl.textContent = '—'; ldEl.textContent = '—';
+          outputEl.textContent = '';
+          return;
+        }
+        var same = 0, minLen = Math.min(a.length, b.length);
+        for (var i = 0; i < minLen; i++) { if (a[i] === b[i]) same++; }
+        var diffCharsVal = maxLen - same;
+        var diffPct = Math.round(diffCharsVal / maxLen * 10000) / 100;
+        var simPct = Math.round(same / maxLen * 10000) / 100;
+        dpEl.textContent = diffPct + '%';
+        spEl.textContent = simPct + '%';
+        scEl.textContent = same;
+        dcEl.textContent = diffCharsVal;
+        ldEl.textContent = Math.abs(a.length - b.length);
+        outputEl.textContent = t('ui.diff.lead','差异: ') + diffPct + t('ui.diff.sim','% | 相似: ') + simPct + t('ui.diff.same','% | 相同: ') + same + t('ui.diff.diff',' | 差异: ') + diffCharsVal + t('ui.diff.len',' | 长度差: ') + Math.abs(a.length - b.length);
+      }
+      textA.addEventListener('input', computeDiff);
+      textB.addEventListener('input', computeDiff);
 
       pctOfBtn.addEventListener('click', function () {
         var a = parseFloat(pctA.value);

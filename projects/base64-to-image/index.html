@@ -3,29 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Base64 转图片 - S-Jiffy</title>
+  <title>Base64 与图片互转 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); flex-wrap: wrap; }
+    .dc-tabs button { flex: 1; min-width: 120px; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+  </style>
 </head>
 <body>
   <header class="global-header">
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">Base64 转图片</h1>
-    <p class="tool-desc" data-i18n="desc">粘贴 Base64 数据 URL，预览并下载图片。</p>
-    <div class="card">
-      <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 Base64 数据 URL (data:image/...)"></textarea>
+    <h1 data-i18n="h1">Base64 与图片互转</h1>
+    <p class="tool-desc" data-i18n="desc">图片与 Base64 数据 URL 双向转换：粘贴转图片预览下载，或上传图片生成 Base64 字符串。</p>
+    <div class="dc-tabs">
+      <button class="tab-btn active" data-mode="toimg" data-i18n="ui.tab1">转图片</button>
+      <button class="tab-btn" data-mode="tob64" data-i18n="ui.tab2">转 Base64</button>
     </div>
-    <div style="display:flex;gap:12px;margin-bottom:24px;">
-      <button id="previewBtn" class="btn btn-primary" data-i18n="ui.1">预览</button>
-      <a id="downloadLink" class="btn btn-secondary" style="display:inline-flex;text-decoration:none;" download="image.png" data-i18n="ui.2">下载图片</a>
+    <div id="panel-toimg" class="tab-panel">
+      <div class="card">
+        <textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.102" placeholder="粘贴 Base64 数据 URL (data:image/...)" style="min-height:120px;"></textarea>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:24px;">
+        <button id="previewBtn" class="btn btn-primary" data-i18n="ui.1">预览</button>
+        <a id="downloadLink" class="btn btn-secondary" style="display:inline-flex;text-decoration:none;" download="image.png" data-i18n="ui.2">下载图片</a>
+      </div>
+      <div id="imagePreview" style="display:none;margin-bottom:24px;">
+        <img id="previewImg" style="max-width:100%;max-height:400px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+      </div>
     </div>
-    <div id="imagePreview" style="display:none;margin-bottom:24px;">
-      <img id="previewImg" style="max-width:100%;max-height:400px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+    <div id="panel-tob64" class="tab-panel" style="display:none;">
+      <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+        <button id="fileBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="ui.fileBtn">📁 选择图片</button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+        <div id="filePreviewArea" style="max-width:300px;display:none;">
+          <img id="filePreviewImg" style="max-width:100%;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+        </div>
+      </div>
     </div>
     <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
+      <span id="outputText" style="display:block;padding-right:60px;font-size:12px;word-break:break-all;"></span>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
@@ -37,13 +57,25 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function() {
+      var outputEl = document.getElementById('outputText');
+      var copyBtn = document.getElementById('copyBtn');
+
+      var tabBtns = document.querySelectorAll('.tab-btn');
+      var panelIds = { toimg: 'panel-toimg', tob64: 'panel-tob64' };
+      for (var ti = 0; ti < tabBtns.length; ti++) {
+        tabBtns[ti].addEventListener('click', function() {
+          var mode = this.getAttribute('data-mode');
+          for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+          this.classList.add('active');
+          for (var k in panelIds) document.getElementById(panelIds[k]).style.display = (k === mode) ? '' : 'none';
+        });
+      }
+
       var inputEl = document.getElementById('inputText');
       var previewBtn = document.getElementById('previewBtn');
       var downloadLink = document.getElementById('downloadLink');
       var previewImg = document.getElementById('previewImg');
       var imagePreview = document.getElementById('imagePreview');
-      var outputEl = document.getElementById('outputText');
-      var copyBtn = document.getElementById('copyBtn');
 
       function process() {
         var dataUrl = inputEl.value.trim();
@@ -66,6 +98,32 @@
       }
 
       previewBtn.addEventListener('click', process);
+      inputEl.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') process();
+      });
+
+      var fileBtn = document.getElementById('fileBtn');
+      var fileInput = document.getElementById('fileInput');
+      var filePreviewImg = document.getElementById('filePreviewImg');
+      var filePreviewArea = document.getElementById('filePreviewArea');
+
+      if (fileBtn) fileBtn.addEventListener('click', function() { fileInput.click(); });
+      fileInput.addEventListener('change', function() {
+        var file = fileInput.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var dataUrl = e.target.result;
+          outputEl.textContent = dataUrl;
+          filePreviewImg.src = dataUrl;
+          filePreviewArea.style.display = 'block';
+          setStatus(t('ui.done','转换完成，共 ') + dataUrl.length + t('ui.chars',' 字符'));
+        };
+        reader.onerror = function() {
+          setStatus(t('ui.readFail','读取文件失败'), 'error');
+        };
+        reader.readAsDataURL(file);
+      });
 
       copyBtn.addEventListener('click', function() {
         var text = outputEl.textContent;
@@ -73,10 +131,6 @@
           copyToClipboard(text, copyBtn);
           setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
-      });
-
-      inputEl.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') process();
       });
     })();
   </script>

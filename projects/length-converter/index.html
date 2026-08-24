@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>长度单位转换 - S-Jiffy</title>
+  <title>单位转换器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
@@ -11,6 +11,9 @@
     .len-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
     .len-row .field { flex:1; min-width:120px; }
     .len-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .dim-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--space-3); }
+    .dim-row label { display:block; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+    .dim-row select { height:44px; min-width:180px; padding:0 var(--space-2); font-size:var(--font-size-base); border:1px solid var(--color-border); border-radius:var(--radius-md); outline:none; background:var(--color-bg); cursor:pointer; }
   </style>
 </head>
 <body>
@@ -18,24 +21,20 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">长度单位转换</h1>
-    <p class="tool-desc" data-i18n="desc">m / cm / km / in / ft / yd / mi 互转。</p>
+    <h1 data-i18n="h1">单位转换器</h1>
+    <p class="tool-desc" data-i18n="desc">长度、面积、体积、速度四类单位互转，支持米、英寸、公顷、加仑、节等 24 种单位</p>
     <div class="card">
-      <div class="len-grid">
-        <div class="len-row">
-          <div class="field"><label for="inputM" data-i18n="ui.1">米 (m)</label><input id="inputM" class="input" type="number" value="100"></div>
-          <div class="field"><label for="inputCm" data-i18n="ui.2">厘米 (cm)</label><input id="inputCm" class="input" type="number" value="10000"></div>
-          <div class="field"><label for="inputKm" data-i18n="ui.3">千米 (km)</label><input id="inputKm" class="input" type="number" value="0.1"></div>
-        </div>
-        <div class="len-row">
-          <div class="field"><label for="inputIn" data-i18n="ui.4">英寸 (in)</label><input id="inputIn" class="input" type="number" value="3937.01"></div>
-          <div class="field"><label for="inputFt" data-i18n="ui.5">英尺 (ft)</label><input id="inputFt" class="input" type="number" value="328.08"></div>
-          <div class="field"><label for="inputYd" data-i18n="ui.6">码 (yd)</label><input id="inputYd" class="input" type="number" value="109.36"></div>
-        </div>
-        <div class="len-row">
-          <div class="field"><label for="inputMi" data-i18n="ui.7">英里 (mi)</label><input id="inputMi" class="input" type="number" value="0.06"></div>
+      <div class="dim-row">
+        <div><label for="dimSel" data-i18n="ui.dimLabel">量纲</label>
+          <select id="dimSel">
+            <option value="length" data-i18n="dim.length">长度</option>
+            <option value="area" data-i18n="dim.area">面积</option>
+            <option value="volume" data-i18n="dim.volume">体积</option>
+            <option value="speed" data-i18n="dim.speed">速度</option>
+          </select>
         </div>
       </div>
+      <div class="len-grid" id="unitGrid"></div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -50,47 +49,122 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function() {
-      var inputM = document.getElementById('inputM');
-      var inputCm = document.getElementById('inputCm');
-      var inputKm = document.getElementById('inputKm');
-      var inputIn = document.getElementById('inputIn');
-      var inputFt = document.getElementById('inputFt');
-      var inputYd = document.getElementById('inputYd');
-      var inputMi = document.getElementById('inputMi');
+      var dimSel = document.getElementById('dimSel');
+      var gridEl = document.getElementById('unitGrid');
       var outputEl = document.getElementById('outputText');
       var copyBtn = document.getElementById('copyBtn');
       var updating = false;
 
-      function r(v) { return Math.round(v * 1e8) / 1e8; }
+      var DIMS = [
+        {
+          id: 'length', label: t('dim.length','长度'), dec: 8, def: 100, defUnit: 'm',
+          units: [
+            { id: 'm', key: 'u.m', label: t('u.m','米 (m)'), factor: 1 },
+            { id: 'cm', key: 'u.cm', label: t('u.cm','厘米 (cm)'), factor: 0.01 },
+            { id: 'km', key: 'u.km', label: t('u.km','千米 (km)'), factor: 1000 },
+            { id: 'in', key: 'u.in', label: t('u.in','英寸 (in)'), factor: 1 / 39.3701 },
+            { id: 'ft', key: 'u.ft', label: t('u.ft','英尺 (ft)'), factor: 1 / 3.28084 },
+            { id: 'yd', key: 'u.yd', label: t('u.yd','码 (yd)'), factor: 1 / 1.09361 },
+            { id: 'mi', key: 'u.mi', label: t('u.mi','英里 (mi)'), factor: 1609.344 }
+          ],
+          summary: ['m', 'km', 'ft', 'mi']
+        },
+        {
+          id: 'area', label: t('dim.area','面积'), dec: 6, def: 10000, defUnit: 'm2',
+          units: [
+            { id: 'm2', key: 'u.m2', label: t('u.m2','平方米 (m²)'), factor: 1 },
+            { id: 'km2', key: 'u.km2', label: t('u.km2','平方千米 (km²)'), factor: 1e6 },
+            { id: 'ha', key: 'u.ha', label: t('u.ha','公顷 (ha)'), factor: 10000 },
+            { id: 'acre', key: 'u.acre', label: t('u.acre','英亩 (acre)'), factor: 4046.86 },
+            { id: 'ft2', key: 'u.ft2', label: t('u.ft2','平方英尺 (ft²)'), factor: 1 / 10.7639 },
+            { id: 'in2', key: 'u.in2', label: t('u.in2','平方英寸 (in²)'), factor: 1 / 1550.0031 }
+          ],
+          summary: ['m2', 'km2', 'ha', 'acre']
+        },
+        {
+          id: 'volume', label: t('dim.volume','体积'), dec: 4, def: 10, defUnit: 'l',
+          units: [
+            { id: 'l', key: 'u.l', label: t('u.l','升 (L)'), factor: 1 },
+            { id: 'ml', key: 'u.ml', label: t('u.ml','毫升 (mL)'), factor: 0.001 },
+            { id: 'gal', key: 'u.gal', label: t('u.gal','加仑 (gal)'), factor: 1 / 0.264172 },
+            { id: 'qt', key: 'u.qt', label: t('u.qt','夸脱 (qt)'), factor: 1 / 1.05669 },
+            { id: 'pt', key: 'u.pt', label: t('u.pt','品脱 (pt)'), factor: 1 / 2.11338 },
+            { id: 'cup', key: 'u.cup', label: t('u.cup','杯 (cup)'), factor: 1 / 4.22675 }
+          ],
+          summary: ['l', 'gal', 'qt', 'cup']
+        },
+        {
+          id: 'speed', label: t('dim.speed','速度'), dec: 2, def: 100, defUnit: 'kmh',
+          units: [
+            { id: 'kmh', key: 'u.kmh', label: t('u.kmh','公里/时 (km/h)'), factor: 1 },
+            { id: 'mph', key: 'u.mph', label: t('u.mph','英里/时 (mph)'), factor: 1 / 0.621371 },
+            { id: 'knot', key: 'u.knot', label: t('u.knot','节 (knot)'), factor: 1 / 0.539957 },
+            { id: 'ms', key: 'u.ms', label: t('u.ms','米/秒 (m/s)'), factor: 3.6 }
+          ],
+          summary: ['kmh', 'mph', 'knot', 'ms']
+        }
+      ];
 
-      function fromMeters(m) {
-        if (updating) return;
+      var current = null;
+      var inputs = {};
+
+      function r(v, dec) {
+        var p = Math.pow(10, dec);
+        return Math.round(v * p) / p;
+      }
+
+      function fromBase(base) {
+        if (updating || !current) return;
         updating = true;
-        inputM.value = m;
-        inputCm.value = r(m * 100);
-        inputKm.value = r(m / 1000);
-        inputIn.value = r(m * 39.3701);
-        inputFt.value = r(m * 3.28084);
-        inputYd.value = r(m * 1.09361);
-        inputMi.value = r(m / 1609.344);
-        outputEl.textContent = m + ' m = ' + inputKm.value + ' km = ' + inputFt.value + ' ft = ' + inputMi.value + ' mi';
+        for (var i = 0; i < current.units.length; i++) {
+          var u = current.units[i];
+          inputs[u.id].value = r(base / u.factor, current.dec);
+        }
+        var parts = [];
+        for (var j = 0; j < current.summary.length; j++) {
+          var su = current.summary[j];
+          parts.push(inputs[su].value + ' ' + current.units.filter(function (x) { return x.id === su; })[0].label);
+        }
+        outputEl.textContent = parts.join(' = ');
         updating = false;
       }
 
-      inputM.addEventListener('input', function() { fromMeters(parseFloat(this.value) || 0); });
-      inputCm.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) / 100); });
-      inputKm.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) * 1000); });
-      inputIn.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) / 39.3701); });
-      inputFt.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) / 3.28084); });
-      inputYd.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) / 1.09361); });
-      inputMi.addEventListener('input', function() { fromMeters((parseFloat(this.value) || 0) * 1609.344); });
+      function rebuild(dimId) {
+        for (var i = 0; i < DIMS.length; i++) {
+          if (DIMS[i].id === dimId) { current = DIMS[i]; break; }
+        }
+        var html = '';
+        var us = current.units;
+        for (var j = 0; j < us.length; j += 2) {
+          html += '<div class="len-row">';
+          for (var k = j; k < Math.min(j + 2, us.length); k++) {
+            var u = us[k];
+            html += '<div class="field"><label for="input_' + u.id + '" data-i18n="' + u.key + '">' + htmlEscape(u.label) + '</label><input id="input_' + u.id + '" class="input" type="number" step="any"></div>';
+          }
+          html += '</div>';
+        }
+        gridEl.innerHTML = html;
+        inputs = {};
+        for (var m = 0; m < us.length; m++) {
+          (function (u) {
+            var el = document.getElementById('input_' + u.id);
+            inputs[u.id] = el;
+            el.addEventListener('input', function () {
+              fromBase((parseFloat(this.value) || 0) * u.factor);
+            });
+          })(us[m]);
+        }
+        fromBase(current.def);
+      }
 
-      copyBtn.addEventListener('click', function() {
+      dimSel.addEventListener('change', function () { rebuild(dimSel.value); });
+
+      copyBtn.addEventListener('click', function () {
         var text = outputEl.textContent;
         if (text) { copyToClipboard(text, copyBtn); setStatus(t('ui.copiedClip','已复制到剪贴板')); }
       });
 
-      fromMeters(100);
+      rebuild('length');
     })();
   </script>
 </body>

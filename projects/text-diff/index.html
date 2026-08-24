@@ -17,12 +17,19 @@
 .diff-stat.same{background:var(--color-bg-soft);color:var(--color-text-secondary);}
 .mode-select{margin-bottom:12px;display:flex;gap:12px;align-items:center;}
 .mode-select label{font-size:var(--font-size-sm);display:flex;align-items:center;gap:4px;cursor:pointer;}
+.diff-line-num{display:inline-block;width:32px;text-align:right;color:#999;margin-right:8px;user-select:none;}
+.char-diff-output{font-size:14px;line-height:2;word-break:break-all;}
+.char-summary{font-size:var(--font-size-sm);margin-bottom:var(--space-2);}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-1);margin-bottom:var(--space-2);}
+.st-item{background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);text-align:center;}
+.st-item .val{font-size:var(--font-size-lg);font-weight:700;font-family:var(--font-mono);}
+.st-item .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:2px;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">文本对比</h1>
-<p class="tool-desc" data-i18n="desc">行级、词级或字符级对比，高亮显示新增和删除内容。</p>
+<p class="tool-desc" data-i18n="desc">行级、词级或字符级对比，高亮新增/删除内容，并提供相似度、编辑距离、Jaccard 等统计。</p>
 <div class="diff-container">
 <div class="diff-pane"><label for="textA" data-i18n="ui.1">文本 A（原文）</label><textarea id="textA" class="input textarea" data-i18n-placeholder="ui.100" placeholder="原文..." style="min-height:200px;"></textarea></div>
 <div class="diff-pane"><label for="textB" data-i18n="ui.2">文本 B（修改后）</label><textarea id="textB" class="input textarea" data-i18n-placeholder="ui.101" placeholder="修改后的文本..." style="min-height:200px;"></textarea></div>
@@ -37,6 +44,10 @@
 <button id="swapBtn" class="btn btn-secondary" data-i18n="ui.4">交换</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
 </div>
+<div id="statsCard" class="card" style="display:none;">
+<label class="sub-label" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;" data-i18n="st.title">统计信息</label>
+<div class="st-grid" id="statsGrid"></div>
+</div>
 <div id="diffStats" class="diff-stats"></div>
 <div class="output-box" id="outputContainer"><span id="outputText" style="display:block;padding-right:60px;font-size:12px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
@@ -45,6 +56,7 @@
 <script>
 (function(){
   var textA=document.getElementById('textA'),textB=document.getElementById('textB'),outputEl=document.getElementById('outputText'),diffStats=document.getElementById('diffStats');
+  var statsCard=document.getElementById('statsCard'),statsGrid=document.getElementById('statsGrid');
 
   function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -65,6 +77,58 @@
   function diffChars(a,b){
     return LCS(a.split(''),b.split(''));}
 
+  /* ---- statistics (merged from text-comparison) ---- */
+  function levenshtein(a,b){
+    var m=a.length,n=b.length;var dp=[];
+    for(var i=0;i<=m;i++){dp[i]=[i];}
+    for(var j=0;j<=n;j++){dp[0][j]=j;}
+    for(var i2=1;i2<=m;i2++){for(var j2=1;j2<=n;j2++){var cost=a[i2-1]===b[j2-1]?0:1;dp[i2][j2]=Math.min(dp[i2-1][j2]+1,dp[i2][j2-1]+1,dp[i2-1][j2-1]+cost);}}
+    return dp[m][n];}
+
+  function charOverlap(a,b){
+    var setA={},setB={};for(var i=0;i<a.length;i++)setA[a[i]]=true;
+    for(var j=0;j<b.length;j++)setB[b[j]]=true;
+    var intersection=0;for(var k in setA){if(setB[k])intersection++;}
+    var union=Object.keys(setA).length+Object.keys(setB).length-intersection;
+    return{intersection:intersection,union:union,jaccard:union>0?intersection/union:0};}
+
+  function renderStats(a,b){
+    var lenA=a.length,lenB=b.length;
+    var wordsA=a.trim()?a.trim().split(/\s+/):[];
+    var wordsB=b.trim()?b.trim().split(/\s+/):[];
+    var wcA=wordsA.length,wcB=wordsB.length;
+    var editDist=levenshtein(a,b);
+    var maxLen=Math.max(lenA,lenB,1);
+    var sim=Math.round((1-editDist/maxLen)*10000)/100;
+    var overlap=charOverlap(a,b);
+    var items=[
+      {lbl:t('st.lenA','A 长度'),val:lenA+t('st.chars',' 字符')},
+      {lbl:t('st.lenB','B 长度'),val:lenB+t('st.chars',' 字符')},
+      {lbl:t('st.wordCountA','A 词数'),val:wcA+t('st.words',' 词')},
+      {lbl:t('st.wordCountB','B 词数'),val:wcB+t('st.words',' 词')},
+      {lbl:t('st.editDist','编辑距离'),val:editDist+t('st.edits',' 处')},
+      {lbl:t('st.similarity','相似度'),val:sim+'%'},
+      {lbl:t('st.jaccard','字符重合度 (Jaccard)'),val:Math.round(overlap.jaccard*10000)/100+'%'},
+      {lbl:t('st.uniqueA','A 唯一字符'),val:Object.keys(charOverlap(a,'')).length},
+      {lbl:t('st.uniqueB','B 唯一字符'),val:Object.keys(charOverlap(b,'')).length},
+      {lbl:t('st.lenDiff','长度差'),val:(lenA-lenB)+(lenA>=lenB?t('st.longerA','（A 较长）'):t('st.longerB','（B 较长）'))}
+    ];
+    statsGrid.innerHTML='';
+    for(var i=0;i<items.length;i++){
+      var item=document.createElement('div');
+      item.className='st-item';
+      var val=document.createElement('div');
+      val.className='val';
+      val.textContent=items[i].val;
+      var lbl=document.createElement('div');
+      lbl.className='lbl';
+      lbl.textContent=items[i].lbl;
+      item.appendChild(val);item.appendChild(lbl);
+      statsGrid.appendChild(item);
+    }
+    statsCard.style.display='';
+  }
+
   document.getElementById('diffBtn').addEventListener('click',function(){
     var mode=document.querySelector('input[name="diffMode"]:checked').value;
     var a=textA.value,b=textB.value;
@@ -76,20 +140,34 @@
       if(b.length>0&&b[b.length-1]!=='\n'&&linesB[linesB.length-1]==='')linesB.pop();
       diff=LCS(linesA,linesB);}
     var html='',added=0,removed=0,same=0;
+    if(mode==='char'){
+      var summary='<div class="char-summary">'+t('st.total','总计 ')+diff.length+t('st.chars',' 字符');
+      var counts={};
+      for(var c=0;c<diff.length;c++){counts[diff[c].type]=(counts[diff[c].type]||0)+1;}
+      if(counts.added)summary+=t('st.sepComma','，')+t('st.added','新增 ')+'<span style="color:#1a7f37;">+'+counts.added+'</span>';
+      if(counts.removed)summary+=t('st.sepComma','，')+t('st.deleted','删除 ')+'<span style="color:#cf222e;">-'+counts.removed+'</span>';
+      summary+='</div>';
+      html+=summary;
+    }
     for(var i=0;i<diff.length;i++){var d=diff[i];var cls,prefix;
       if(d.type==='same'){prefix='  ';cls='same';same++;}
       else if(d.type==='added'){prefix='+ ';cls='added';added++;}
       else{prefix='- ';cls='removed';removed++;}
-      html+='<div class="'+cls+'">'+prefix+escapeHtml(d.text)+'</div>';}
+      var txt=d.text;
+      if(mode==='char'&&txt==='\n')txt='\u00B6';
+      if(mode==='line'){html+='<div class="'+cls+'"><span class="diff-line-num">'+(i+1)+'</span>'+prefix+escapeHtml(txt)+'</div>';}
+      else{html+='<div class="'+cls+'">'+prefix+escapeHtml(txt)+'</div>';}}
     outputEl.innerHTML=html;
     diffStats.innerHTML='';
     var sSame=document.createElement('span');sSame.className='diff-stat same';sSame.textContent=t('ui.9','相同 ')+same;diffStats.appendChild(sSame);
     var sAdd=document.createElement('span');sAdd.className='diff-stat add';sAdd.textContent='+'+t('ui.10','新增 ')+added;diffStats.appendChild(sAdd);
     var sDel=document.createElement('span');sDel.className='diff-stat del';sDel.textContent='-'+t('ui.11','删除 ')+removed;diffStats.appendChild(sDel);
-    setStatus(t('ui.8','对比完成：') +same+ t('ui.7',' 相同，')+added+ t('ui.6',' 新增，')+removed+ t('ui.5',' 删除'));});
+    setStatus(t('ui.8','对比完成：') +same+ t('ui.7',' 相同，')+added+ t('ui.6',' 新增，')+removed+ t('ui.5',' 删除'));
+    renderStats(a,b);
+  });
 
   document.getElementById('swapBtn').addEventListener('click',function(){var v=textA.value;textA.value=textB.value;textB.value=v;});
-  document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';outputEl.innerHTML='';diffStats.innerHTML='';setStatus('');textA.focus();});
+  document.getElementById('clearBtn').addEventListener('click',function(){textA.value='';textB.value='';outputEl.innerHTML='';diffStats.innerHTML='';statsCard.style.display='none';statsGrid.innerHTML='';setStatus('');textA.focus();});
   document.getElementById('copyBtn').addEventListener('click',function(){var txt=outputEl.textContent||outputEl.innerText;if(txt){copyToClipboard(txt,this);setStatus(t('ui.copied','已复制'));}});
 })();
 </script></body></html>

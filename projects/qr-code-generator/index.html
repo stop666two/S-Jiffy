@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>QR 码生成器 - S-Jiffy</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>QR 码工具 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
 #qrcode{display:inline-block;padding:0;background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);}
@@ -11,13 +11,35 @@
 .qr-size-btns{display:flex;gap:4px;}
 .qr-size-btn{padding:4px 16px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-family:var(--font-mono);}
 .qr-size-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.qr-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3);}
+.qr-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.qr-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;text-align:center;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.drag-on{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.drop-icon{font-size:32px;color:var(--color-text-disabled);margin-bottom:8px;}
+.qr-result{border:1px solid rgba(52,101,56,0.35);background:rgba(52,101,56,0.08);border-radius:var(--radius-md);padding:14px;margin-top:var(--space-2);}
+.qr-result-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.qr-result-text{font-family:var(--font-mono);font-size:13px;word-break:break-all;}
+.qr-open{margin-top:8px;display:inline-block;color:var(--color-accent-hover);font-size:var(--font-size-sm);}
+.error-detail{font-size:13px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:8px;background:rgba(159,47,45,0.08);border:1px solid rgba(159,47,45,0.35);color:var(--color-error);white-space:pre-wrap;}
+.preview-img{max-width:280px;max-height:280px;border-radius:var(--radius-md);border:1px solid var(--color-border);margin-top:var(--space-2);}
+.wifi-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.wifi-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.wifi-row .input{flex:1;min-width:150px;}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
 <main class="tool-workspace">
-<h1 data-i18n="h1">QR 码生成器</h1>
-<p class="tool-desc" data-i18n="desc">生成可自定义尺寸、颜色、边距、模块大小和纠错级别的二维码。</p>
-<div class="card">
+<h1 data-i18n="h1">QR 码工具</h1>
+<p class="tool-desc" data-i18n="desc">生成可自定义尺寸、颜色、边距与纠错级别的二维码，从图片解码二维码，并生成 WiFi 连接二维码。</p>
+<div class="qr-tabs">
+<button id="tabGenerate" class="active" type="button" data-i18n="ui.tabGen">生成</button>
+<button id="tabDecode" type="button" data-i18n="ui.tabDecode">解码</button>
+<button id="tabWifi" type="button" data-i18n="ui.tabWifi">WiFi</button>
+</div>
+
+<div class="card" id="panelGenerate">
 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-3);">
 <input id="textInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.104" placeholder="输入文本或链接..." style="flex:1;min-width:200px;"><button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button></div>
 <div class="qr-options">
@@ -32,28 +54,176 @@
 <div style="display:flex;justify-content:center;"><div id="qrcode"></div></div>
 <div style="margin-top:var(--space-2);display:flex;gap:8px;justify-content:center;"><button id="downloadBtn" class="btn btn-secondary" data-i18n="ui.11">下载 PNG</button></div>
 </div>
-<div class="output-box" style="text-align:center;"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.12">复制链接</button></div></main>
+
+<div class="card" id="panelDecode" style="display:none;">
+<div class="drop-zone" id="dropZone">
+<span class="drop-icon">◱</span>
+<p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.dropQR">拖入QR码图片或点击上传</p>
+<p style="font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:4px;">PNG, JPG, WebP, GIF</p>
+</div>
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+<div style="display:flex;gap:8px;margin-top:var(--space-2);flex-wrap:wrap;">
+<button id="fileBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="ui.fileSelect">📁 选择文件</button>
+<button id="clearBtn" class="btn btn-secondary" style="height:36px;font-size:13px;min-width:auto;" data-i18n="ui.clear">清空</button>
+</div>
+<img id="previewImg" class="preview-img" style="display:none;" alt="Preview">
+<div id="errorBox" class="error-detail" style="display:none;"></div>
+<div id="resultBox" class="qr-result" style="display:none;">
+<div class="qr-result-head">
+<span style="color:var(--color-success);font-size:var(--font-size-sm);" data-i18n="ui.decoded">QR码已解码</span>
+<button id="copyDecodedBtn" class="btn btn-secondary" style="height:30px;font-size:12px;min-width:auto;" data-i18n="ui.copy">复制</button>
+</div>
+<div id="resultText" class="qr-result-text"></div>
+<a id="openLink" class="qr-open" href="#" target="_blank" rel="noopener noreferrer" style="display:none;" data-i18n="ui.openUrl">打开链接</a>
+</div>
+</div>
+
+<div class="card" id="panelWifi" style="display:none;">
+<div class="wifi-row">
+<label>SSID</label>
+<input id="ssidInput" class="input js-focus-input" type="text" data-i18n-placeholder="ui.ssidPh" placeholder="WiFi 名称">
+</div>
+<div class="wifi-row">
+<label data-i18n="ui.password">密码</label>
+<input id="pwdInput" class="input" type="text" data-i18n-placeholder="ui.pwdPh" placeholder="WiFi 密码">
+</div>
+<div class="wifi-row">
+<label data-i18n="ui.encrypt">加密</label>
+<select id="encryptSelect" class="input" style="width:auto;min-width:120px;">
+<option value="WPA">WPA/WPA2</option>
+<option value="WEP">WEP</option>
+<option value="nopass" data-i18n="ui.nopass">无密码</option>
+</select>
+<label data-i18n="ui.hidden">隐藏</label>
+<input id="hiddenCheck" type="checkbox" style="width:18px;height:18px;cursor:pointer;">
+<button id="wifiGenBtn" class="btn btn-primary" data-i18n="ui.wifiGen">生成二维码</button>
+</div>
+</div>
+<div style="text-align:center;padding:var(--space-3) 0;"><div id="wifiQr"></div></div>
+<div class="output-box" style="text-align:center;"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/vendor/qrcodejs.min.js"></script>
+<script src="../../assets/vendor/jsQR.js"></script>
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script>
 <script src="../../assets/js/custom-controls.js"></script>
-<script>(function(){
-  var textEl=document.getElementById('textInput'),eccEl=document.getElementById('eccSelect'),qrEl=document.getElementById('qrcode'),outputEl=document.getElementById('outputText');
-  var fgEl=document.getElementById('fgColor'),bgEl=document.getElementById('bgColor'),marginEl=document.getElementById('marginSelect');
-  var currentSize=256,currentQR=null;
-  var sizeBtns=document.querySelectorAll('.qr-size-btn');
-  for(var b=0;b<sizeBtns.length;b++){sizeBtns[b].addEventListener('click',function(){for(var k=0;k<sizeBtns.length;k++)sizeBtns[k].classList.remove('active');this.classList.add('active');currentSize=parseInt(this.dataset.size);});}
-  function generate(){
-    var text=textEl.value.trim();if(!text){setStatus(t('ui.100','请输入文本或链接'),'error');return;}
-    var ecc=eccEl.value,margin=parseInt(marginEl.value)||2;qrEl.innerHTML='';
-    currentQR=new QRCode(qrEl,{text:text,width:currentSize,height:currentSize,correctLevel:QRCode.CorrectLevel[ecc],colorDark:fgEl.value,colorLight:bgEl.value});
-    // Apply margin via padding on the container
-    qrEl.style.padding=margin*4+'px';
-    outputEl.textContent=text;setStatus(t('ui.15','二维码已生成'));}
-  document.getElementById('generateBtn').addEventListener('click',generate);
-  textEl.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
-  document.getElementById('downloadBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(!canvas){setStatus(t('ui.101','请先生成二维码'),'error');return;}
-    var link=document.createElement('a');link.download='qrcode.png';link.href=canvas.toDataURL('image/png');link.click();setStatus(t('ui.14','已下载'));});
-  document.getElementById('copyBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(canvas){canvas.toBlob(function(blob){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){setStatus(t('ui.13','二维码图片已复制'));}).catch(function(){setStatus(t('ui.102','复制失败'),'error');});});}else{setStatus(t('ui.103','请先生成二维码'),'error');}});
-})();</script></body></html>
+<script>
+(function(){
+/* ---- tabs ---- */
+var tabG=document.getElementById('tabGenerate'),tabD=document.getElementById('tabDecode'),tabW=document.getElementById('tabWifi');
+var pG=document.getElementById('panelGenerate'),pD=document.getElementById('panelDecode'),pW=document.getElementById('panelWifi');
+var wifiQrEl=document.getElementById('wifiQr');
+function switchTab(which){
+tabG.className=which==='gen'?'active':'';tabD.className=which==='decode'?'active':'';tabW.className=which==='wifi'?'active':'';
+pG.style.display=which==='gen'?'':'none';pD.style.display=which==='decode'?'':'none';pW.style.display=which==='wifi'?'':'none';
+wifiQrEl.style.display=which==='wifi'?'':'none';
+}
+tabG.addEventListener('click',function(){switchTab('gen');});
+tabD.addEventListener('click',function(){switchTab('decode');});
+tabW.addEventListener('click',function(){switchTab('wifi');});
+
+/* ---- generate ---- */
+var textEl=document.getElementById('textInput'),eccEl=document.getElementById('eccSelect'),qrEl=document.getElementById('qrcode'),outputEl=document.getElementById('outputText');
+var fgEl=document.getElementById('fgColor'),bgEl=document.getElementById('bgColor'),marginEl=document.getElementById('marginSelect');
+var currentSize=256,currentQR=null;
+var sizeBtns=document.querySelectorAll('.qr-size-btn');
+for(var b=0;b<sizeBtns.length;b++){sizeBtns[b].addEventListener('click',function(){for(var k=0;k<sizeBtns.length;k++)sizeBtns[k].classList.remove('active');this.classList.add('active');currentSize=parseInt(this.dataset.size);});}
+function generate(){
+var text=textEl.value.trim();if(!text){setStatus(t('ui.100','请输入文本或链接'),'error');return;}
+var ecc=eccEl.value,margin=parseInt(marginEl.value)||2;qrEl.innerHTML='';
+currentQR=new QRCode(qrEl,{text:text,width:currentSize,height:currentSize,correctLevel:QRCode.CorrectLevel[ecc],colorDark:fgEl.value,colorLight:bgEl.value});
+qrEl.style.padding=margin*4+'px';
+outputEl.textContent=text;setStatus(t('ui.15','二维码已生成'));}
+document.getElementById('generateBtn').addEventListener('click',generate);
+textEl.addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
+document.getElementById('downloadBtn').addEventListener('click',function(){var canvas=qrEl.querySelector('canvas');if(!canvas){setStatus(t('ui.101','请先生成二维码'),'error');return;}
+var link=document.createElement('a');link.download='qrcode.png';link.href=canvas.toDataURL('image/png');link.click();setStatus(t('ui.14','已下载'));});
+
+/* ---- decode ---- */
+var fileInput=document.getElementById('fileInput'),fileBtn=document.getElementById('fileBtn'),dropZone=document.getElementById('dropZone');
+var previewImg=document.getElementById('previewImg'),errorBox=document.getElementById('errorBox'),resultBox=document.getElementById('resultBox');
+var resultText=document.getElementById('resultText'),openLink=document.getElementById('openLink'),copyDecodedBtn=document.getElementById('copyDecodedBtn');
+var decodedText='';
+function showError(msg){errorBox.textContent=msg;errorBox.style.display='block';setStatus(msg,'error');}
+function decodeImage(img){
+var canvas=document.createElement('canvas');
+canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+var ctx=canvas.getContext('2d');
+ctx.drawImage(img,0,0);
+var imageData;
+try{imageData=ctx.getImageData(0,0,canvas.width,canvas.height);}
+catch(e){showError(t('ui.canvasError','图片读取失败（可能超过 Canvas 限制）'));return;}
+try{
+if(typeof window!=='undefined'&&'BarcodeDetector' in window){
+var detector=new window.BarcodeDetector({formats:['qr_code']});
+detector.detect(imageData).then(function(barcodes){
+if(barcodes.length>0&&barcodes[0].rawValue){setResult(barcodes[0].rawValue);}else{runJsQR(imageData);}
+}).catch(function(){runJsQR(imageData);});
+}else{runJsQR(imageData);}
+}catch(e){runJsQR(imageData);}
+}
+function runJsQR(imageData){
+try{
+var code=jsQR(imageData.data,imageData.width,imageData.height);
+if(code&&code.data){setResult(code.data);}else{errorBox.style.display='none';resultBox.style.display='none';showError(t('ui.qrNotFound','未在图片中检测到二维码。'));}
+}catch(e){showError(t('ui.decodeFailed','解码出错: ')+e.message);}
+}
+function setResult(text){
+decodedText=text;errorBox.style.display='none';resultText.textContent=text;resultBox.style.display='block';
+if(text.indexOf('http://')===0||text.indexOf('https://')===0){openLink.href=text;openLink.style.display='inline-block';}else{openLink.style.display='none';}
+setStatus(t('ui.decodedOk','解码成功'));
+}
+function handleFile(file){
+if(!file)return;
+if(file.type.indexOf('image/')!==0){showError(t('ui.notImage','请上传图片文件'));return;}
+errorBox.style.display='none';resultBox.style.display='none';
+var reader=new FileReader();
+reader.onload=function(e){
+var dataUrl=e.target.result;
+previewImg.src=dataUrl;previewImg.style.display='block';
+var img=new Image();
+img.onload=function(){decodeImage(img);};
+img.onerror=function(){showError(t('ui.imgLoadFailed','图片加载失败'));};
+img.src=dataUrl;
+};
+reader.onerror=function(){showError(t('ui.readFailed','文件读取失败'));};
+reader.readAsDataURL(file);
+}
+if(fileBtn)fileBtn.addEventListener('click',function(){fileInput.click();});
+fileInput.addEventListener('change',function(){var file=fileInput.files[0];handleFile(file);this.value='';});
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('drag-on');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('drag-on');});
+dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('drag-on');var f=e.dataTransfer.files[0];if(f)handleFile(f);});
+dropZone.addEventListener('click',function(){fileInput.click();});
+copyDecodedBtn.addEventListener('click',function(){if(decodedText){copyToClipboard(decodedText,copyDecodedBtn);setStatus(t('ui.copied','已复制'));}});
+document.getElementById('clearBtn').addEventListener('click',function(){
+fileInput.value='';previewImg.style.display='none';previewImg.src='';
+errorBox.style.display='none';resultBox.style.display='none';resultText.textContent='';
+decodedText='';openLink.style.display='none';setStatus('');
+});
+
+/* ---- wifi ---- */
+var ssidEl=document.getElementById('ssidInput'),pwdEl=document.getElementById('pwdInput'),encEl=document.getElementById('encryptSelect'),hiddenEl=document.getElementById('hiddenCheck');
+function wifiGenerate(){
+var ssid=ssidEl.value.trim();
+if(!ssid){setStatus(t('ui.ssidReq','请输入 SSID'),'error');return;}
+var pwd=pwdEl.value,enc=encEl.value;
+var hidden=hiddenEl.checked?'H:true':'';
+var wifiStr='WIFI:S:'+ssid+';T:'+enc+';P:'+pwd+';'+hidden+';';
+wifiQrEl.innerHTML='';
+new QRCode(wifiQrEl,{text:wifiStr,width:256,height:256,correctLevel:QRCode.CorrectLevel.M});
+outputEl.textContent=wifiStr;setStatus(t('ui.wifiDone','WiFi 二维码已生成'));
+}
+document.getElementById('wifiGenBtn').addEventListener('click',wifiGenerate);
+
+/* ---- shared copy ---- */
+document.getElementById('copyBtn').addEventListener('click',function(){
+var canvas=qrEl.querySelector('canvas')||wifiQrEl.querySelector('canvas');
+if(canvas){
+canvas.toBlob(function(blob){
+navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){setStatus(t('ui.imgCopied','二维码图片已复制'));}).catch(function(){setStatus(t('ui.copyFailed','复制失败'),'error');});
+});
+}else{setStatus(t('ui.genFirst','请先生成二维码'),'error');}
+});
+})();
+</script></body></html>

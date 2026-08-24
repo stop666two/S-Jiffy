@@ -13,9 +13,15 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Slugify 字符串</h1>
-    <p class="tool-desc" data-i18n="desc">将文本转换为 URL 友好的 slug（"Hello World" → "hello-world"）。</p>
+    <p class="tool-desc" data-i18n="desc">将文本转换为 URL 友好的 slug（"Hello World" → "hello-world"），支持分隔符、小写与最大长度选项。</p>
     <div class="card">
       <input id="inputText" class="input js-focus-input" type="text" data-i18n-placeholder="ui.101" placeholder="输入文本..." value="Hello World! Welcome to S-Jiffy.">
+      <div class="slug-options" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-2);">
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;"><input id="optLower" type="checkbox" checked> <span data-i18n="ui.lowercase">转小写</span></label>
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;"><span data-i18n="ui.separator">分隔符</span> <input id="optSep" class="input" value="-" style="width:40px;height:32px;padding:0 6px;"></label>
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;"><input id="optRemoveSpecial" type="checkbox" checked> <span data-i18n="ui.removeSpecial">移除特殊字符</span></label>
+        <label style="font-size:var(--font-size-xs);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;"><span data-i18n="ui.maxLength">最大长度</span> <input id="optMaxLen" type="number" class="input" value="0" min="0" max="200" style="width:110px;height:32px;padding:0 6px;"> <span data-i18n="ui.unlimited">(0=不限)</span></label>
+      </div>
     </div>
     <div style="display:flex; gap:12px; margin:var(--space-3) 0;">
       <button id="slugifyBtn" class="btn btn-primary" data-i18n="ui.1">生成 Slug</button>
@@ -39,16 +45,25 @@
       var slugifyBtn = document.getElementById('slugifyBtn');
       var clearBtn = document.getElementById('clearBtn');
       var copyBtn = document.getElementById('copyBtn');
+      var optLower = document.getElementById('optLower');
+      var optSep = document.getElementById('optSep');
+      var optRemoveSpecial = document.getElementById('optRemoveSpecial');
+      var optMaxLen = document.getElementById('optMaxLen');
+
+      function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
       function slugify(str) {
-        return str
-          .toLowerCase()
-          .trim()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_]+/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-+/, '')
-          .replace(/-+$/, '');
+        var s = str.trim();
+        if (optLower.checked) s = s.toLowerCase();
+        if (optRemoveSpecial.checked) s = s.replace(/[^\w\s-]/g, '');
+        var sep = optSep.value || '-';
+        s = s.replace(/[\s_]+/g, sep);
+        s = s.replace(new RegExp(escapeRe(sep) + '+', 'g'), sep);
+        s = s.replace(new RegExp('^' + escapeRe(sep) + '+'), '');
+        s = s.replace(new RegExp(escapeRe(sep) + '+$'), '');
+        var max = parseInt(optMaxLen.value, 10);
+        if (max > 0 && s.length > max) s = s.substring(0, max).replace(new RegExp(escapeRe(sep) + '+$'), '');
+        return s;
       }
 
       slugifyBtn.addEventListener('click', function () {

@@ -1,8 +1,214 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>日期格式化器 - S-Jiffy</title>
-  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.row label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}.row .input{width:130px}.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.res-item{padding:12px;background:var(--color-bg-soft);border-radius:8px;text-align:center}.res-item .v{font-size:20px;font-weight:600}.res-item .l{font-size:12px;color:var(--color-text-secondary);margin-top:4px}</style></head><body><header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header><main class="tool-workspace"><h1 data-i18n="h1">日期格式化器</h1><p class="tool-desc" data-i18n="desc">将日期格式化为各种自定义格式。</p><div class="card"><div class="row"><div><label data-i18n="ui.1">选择日期</label><input id="datePicker" class="input" type="date" style="width:auto"></div><div><label data-i18n="ui.2">预设格式</label><select id="formatPreset" class="input" style="width:auto"><option value="YYYY-MM-DD">YYYY-MM-DD</option><option value="YYYY/MM/DD">YYYY/MM/DD</option><option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="YYYY年MM月DD日" data-i18n="ui.3">YYYY年MM月DD日</option><option value="YYYY-MM-DD HH:mm:ss" data-i18n="ui.4">完整时间</option><option value="dddd" data-i18n="ui.5">星期几</option><option value="custom" data-i18n="ui.6">自定义</option></select></div></div>
-<div class="row"><div style="flex:1"><label data-i18n="ui.7">自定义格式</label><input id="customFormat" class="input" value="YYYY/MM/DD HH:mm" style="width:100%" disabled></div><div style="display:flex;align-items:end;gap:8px"><button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button></div></div></div><div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main><footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer><script src="../../assets/js/global.js"></script>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.row label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}.row .input{width:130px}.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.res-item{padding:12px;background:var(--color-bg-soft);border-radius:8px;text-align:center}.res-item .v{font-size:20px;font-weight:600}.res-item .l{font-size:12px;color:var(--color-text-secondary);margin-top:4px}.dc-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3)}.dc-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s}.dc-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary)}.range-controls{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center}.range-controls select{width:auto}.range-summary{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2)}.range-summary b{color:var(--color-text-primary)}.date-list{max-height:320px;overflow-y:auto;font-family:var(--font-mono);font-size:var(--font-size-sm);line-height:1.8;word-break:break-all}</style></head><body><header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header><main class="tool-workspace"><h1 data-i18n="h1">日期格式化器</h1><p class="tool-desc" data-i18n="desc">格式化日期为自定义格式，显示年内天数/周数/剩余天数，并按步长生成两日期之间的日期序列</p>
+<div class="dc-tabs">
+  <button id="tabFormat" class="active" type="button" data-i18n="ui.tabFormat">格式化</button>
+  <button id="tabRange" type="button" data-i18n="ui.tabRange">序列</button>
+</div>
+<div id="panelFormat">
+  <div class="card"><div class="row"><div><label data-i18n="ui.1">选择日期</label><input id="datePicker" class="input" type="date" style="width:auto"></div><div><label data-i18n="ui.2">预设格式</label><select id="formatPreset" class="input" style="width:auto"><option value="YYYY-MM-DD">YYYY-MM-DD</option><option value="YYYY/MM/DD">YYYY/MM/DD</option><option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="YYYY年MM月DD日" data-i18n="ui.3">YYYY年MM月DD日</option><option value="YYYY-MM-DD HH:mm:ss" data-i18n="ui.4">完整时间</option><option value="dddd" data-i18n="ui.5">星期几</option><option value="custom" data-i18n="ui.6">自定义</option></select></div></div>
+  <div class="row"><div style="flex:1"><label data-i18n="ui.7">自定义格式</label><input id="customFormat" class="input" value="YYYY/MM/DD HH:mm" style="width:100%" disabled></div><div style="display:flex;align-items:end;gap:8px"><button id="formatBtn" class="btn btn-primary" data-i18n="ui.format">格式化</button></div></div></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:0;"><button id="todayBtn" class="btn btn-secondary" data-i18n="doy.today">今天</button></div>
+    <div class="res-grid">
+      <div class="res-item"><div class="v" id="dayNum">-</div><div class="l" data-i18n="doy.dayNum">第几天</div></div>
+      <div class="res-item"><div class="v" id="weekNum">-</div><div class="l" data-i18n="doy.weekNum">第几周</div></div>
+      <div class="res-item"><div class="v" id="daysLeft">-</div><div class="l" data-i18n="doy.daysLeft">剩余天数</div></div>
+      <div class="res-item"><div class="v" id="totalDays">-</div><div class="l" data-i18n="doy.totalDays">全年天数</div></div>
+    </div>
+  </div>
+</div>
+<div id="panelRange" style="display:none;">
+  <div class="card">
+    <div class="range-controls">
+      <div><label style="display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="rng.start">开始日期</label><input id="startInput" type="date" class="input js-focus-input"></div>
+      <span data-i18n="ui.1to">至</span>
+      <div><label style="display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="rng.end">结束日期</label><input id="endInput" type="date" class="input"></div>
+      <div><label style="display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="rng.step">步长</label><select id="stepSelect" class="input">
+        <option value="day" data-i18n="rng.day">每天</option>
+        <option value="week" data-i18n="rng.week">每周</option>
+        <option value="month" data-i18n="rng.month">每月</option>
+        <option value="year" data-i18n="rng.year">每年</option>
+      </select></div>
+    </div>
+  </div>
+  <div class="output-box">
+    <span id="rangeOutput" style="display:block;padding-right:60px;"></span>
+    <button class="copy-btn" id="rangeCopyBtn" data-i18n="ui.copy">复制</button>
+  </div>
+</div>
+<div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main><footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer><script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script><script>(function(){var dp=document.getElementById("datePicker"),fp=document.getElementById("formatPreset"),cf=document.getElementById("customFormat"),o=document.getElementById("outputText");
 dp.valueAsDate=new Date();fp.addEventListener("change",function(){cf.disabled=fp.value!=="custom"});
-document.getElementById("formatBtn").addEventListener("click",function(){var d=dp.valueAsDate||new Date(),fmt=fp.value;if(fmt==="custom")fmt=cf.value||"YYYY-MM-DD";var y=d.getFullYear(),m=d.getMonth()+1,d2=d.getDate(),h=d.getHours(),mi=d.getMinutes(),s=d.getSeconds(),w=d.getDay(),wn=[t('ui.d0','日'),t('ui.d1','一'),t('ui.d2','二'),t('ui.d3','三'),t('ui.d4','四'),t('ui.d5','五'),t('ui.d6','六')];
-fmt=fmt.replace("YYYY",y).replace("MM",String(m).padStart(2,"0")).replace("DD",String(d2).padStart(2,"0")).replace("HH",String(h).padStart(2,"0")).replace("mm",String(mi).padStart(2,"0")).replace("ss",String(s).padStart(2,"0")).replace("dddd",t('ui.week','星期')+wn[w]);o.textContent=fmt;setStatus(t('ui.100','格式化完成'))});
-document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.101','已复制'))}});})();</script></body></html>
+document.getElementById("formatBtn").addEventListener("click",formatNow);
+function formatNow(){var d=dp.valueAsDate||new Date(),fmt=fp.value;if(fmt==="custom")fmt=cf.value||"YYYY-MM-DD";var y=d.getFullYear(),m=d.getMonth()+1,d2=d.getDate(),h=d.getHours(),mi=d.getMinutes(),s=d.getSeconds(),w=d.getDay(),wn=[t('ui.d0','日'),t('ui.d1','一'),t('ui.d2','二'),t('ui.d3','三'),t('ui.d4','四'),t('ui.d5','五'),t('ui.d6','六')];
+fmt=fmt.replace("YYYY",y).replace("MM",String(m).padStart(2,"0")).replace("DD",String(d2).padStart(2,"0")).replace("HH",String(h).padStart(2,"0")).replace("mm",String(mi).padStart(2,"0")).replace("ss",String(s).padStart(2,"0")).replace("dddd",t('ui.week','星期')+wn[w]);
+var doyLine=calcDoy(d);
+o.textContent=doyLine?fmt+" | "+doyLine:fmt;setStatus(t('ui.100','格式化完成'))}
+document.getElementById("copyBtn").addEventListener("click",function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.101','已复制'))}});
+/* ============ day-of-year (merged from day-of-year) ============ */
+var dayNum=document.getElementById('dayNum'),weekNum=document.getElementById('weekNum'),daysLeft=document.getElementById('daysLeft'),totalDays=document.getElementById('totalDays');
+function calcDoy(dateObj){
+  var d=new Date(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+  var y=d.getFullYear();
+  var start=new Date(y,0,1);
+  var end=new Date(y+1,0,1);
+  var total=Math.round((end-start)/86400000);
+  var doy=Math.round((d-start)/86400000)+1;
+  var weekStart=new Date(d);
+  weekStart.setDate(weekStart.getDate()+1-(weekStart.getDay()||7));
+  var wny=Math.ceil((((weekStart-start)/86400000)+start.getDay()+1)/7);
+  return y+t('doy.part1','年第')+doy+t('doy.part2','天，第')+wny+t('doy.part3','周，剩余')+(total-doy)+t('doy.day','天');
+}
+function updateDoy(){
+  var d=dp.valueAsDate;
+  if(!d){dayNum.textContent='-';weekNum.textContent='-';daysLeft.textContent='-';totalDays.textContent='-';return;}
+  var dd=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  var y=dd.getFullYear();
+  var start=new Date(y,0,1);
+  var end=new Date(y+1,0,1);
+  var total=Math.round((end-start)/86400000);
+  var doy=Math.round((dd-start)/86400000)+1;
+  var weekStart=new Date(dd);
+  weekStart.setDate(weekStart.getDate()+1-(weekStart.getDay()||7));
+  var wny=Math.ceil((((weekStart-start)/86400000)+start.getDay()+1)/7);
+  dayNum.textContent=doy;
+  totalDays.textContent=total;
+  daysLeft.textContent=total-doy;
+  weekNum.textContent=wny;
+}
+dp.addEventListener('change',updateDoy);
+document.getElementById('todayBtn').addEventListener('click',function(){
+  var td=new Date();
+  var mm=String(td.getMonth()+1).padStart(2,'0');
+  var dd2=String(td.getDate()).padStart(2,'0');
+  dp.value=td.getFullYear()+'-'+mm+'-'+dd2;
+  updateDoy();
+});
+updateDoy();
+/* ============ range tab (merged from date-range-generator) ============ */
+var tabFormat=document.getElementById('tabFormat'),tabRange=document.getElementById('tabRange');
+var panelFormat=document.getElementById('panelFormat'),panelRange=document.getElementById('panelRange');
+function switchTab(which){
+  if(which==='format'){tabFormat.className='active';tabRange.className='';panelFormat.style.display='';panelRange.style.display='none';}
+  else{tabRange.className='active';tabFormat.className='';panelRange.style.display='';panelFormat.style.display='none';}
+}
+tabFormat.addEventListener('click',function(){switchTab('format');});
+tabRange.addEventListener('click',function(){switchTab('range');});
+var startInput=document.getElementById('startInput');
+var endInput=document.getElementById('endInput');
+var stepSelect=document.getElementById('stepSelect');
+var rangeOutput=document.getElementById('rangeOutput');
+var rangeCopyBtn=document.getElementById('rangeCopyBtn');
+var MAX_ITEMS=5000;
+function pad2(n){return n<10?'0'+n:''+n;}
+function parseDate(s){
+  var parts=s.split('-');
+  if(parts.length!==3){return null;}
+  var y=parseInt(parts[0],10);
+  var m=parseInt(parts[1],10);
+  var d=parseInt(parts[2],10);
+  if(isNaN(y)||isNaN(m)||isNaN(d)){return null;}
+  var dt=new Date(y,m-1,d);
+  if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d){return null;}
+  return dt;
+}
+function daysInMonth(y,m){return new Date(y,m,0).getDate();}
+function fmtDate(dt){return dt.getFullYear()+'-'+pad2(dt.getMonth()+1)+'-'+pad2(dt.getDate());}
+function stepLabel(step){
+  if(step==='day'){return t('rng.stepDay','每天');}
+  if(step==='week'){return t('rng.stepWeek','每周');}
+  if(step==='month'){return t('rng.stepMonth','每月');}
+  return t('rng.stepYear','每年');
+}
+function renderRange(){
+  var sv=startInput.value;
+  var ev=endInput.value;
+  if(!sv||!ev){
+    rangeOutput.innerHTML='';
+    setStatus('');
+    return;
+  }
+  var start=parseDate(sv);
+  var end=parseDate(ev);
+  if(!start||!end){
+    rangeOutput.innerHTML='';
+    setStatus(t('rng.errDates','请输入有效的开始与结束日期'),'error');
+    return;
+  }
+  if(start.getTime()>end.getTime()){
+    rangeOutput.innerHTML='';
+    setStatus(t('rng.errOrder','开始日期不能晚于结束日期'),'error');
+    return;
+  }
+  var step=stepSelect.value;
+  var baseDay=start.getDate();
+  var baseMonth=start.getMonth();
+  var baseYear=start.getFullYear();
+  var list=[];
+  var i=0;
+  var cur;
+  if(step==='day'){
+    for(cur=new Date(start);cur.getTime()<=end.getTime();cur.setDate(cur.getDate()+1)){
+      list.push(fmtDate(cur));
+      i++;
+      if(i>MAX_ITEMS){break;}
+    }
+  }else if(step==='week'){
+    for(cur=new Date(start);cur.getTime()<=end.getTime();cur.setDate(cur.getDate()+7)){
+      list.push(fmtDate(cur));
+      i++;
+      if(i>MAX_ITEMS){break;}
+    }
+  }else if(step==='month'){
+    var mIdx=0;
+    while(true){
+      var ty=baseYear+Math.floor((baseMonth+mIdx)/12);
+      var tm=((baseMonth+mIdx)%12)+1;
+      var day=Math.min(baseDay,daysInMonth(ty,tm));
+      cur=new Date(ty,tm-1,day);
+      if(cur.getTime()>end.getTime()){break;}
+      if(cur.getTime()>=start.getTime()){
+        list.push(fmtDate(cur));
+        i++;
+      }
+      mIdx++;
+      if(i>MAX_ITEMS){break;}
+    }
+  }else{
+    var yIdx=0;
+    while(true){
+      var yy=baseYear+yIdx;
+      var day2=Math.min(baseDay,daysInMonth(yy,baseMonth+1));
+      cur=new Date(yy,baseMonth,day2);
+      if(cur.getTime()>end.getTime()){break;}
+      if(cur.getTime()>=start.getTime()){
+        list.push(fmtDate(cur));
+        i++;
+      }
+      yIdx++;
+      if(i>MAX_ITEMS){break;}
+    }
+  }
+  if(i>MAX_ITEMS){
+    rangeOutput.innerHTML='';
+    setStatus(t('rng.tooMany','日期序列超过 ')+MAX_ITEMS+t('rng.tooMany2',' 条，请缩小日期范围'),'error');
+    return;
+  }
+  var html='<div class="range-summary">'+t('rng.count','共 <b>{n}</b> 个日期（').replace('{n}',list.length)+htmlEscape(stepLabel(step))+t('rng.closeParen','）')+'</div>';
+  html+='<div class="date-list">'+htmlEscape(list.join('\n')).replace(/\n/g,'<br>')+'</div>';
+  rangeOutput.innerHTML=html;
+  rangeCopyBtn.onclick=function(){copyToClipboard(list.join('\n'),rangeCopyBtn);};
+  setStatus(t('rng.generated','已生成 ')+list.length+t('rng.count2',' 个日期'));
+}
+startInput.addEventListener('input',renderRange);
+endInput.addEventListener('input',renderRange);
+stepSelect.addEventListener('change',renderRange);
+var today=new Date();
+var tmm=String(today.getMonth()+1).padStart(2,'0');
+var tdd=String(today.getDate()).padStart(2,'0');
+var todayStr=today.getFullYear()+'-'+tmm+'-'+tdd;
+endInput.value=todayStr;
+var d1=new Date(today.getTime()-365*86400000);
+startInput.value=d1.getFullYear()+'-'+String(d1.getMonth()+1).padStart(2,'0')+'-'+String(d1.getDate()).padStart(2,'0');
+renderRange();
+})();</script></body></html>

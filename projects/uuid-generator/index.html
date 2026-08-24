@@ -40,9 +40,10 @@
         <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="hyphenChk" checked> <span data-i18n="ui.100">含连字符</span>
         </label>
-        <select id="versionSelect" class="input" style="width:auto;min-width:120px;">
-          <option value="v4">UUID v4（随机）</option>
-          <option value="v1">UUID v1（时间）</option>
+        <select id="versionSelect" class="input" style="width:auto;min-width:140px;">
+          <option value="v4" data-i18n="ui.v4">UUID v4（随机）</option>
+          <option value="v1" data-i18n="ui.v1">UUID v1（时间+MAC）</option>
+          <option value="v6" data-i18n="ui.v6">UUID v6（可排序）</option>
         </select>
       </div>
       <div class="opt-row" style="margin-top:12px;">
@@ -55,6 +56,7 @@
       <div id="outputText" class="uuid-list" style="display:block;padding-right:60px;"></div>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copyAll">复制全部</button>
     </div>
+    <div id="breakdown" style="display:none;margin-top:var(--space-2);font-family:var(--font-mono);font-size:13px;line-height:1.8;"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
@@ -68,6 +70,9 @@
       var countEl = document.getElementById('countInput'), formatEl = document.getElementById('formatSelect'), o = document.getElementById('outputText');
 
       function pad2(h){return (h.length<2)?'0'+h:h;}
+      function hex8(v){var s=v.toString(16);while(s.length<8)s='0'+s;return s;}
+      function hex4(v){var s=v.toString(16);while(s.length<4)s='0'+s;return s;}
+      function hex2(v){var s=v.toString(16);while(s.length<2)s='0'+s;return s;}
 
       function randomUuid(){
         var u;
@@ -85,24 +90,85 @@
       }
 
       function timeUuid(){
-        var b = new Uint8Array(16);
-        crypto.getRandomValues(b);
-        var now = Date.now();
-        var hi = Math.floor(now / 0x100000000);
-        var lo = now % 0x100000000;
-        b[0] = (lo >>> 24) & 0xff; b[1] = (lo >>> 16) & 0xff; b[2] = (lo >>> 8) & 0xff; b[3] = lo & 0xff;
-        b[4] = (hi >>> 8) & 0xff; b[5] = hi & 0xff;
-        b[6] = ((b[6] & 0x0f) | 0x10) & 0xff;
-        b[7] = (b[7] & 0x3f) | 0x80;
-        var hex = '';
-        for (var i = 0; i < b.length; i++) hex += pad2(b[i].toString(16));
-        return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+        var tick = BigInt(Date.now()) * 10000n + 0x01b21dd213814000n;
+        var timeLow = Number(tick & 0xffffffffn);
+        var timeMid = Number((tick >> 32n) & 0xffffn);
+        var timeHi = Number((tick >> 48n) & 0x0fffn) | 0x1000;
+
+        var clockSeq = new Uint16Array(1);
+        crypto.getRandomValues(clockSeq);
+        clockSeq[0] = (clockSeq[0] & 0x3FFF) | 0x8000;
+
+        var node = new Uint8Array(6);
+        crypto.getRandomValues(node);
+        node[0] = node[0] | 0x01;
+
+        return [
+          hex8(timeLow),
+          hex4(timeMid),
+          hex4(timeHi),
+          hex4(clockSeq[0]),
+          hex2(node[0]) + hex2(node[1]) + hex2(node[2]) + hex2(node[3]) + hex2(node[4]) + hex2(node[5])
+        ].join('-');
+      }
+
+      function timeUuidV6(){
+        var tick = BigInt(Date.now()) * 10000n + 0x01b21dd213814000n;
+
+        var timeHi = Number((tick >> 48n) & 0x0fffn);
+        var timeMid = Number((tick >> 32n) & 0xffffn);
+        var timeLow = Number(tick & 0xffffffffn);
+
+        var clockSeq = new Uint16Array(1);
+        crypto.getRandomValues(clockSeq);
+        clockSeq[0] = (clockSeq[0] & 0x3FFF) | 0x8000;
+
+        var node = new Uint8Array(6);
+        crypto.getRandomValues(node);
+        node[0] = node[0] & 0xFE | 0x02;
+
+        return [
+          hex8((timeHi << 16) | (timeMid >>> 4)),
+          hex4(((timeMid & 0x0F) << 12) | ((timeLow >>> 20) & 0xFFF)),
+          hex4(((timeLow >>> 8) & 0x0FFF) | 0x6000),
+          hex4((clockSeq[0] & 0x3FFF) | 0x8000),
+          hex2(node[0]) + hex2(node[1]) + hex2(node[2]) + hex2(node[3]) + hex2(node[4]) + hex2(node[5])
+        ].join('-');
       }
 
       function genUuid(){
-        var u = (document.getElementById('versionSelect').value === 'v1') ? timeUuid() : randomUuid();
+        var ver = document.getElementById('versionSelect').value;
+        var u = ver === 'v1' ? timeUuid() : ver === 'v6' ? timeUuidV6() : randomUuid();
         if (!document.getElementById('hyphenChk').checked) u = u.replace(/-/g, '');
         return formatEl.value === 'upper' ? u.toUpperCase() : u;
+      }
+
+      function renderBreakdown(uuid, ver){
+        var bd = document.getElementById('breakdown');
+        if (!bd) return;
+        var parts = uuid.split('-');
+        var html = '';
+        if (ver === 'v1') {
+          html += '<div>' + t('v1.timeLow','时间戳低位: ') + parts[0] + '</div>';
+          html += '<div>' + t('v1.timeMid','时间戳中位: ') + parts[1] + '</div>';
+          html += '<div>' + t('v1.timeHi','时间戳高位+版本: ') + parts[2] + '</div>';
+          html += '<div>' + t('v1.clockSeq','时钟序列+变体: ') + parts[3] + '</div>';
+          html += '<div>' + t('v1.node','节点 (MAC): ') + parts[4] + '</div>';
+          html += '<div style="font-size:12px;color:var(--color-text-secondary);">' + t('v1.timestamp','时间戳: ') + new Date().toISOString() + '</div>';
+        } else if (ver === 'v6') {
+          html += '<div style="font-size:12px;color:var(--color-text-secondary);">' + t('v6.breakdown','UUID v6 十六进制拆分:') + '</div>';
+          html += '<div>' + t('v6.timeHiMid','时间戳高位+中位: ') + parts[0] + ' (48 bits)</div>';
+          html += '<div>' + t('v6.timeMidLow','时间戳中低位: ') + parts[1] + ' (12+12 bits)</div>';
+          html += '<div>' + t('v6.timeLowVersion','时间低位+版本: ') + parts[2] + ' (12+4 bits, v=6)</div>';
+          html += '<div>' + t('v6.clockSeq','时钟序列+变体: ') + parts[3] + ' (14+2 bits)</div>';
+          html += '<div>' + t('v6.node','节点: ') + parts[4] + ' (48 bits)</div>';
+          html += '<div style="font-size:12px;color:var(--color-text-secondary);">' + t('v6.timestamp','时间戳: ') + new Date().toISOString() + '</div>';
+        } else {
+          bd.style.display = 'none';
+          return;
+        }
+        bd.style.display = 'block';
+        bd.innerHTML = html;
       }
 
       function render(arr){
@@ -128,10 +194,13 @@
         if (n < 1) n = 1;
         if (n > 100) n = 100;
         countEl.value = n;
+        var ver = document.getElementById('versionSelect').value;
         var arr = [];
         for (var i = 0; i < n; i++) arr.push(genUuid());
         render(arr);
-        setStatus(t('generated','已生成 ')+n+t('uuidCount',' 个 UUID'));
+        if (arr.length) renderBreakdown(arr[0], ver);
+        var suffix = ver === 'v1' ? t('uuidV1Suffix',' 个 UUID v1') : ver === 'v6' ? t('uuidV6Suffix',' 个 UUID v6') : t('uuidCount',' 个 UUID');
+        setStatus(t('generated','已生成 ') + n + suffix);
       });
 
       var presets = document.querySelectorAll('.preset-btn');

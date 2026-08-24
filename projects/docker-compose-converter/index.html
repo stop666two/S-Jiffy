@@ -15,6 +15,18 @@
     .dc-checkboxes label { font-size:13px; color:var(--color-text-secondary); display:flex; align-items:center; gap:4px; cursor:pointer; }
     .dc-addl { margin-top:12px; }
     .dc-addl textarea { min-height:60px; }
+    .dc-tabs { display:flex; gap:var(--space-1); margin-bottom:var(--space-3); }
+    .dc-tabs button { flex:1; height:44px; font-size:var(--font-size-sm); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; transition:all .15s; }
+    .dc-tabs button.active { background:var(--color-text-primary); color:#fff; border-color:var(--color-text-primary); }
+    .service-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+    .service-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-2);cursor:pointer;transition:all .15s;text-align:center;}
+    .service-card:hover{border-color:var(--color-text-primary);}
+    .service-card.selected{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+    .service-card .icon{font-size:24px;margin-bottom:4px;}
+    .service-card .sname{font-size:var(--font-size-sm);font-weight:600;}
+    .service-card .sdesc{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+    .param-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3);}
+    @media(max-width:600px){.service-grid,.param-grid{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -24,6 +36,11 @@
   <main class="tool-workspace">
     <h1 data-i18n="h1">Docker Run→Compose</h1>
     <p class="tool-desc" data-i18n="desc">将 <code>docker run</code> 参数转换为 docker-compose.yml 格式。</p>
+    <div class="dc-tabs">
+      <button id="tabConvert" class="active" type="button" data-i18n="ui.s15">转换</button>
+      <button id="tabSnippets" type="button" data-i18n="ui.s14">片段</button>
+    </div>
+    <div id="panelConvert">
     <div class="card">
       <div class="dc-fields">
         <div class="dc-field">
@@ -79,6 +96,19 @@
     <div class="action-bar" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
       <button id="convertBtn" class="btn btn-primary" data-i18n="ui.9">生成 Compose</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+    </div>
+    </div>
+    <div id="panelSnippets" style="display:none;">
+    <div class="service-grid">
+      <div class="service-card" data-service="nginx"><div class="icon">🌐</div><div class="sname">Nginx</div><div class="sdesc">Web Server / Reverse Proxy</div></div>
+      <div class="service-card" data-service="postgres"><div class="icon">🗄️</div><div class="sname">PostgreSQL</div><div class="sdesc" data-i18n="ui.s1">关系型数据库</div></div>
+      <div class="service-card" data-service="redis"><div class="icon">⚡</div><div class="sname">Redis</div><div class="sdesc" data-i18n="ui.s2">缓存 / 消息队列</div></div>
+      <div class="service-card" data-service="mysql"><div class="icon">🐬</div><div class="sname">MySQL</div><div class="sdesc" data-i18n="ui.s1">关系型数据库</div></div>
+      <div class="service-card" data-service="mongo"><div class="icon">🍃</div><div class="sname">MongoDB</div><div class="sdesc" data-i18n="ui.s3">NoSQL 数据库</div></div>
+      <div class="service-card" data-service="rabbitmq"><div class="icon">🐇</div><div class="sname">RabbitMQ</div><div class="sdesc" data-i18n="ui.s4">消息队列</div></div>
+    </div>
+    <div id="paramArea" class="param-grid"></div>
+    <div class="action-bar" style="display:flex;gap:12px;margin-bottom:var(--space-3);"><button id="snipGenBtn" class="btn btn-primary" data-i18n="ui.s5">生成片段</button></div>
     </div>
     <div class="output-box" id="输出Container">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
@@ -216,6 +246,52 @@
       });
 
       document.getElementById('copyBtn').addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copiedClip','已复制到剪贴板')); } });
+
+      var tabConvert=document.getElementById('tabConvert'),tabSnippets=document.getElementById('tabSnippets');
+      var panelConvert=document.getElementById('panelConvert'),panelSnippets=document.getElementById('panelSnippets');
+      function switchTab(which){
+        if(which==='convert'){tabConvert.className='active';tabSnippets.className='';panelConvert.style.display='';panelSnippets.style.display='none';}
+        else{tabSnippets.className='active';tabConvert.className='';panelSnippets.style.display='';panelConvert.style.display='none';}
+      }
+      tabConvert.addEventListener('click',function(){switchTab('convert');});
+      tabSnippets.addEventListener('click',function(){switchTab('snippets');});
+
+      var pa=document.getElementById('paramArea');
+      var currentService='nginx';
+      var paramDefs={
+        nginx:[{key:'port',label: t('ui.s9','宿主机端口'),val:'8080'},{key:'volume',label: t('ui.s12','挂载配置目录'),val:'./nginx.conf:/etc/nginx/conf.d/default.conf'}],
+        postgres:[{key:'port',label: t('ui.s9','宿主机端口'),val:'5432'},{key:'password',label:'POSTGRES_PASSWORD',val:'mysecretpassword'},{key:'db',label:'POSTGRES_DB',val:'mydb'}],
+        redis:[{key:'port',label: t('ui.s9','宿主机端口'),val:'6379'},{key:'password',label: t('ui.s11','密码（可选）'),val:''},{key:'persistent',label: t('ui.s10','持久化存储'),val:'yes'}],
+        mysql:[{key:'port',label: t('ui.s9','宿主机端口'),val:'3306'},{key:'password',label:'MYSQL_ROOT_PASSWORD',val:'rootpassword'},{key:'db',label:'MYSQL_DATABASE',val:'mydb'}],
+        mongo:[{key:'port',label: t('ui.s9','宿主机端口'),val:'27017'},{key:'user',label:'MONGO_INITDB_ROOT_USERNAME',val:'admin'},{key:'password',label:'MONGO_INITDB_ROOT_PASSWORD',val:'password'}],
+        rabbitmq:[{key:'port',label: t('ui.s8','AMQP 端口'),val:'5672'},{key:'uiPort',label: t('ui.s7','管理界面端口'),val:'15672'},{key:'user',label:'RABBITMQ_DEFAULT_USER',val:'guest'},{key:'password',label:'RABBITMQ_DEFAULT_PASS',val:'guest'}]
+      };
+      function buildParams(service){
+        var defs=paramDefs[service]||[];var h='';
+        defs.forEach(function(d,i){h+='<div class="card" style="margin-bottom:0;"><label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);display:block;margin-bottom:4px;">'+d.label+'</label><input id="param_'+i+'" class="input" value="'+d.val+'"></div>';});
+        pa.innerHTML=h;
+      }
+      var cards=document.querySelectorAll('.service-card');
+      for(var ci=0;ci<cards.length;ci++){cards[ci].addEventListener('click',function(){
+        cards.forEach(function(c){c.classList.remove('selected');});this.classList.add('selected');
+        currentService=this.dataset.service;buildParams(currentService);outputEl.textContent='';setStatus('');
+      });}
+      var composeTemplates={
+        nginx:function(v){return'  nginx:\n    image: nginx:alpine\n    container_name: nginx\n    ports:\n      - "'+v[0]+':80"\n    volumes:\n      - '+v[1]+'\n    restart: unless-stopped';},
+        postgres:function(v){return'  postgres:\n    image: postgres:16-alpine\n    container_name: postgres\n    ports:\n      - "'+v[0]+':5432"\n    environment:\n      POSTGRES_PASSWORD: '+v[1]+'\n      POSTGRES_DB: '+v[2]+'\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    restart: unless-stopped';},
+        redis:function(v){var lines='  redis:\n    image: redis:7-alpine\n    container_name: redis\n    ports:\n      - "'+v[0]+':6379"';if(v[1])lines+='\n    command: redis-server --requirepass '+v[1];if(v[2]==='yes')lines+='\n    volumes:\n      - redisdata:/data';lines+='\n    restart: unless-stopped';return lines;},
+        mysql:function(v){return'  mysql:\n    image: mysql:8.0\n    container_name: mysql\n    ports:\n      - "'+v[0]+':3306"\n    environment:\n      MYSQL_ROOT_PASSWORD: '+v[1]+'\n      MYSQL_DATABASE: '+v[2]+'\n    volumes:\n      - mysqldata:/var/lib/mysql\n    restart: unless-stopped';},
+        mongo:function(v){return'  mongo:\n    image: mongo:7\n    container_name: mongo\n    ports:\n      - "'+v[0]+':27017"\n    environment:\n      MONGO_INITDB_ROOT_USERNAME: '+v[1]+'\n      MONGO_INITDB_ROOT_PASSWORD: '+v[2]+'\n    volumes:\n      - mongodata:/data/db\n    restart: unless-stopped';},
+        rabbitmq:function(v){return'  rabbitmq:\n    image: rabbitmq:3-management-alpine\n    container_name: rabbitmq\n    ports:\n      - "'+v[0]+':5672"\n      - "'+v[1]+':15672"\n    environment:\n      RABBITMQ_DEFAULT_USER: '+v[2]+'\n      RABBITMQ_DEFAULT_PASS: '+v[3]+'\n    restart: unless-stopped';}
+      };
+      document.getElementById('snipGenBtn').addEventListener('click',function(){
+        var vals=[];var defs=paramDefs[currentService]||[];
+        for(var i=0;i<defs.length;i++){var el=document.getElementById('param_'+i);vals.push(el?el.value:'');}
+        var tpl=composeTemplates[currentService];
+        if(tpl){outputEl.textContent='version: "3.8"\n\nservices:\n'+tpl(vals);setStatus(t('ui.s6','docker-compose 片段已生成'));}
+        else{setStatus(t('ui.s13','未知服务类型'),'error');}
+      });
+      buildParams('nginx');cards[0].classList.add('selected');
     })();
   </script>
 </body>

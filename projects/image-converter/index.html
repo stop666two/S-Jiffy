@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片批量格式转换 - S-Jiffy</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="stylesheet" href="../../assets/css/global.css">
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop-zone:hover{border-color:var(--color-text-primary);background:var(--color-bg-soft);}
+.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-bg-soft);}
+.drop-zone:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;}
+.dz-icon{font-size:34px;margin-bottom:8px;}
+.dz-title{font-size:var(--font-size-base);font-weight:600;}
+.dz-sub{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;}
+.dz-formats{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:10px;letter-spacing:.5px;}
+.dz-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin-top:6px;}
+.controls{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:flex-end;margin:var(--space-3) 0 0;}
+.ctrl-block{display:flex;flex-direction:column;gap:6px;}
+.opt-label{font-size:var(--font-size-xs);font-weight:600;color:var(--color-text-secondary);}
+.quality-row{flex:1;min-width:220px;}
+.quality-row input[type=range]{width:100%;}
+.opt-value{font-size:var(--font-size-sm);font-weight:600;min-width:44px;text-align:right;}
+.scale-sel{height:34px;padding:0 10px;font-size:var(--font-size-xs);font-family:var(--font-mono);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);color:var(--color-text-primary);cursor:pointer;outline:none;}
+.target-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);margin:var(--space-2) 0 0;line-height:1.6;}
+.list-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:var(--space-3) 0 var(--space-2);}
+.list-title{font-size:var(--font-size-sm);font-weight:600;}
+.list-head .btn{margin-left:auto;height:32px;min-width:auto;padding:0 14px;font-size:var(--font-size-xs);border-radius:9999px;}
+.item-list{display:flex;flex-direction:column;gap:var(--space-2);}
+.item-row{display:flex;align-items:center;gap:12px;background:var(--color-bg-soft);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 12px;}
+.item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:var(--color-bg);border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.item-thumb img{max-width:100%;max-height:100%;display:block;}
+.item-main{flex:1;min-width:0;}
+.item-name{font-size:var(--font-size-sm);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.item-meta{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:2px;word-break:break-all;}
+.item-meta .meta-arrow{color:var(--color-text-disabled);margin:0 4px;}
+.item-meta .err-text{color:var(--color-error);}
+.item-side{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+.item-status{font-size:var(--font-size-xs);padding:2px 10px;border-radius:9999px;border:1px solid var(--color-border);color:var(--color-text-secondary);white-space:nowrap;}
+.item-status.st-done{color:var(--color-success);border-color:var(--color-success);}
+.item-status.st-fail{color:var(--color-error);border-color:var(--color-error);}
+.item-status.st-work{color:var(--color-accent);border-color:var(--color-accent);}
+.item-side .btn{height:28px;min-width:auto;padding:0 12px;font-size:var(--font-size-xs);border-radius:9999px;}
+.empty-hint{font-size:var(--font-size-xs);color:var(--color-text-disabled);text-align:center;padding:24px 0;}
+@media (max-width:640px){.item-row{flex-wrap:wrap;}.item-side{width:100%;justify-content:flex-end;}}
+</style>
+</head>
+<body>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
+<main class="tool-workspace">
+<h1 data-i18n="h1">图片批量格式转换</h1>
+<p class="tool-desc" data-i18n="desc">批量将 PNG、JPG、WebP、SVG、AVIF、HEIC 图片转换为 JPG、PNG、WebP 或 AVIF 格式，覆盖 12 个转换方向。全程本地处理，文件不会上传。</p>
+
+<div class="card">
+  <div id="dropZone" class="drop-zone" role="button" tabindex="0">
+    <div class="dz-icon">🖼️</div>
+    <p class="dz-title" data-i18n="dropImageHere">将图片拖放到此处</p>
+    <p class="dz-sub" data-i18n="dropSub">支持批量选择，一次最多 20 张</p>
+    <p class="dz-formats">PNG · JPG · WebP · SVG · AVIF · HEIC</p>
+    <p class="dz-hint" data-i18n="dropHint">每张最大 50MB · 本地处理，文件不会上传</p>
+  </div>
+  <input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp,image/svg+xml,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.svg,.avif,.heic,.heif" style="display:none">
+
+  <div class="controls">
+    <div class="ctrl-block">
+      <label class="opt-label" for="targetSelect" data-i18n="convertTo">转换到</label>
+      <select id="targetSelect" class="scale-sel">
+        <option value="jpg">JPG</option>
+        <option value="png">PNG</option>
+        <option value="webp">WebP</option>
+        <option value="heic" disabled title="当前浏览器不支持 HEIC 编码输出" data-i18n-attr-title="targetHeicUnavailable">HEIC</option>
+        <option value="avif" id="optAvif" title="当前浏览器不支持 AVIF 编码输出" data-i18n-attr-title="targetAvifUnavailable">AVIF</option>
+        <option value="svg" disabled title="SVG 为矢量格式，无法作为输出" data-i18n-attr-title="targetSvgUnavailable">SVG</option>
+      </select>
+    </div>
+    <div class="ctrl-block quality-row" id="qualityRow">
+      <label class="opt-label" data-i18n="quality">质量</label>
+      <input type="range" id="qualityRange" min="1" max="100" value="90">
+      <span class="opt-value" id="qualityVal">90%</span>
+    </div>
+    <div class="ctrl-block quality-row" id="scaleRow" style="display:none">
+      <label class="opt-label" data-i18n="scale">缩放倍数</label>
+      <select id="scaleSel" class="scale-sel"></select>
+    </div>
+  </div>
+  <p class="target-hint" data-i18n="targetUnavailable">HEIC 与 SVG 仅支持作为输入格式，不支持输出（HEIC 需要系统级编码，SVG 为矢量格式）。</p>
+
+  <div class="list-head">
+    <span class="list-title" data-i18n="listTitle">转换列表</span>
+    <button type="button" class="btn btn-primary" id="downloadAllBtn" data-i18n="downloadAll" disabled>全部下载</button>
+    <button type="button" class="btn btn-secondary" id="clearBtn" data-i18n="clearAll">清空列表</button>
+  </div>
+  <div id="listWrap">
+    <div id="itemList" class="item-list"></div>
+    <p id="emptyHint" class="empty-hint" data-i18n="emptyHint">添加图片后将在此显示转换结果</p>
+  </div>
+</div>
+</main>
+<footer class="global-footer">
+  <div class="tool-status" id="statusBar"></div>
+  <div data-i18n="common.footer">S-Jiffy · 即用即走</div>
+</footer>
+<script src="../../assets/vendor/heic2any.min.js"></script>
+<script src="../../assets/js/global.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MAX_MB = 50, MAX_FILES = 20, DEFAULT_Q = 90;
+  var LABEL = { jpg: 'JPG', png: 'PNG', webp: 'WebP', avif: 'AVIF', svg: 'SVG', heic: 'HEIC' };
+  var EXT = { jpg: 'jpg', png: 'png', webp: 'webp', avif: 'avif' };
+  var MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' };
+  var SOURCES = ['png', 'jpg', 'webp', 'svg', 'avif', 'heic'];
+  var SCALE_OPTS = [1, 2, 3, 4];
+
+  var items = [], idSeq = 0, busy = false, gen = 0, timer = null;
+  var target = 'jpg', quality = DEFAULT_Q, scale = 1;
+
+  function $(id) { return document.getElementById(id); }
+  function t(key, fb) { return (window.I18N && I18N.dict[key] != null) ? I18N.dict[key] : fb; }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+  function baseName(n) { return n.replace(/\.[^/.]+$/, ''); }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+  }
+  function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+  function debounce(fn, ms) { clearTimer(); timer = setTimeout(fn, ms); }
+
+  function detectFormat(f) {
+    var n = f.name.toLowerCase(), ty = f.type.toLowerCase();
+    if (ty === 'image/png' || n.indexOf('.png') !== -1) return 'png';
+    if (ty === 'image/jpeg' || n.indexOf('.jpg') !== -1 || n.indexOf('.jpeg') !== -1) return 'jpg';
+    if (ty === 'image/webp' || n.indexOf('.webp') !== -1) return 'webp';
+    if (ty === 'image/svg+xml' || n.indexOf('.svg') !== -1) return 'svg';
+    if (ty === 'image/avif' || n.indexOf('.avif') !== -1) return 'avif';
+    if (ty.indexOf('heic') !== -1 || ty.indexOf('heif') !== -1 || n.indexOf('.heic') !== -1 || n.indexOf('.heif') !== -1) return 'heic';
+    return 'jpg';
+  }
+
+  function svgDimAttr(text, attr) {
+    var re = new RegExp('\\b' + attr + '\\s*=\\s*("[^"]*"|\'[^\']*\')', 'i');
+    var m = text.match(re);
+    if (!m) return null;
+    var v = String(m[1]).replace(/["']/g, '').trim();
+    if (v === 'auto' || v.slice(-1) === '%') return null;
+    var n = parseFloat(v);
+    return (isFinite(n) && n > 0) ? Math.round(n) : null;
+  }
+
+  function svgViewBoxSize(text) {
+    var m = text.match(/viewBox\s*=\s*("[^"]*"|\'[^\']*\')/i);
+    if (!m) return null;
+    var parts = String(m[1]).replace(/["']/g, '').trim().split(/[\s,]+/);
+    if (parts.length < 4) return null;
+    var w = parseFloat(parts[2]), h = parseFloat(parts[3]);
+    return (isFinite(w) && isFinite(h) && w > 0 && h > 0) ? { w: Math.round(w), h: Math.round(h) } : null;
+  }
+
+  function ensureSvgSize(text) {
+    var w = svgDimAttr(text, 'width'), h = svgDimAttr(text, 'height');
+    if (!w || !h) {
+      var vb = svgViewBoxSize(text);
+      if (!w) w = vb ? vb.w : 800;
+      if (!h) h = vb ? vb.h : 600;
+    }
+    var out = text.replace(/<svg([^>]*)>/i, function (m0, attrs) {
+      var a = attrs;
+      var hasW = /\bwidth\s*=/i.test(a);
+      var hasH = /\bheight\s*=/i.test(a);
+      a = a.replace(/\bwidth\s*=\s*("[^"]*"|'[^']*')/i, 'width="' + w + '"');
+      a = a.replace(/\bheight\s*=\s*("[^"]*"|'[^']*')/i, 'height="' + h + '"');
+      if (!hasW) a = ' width="' + w + '"' + a;
+      if (!hasH) a = ' height="' + h + '"' + a;
+      return '<svg' + a + '>';
+    });
+    return { text: out, w: w, h: h };
+  }
+
+  function loadImg(blob, ok, fail) {
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function () { ok(img); URL.revokeObjectURL(url); };
+    img.onerror = function () { URL.revokeObjectURL(url); fail(); };
+    img.src = url;
+  }
+
+  function ensureHeic2any(cb, fail) {
+    if (window.heic2any) { cb(); return; }
+    var s = document.createElement('script');
+    s.src = '../../assets/vendor/heic2any.min.js';
+    s.onload = function () { cb(); };
+    s.onerror = function () { fail(t('heicLibFailed', 'HEIC 解码库加载失败，请检查网络后重试')); };
+    document.body.appendChild(s);
+  }
+
+  function sourceBlob(item, ok, fail) {
+    if (item.srcFmt === 'heic') {
+      ensureHeic2any(function () {
+        var p = heic2any({ blob: item.file, toType: 'image/png' });
+        if (p && p.then) {
+          p.then(function (b) { ok(Array.isArray(b) ? b[0] : b); })
+            .catch(function () { fail(t('heicDecodeFailed', 'HEIC 解码失败，文件可能已损坏')); });
+        } else {
+          fail(t('heicDecodeFailed', 'HEIC 解码失败，文件可能已损坏'));
+        }
+      }, fail);
+      return;
+    }
+    if (item.srcFmt === 'svg') {
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var text = String(r.result);
+          var sized = ensureSvgSize(text);
+          item.svgW = sized.w; item.svgH = sized.h;
+          ok(new Blob([sized.text], { type: 'image/svg+xml' }));
+        } catch (e) { fail(t('imageLoadFailed', '无法解析图片，文件可能已损坏')); }
+      };
+      r.onerror = function () { fail(t('imageLoadFailed', '无法解析图片，文件可能已损坏')); };
+      r.readAsText(item.file);
+      return;
+    }
+    ok(item.file);
+  }
+
+  function outName(item) {
+    return baseName(item.file.name) + '.' + EXT[target];
+  }
+
+  function statusText(item) {
+    if (item.status === 'work') return t('converting', '转换中…');
+    if (item.status === 'done') return t('statusDone', '已完成');
+    if (item.status === 'fail') return t('statusFailed', '失败');
+    return t('statusWait', '等待中');
+  }
+
+  function renderItem(item) {
+    item.elStatus.textContent = statusText(item);
+    item.elStatus.className = 'item-status st-' + item.status;
+    if (item.status === 'done' && item.outUrl) {
+      item.elThumb.src = item.outUrl;
+      item.elThumb.style.display = 'block';
+      item.elDst.className = '';
+      item.elDst.textContent = fmtBytes(item.outBlob.size);
+    } else {
+      item.elThumb.removeAttribute('src');
+      item.elThumb.style.display = 'none';
+      if (item.status === 'fail' && item.err) {
+        item.elDst.className = 'err-text';
+        item.elDst.textContent = item.err;
+      } else {
+        item.elDst.className = '';
+        item.elDst.textContent = '';
+      }
+    }
+    item.elDownload.disabled = item.status !== 'done';
+    item.elDownload.textContent = t('downloadFormat', '下载 {format}').replace('{format}', LABEL[target]);
+  }
+
+  function buildRow(item) {
+    var row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML =
+      '<div class="item-thumb"><img alt="" class="item-thumb-img" style="display:none"></div>' +
+      '<div class="item-main">' +
+        '<div class="item-name">' + htmlEscape(item.file.name) + '</div>' +
+        '<div class="item-meta">' + t('original', '原图') + ' ' + fmtBytes(item.file.size) + '<span class="meta-arrow">→</span><span class="meta-dst"></span></div>' +
+      '</div>' +
+      '<div class="item-side">' +
+        '<span class="item-status"></span>' +
+        '<button type="button" class="btn btn-secondary item-dl" disabled>' + t('downloadFormat', '下载 {format}').replace('{format}', LABEL[target]) + '</button>' +
+        '<button type="button" class="btn btn-secondary item-rm">' + t('remove', '移除') + '</button>' +
+      '</div>';
+    item.row = row;
+    item.elStatus = row.querySelector('.item-status');
+    item.elDst = row.querySelector('.meta-dst');
+    item.elThumb = row.querySelector('.item-thumb-img');
+    item.elDownload = row.querySelector('.item-dl');
+    row.querySelector('.item-rm').addEventListener('click', function () { removeItem(item.id); });
+    item.elDownload.addEventListener('click', function () {
+      if (!item.outBlob) return;
+      download(item.outBlob, outName(item));
+      setStatus(t('downloaded', '已开始下载'));
+    });
+    return row;
+  }
+
+  function updateScaleRow() {
+    var hasSvg = false;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].srcFmt === 'svg') { hasSvg = true; break; }
+    }
+    $('scaleRow').style.display = hasSvg ? 'flex' : 'none';
+  }
+
+  function refreshDownloadAll() {
+    var done = 0;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].status === 'done') done++;
+    }
+    $('downloadAllBtn').disabled = done === 0;
+  }
+
+  var avifSupported = true;
+
+  function updateTargetOptions() {
+    var avifOpt = $('optAvif');
+    if (avifOpt) avifOpt.disabled = !avifSupported;
+  }
+
+  function probeAvif(cb) {
+    var c = document.createElement('canvas');
+    c.width = 1; c.height = 1;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 1, 1);
+    c.toBlob(function (b) {
+      cb(!!(b && b.type === 'image/avif'));
+    }, 'image/avif', 0.8);
+  }
+
+  probeAvif(function (ok) {
+    avifSupported = ok;
+    updateTargetOptions();
+    if (!ok && target === 'avif') {
+      target = 'jpg';
+      $('targetSelect').value = target;
+      if (items.length) resetItems();
+    }
+  });
+
+  function updateProgress() {
+    var done = 0;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].status === 'done') done++;
+    }
+    setStatus(t('doneCount', '转换完成 {done}/{total}').replace('{done}', String(done)).replace('{total}', String(items.length)));
+  }
+
+  function addItem(meta) {
+    var item = {
+      id: ++idSeq, file: meta.file, srcFmt: meta.srcFmt,
+      status: meta.oversized ? 'fail' : 'wait',
+      err: meta.oversized ? t('fileTooLargeSimple', '文件过大（最大 {size}MB）。').replace('{size}', String(MAX_MB)) : '',
+      outBlob: null, outUrl: null, row: null,
+      elStatus: null, elDst: null, elThumb: null, elDownload: null,
+      svgW: 0, svgH: 0
+    };
+    items.push(item);
+    $('itemList').appendChild(buildRow(item));
+    $('emptyHint').style.display = 'none';
+    updateScaleRow();
+    renderItem(item);
+    if (!meta.oversized) pump();
+  }
+
+  function handleFiles(list) {
+    var files = Array.prototype.slice.call(list || []);
+    if (!files.length) return;
+    var remain = MAX_FILES - items.length;
+    if (remain <= 0) {
+      setStatus(t('filesLimit', '最多支持 {n} 个文件，多余文件已忽略').replace('{n}', String(MAX_FILES)), 'error');
+      return;
+    }
+    var toAdd = [], unsupported = 0, ignored = 0;
+    for (var i = 0; i < files.length && toAdd.length < remain; i++) {
+      var f = files[i];
+      var fmt = detectFormat(f);
+      if (SOURCES.indexOf(fmt) === -1) { unsupported++; continue; }
+      if (f.size > MAX_MB * 1024 * 1024) { toAdd.push({ file: f, srcFmt: fmt, oversized: true }); continue; }
+      toAdd.push({ file: f, srcFmt: fmt });
+    }
+    ignored = Math.max(0, files.length - unsupported - toAdd.length);
+    var msgs = [];
+    if (toAdd.length) msgs.push(t('filesAdded', '已添加 {n} 个文件').replace('{n}', String(toAdd.length)));
+    if (unsupported) msgs.push(t('unsupportedSkipped', '已跳过 {n} 个不支持的格式文件').replace('{n}', String(unsupported)));
+    if (ignored) msgs.push(t('filesLimit', '最多支持 {n} 个文件，多余文件已忽略').replace('{n}', String(MAX_FILES)));
+    if (msgs.length) setStatus(msgs.join(' · '), toAdd.length ? 'info' : 'error');
+    for (var j = 0; j < toAdd.length; j++) addItem(toAdd[j]);
+    $('fileInput').value = '';
+  }
+
+  function convertItem(item, myGen, done) {
+    if (item.srcFmt === target) {
+      item.status = 'fail';
+      item.err = t('sameFormatSkipped', '源格式与目标格式相同，已跳过');
+      renderItem(item);
+      done();
+      return;
+    }
+    sourceBlob(item, function (srcBlob) {
+      loadImg(srcBlob, function (img) {
+        if (myGen !== gen) { done(); return; }
+        var w, h;
+        if (item.srcFmt === 'svg') {
+          w = Math.round((img.naturalWidth || item.svgW || 800) * scale);
+          h = Math.round((img.naturalHeight || item.svgH || 600) * scale);
+        } else {
+          w = img.naturalWidth || 800;
+          h = img.naturalHeight || 600;
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        if (target === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); }
+        ctx.drawImage(img, 0, 0, w, h);
+        var q = target === 'avif' ? Math.min(quality, 75) : quality / 100;
+        canvas.toBlob(function (b) {
+          if (myGen !== gen) { done(); return; }
+          if (!b) {
+            item.status = 'fail';
+            item.err = target === 'avif' ? t('avifEncodeFailed', '当前浏览器不支持 AVIF 编码，请选择其他输出格式') : t('conversionFailed', '转换失败，请重试。');
+            renderItem(item);
+            done();
+            return;
+          }
+          if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+          item.outBlob = b;
+          item.outUrl = URL.createObjectURL(b);
+          item.status = 'done';
+          item.err = '';
+          renderItem(item);
+          refreshDownloadAll();
+          updateProgress();
+          done();
+        }, MIME[target], q);
+      }, function () {
+        if (myGen !== gen) { done(); return; }
+        item.status = 'fail';
+        item.err = t('imageLoadFailed', '无法解析图片，文件可能已损坏');
+        renderItem(item);
+        done();
+      });
+    }, function (errMsg) {
+      if (myGen !== gen) { done(); return; }
+      item.status = 'fail';
+      item.err = errMsg || t('conversionFailed', '转换失败，请重试。');
+      renderItem(item);
+      done();
+    });
+  }
+
+  function pump() {
+    if (busy) return;
+    var next = null;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].status === 'wait') { next = items[i]; break; }
+    }
+    if (!next) { refreshDownloadAll(); return; }
+    busy = true;
+    next.status = 'work';
+    renderItem(next);
+    var myGen = gen;
+    convertItem(next, myGen, function () { busy = false; pump(); });
+  }
+
+  function resetItems() {
+    gen++;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.outUrl) { URL.revokeObjectURL(it.outUrl); it.outUrl = null; }
+      it.outBlob = null;
+      it.err = '';
+      it.status = 'wait';
+      renderItem(it);
+    }
+    pump();
+  }
+
+  function removeItem(id) {
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].id !== id) continue;
+      var it = items[i];
+      if (it.outUrl) URL.revokeObjectURL(it.outUrl);
+      it.row.remove();
+      items.splice(i, 1);
+      break;
+    }
+    if (!items.length) {
+      $('emptyHint').style.display = '';
+      setStatus('');
+    }
+    updateScaleRow();
+    refreshDownloadAll();
+  }
+
+  function clearList() {
+    gen++;
+    busy = false;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].outUrl) URL.revokeObjectURL(items[i].outUrl);
+    }
+    items = [];
+    $('itemList').innerHTML = '';
+    $('emptyHint').style.display = '';
+    updateScaleRow();
+    refreshDownloadAll();
+  }
+
+  var dz = $('dropZone');
+  dz.addEventListener('click', function () { $('fileInput').click(); });
+  dz.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('fileInput').click(); }
+  });
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    handleFiles(e.dataTransfer && e.dataTransfer.files);
+  });
+  $('fileInput').addEventListener('change', function () {
+    handleFiles(this.files);
+  });
+
+  $('targetSelect').addEventListener('change', function () {
+    if (this.value === target) return;
+    target = this.value;
+    debounce(resetItems, 300);
+  });
+
+  $('qualityRange').addEventListener('input', function () {
+    quality = parseInt(this.value, 10) || 1;
+    $('qualityVal').textContent = quality + '%';
+    debounce(resetItems, 500);
+  });
+
+  var scaleSel = $('scaleSel');
+  for (var s = 0; s < SCALE_OPTS.length; s++) {
+    var opt = document.createElement('option');
+    opt.value = String(SCALE_OPTS[s]);
+    opt.textContent = SCALE_OPTS[s] + 'x';
+    if (SCALE_OPTS[s] === scale) opt.selected = true;
+    scaleSel.appendChild(opt);
+  }
+  scaleSel.addEventListener('change', function () {
+    scale = parseInt(this.value, 10) || 1;
+    debounce(resetItems, 300);
+  });
+
+  $('downloadAllBtn').addEventListener('click', function () {
+    var dl = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].status === 'done' && items[i].outBlob) dl.push(items[i]);
+    }
+    if (!dl.length) return;
+    for (var j = 0; j < dl.length; j++) {
+      (function (it) {
+        setTimeout(function () { download(it.outBlob, outName(it)); }, j * 150);
+      })(dl[j]);
+    }
+    setStatus(t('allDownloaded', '已开始下载全部文件'));
+  });
+
+  $('clearBtn').addEventListener('click', function () {
+    if (!items.length) return;
+    showConfirm(t('confirmClear', '确定清空列表并移除全部文件？'), function (ok) {
+      if (ok) { clearList(); setStatus(''); }
+    });
+  });
+
+  refreshDownloadAll();
+})();
+</script>
+</body>
+</html>

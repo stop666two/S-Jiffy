@@ -10,13 +10,30 @@
 .freq-table{width:100%;border-collapse:collapse;font-size:var(--font-size-sm);margin-top:var(--space-2);}
 .freq-table th,.freq-table td{padding:4px 8px;text-align:left;border-bottom:1px solid var(--color-border);}
 .freq-bar{height:14px;background:var(--color-text-primary);border-radius:2px;min-width:2px;}
+.dc-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3);}
+.dc-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.dc-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.tf-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-2);}
+.tf-row label{display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.bar-chart{margin-top:var(--space-2);}
+.bar-row{display:flex;align-items:center;margin-bottom:4px;font-size:var(--font-size-sm);}
+.bar-label{min-width:40px;text-align:right;margin-right:8px;}
+.bar-fill{height:20px;background:var(--color-text-primary);border-radius:var(--radius-sm);transition:width 0.3s;min-width:2px;}
+.bar-count{margin-left:6px;color:var(--color-text-secondary);}
 </style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
-<main class="tool-workspace"><h1 data-i18n="h1">高级文本统计</h1><p class="tool-desc" data-i18n="desc">音节数、Flesch 可读性评分、年级水平、词频分析。</p>
+<main class="tool-workspace"><h1 data-i18n="h1">高级文本统计</h1><p class="tool-desc" data-i18n="desc">文本统计与可读性分析：字符/单词/行/句子/音节数、Flesch 可读性评分、年级水平与词频分析。</p>
+<div class="dc-tabs">
+  <button id="tabStats" class="active" type="button" data-i18n="ui.20">基础统计</button>
+  <button id="tabFreq" type="button" data-i18n="ui.21">词频分析</button>
+</div>
+<div id="panelStats">
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="粘贴你的文本..." style="min-height:180px;"></textarea></div>
 <div class="adv-stat-grid">
 <div class="adv-stat-item"><div class="num" id="charCount">0</div><div class="label" data-i18n="ui.1">字符数</div></div>
+<div class="adv-stat-item"><div class="num" id="charNoSpaceCount">0</div><div class="label" data-i18n="ui.16">字符（不含空格）</div></div>
+<div class="adv-stat-item"><div class="num" id="charCnCount">0</div><div class="label" data-i18n="ui.17">中文字符</div></div>
 <div class="adv-stat-item"><div class="num" id="wordCount">0</div><div class="label" data-i18n="ui.2">单词数</div></div>
 <div class="adv-stat-item"><div class="num" id="sentenceCount">0</div><div class="label" data-i18n="ui.3">句子数</div></div>
 <div class="adv-stat-item"><div class="num" id="syllableCount">0</div><div class="label" data-i18n="ui.4">音节数</div></div>
@@ -26,15 +43,32 @@
 <div class="adv-stat-item"><div class="num" id="readingTime">0</div><div class="label" data-i18n="ui.8">阅读时间（分钟）</div></div>
 <div class="adv-stat-item"><div class="num" id="lexicalDensity">0%</div><div class="label" data-i18n="ui.9">词汇密度</div></div>
 <div class="adv-stat-item"><div class="num" id="complexWords">0%</div><div class="label" data-i18n="ui.10">复杂词比例</div></div>
+<div class="adv-stat-item"><div class="num" id="lineCount">0</div><div class="label" data-i18n="ui.18">行数</div></div>
+<div class="adv-stat-item"><div class="num" id="paraCount">0</div><div class="label" data-i18n="ui.19">段落数</div></div>
 </div>
 <div class="card"><h2 style="font-size:var(--font-size-base);font-weight:600;margin-bottom:var(--space-2);" data-i18n="ui.11">词频</h2><div id="freqContainer"><p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);" data-i18n="ui.12">输入文本以查看词频</p></div></div>
+</div>
+<div class="card" id="panelFreq" style="display:none;">
+  <div class="tf-row" style="margin-bottom:var(--space-2);"><textarea id="freqText" class="input textarea" data-i18n-placeholder="ui.100" placeholder="粘贴你的文本..." style="min-height:140px;flex:1;"></textarea></div>
+  <div class="tf-row">
+    <label><span data-i18n="ui.22">分析类型</span><select id="typeSel" class="input" style="width:auto;min-width:80px;">
+      <option value="char" data-i18n="ui.23">字符</option>
+      <option value="word" selected data-i18n="ui.24">单词</option>
+    </select></label>
+    <label><input id="caseChk" type="checkbox"> <span data-i18n="ui.25">忽略大小写</span></label>
+    <label><input id="topChk" type="checkbox" checked> <span data-i18n="ui.26">仅显示前 20 项</span></label>
+  </div>
+  <div><button id="genBtn" class="btn btn-primary" data-i18n="ui.27">分析</button></div>
+  <div id="freqResult"></div>
+</div>
 <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div></main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script>
 <script>
-(function(){var i=document.getElementById('inputText');
-var el={cc:document.getElementById('charCount'),wc:document.getElementById('wordCount'),sc:document.getElementById('sentenceCount'),sy:document.getElementById('syllableCount'),fr:document.getElementById('fleschScore'),gl:document.getElementById('gradeLevel'),aw:document.getElementById('avgWordLen'),rt:document.getElementById('readingTime'),ld:document.getElementById('lexicalDensity'),cw:document.getElementById('complexWords')};
+(function(){
+var i=document.getElementById('inputText');
+var el={cc:document.getElementById('charCount'),cns:document.getElementById('charNoSpaceCount'),cnc:document.getElementById('charCnCount'),wc:document.getElementById('wordCount'),sc:document.getElementById('sentenceCount'),sy:document.getElementById('syllableCount'),fr:document.getElementById('fleschScore'),gl:document.getElementById('gradeLevel'),aw:document.getElementById('avgWordLen'),rt:document.getElementById('readingTime'),ld:document.getElementById('lexicalDensity'),cw:document.getElementById('complexWords'),lc:document.getElementById('lineCount'),pc:document.getElementById('paraCount')};
 var freqC=document.getElementById('freqContainer'),o=document.getElementById('outputText');
 
 function countSyllables(word){word=word.toLowerCase().replace(/[^a-z]/g,'');if(!word)return 0;
@@ -43,10 +77,15 @@ word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'');
 word=word.replace(/^y/,'');
 var m=word.match(/[aeiouy]{1,2}/g);return m?m.length:1;}
 
-function update(){var txt=i.value;if(!txt.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">'+t('ui.12','\u8f93\u5165\u6587\u672c\u4ee5\u67e5\u770b\u8bcd\u9891')+'</p>';o.textContent='';return;}
+function update(){var txt=i.value;if(!txt.trim()){for(var k in el)el[k].textContent='0';el.ld.textContent='0%';el.cw.textContent='0%';freqC.innerHTML='<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">'+t('ui.12','输入文本以查看词频')+'</p>';o.textContent='';return;}
 var cc=txt.length;
+el.cns.textContent=txt.replace(/\s/g,'').length;
+el.cnc.textContent=(txt.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g)||[]).length;
+el.lc.textContent=txt.split('\n').length;
+var paras=txt.split(/\n\s*\n/).filter(function(p){return p.trim().length>0;}).length;
+el.pc.textContent=paras;
 var words=txt.trim().split(/\s+/);var wc=words.length;
-var sents=txt.split(/[.!?]+/).filter(function(s){return s.trim().length>0;}).length||1;
+var sents=txt.split(/[.!?。！？\n]+/).filter(function(s){return s.trim().length>0;}).length||1;
 var syl=0,cw=0;var freq={};
 for(var w=0;w<words.length;w++){var word=words[w].replace(/[^a-z]/gi,'');if(!word)continue;
 var cs=countSyllables(word);syl+=cs;
@@ -68,12 +107,60 @@ el.ld.textContent=ldVal+'%';el.cw.textContent=cwp+'%';
 
 var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];});
 var top=sorted.slice(0,15);var maxF=top.length>0?freq[top[0]]:1;
-var h='<table class="freq-table"><thead><tr><th>#</th><th>'+t('ui.13','\u5355\u8bcd')+'</th><th>'+t('ui.14','\u8ba1\u6570')+'</th><th>'+t('ui.15','\u5206\u5e03')+'</th></tr></thead><tbody>';
+var h='<table class="freq-table"><thead><tr><th>#</th><th>'+t('ui.13','单词')+'</th><th>'+t('ui.14','计数')+'</th><th>'+t('ui.15','分布')+'</th></tr></thead><tbody>';
 for(var i2=0;i2<top.length;i2++){var pct=(freq[top[i2]]/maxF*100).toFixed(0);h+='<tr><td>'+(i2+1)+'</td><td>'+htmlEscape(top[i2])+'</td><td>'+freq[top[i2]]+'</td><td><div class="freq-bar" style="width:'+pct+'%"></div></td></tr>';}
 h+='</tbody></table>';freqC.innerHTML=h;
 o.textContent='Chars: '+cc+' Words: '+wc+' Syllables: '+syl+' Flesch: '+el.fr.textContent+' Grade: '+el.gl.textContent;
 }
 i.addEventListener('input',update);
 document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('ui.copied','已复制'));}});
-update();})();
-</script></body></html>
+update();
+
+var tabStats=document.getElementById('tabStats'),tabFreq=document.getElementById('tabFreq');
+var panelStats=document.getElementById('panelStats'),panelFreq=document.getElementById('panelFreq');
+function switchTab(which){
+  if(which==='stats'){tabStats.className='active';tabFreq.className='';panelStats.style.display='';panelFreq.style.display='none';}
+  else{tabFreq.className='active';tabStats.className='';panelFreq.style.display='';panelStats.style.display='none';}
+}
+tabStats.addEventListener('click',function(){switchTab('stats');});
+tabFreq.addEventListener('click',function(){switchTab('freq');});
+
+var freqTextEl=document.getElementById('freqText'),typeEl=document.getElementById('typeSel'),caseChk=document.getElementById('caseChk'),topChk=document.getElementById('topChk'),genBtn=document.getElementById('genBtn'),freqResult=document.getElementById('freqResult');
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function generate(){
+  var text=freqTextEl.value;
+  if(!text){setStatus(t('ui.28','请输入文本'),'error');return;}
+  var type=typeEl.value;
+  var ignoreCase=caseChk.checked;
+  var onlyTop=topChk.checked;
+  if(ignoreCase)text=text.toLowerCase();
+  var freq={};
+  if(type==='char'){
+    for(var i=0;i<text.length;i++){var ch=text[i];if(ch===' '||ch==='\n'||ch==='\t')continue;freq[ch]=(freq[ch]||0)+1;}
+  }else{
+    var words=text.split(/[\s\n\r\t]+/).filter(function(w){return w!=='';});
+    for(var i=0;i<words.length;i++){freq[words[i]]=(freq[words[i]]||0)+1;}
+  }
+  var entries=[];
+  var keys=Object.keys(freq);
+  for(var i=0;i<keys.length;i++){entries.push({key:keys[i],count:freq[keys[i]]});}
+  entries.sort(function(a,b){return b.count-a.count;});
+  var maxCount=entries.length>0?entries[0].count:1;
+  var limit=onlyTop?Math.min(20,entries.length):entries.length;
+  var html='<div class="bar-chart">';
+  var textOutput='';
+  for(var i=0;i<limit;i++){
+    var e=entries[i];
+    var pct=(e.count/maxCount*100).toFixed(0);
+    var label=type==='char'?(e.key===' '?'␣':escapeHtml(e.key)):escapeHtml(e.key);
+    html+='<div class="bar-row"><span class="bar-label">'+label+'</span><div class="bar-fill" style="width:'+pct+'%;"></div><span class="bar-count">'+e.count+'</span></div>';
+    textOutput+=e.key+': '+e.count+'\n';
+  }
+  html+='</div>';
+  freqResult.innerHTML=html;
+  setStatus(t('ui.29','分析完成，共 ')+entries.length+t('ui.30',' 个唯一项'));
+}
+genBtn.addEventListener('click',generate);
+})();</script></body></html>

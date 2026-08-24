@@ -7,10 +7,27 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); flex-wrap: wrap; }
+    .dc-tabs button { flex: 1; min-width: 120px; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
     .base-table { width:100%; border-collapse:collapse; font-size:var(--font-size-sm); margin-top:var(--space-2); }
     .base-table th { text-align:left; padding:6px 12px; border-bottom:2px solid var(--color-border); font-size:var(--font-size-xs); color:var(--color-text-disabled); }
     .base-table td { padding:6px 12px; border-bottom:1px solid var(--color-border); font-family:var(--font-mono); }
     .base-table tr:hover td { background:var(--color-bg-soft); }
+    .base-table tbody tr { cursor: pointer; }
+    .bi-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .bi-field { flex: 1; min-width: 220px; }
+    .bi-field label { display: block; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: 4px; }
+    .bi-field .input { font-family: var(--font-mono); }
+    .bi-dec { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 4px; font-family: var(--font-mono); }
+    .bi-ops { display: flex; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-2); }
+    .bi-ops button { min-width: 56px; height: 44px; font-family: var(--font-mono); font-size: var(--font-size-lg); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .bi-ops button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .bi-ops button:hover { border-color: var(--color-text-primary); }
+    .bi-result-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-1) 0; border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); }
+    .bi-result-row:last-child { border-bottom: none; }
+    .bi-result-row .lbl { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .bi-result-row .val { font-weight: 600; word-break: break-all; text-align: right; }
   </style>
 </head>
 <body>
@@ -18,35 +35,75 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">数字进制转换</h1>
-    <p class="tool-desc" data-i18n="desc">2-36 进制任意互转，多进制同时显示。</p>
+    <h1 data-i18n="h1">进制转换与二进制计算</h1>
+    <p class="tool-desc" data-i18n="desc">2-36 进制任意互转并实时同步显示，支持二进制加减乘除运算，结果多进制呈现。</p>
 
-    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <input id="inputValue" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入数值" style="width:200px;">
-      <select id="fromBase" class="input" style="width:auto;min-width:100px;">
-        <option value="2" data-i18n="ui.1">二进制 (2)</option>
-        <option value="8" data-i18n="ui.2">八进制 (8)</option>
-        <option value="10" selected data-i18n="ui.3">十进制 (10)</option>
-        <option value="16" data-i18n="ui.4">十六进制 (16)</option>
-        <option value="32" data-i18n="ui.5">三十二进制 (32)</option>
-        <option value="36" data-i18n="ui.6">三十六进制 (36)</option>
-      </select>
-      <span style="color:var(--color-text-secondary);">→</span>
-      <select id="toBase" class="input" style="width:auto;min-width:100px;">
-        <option value="2" data-i18n="ui.1">二进制 (2)</option>
-        <option value="8" data-i18n="ui.2">八进制 (8)</option>
-        <option value="10" data-i18n="ui.3">十进制 (10)</option>
-        <option value="16" selected data-i18n="ui.4">十六进制 (16)</option>
-        <option value="32" data-i18n="ui.5">三十二进制 (32)</option>
-        <option value="36" data-i18n="ui.6">三十六进制 (36)</option>
-      </select>
-      <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
-      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+    <div class="dc-tabs">
+      <button class="tab-btn active" data-mode="conv" data-i18n="ui.tab1">转换</button>
+      <button class="tab-btn" data-mode="calc" data-i18n="ui.tab2">运算</button>
+    </div>
+
+    <div id="panel-conv" class="tab-panel">
+      <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input id="inputValue" class="input js-focus-input" data-i18n-placeholder="ui.103" placeholder="输入数值" style="width:200px;">
+        <select id="fromBase" class="input" style="width:auto;min-width:100px;">
+          <option value="2" data-i18n="ui.1">二进制 (2)</option>
+          <option value="8" data-i18n="ui.2">八进制 (8)</option>
+          <option value="10" selected data-i18n="ui.3">十进制 (10)</option>
+          <option value="16" data-i18n="ui.4">十六进制 (16)</option>
+          <option value="32" data-i18n="ui.5">三十二进制 (32)</option>
+          <option value="36" data-i18n="ui.6">三十六进制 (36)</option>
+        </select>
+        <span style="color:var(--color-text-secondary);">→</span>
+        <select id="toBase" class="input" style="width:auto;min-width:100px;">
+          <option value="2" data-i18n="ui.1">二进制 (2)</option>
+          <option value="8" data-i18n="ui.2">八进制 (8)</option>
+          <option value="10" data-i18n="ui.3">十进制 (10)</option>
+          <option value="16" selected data-i18n="ui.4">十六进制 (16)</option>
+          <option value="32" data-i18n="ui.5">三十二进制 (32)</option>
+          <option value="36" data-i18n="ui.6">三十六进制 (36)</option>
+        </select>
+        <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+        <label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="chkLive"> <span data-i18n="ui.live">实时转换</span></label>
+      </div>
+      <div id="tableArea"></div>
+    </div>
+
+    <div id="panel-calc" class="tab-panel" style="display:none;">
+      <div class="card">
+        <div class="bi-row">
+          <div class="bi-field">
+            <label data-i18n="binary">二进制 A</label>
+            <input id="biA" class="input js-focus-input" type="text" autocomplete="off" spellcheck="false" placeholder="1010">
+            <p class="bi-dec" id="decA">= 0</p>
+          </div>
+          <div class="bi-field">
+            <label data-i18n="binary">二进制 B</label>
+            <input id="biB" class="input" type="text" autocomplete="off" spellcheck="false" placeholder="0110">
+            <p class="bi-dec" id="decB">= 0</p>
+          </div>
+        </div>
+        <div class="bi-ops" id="opBar">
+          <button type="button" data-op="+" class="active">+</button>
+          <button type="button" data-op="-">−</button>
+          <button type="button" data-op="*">×</button>
+          <button type="button" data-op="/">÷</button>
+        </div>
+        <div>
+          <button id="calcBtn" class="btn btn-primary" data-i18n="calculate">计算</button>
+          <button id="calcClearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+        </div>
+      </div>
+      <div class="card" id="resultCard" style="display:none;">
+        <div class="bi-result-row"><span class="lbl" data-i18n="binaryResult">二进制结果</span><span class="val" id="resBin">—</span></div>
+        <div class="bi-result-row"><span class="lbl" data-i18n="decimal">十进制</span><span class="val" id="resDec">—</span></div>
+        <div class="bi-result-row"><span class="lbl" data-i18n="hexadecimal">十六进制</span><span class="val" id="resHex">—</span></div>
+      </div>
     </div>
 
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <div id="tableArea"></div>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
     </div>
   </main>
@@ -58,9 +115,21 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
+      var tabBtns = document.querySelectorAll('.tab-btn');
+      var panelIds = { conv: 'panel-conv', calc: 'panel-calc' };
+      for (var ti = 0; ti < tabBtns.length; ti++) {
+        tabBtns[ti].addEventListener('click', function () {
+          var mode = this.getAttribute('data-mode');
+          for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+          this.classList.add('active');
+          for (var k in panelIds) document.getElementById(panelIds[k]).style.display = (k === mode) ? '' : 'none';
+        });
+      }
+
       var inputVal = document.getElementById('inputValue'), fromBase = document.getElementById('fromBase'), toBase = document.getElementById('toBase');
       var o = document.getElementById('outputText'), tableArea = document.getElementById('tableArea');
       var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+      var chkLive = document.getElementById('chkLive');
 
       var baseNames = { 2: t('bn.2','二进制'), 3: t('bn.3','三进制'), 4: t('bn.4','四进制'), 5: t('bn.5','五进制'), 6: t('bn.6','六进制'), 7: t('bn.7','七进制'), 8: t('bn.8','八进制'), 9: t('bn.9','九进制'), 10: t('bn.10','十进制'), 11: t('bn.11','十一进制'), 12: t('bn.12','十二进制'), 13: t('bn.13','十三进制'), 14: t('bn.14','十四进制'), 15: t('bn.15','十五进制'), 16: t('bn.16','十六进制'), 17: t('bn.17','十七进制'), 18: t('bn.18','十八进制'), 19: t('bn.19','十九进制'), 20: t('bn.20','二十进制'), 21: t('bn.21','二十进制'), 22: t('bn.22','二十二进制'), 23: t('bn.23','二十三进制'), 24: t('bn.24','二十四进制'), 25: t('bn.25','二十五进制'), 26: t('bn.26','二十六进制'), 27: t('bn.27','二十七进制'), 28: t('bn.28','二十八进制'), 29: t('bn.29','二十九进制'), 30: t('bn.30','三十进制'), 31: t('bn.31','三十一进制'), 32: t('bn.32','三十二进制'), 33: t('bn.33','三十三进制'), 34: t('bn.34','三十四进制'), 35: t('bn.35','三十五进制'), 36: t('bn.36','三十六进制') };
 
@@ -86,10 +155,19 @@
         for (var i = 0; i < showBases.length; i++) {
           var b = showBases[i];
           var val = dec.toString(b).toUpperCase();
-          html += '<tr><td>' + b + '</td><td>' + baseNames[b] + '</td><td>' + val + '</td></tr>';
+          html += '<tr data-copy="' + val + '"><td>' + b + '</td><td>' + baseNames[b] + '</td><td>' + val + '</td></tr>';
         }
         html += '</tbody></table>';
         tableArea.innerHTML = html;
+        var rows = tableArea.querySelectorAll('tr[data-copy]');
+        for (var r = 0; r < rows.length; r++) {
+          (function (row) {
+            row.addEventListener('click', function () {
+              copyToClipboard(row.getAttribute('data-copy'), copyBtn);
+              setStatus(t('ui.copied','已复制'));
+            });
+          })(rows[r]);
+        }
         setStatus('');
       }
 
@@ -97,6 +175,97 @@
       clearBtn.addEventListener('click', function () { inputVal.value = ''; o.textContent = ''; tableArea.innerHTML = ''; setStatus(''); inputVal.focus(); });
       copyBtn.addEventListener('click', function () { if (o.textContent) { copyToClipboard(o.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
       inputVal.addEventListener('keydown', function (e) { if (e.key === 'Enter') convert(); });
+      if (chkLive) inputVal.addEventListener('input', function () { if (chkLive.checked && inputVal.value.trim()) convert(); });
+
+      var aEl = document.getElementById('biA');
+      var bEl = document.getElementById('biB');
+      var decA = document.getElementById('decA');
+      var decB = document.getElementById('decB');
+      var op = '+';
+      var resultCard = document.getElementById('resultCard');
+      var calcBtn = document.getElementById('calcBtn');
+      var calcClearBtn = document.getElementById('calcClearBtn');
+
+      function parseBin(v) {
+        var s = String(v || '').replace(/\s/g, '');
+        if (!s) return null;
+        if (!/^[01]+$/.test(s)) return NaN;
+        return parseInt(s, 2);
+      }
+
+      function updateDec() {
+        var na = parseBin(aEl.value);
+        var nb = parseBin(bEl.value);
+        decA.textContent = '= ' + (isNaN(na) ? t('invalid', '无效') : (na === null ? '0' : na));
+        decB.textContent = '= ' + (isNaN(nb) ? t('invalid', '无效') : (nb === null ? '0' : nb));
+      }
+
+      aEl.addEventListener('input', function () {
+        aEl.value = aEl.value.replace(/[^01\s]/g, '');
+        updateDec();
+      });
+      bEl.addEventListener('input', function () {
+        bEl.value = bEl.value.replace(/[^01\s]/g, '');
+        updateDec();
+      });
+
+      var opBtns = document.querySelectorAll('#opBar button');
+      for (var bi = 0; bi < opBtns.length; bi++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            op = btn.getAttribute('data-op');
+            for (var j = 0; j < opBtns.length; j++) opBtns[j].className = '';
+            btn.className = 'active';
+          });
+        })(opBtns[bi]);
+      }
+
+      function calc() {
+        var na = parseBin(aEl.value);
+        var nb = parseBin(bEl.value);
+        if (aEl.value.replace(/\s/g, '') === '' || bEl.value.replace(/\s/g, '') === '') {
+          setStatus(t('emptyInput', '请输入两个二进制数'), 'error');
+          return;
+        }
+        if (isNaN(na)) { setStatus(t('invalidA', '无效的二进制数 A'), 'error'); return; }
+        if (isNaN(nb)) { setStatus(t('invalidB', '无效的二进制数 B'), 'error'); return; }
+
+        var result, err = null;
+        switch (op) {
+          case '+': result = na + nb; break;
+          case '-': result = na - nb; break;
+          case '*': result = na * nb; break;
+          case '/':
+            if (nb === 0) { err = t('divByZero', '除数不能为零'); break; }
+            result = Math.trunc(na / nb);
+            break;
+        }
+        if (err) { resultCard.style.display = 'none'; o.textContent = ''; setStatus(err, 'error'); return; }
+        if (!isFinite(result)) { resultCard.style.display = 'none'; o.textContent = ''; setStatus(t('overflow', '结果溢出'), 'error'); return; }
+
+        var neg = result < 0;
+        var abs = Math.abs(result);
+        document.getElementById('resBin').textContent = (neg ? '-' : '') + abs.toString(2);
+        document.getElementById('resDec').textContent = result;
+        document.getElementById('resHex').textContent = (neg ? '-' : '') + abs.toString(16).toUpperCase();
+        o.textContent =
+          t('binaryResult', '二进制结果') + ': ' + (neg ? '-' : '') + abs.toString(2) +
+          ' | ' + t('decimal', '十进制') + ': ' + result +
+          ' | ' + t('hexadecimal', '十六进制') + ': ' + (neg ? '-' : '') + abs.toString(16).toUpperCase();
+        resultCard.style.display = '';
+        setStatus(t('done', '计算完成'));
+      }
+
+      calcBtn.addEventListener('click', calc);
+      calcClearBtn.addEventListener('click', function () {
+        aEl.value = '';
+        bEl.value = '';
+        decA.textContent = '= 0';
+        decB.textContent = '= 0';
+        resultCard.style.display = 'none';
+        o.textContent = '';
+        setStatus('');
+      });
     })();
   </script>
 </body>

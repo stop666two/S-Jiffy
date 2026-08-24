@@ -19,7 +19,7 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">JSON 格式化器</h1>
-<p class="tool-desc" data-i18n="desc">格式化、压缩、验证、树视图、JSONPath 查询、差异视图、JSON 转 TypeScript 类型。</p>
+<p class="tool-desc" data-i18n="desc">格式化、验证、压缩与语法高亮 JSON，支持缩进选择、按键排序与 JSONPath 查询。</p>
 <div class="card">
 <label class="sub-label" data-i18n="inputJson">输入JSON</label>
 <textarea id="inputText" class="input textarea js-focus-input" placeholder='{"name":"test","list":[1,2,3]}' style="min-height:150px;"></textarea>
@@ -31,6 +31,11 @@
 <button id="treeBtn" class="btn btn-secondary" data-i18n="treeView">树视图</button>
 <button id="toTsBtn" class="btn btn-secondary" data-i18n="toTs">→ TS 类型</button>
 <button id="clearBtn" class="btn btn-secondary" data-i18n="clear">清空</button>
+</div>
+<div class="tool-row">
+<label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);"><span data-i18n="ui.102">缩进</span><select id="indentSelect" class="input" style="width:100px;"><option value="2" data-i18n="ui.103">2 空格</option><option value="4" selected data-i18n="ui.104">4 空格</option><option value="8" data-i18n="ui.105">8 空格</option><option value="tab" data-i18n="ui.106">Tab</option></select></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;"><input type="checkbox" id="sortKeysChk"> <span data-i18n="ui.107">按键排序</span></label>
+<label style="display:flex;align-items:center;gap:4px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;"><input type="checkbox" id="highlightChk" checked> <span data-i18n="ui.108">语法高亮</span></label>
 </div>
 <div class="card">
 <label class="sub-label" data-i18n="ui.101">JSON 差异（粘贴第二段 JSON）</label>
@@ -87,8 +92,8 @@
       if(obj.length===0)return'type '+name+' = any[];';
       var types={};
       for(var i=0;i<obj.length;i++){
-        var t=jsonToTs(obj[i],'Item').replace(/^type Item = /,'').replace(/;$/,'');
-        types[t]=true;
+        var inner=jsonToTs(obj[i],'Item').replace(/^type Item = /,'').replace(/;$/,'');
+        types[inner]=true;
       }
       return'type '+name+' = ('+Object.keys(types).join(' | ')+')[];';
     }
@@ -149,6 +154,28 @@
     setStatus('');
   }
 
+  function getIndent(){
+    var v=document.getElementById('indentSelect').value;
+    return v==='tab'?'\t':parseInt(v,10);
+  }
+
+  function sortObject(obj){
+    if(typeof obj!=='object'||obj===null||Array.isArray(obj))return obj;
+    var sorted={};
+    Object.keys(obj).sort().forEach(function(k){sorted[k]=sortObject(obj[k]);});
+    return sorted;
+  }
+
+  function highlightJson(s){
+    return s.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,function(match){
+      var cls='number';
+      if(/^"/.test(match)){cls=/:$/.test(match)?'key':'string';}
+      else if(/true|false/.test(match)){cls='bool';}
+      else if(/null/.test(match)){cls='null';}
+      return '<span class="'+cls+'">'+escapeHtml(match)+'</span>';
+    });
+  }
+
   function formatJson(){
     var v=inputEl.value.trim();
     errorDetail.style.display='none';jpResult.innerHTML='';currentParsed=null;
@@ -156,7 +183,13 @@
     var result=tryParse(v);
     if(!result.ok){outputText.innerHTML='';setStatus(t('invalidJson','无效JSON'),'error');return;}
     currentParsed=result.data;
-    showOutput('<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(JSON.stringify(result.data,null,2))+'</pre>');
+    var data=document.getElementById('sortKeysChk').checked?sortObject(result.data):result.data;
+    var pretty=JSON.stringify(data,null,getIndent());
+    if(document.getElementById('highlightChk').checked){
+      showOutput('<pre class="json-tree" style="font-family:var(--font-mono);font-size:13px;margin:0;white-space:pre-wrap;word-break:break-all;">'+highlightJson(pretty)+'</pre>');
+    }else{
+      showOutput('<pre style="font-family:var(--font-mono);font-size:13px;margin:0;">'+escapeHtml(pretty)+'</pre>');
+    }
   }
 
   document.getElementById('formatBtn').addEventListener('click',formatJson);

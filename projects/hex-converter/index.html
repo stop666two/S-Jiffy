@@ -3,11 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hex RGB Decimal 转换 - S-Jiffy</title>
+  <title>Hex RGB HSL Decimal 转换 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
-    .color-preview { width:100%; height:48px; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-top:var(--space-2); }
+    .color-preview { width:100%; height:48px; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-top:var(--space-2); transition:background .2s; }
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); flex-wrap: wrap; }
+    .dc-tabs button { flex: 1; min-width: 120px; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .rgb-sliders { display:flex; flex-direction:column; gap:12px; max-width:420px; }
+    .slider-row { display:flex; align-items:center; gap:12px; }
+    .slider-row label { width:30px; font-weight:600; font-size:14px; }
+    .slider-row input[type=range] { flex:1; accent-color:var(--color-text-primary); }
+    .slider-row input[type=number] { width:65px; text-align:center; font-family:var(--font-mono); padding:4px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text-primary); }
+    .result-row { font-family:var(--font-mono); font-size:20px; font-weight:600; margin-top:8px; }
+    .hsl-detail { font-size:14px; color:var(--color-text-secondary); margin-top:8px; }
   </style>
 </head>
 <body>
@@ -15,18 +25,59 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">Hex/RGB/Decimal 转换</h1>
-    <p class="tool-desc" data-i18n="desc">十六进制、RGB 与十进制颜色值互转。</p>
-    <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-      <input id="hexInput" class="input js-focus-input" placeholder="#FF6600" style="width:140px;">
-      <input id="rInput" class="input" placeholder="R" style="width:60px;">
-      <input id="gInput" class="input" placeholder="G" style="width:60px;">
-      <input id="bInput" class="input" placeholder="B" style="width:60px;">
-      <button id="toHexBtn" class="btn btn-primary">→ Hex</button>
-      <button id="toRgbBtn" class="btn btn-secondary">→ RGB</button>
-      <button id="toDecBtn" class="btn btn-secondary">→ Decimal</button>
+    <h1 data-i18n="h1">Hex/RGB/HSL/Decimal 转换</h1>
+    <p class="tool-desc" data-i18n="desc">Hex、RGB、HSL 与十进制颜色互转，支持滑杆调色与实时预览。</p>
+    <div class="dc-tabs">
+      <button class="tab-btn active" data-mode="hex" data-i18n="ui.tab1">Hex ↔ RGB</button>
+      <button class="tab-btn" data-mode="rgb" data-i18n="ui.tab2">RGB → Hex</button>
+      <button class="tab-btn" data-mode="hsl" data-i18n="ui.tab3">Hex → HSL</button>
+      <button class="tab-btn" data-mode="hslhex" data-i18n="ui.tab4">HSL → Hex</button>
     </div>
-    <div id="colorPreview" class="color-preview"></div>
+    <div id="panel-hex" class="tab-panel">
+      <div class="card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input id="hexInput" class="input js-focus-input" placeholder="#FF6600" style="width:140px;">
+        <input id="rInput" class="input" placeholder="R" style="width:60px;">
+        <input id="gInput" class="input" placeholder="G" style="width:60px;">
+        <input id="bInput" class="input" placeholder="B" style="width:60px;">
+        <button id="toHexBtn" class="btn btn-primary">→ Hex</button>
+        <button id="toRgbBtn" class="btn btn-secondary">→ RGB</button>
+        <button id="toDecBtn" class="btn btn-secondary">→ Decimal</button>
+      </div>
+      <div id="colorPreview" class="color-preview"></div>
+    </div>
+    <div id="panel-rgb" class="tab-panel" style="display:none;">
+      <div class="card">
+        <div class="rgb-sliders">
+          <div class="slider-row"><label style="color:#e74c3c">R</label><input type="range" id="rSlider" min="0" max="255" value="52"><input type="number" id="rNum" min="0" max="255" value="52"></div>
+          <div class="slider-row"><label style="color:#2ecc71">G</label><input type="range" id="gSlider" min="0" max="255" value="152"><input type="number" id="gNum" min="0" max="255" value="152"></div>
+          <div class="slider-row"><label style="color:#3498db">B</label><input type="range" id="bSlider" min="0" max="255" value="219"><input type="number" id="bNum" min="0" max="255" value="219"></div>
+        </div>
+        <div class="result-row" id="rgbHexResult">#3498DB</div>
+        <div class="color-preview" id="rgbPreview"></div>
+      </div>
+    </div>
+    <div id="panel-hsl" class="tab-panel" style="display:none;">
+      <div class="card">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+          <input id="hslHexInput" class="input js-focus-input" placeholder="#RRGGBB" style="width:160px;" value="#E74C3C">
+          <button id="hslConvertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:600;">HSL: <span id="hslResult">6°, 78%, 57%</span></div>
+        <div class="hsl-detail">H: <b id="hVal">6</b>°&nbsp;&nbsp;S: <b id="sVal">78</b>%&nbsp;&nbsp;L: <b id="lVal">57</b>%</div>
+        <div class="color-preview" id="hslPreview"></div>
+      </div>
+    </div>
+    <div id="panel-hslhex" class="tab-panel" style="display:none;">
+      <div class="card">
+        <div class="rgb-sliders">
+          <div class="slider-row"><label>H</label><input type="range" id="hSlider" min="0" max="360" value="204"><input type="number" id="hNum" min="0" max="360" value="204"></div>
+          <div class="slider-row"><label>S%</label><input type="range" id="sSlider" min="0" max="100" value="70"><input type="number" id="sNum" min="0" max="100" value="70"></div>
+          <div class="slider-row"><label>L%</label><input type="range" id="lSlider" min="0" max="100" value="53"><input type="number" id="lNum" min="0" max="100" value="53"></div>
+        </div>
+        <div class="result-row" id="hslHexResult">#3498DB</div>
+        <div class="color-preview" id="hslHexPreview"></div>
+      </div>
+    </div>
     <div class="output-box" style="margin-top:var(--space-2);">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
       <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
@@ -40,16 +91,22 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>
     (function () {
-      var hexInput = document.getElementById('hexInput');
-      var rInput = document.getElementById('rInput');
-      var gInput = document.getElementById('gInput');
-      var bInput = document.getElementById('bInput');
       var outputEl = document.getElementById('outputText');
-      var preview = document.getElementById('colorPreview');
       var copyBtn = document.getElementById('copyBtn');
 
-      function setPreview(r, g, b) {
-        preview.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+      var tabBtns = document.querySelectorAll('.tab-btn');
+      var panelIds = { hex: 'panel-hex', rgb: 'panel-rgb', hsl: 'panel-hsl', hslhex: 'panel-hslhex' };
+      for (var ti = 0; ti < tabBtns.length; ti++) {
+        tabBtns[ti].addEventListener('click', function () {
+          var mode = this.getAttribute('data-mode');
+          for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+          this.classList.add('active');
+          for (var k in panelIds) document.getElementById(panelIds[k]).style.display = (k === mode) ? '' : 'none';
+        });
+      }
+
+      function setPreview(el, r, g, b) {
+        el.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
       }
 
       function hexToRgb(hex) {
@@ -61,6 +118,50 @@
         return { r: (num >> 16) & 0xFF, g: (num >> 8) & 0xFF, b: num & 0xFF };
       }
 
+      function toHexVal(v) {
+        var h = parseInt(v).toString(16).toUpperCase();
+        return h.length === 1 ? '0' + h : h;
+      }
+
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+          h = 0; s = 0;
+        } else {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+          else if (max === g) h = (b - r) / d + 2;
+          else h = (r - g) / d + 4;
+          h /= 6;
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+      }
+
+      function hslToRgb(h, s, l) {
+        s /= 100; l /= 100;
+        var c = (1 - Math.abs(2 * l - 1)) * s;
+        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        var m = l - c / 2;
+        var r = 0, g = 0, b = 0;
+        if (h < 60) { r = c; g = x; }
+        else if (h < 120) { r = x; g = c; }
+        else if (h < 180) { g = c; b = x; }
+        else if (h < 240) { g = x; b = c; }
+        else if (h < 300) { r = x; b = c; }
+        else { r = c; b = x; }
+        return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255) };
+      }
+
+      /* ---- panel-hex: Hex / RGB / Decimal ---- */
+      var hexInput = document.getElementById('hexInput');
+      var rInput = document.getElementById('rInput');
+      var gInput = document.getElementById('gInput');
+      var bInput = document.getElementById('bInput');
+      var preview = document.getElementById('colorPreview');
+
       document.getElementById('toHexBtn').addEventListener('click', function () {
         var r = parseInt(rInput.value), g = parseInt(gInput.value), b = parseInt(bInput.value);
         if (isNaN(r) || isNaN(g) || isNaN(b) || r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
@@ -69,30 +170,124 @@
         var hex = '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('');
         hexInput.value = hex;
         outputEl.textContent = hex;
-        setPreview(r, g, b);
+        setPreview(preview, r, g, b);
         setStatus('');
       });
 
       document.getElementById('toRgbBtn').addEventListener('click', function () {
-        var hex = hexInput.value.trim();
-        var rgb = hexToRgb(hex);
+        var rgb = hexToRgb(hexInput.value.trim());
         if (!rgb) { setStatus(t('ui.101','无效 Hex 值'), 'error'); return; }
         rInput.value = rgb.r; gInput.value = rgb.g; bInput.value = rgb.b;
-        var text = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
-        outputEl.textContent = text;
-        setPreview(rgb.r, rgb.g, rgb.b);
+        outputEl.textContent = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
+        setPreview(preview, rgb.r, rgb.g, rgb.b);
         setStatus('');
       });
 
       document.getElementById('toDecBtn').addEventListener('click', function () {
-        var hex = hexInput.value.trim();
-        var rgb = hexToRgb(hex);
+        var rgb = hexToRgb(hexInput.value.trim());
         if (!rgb) { setStatus(t('ui.102','无效 Hex 值'), 'error'); return; }
         var dec = (rgb.r << 16) | (rgb.g << 8) | rgb.b;
         outputEl.textContent = 'Decimal: ' + dec + ' | Hex: #' + dec.toString(16).padStart(6, '0').toUpperCase() + ' | RGB: (' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
-        setPreview(rgb.r, rgb.g, rgb.b);
+        setPreview(preview, rgb.r, rgb.g, rgb.b);
         setStatus('');
       });
+
+      hexInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('toRgbBtn').click(); });
+
+      /* ---- panel-rgb: RGB sliders -> Hex ---- */
+      var rSlider = document.getElementById('rSlider'), gSlider = document.getElementById('gSlider'), bSlider = document.getElementById('bSlider');
+      var rNum = document.getElementById('rNum'), gNum = document.getElementById('gNum'), bNum = document.getElementById('bNum');
+      var rgbHexResult = document.getElementById('rgbHexResult');
+      var rgbPreview = document.getElementById('rgbPreview');
+
+      function updateRgb(src) {
+        var r, g, b;
+        if (src === 'r') { r = parseInt(rSlider.value); rNum.value = r; }
+        else if (src === 'g') { g = parseInt(gSlider.value); gNum.value = g; }
+        else if (src === 'b') { b = parseInt(bSlider.value); bNum.value = b; }
+        else if (src === 'rn') { var rv = parseInt(rNum.value); if (rv < 0) rv = 0; if (rv > 255) rv = 255; rSlider.value = rv; r = rv; }
+        else if (src === 'gn') { var gv = parseInt(gNum.value); if (gv < 0) gv = 0; if (gv > 255) gv = 255; gSlider.value = gv; g = gv; }
+        else if (src === 'bn') { var bv = parseInt(bNum.value); if (bv < 0) bv = 0; if (bv > 255) bv = 255; bSlider.value = bv; b = bv; }
+        if (r === undefined) r = parseInt(rSlider.value);
+        if (g === undefined) g = parseInt(gSlider.value);
+        if (b === undefined) b = parseInt(bSlider.value);
+        var hex = '#' + toHexVal(r) + toHexVal(g) + toHexVal(b);
+        rgbHexResult.textContent = hex;
+        rgbPreview.style.background = hex;
+        outputEl.textContent = 'RGB(' + r + ',' + g + ',' + b + ') = ' + hex;
+      }
+      rSlider.addEventListener('input', function () { updateRgb('r'); });
+      gSlider.addEventListener('input', function () { updateRgb('g'); });
+      bSlider.addEventListener('input', function () { updateRgb('b'); });
+      rNum.addEventListener('input', function () { updateRgb('rn'); });
+      gNum.addEventListener('input', function () { updateRgb('gn'); });
+      bNum.addEventListener('input', function () { updateRgb('bn'); });
+      updateRgb('r');
+
+      /* ---- panel-hsl: Hex -> HSL ---- */
+      var hslHexInput = document.getElementById('hslHexInput');
+      var hslResult = document.getElementById('hslResult');
+      var hVal = document.getElementById('hVal');
+      var sVal = document.getElementById('sVal');
+      var lVal = document.getElementById('lVal');
+      var hslPreview = document.getElementById('hslPreview');
+
+      function convertHexToHsl() {
+        var hex = hslHexInput.value.trim();
+        if (hex.charAt(0) === '#') hex = hex.slice(1);
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+          outputEl.textContent = t('ui.101','无效 Hex 值');
+          setStatus(t('ui.104','输入错误'), 'error');
+          return;
+        }
+        var r = parseInt(hex.slice(0, 2), 16);
+        var g = parseInt(hex.slice(2, 4), 16);
+        var b = parseInt(hex.slice(4, 6), 16);
+        var c = '#' + hex;
+        hslPreview.style.background = c;
+        var hsl = rgbToHsl(r, g, b);
+        hVal.textContent = hsl.h;
+        sVal.textContent = hsl.s;
+        lVal.textContent = hsl.l;
+        hslResult.textContent = hsl.h + '°, ' + hsl.s + '%, ' + hsl.l + '%';
+        outputEl.textContent = c + ' = HSL(' + hsl.h + ',' + hsl.s + '%,' + hsl.l + '%)';
+        setStatus('');
+      }
+      hslHexInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') convertHexToHsl(); });
+      document.getElementById('hslConvertBtn').addEventListener('click', convertHexToHsl);
+      convertHexToHsl();
+
+      /* ---- panel-hslhex: HSL sliders -> Hex ---- */
+      var hSlider = document.getElementById('hSlider'), sSlider = document.getElementById('sSlider'), lSlider = document.getElementById('lSlider');
+      var hNum = document.getElementById('hNum'), sNum = document.getElementById('sNum'), lNum = document.getElementById('lNum');
+      var hslHexResult = document.getElementById('hslHexResult');
+      var hslHexPreview = document.getElementById('hslHexPreview');
+
+      function updateHsl(src) {
+        var h, s, l;
+        if (src === 'h') { h = parseInt(hSlider.value); hNum.value = h; }
+        else if (src === 's') { s = parseInt(sSlider.value); sNum.value = s; }
+        else if (src === 'l') { l = parseInt(lSlider.value); lNum.value = l; }
+        else if (src === 'hn') { var hv = parseInt(hNum.value); if (hv < 0) hv = 0; if (hv > 360) hv = 360; hSlider.value = hv; h = hv; }
+        else if (src === 'sn') { var sv = parseInt(sNum.value); if (sv < 0) sv = 0; if (sv > 100) sv = 100; sSlider.value = sv; s = sv; }
+        else if (src === 'ln') { var lv = parseInt(lNum.value); if (lv < 0) lv = 0; if (lv > 100) lv = 100; lSlider.value = lv; l = lv; }
+        if (h === undefined) h = parseInt(hSlider.value);
+        if (s === undefined) s = parseInt(sSlider.value);
+        if (l === undefined) l = parseInt(lSlider.value);
+        var rgb = hslToRgb(h, s, l);
+        var hex = '#' + toHexVal(rgb.r) + toHexVal(rgb.g) + toHexVal(rgb.b);
+        hslHexResult.textContent = hex;
+        hslHexPreview.style.background = hex;
+        outputEl.textContent = 'HSL(' + h + ',' + s + '%,' + l + '%) = ' + hex;
+      }
+      hSlider.addEventListener('input', function () { updateHsl('h'); });
+      sSlider.addEventListener('input', function () { updateHsl('s'); });
+      lSlider.addEventListener('input', function () { updateHsl('l'); });
+      hNum.addEventListener('input', function () { updateHsl('hn'); });
+      sNum.addEventListener('input', function () { updateHsl('sn'); });
+      lNum.addEventListener('input', function () { updateHsl('ln'); });
+      updateHsl('h');
 
       copyBtn.addEventListener('click', function () { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
     })();

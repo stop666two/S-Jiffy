@@ -34,6 +34,7 @@
 .cm360-box .v{font-size:var(--font-size-lg);font-weight:700;font-family:var(--font-mono);}
 .cm360-box .d{font-size:var(--font-size-xs);color:var(--color-text-disabled);max-width:220px;text-align:right;}
 .table-wrap{margin-top:var(--space-2);overflow-x:auto;}
+.section-label{font-size:var(--font-size-sm);font-weight:600;color:var(--color-text-secondary);margin:var(--space-2) 0 8px;}
 .conv-table{width:100%;border-collapse:collapse;font-size:var(--font-size-sm);}
 .conv-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--color-border);font-weight:600;color:var(--color-text-secondary);font-size:var(--font-size-xs);}
 .conv-table th:last-child,.conv-table td:last-child{text-align:right;}
@@ -43,13 +44,17 @@
 .conv-table td.val{font-family:var(--font-mono);font-weight:700;}
 .conv-table td.mark{color:var(--color-text-primary);font-weight:700;margin-right:6px;}
 .copy-wrap{margin-top:var(--space-2);text-align:right;}
+.steps{padding-left:20px;margin:0;}
+.steps li{margin-bottom:12px;font-size:var(--font-size-sm);}
+.steps li:last-child{margin-bottom:0;}
+.steps li p{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:4px;line-height:1.6;}
 </style>
 </head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">游戏灵敏度转换器</h1>
-<p class="tool-desc" data-i18n="desc">在CS2、Valorant、Apex、守望先锋等13款游戏间精确转换鼠标灵敏度。</p>
+<p class="tool-desc" data-i18n="desc">支持 CS2、Valorant、Apex、守望先锋、PUBG、Fortnite、使命召唤、战地 2042、光环、Warframe 等 13 款游戏任意双向互转鼠标灵敏度，基于精确的 cm/360° 换算。</p>
 <div class="card">
 <p class="sens-desc" id="sensDesc"></p>
 <div class="field-label" id="dpiLabel" data-i18n="ui.107">鼠标 DPI</div>
@@ -85,12 +90,21 @@
 <div class="d" id="cm360Desc" data-i18n="ui.102">鼠标旋转一整圈所需移动的距离</div>
 </div>
 <div class="table-wrap" id="allTable" style="display:none;">
+<p class="section-label" id="allGameLbl" data-i18n="allGameConversions">所有游戏换算</p>
 <table class="conv-table">
 <thead><tr><th id="thGame" data-i18n="ui.101">游戏</th><th id="thEquiv" data-i18n="ui.100">等效灵敏度</th></tr></thead>
 <tbody id="allTbody"></tbody>
 </table>
 </div>
 <div class="copy-wrap"><button id="copyBtn" class="btn btn-secondary" data-i18n="common.copy" style="height:36px;min-width:auto;">复制</button></div>
+</div>
+<div class="card">
+<p class="field-label" id="howtoTitle" data-i18n="howtoTitle">如何使用</p>
+<ol class="steps">
+<li><strong id="howto1"></strong><p id="howto1Desc"></p></li>
+<li><strong id="howto2"></strong><p id="howto2Desc"></p></li>
+<li><strong id="howto3"></strong><p id="howto3Desc"></p></li>
+</ol>
 </div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
@@ -114,7 +128,26 @@ var GAMES=[
 {id:'thefinals',name:'The Finals',yaw:0.022,smin:0.01,smax:5,sstep:0.01,sdef:1.0,label:'sensLabelSensitivity'},
 {id:'warframe',name:'Warframe',yaw:0.0375,smin:0.01,smax:5,sstep:0.01,sdef:0.5,label:'sensLabelMouseSensitivity'}
 ];
-function t(key,fb){return (window.I18N&&I18N.dict[key]!=null)?I18N.dict[key]:fb;}
+var HOWTO_KEYS={
+'apex->cs2':'steps_apex-to-cs2-sensitivity_',
+'apex->valorant':'steps_apex-to-valorant-sensitivity_',
+'cod->cs2':'steps_cod-to-cs2-sensitivity_',
+'cs2->apex':'steps_cs2-to-apex-sensitivity_',
+'cs2->cod':'steps_cs2-to-cod-sensitivity_',
+'cs2->overwatch2':'steps_cs2-to-overwatch2-sensitivity_',
+'cs2->pubg':'steps_cs2-to-pubg-sensitivity_',
+'cs2->valorant':'steps_cs2-to-valorant-sensitivity_',
+'fortnite->valorant':'steps_fortnite-to-valorant-sensitivity_',
+'overwatch2->cs2':'steps_overwatch2-to-cs2-sensitivity_',
+'overwatch2->valorant':'steps_overwatch2-to-valorant-sensitivity_',
+'pubg->cs2':'steps_pubg-to-cs2-sensitivity_',
+'valorant->apex':'steps_valorant-to-apex-sensitivity_',
+'valorant->cs2':'steps_valorant-to-cs2-sensitivity_',
+'valorant->fortnite':'steps_valorant-to-fortnite-sensitivity_',
+'valorant->overwatch2':'steps_valorant-to-overwatch2-sensitivity_'
+};
+var GENERIC_STEPS=['输入源游戏灵敏度','查看目标游戏等效值','复制并在目标游戏中应用'];
+var GENERIC_STEPS_DESC=['在左侧选择源游戏，输入你的灵敏度数值，并确认鼠标 DPI 正确。','等效灵敏度基于相同的 cm/360° 旋转距离自动计算，结果即时显示并列出全部游戏换算。','复制结果后到目标游戏设置中应用。灵敏度匹配不等于手感一致，请先到训练场/靶场适应。'];
 function cm360(dpi,sens,yaw){return (360*2.54)/(dpi*sens*yaw);}
 function sensFromCm360(dpi,cm,yaw){return (360*2.54)/(dpi*cm*yaw);}
 function fmtSens(v){return v.toFixed(v<0.1?4:(v<1?3:2));}
@@ -131,6 +164,8 @@ document.getElementById('cm360Title').textContent=t('cm360Title','cm / 360°');
 document.getElementById('cm360Desc').textContent=t('cm360Desc','鼠标旋转一整圈所需移动的距离');
 document.getElementById('thGame').textContent=t('gameHeader','游戏');
 document.getElementById('thEquiv').textContent=t('equivSensHeader','等效灵敏度');
+document.getElementById('allGameLbl').textContent=t('allGameConversions','所有游戏换算');
+document.getElementById('howtoTitle').textContent=t('howtoTitle','如何使用');
 
 var swapBtn=document.getElementById('swapBtn');
 swapBtn.textContent=t('swapGames','⇄ 互换');
@@ -141,6 +176,9 @@ var fromSens=document.getElementById('fromSens'),toSensVal=document.getElementBy
 var dpiInput=document.getElementById('dpiInput'),fromNote=document.getElementById('fromNote'),toNote=document.getElementById('toNote');
 var cm360Box=document.getElementById('cm360Box'),cm360Val=document.getElementById('cm360Val');
 var allTable=document.getElementById('allTable'),allTbody=document.getElementById('allTbody');
+var fromSensLbl=document.getElementById('fromSensLbl'),toSensLbl=document.getElementById('toSensLbl');
+var howtoTitles=[document.getElementById('howto1'),document.getElementById('howto2'),document.getElementById('howto3')];
+var howtoDescs=[document.getElementById('howto1Desc'),document.getElementById('howto2Desc'),document.getElementById('howto3Desc')];
 
 var fromId='cs2',toId='valorant';
 
@@ -170,6 +208,14 @@ function syncFields(){
   toNote.style.display=tt.note?'block':'none';
   if(f.note)fromNote.textContent=t(f.note,'使用 X 轴灵敏度');
   if(tt.note)toNote.textContent=t(tt.note,'使用 X 轴灵敏度');
+}
+function renderHowto(){
+  var pre=HOWTO_KEYS[fromId+'->'+toId]||'steps_generic_';
+  var i;
+  for(i=0;i<3;i++){
+    howtoTitles[i].textContent=t(pre+(i+1),GENERIC_STEPS[i]);
+    howtoDescs[i].textContent=t(pre+(i+1)+'Desc',GENERIC_STEPS_DESC[i]);
+  }
 }
 
 function getDpi(){
@@ -234,6 +280,7 @@ function swap(){
   }
   fillSelects();
   syncFields();
+  renderHowto();
   compute();
 }
 
@@ -258,9 +305,10 @@ fromSel.addEventListener('change',function(){
   fromSens.value='';
   fillSelects();
   syncFields();
+  renderHowto();
   compute();
 });
-toSel.addEventListener('change',function(){toId=this.value;syncFields();compute();});
+toSel.addEventListener('change',function(){toId=this.value;syncFields();renderHowto();compute();});
 fromSens.addEventListener('input',function(){compute();});
 swapBtn.addEventListener('click',swap);
 document.getElementById('copyBtn').addEventListener('click',function(){
@@ -275,9 +323,9 @@ document.getElementById('copyBtn').addEventListener('click',function(){
   setStatus(t('common.copied','已复制'));
 });
 
-var fromSensLbl=document.getElementById('fromSensLbl'),toSensLbl=document.getElementById('toSensLbl');
 fillSelects();
 syncFields();
+renderHowto();
 compute();
 })();
 </script>

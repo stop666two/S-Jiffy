@@ -6,6 +6,18 @@
   <title>年龄计算器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-tabs { display:flex; gap:var(--space-1); margin-bottom:var(--space-3); }
+    .dc-tabs button { flex:1; height:44px; font-size:var(--font-size-sm); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; transition:all .15s; }
+    .dc-tabs button.active { background:var(--color-text-primary); color:#fff; border-color:var(--color-text-primary); }
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+    .row label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}
+    .row .input{width:130px}
+    .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .res-item{padding:12px;background:var(--color-bg-soft);border-radius:8px;text-align:center}
+    .res-item .v{font-size:20px;font-weight:600}
+    .res-item .l{font-size:12px;color:var(--color-text-secondary);margin-top:4px}
+  </style>
 </head>
 <body>
   <header class="global-header">
@@ -13,17 +25,37 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">年龄计算器</h1>
-    <p class="tool-desc" data-i18n="desc">输入出生日期，精确计算年龄（年/月/日）。</p>
-    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
-      <div>
-        <label for="birthDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">出生日期</label>
-        <input id="birthDate" class="input" type="date">
+    <p class="tool-desc" data-i18n="desc">输入出生日期精确计算年龄，并可查询出生年份的生肖、五行与干支纪年</p>
+    <div class="dc-tabs">
+      <button id="tabAge" class="active" type="button" data-i18n="ui.tabAge">年龄</button>
+      <button id="tabZodiac" type="button" data-i18n="ui.tabZodiac">生肖</button>
+    </div>
+    <div id="panelAge">
+      <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label for="birthDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.1">出生日期</label>
+          <input id="birthDate" class="input" type="date">
+        </div>
+        <div>
+          <label for="targetDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.2">目标日期（默认今天）</label>
+          <input id="targetDate" class="input" type="date">
+        </div>
+        <div><button id="calcBtn" class="btn btn-primary" data-i18n="ui.3">计算年龄</button></div>
       </div>
-      <div>
-        <label for="targetDate" style="display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:4px;" data-i18n="ui.2">目标日期（默认今天）</label>
-        <input id="targetDate" class="input" type="date">
+    </div>
+    <div id="panelZodiac" style="display:none;">
+      <div class="card">
+        <div class="row">
+          <div><label data-i18n="zod.birthYear">出生年份</label><input id="birthYear" class="input" type="number" value="1990" min="1900" max="2100"></div>
+          <div style="display:flex;align-items:end;gap:8px"><button id="queryBtn" class="btn btn-primary" data-i18n="zod.query">查询</button></div>
+        </div>
+        <div class="res-grid">
+          <div class="res-item"><div class="v" id="animalVal">—</div><div class="l" data-i18n="zod.animal">生肖</div></div>
+          <div class="res-item"><div class="v" id="ageVal">—</div><div class="l" data-i18n="zod.age">周岁</div></div>
+          <div class="res-item"><div class="v" id="elementVal">—</div><div class="l" data-i18n="zod.element">五行</div></div>
+          <div class="res-item"><div class="v" id="yearVal">—</div><div class="l" data-i18n="zod.ganzhi">干支纪年</div></div>
+        </div>
       </div>
-      <div><button id="calcBtn" class="btn btn-primary" data-i18n="ui.3">计算年龄</button></div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block;padding-right:60px;"></span>
@@ -95,6 +127,49 @@
           copyToClipboard(text, copyBtn);
           setStatus(t('ui.copiedClip','已复制到剪贴板'));
         }
+      });
+
+      /* ============ zodiac tab (merged from chinese-zodiac) ============ */
+      var tabAge = document.getElementById('tabAge'), tabZodiac = document.getElementById('tabZodiac');
+      var panelAge = document.getElementById('panelAge'), panelZodiac = document.getElementById('panelZodiac');
+      function switchTab(which) {
+        if (which === 'age') {
+          tabAge.className = 'active'; tabZodiac.className = '';
+          panelAge.style.display = ''; panelZodiac.style.display = 'none';
+        } else {
+          tabZodiac.className = 'active'; tabAge.className = '';
+          panelZodiac.style.display = ''; panelAge.style.display = 'none';
+        }
+      }
+      tabAge.addEventListener('click', function () { switchTab('age'); });
+      tabZodiac.addEventListener('click', function () { switchTab('zodiac'); });
+
+      var by = document.getElementById("birthYear");
+      var av = document.getElementById("animalVal");
+      var ageEl = document.getElementById("ageVal");
+      var ev = document.getElementById("elementVal");
+      var yv = document.getElementById("yearVal");
+
+      var animals=[t('zod.a0','鼠'),t('zod.a1','牛'),t('zod.a2','虎'),t('zod.a3','兔'),t('zod.a4','龙'),t('zod.a5','蛇'),t('zod.a6','马'),t('zod.a7','羊'),t('zod.a8','猴'),t('zod.a9','鸡'),t('zod.a10','狗'),t('zod.a11','猪')];
+      var elements=[t('zod.e0','金'),t('zod.e1','水'),t('zod.e2','木'),t('zod.e3','火'),t('zod.e4','土')];
+      var stemElement=[0,0,1,1,2,2,3,3,4,4];
+      var stems=[t('zod.s0','庚'),t('zod.s1','辛'),t('zod.s2','壬'),t('zod.s3','癸'),t('zod.s4','甲'),t('zod.s5','乙'),t('zod.s6','丙'),t('zod.s7','丁'),t('zod.s8','戊'),t('zod.s9','己')];
+      var branches=[t('zod.b0','申'),t('zod.b1','酉'),t('zod.b2','戌'),t('zod.b3','亥'),t('zod.b4','子'),t('zod.b5','丑'),t('zod.b6','寅'),t('zod.b7','卯'),t('zod.b8','辰'),t('zod.b9','巳'),t('zod.b10','午'),t('zod.b11','未')];
+
+      document.getElementById("queryBtn").addEventListener("click", function () {
+        var y = parseInt(by.value);
+        if (!y || y < 1900 || y > 2100) { setStatus(t('zod.invalidYear','请输入有效年份'), "error"); return; }
+        var animal = animals[(y - 4) % 12];
+        var curAge = new Date().getFullYear() - y;
+        var element = elements[stemElement[y % 10]];
+        var stem = stems[y % 10];
+        var branch = branches[y % 12];
+        av.textContent = animal;
+        ageEl.textContent = curAge;
+        ev.textContent = element;
+        yv.textContent = stem + branch + t('zod.year','年');
+        outputEl.textContent = t('zod.born','出生: ') + y + t('zod.sep1','年 | 生肖: ') + animal + t('zod.sep2',' | 年龄: ') + curAge + t('zod.sep3',' 岁 | 干支: ') + stem + branch;
+        setStatus(t('zod.done','查询完成'));
       });
     })();
   </script>

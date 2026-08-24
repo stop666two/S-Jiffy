@@ -12,6 +12,14 @@
     .cron-row label { font-size:var(--font-size-sm); min-width:60px; color:var(--color-text-secondary); }
     .cron-row select { flex:1; height:48px; padding:0 8px; font-family:var(--font-mono); font-size:var(--font-size-base); border:1px solid #ddd; border-radius:var(--radius-md); }
     .cron-preview { margin-top:var(--space-3); padding:var(--space-2); background:var(--color-bg-soft); border-radius:var(--radius-md); font-size:18px; text-align:center; letter-spacing:2px; }
+    .cg-tabs { display:flex; gap:var(--space-1); margin-bottom:var(--space-3); }
+    .cg-tabs button { flex:1; height:44px; font-size:var(--font-size-sm); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg); cursor:pointer; transition:all .15s; }
+    .cg-tabs button.active { background:var(--color-text-primary); color:#fff; border-color:var(--color-text-primary); }
+    .cron-fields { display:grid; grid-template-columns:repeat(5,1fr); gap:var(--space-1); margin-bottom:var(--space-2); }
+    .cron-field { text-align:center; }
+    .cron-field label { display:block; font-size:10px; color:var(--color-text-disabled); text-transform:uppercase; }
+    .cron-field input { width:100%; text-align:center; font-family:var(--font-mono); font-size:14px; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px 4px; outline:none; }
+    .cron-field input:focus { border-color:var(--color-text-primary); box-shadow:var(--shadow-focus); }
   </style>
 </head>
 <body>
@@ -20,8 +28,12 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">Crontab 生成器</h1>
-    <p class="tool-desc" data-i18n="desc">通过人类可读的选择生成 cron 表达式。</p>
-    <div class="card">
+    <p class="tool-desc" data-i18n="desc">通过人类可读选择生成 cron 表达式，并可解析/验证 cron 表达式、预览未来 5 次执行时间。</p>
+    <div class="cg-tabs">
+      <button id="tabGen" class="active" type="button" data-i18n="tab.gen">生成器</button>
+      <button id="tabParse" type="button" data-i18n="tab.parse">解析/验证</button>
+    </div>
+    <div class="card" id="panelGen">
       <div class="cron-grid">
         <div class="cron-row"><label data-i18n="ui.minute">分钟</label><select id="cronMinute"><option value="*" data-i18n="ui.1">每分钟 (*)</option><option value="0" data-i18n="ui.2">整点 (0)</option><option value="15" data-i18n="ui.3">15 分</option><option value="30" data-i18n="ui.4">30 分</option><option value="45" data-i18n="ui.5">45 分</option><option value="*/5" data-i18n="ui.6">每 5 分钟</option><option value="*/10" data-i18n="ui.7">每 10 分钟</option><option value="*/15" data-i18n="ui.8">每 15 分钟</option><option value="*/30" data-i18n="ui.9">每 30 分钟</option></select></div>
         <div class="cron-row"><label data-i18n="ui.hour">小时</label><select id="cronHour"><option value="*" data-i18n="ui.10">每小时 (*)</option><option value="0" data-i18n="ui.11">0 点（午夜）</option><option value="6" data-i18n="ui.12">6 点</option><option value="8" data-i18n="ui.13">8 点</option><option value="9" data-i18n="ui.14">9 点</option><option value="12" data-i18n="ui.15">12 点</option><option value="18" data-i18n="ui.16">18 点</option><option value="*/2" data-i18n="ui.17">每 2 小时</option><option value="*/6" data-i18n="ui.18">每 6 小时</option><option value="*/12" data-i18n="ui.19">每 12 小时</option></select></div>
@@ -30,6 +42,20 @@
         <div class="cron-row"><label data-i18n="ui.33">星期</label><select id="cronWeekday"><option value="*" data-i18n="ui.20">每天 (*)</option><option value="0" data-i18n="ui.34">周日</option><option value="1" data-i18n="ui.35">周一</option><option value="2" data-i18n="ui.36">周二</option><option value="3" data-i18n="ui.37">周三</option><option value="4" data-i18n="ui.38">周四</option><option value="5" data-i18n="ui.39">周五</option><option value="6" data-i18n="ui.40">周六</option><option value="1-5" data-i18n="ui.41">周一至周五</option><option value="0,6" data-i18n="ui.42">周末</option></select></div>
       </div>
       <div class="cron-preview" id="cronPreview">* * * * *</div>
+    </div>
+    <div class="card" id="panelParse" style="display:none;">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:var(--space-2);">
+        <input id="cronInput" class="input js-focus-input" data-i18n-placeholder="ph.cron" placeholder="输入 cron 表达式，例如 */5 * * * *" style="width:220px;font-family:var(--font-mono);">
+        <button id="parseBtn" class="btn btn-primary" data-i18n="btn.parse">解析</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="btn.clear">清空</button>
+      </div>
+      <div class="cron-fields">
+        <div class="cron-field"><label><span data-i18n="fld.min">分钟</span><br>0-59</label><input id="fMin" readonly></div>
+        <div class="cron-field"><label><span data-i18n="fld.hour">小时</span><br>0-23</label><input id="fHour" readonly></div>
+        <div class="cron-field"><label><span data-i18n="fld.day">日</span><br>1-31</label><input id="fDay" readonly></div>
+        <div class="cron-field"><label><span data-i18n="fld.month">月</span><br>1-12</label><input id="fMonth" readonly></div>
+        <div class="cron-field"><label><span data-i18n="fld.week">星期</span><br><span data-i18n="fld.weekHint">0-7（日=0/7）</span></label><input id="fWeek" readonly></div>
+      </div>
     </div>
     <div class="output-box">
       <span id="outputText" style="display:block; padding-right:60px;"></span>
@@ -92,6 +118,130 @@
       });
 
       updateCron();
+
+      var tabGen = document.getElementById('tabGen'), tabParse = document.getElementById('tabParse');
+      var panelGen = document.getElementById('panelGen'), panelParse = document.getElementById('panelParse');
+      function switchTab(which) {
+        if (which === 'gen') {
+          tabGen.className = 'active'; tabParse.className = '';
+          panelGen.style.display = ''; panelParse.style.display = 'none';
+          updateCron();
+        } else {
+          tabParse.className = 'active'; tabGen.className = '';
+          panelParse.style.display = ''; panelGen.style.display = 'none';
+        }
+      }
+      tabGen.addEventListener('click', function () { switchTab('gen'); });
+      tabParse.addEventListener('click', function () { switchTab('parse'); });
+
+      var cronInput = document.getElementById('cronInput');
+      var parseBtn = document.getElementById('parseBtn'), clearBtn = document.getElementById('clearBtn');
+      var fields = { min: document.getElementById('fMin'), hour: document.getElementById('fHour'), day: document.getElementById('fDay'), month: document.getElementById('fMonth'), week: document.getElementById('fWeek') };
+
+      var weekdayNames = [ t('wd.0','日'), t('wd.1','一'), t('wd.2','二'), t('wd.3','三'), t('wd.4','四'), t('wd.5','五'), t('wd.6','六')];
+      var monthNames = ['', t('mo.1','一月'), t('mo.2','二月'), t('mo.3','三月'), t('mo.4','四月'), t('mo.5','五月'), t('mo.6','六月'), t('mo.7','七月'), t('mo.8','八月'), t('mo.9','九月'), t('mo.10','十月'), t('mo.11','十一月'), t('mo.12','十二月')];
+
+      function describeField(val, type) {
+        if (val === '*') return t('ui.every','每') + (type === 'min' ? t('unit.min','分钟') : type === 'hour' ? t('unit.hour','小时') : type === 'day' ? t('unit.day','天') : type === 'month' ? t('unit.month','月') : t('unit.week','周'));
+        if (val.indexOf('/') !== -1) {
+          var parts = val.split('/');
+          return t('ui.every','每 ') + parts[1] + ' ' + (type === 'min' ? t('unit.min','分钟') : type === 'hour' ? t('unit.hour','小时') : type === 'day' ? t('unit.day','天') : type === 'month' ? t('unit.month','月') : t('unit.day','天')) + (parts[0] !== '*' ? t('ui.from','，从 ') + parts[0] + t('ui.startFrom',' 开始') : '');
+        }
+        if (val.indexOf('-') !== -1) {
+          var r = val.split('-');
+          if (type === 'week') return r[0] + ' (' + weekdayNames[parseInt(r[0])] + ')' + t('ui.to',' 到 ') + ' ' + r[1] + ' (' + weekdayNames[parseInt(r[1])] + ')';
+          if (type === 'month') return monthNames[parseInt(r[0])] + t('ui.to',' 到 ') + monthNames[parseInt(r[1])];
+          return r[0] + t('ui.to',' 到 ') + r[1];
+        }
+        if (val.indexOf(',') !== -1) {
+          var items = val.split(',');
+          if (type === 'week') return items.map(function (v) { return weekdayNames[parseInt(v)]; }).join(t('ui.listJoiner','、'));
+          if (type === 'month') return items.map(function (v) { return monthNames[parseInt(v)]; }).join(t('ui.listJoiner','、'));
+          return items.join(t('ui.listJoiner','、'));
+        }
+        if (type === 'week') return weekdayNames[parseInt(val)] || val;
+        if (type === 'month') return monthNames[parseInt(val)] || val;
+        return val;
+      }
+
+      function parseCron(expr) {
+        var parts = expr.trim().split(/\s+/);
+        if (parts.length !== 5) return { error: t('err.fields','cron 表达式需包含 5 个字段') };
+        return { min: parts[0], hour: parts[1], day: parts[2], month: parts[3], week: parts[4] };
+      }
+
+      function getNextTimes(parsed, count) {
+        var times = [];
+        var now = new Date();
+        var cur = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
+        var maxAttempts = 525600, attempts = 0;
+
+        function matches(val, num) {
+          if (val === '*') return true;
+          if (val.indexOf('/') !== -1) {
+            var parts = val.split('/');
+            var step = parseInt(parts[1]), start = parts[0] === '*' ? 0 : parseInt(parts[0]);
+            return num >= start && (num - start) % step === 0;
+          }
+          if (val.indexOf('-') !== -1) { var r = val.split('-'); return num >= parseInt(r[0]) && num <= parseInt(r[1]); }
+          if (val.indexOf(',') !== -1) { return val.split(',').map(Number).indexOf(num) !== -1; }
+          return parseInt(val) === num;
+        }
+
+        function dayOfWeekMatches(val, d) {
+          var dow = d.getDay();
+          if (val === '*') return true;
+          if (val.indexOf('/') !== -1) { var parts = val.split('/'); var step = parseInt(parts[1]), start = parts[0] === '*' ? 0 : parseInt(parts[0]); return dow >= start && (dow - start) % step === 0; }
+          if (val.indexOf('-') !== -1) { var r = val.split('-'); return dow >= parseInt(r[0]) && dow <= parseInt(r[1]); }
+          if (val.indexOf(',') !== -1) { return val.split(',').map(Number).indexOf(dow) !== -1; }
+          return parseInt(val) === dow;
+        }
+
+        while (times.length < count && attempts < maxAttempts) {
+          if (matches(parsed.min, cur.getMinutes()) && matches(parsed.hour, cur.getHours()) &&
+              matches(parsed.day, cur.getDate()) && matches(parsed.month, cur.getMonth() + 1) &&
+              dayOfWeekMatches(parsed.week, cur)) {
+            times.push(new Date(cur));
+          }
+          cur.setMinutes(cur.getMinutes() + 1);
+          attempts++;
+        }
+        return times;
+      }
+
+      function updateParse() {
+        var raw = cronInput.value.trim();
+        if (!raw) { outputEl.textContent = ''; for (var k in fields) fields[k].value = ''; setStatus(''); return; }
+        var parsed = parseCron(raw);
+        if (parsed.error) { outputEl.textContent = parsed.error; setStatus(t('err.format','格式错误'), 'error'); return; }
+        fields.min.value = parsed.min; fields.hour.value = parsed.hour; fields.day.value = parsed.day; fields.month.value = parsed.month; fields.week.value = parsed.week;
+
+        var desc = '';
+        desc += t('d.min','分钟: ') + describeField(parsed.min, 'min') + '\n';
+        desc += t('d.hour','小时: ') + describeField(parsed.hour, 'hour') + '\n';
+        desc += t('d.day','日期: ') + describeField(parsed.day, 'day') + '\n';
+        desc += t('d.month','月份: ') + describeField(parsed.month, 'month') + '\n';
+        desc += t('d.week','星期: ') + describeField(parsed.week, 'week') + '\n';
+
+        desc += '\n' + t('plain.expression','表达式: ') + t('plain.valid','✓ 有效') + '\n';
+
+        var nexts = getNextTimes(parsed, 5);
+        if (nexts.length) {
+          desc += '\n' + t('plain.nextTimes','未来 5 次执行时间:') + '\n';
+          for (var i2 = 0; i2 < nexts.length; i2++) {
+            var d = nexts[i2];
+            desc += '  ' + (i2 + 1) + '. ' + d.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\n';
+          }
+        } else {
+          desc += '\n' + t('plain.noNext','未找到未来执行时间') + '\n';
+        }
+        outputEl.textContent = desc;
+        setStatus('');
+      }
+
+      parseBtn.addEventListener('click', updateParse);
+      clearBtn.addEventListener('click', function () { cronInput.value = ''; for (var k in fields) fields[k].value = ''; outputEl.textContent = ''; setStatus(''); cronInput.focus(); });
+      cronInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') updateParse(); });
     })();
   </script>
 </body>

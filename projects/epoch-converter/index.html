@@ -17,7 +17,7 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">时间戳转换</h1>
-<p class="tool-desc" data-i18n="desc">Unix 时间戳与日期互转，实时时钟、年周、季度、年日。</p>
+<p class="tool-desc" data-i18n="desc">Unix 时间戳与日期互转，支持秒/毫秒、ISO/RFC/本地化等 7 种格式面板，附带实时时钟、年周、季度与年日。</p>
 <div class="card">
 <h2 data-i18n="ui.1">⏱ 实时 Epoch 时钟</h2>
 <div class="epoch-clock"><div id="currentEpoch">0</div><div class="sub" id="currentMs">ms: 0</div></div>
@@ -35,6 +35,15 @@
 <div class="tz-card" style="display:inline-block;margin-right:8px;"><span class="tz-name" data-i18n="ui.6">季度</span><div id="quarter" style="font-weight:600;">—</div></div>
 <div class="tz-card" style="display:inline-block;"><span class="tz-name" data-i18n="ui.7">年日</span><div id="dayOfYear" style="font-weight:600;">—</div></div>
 </div>
+<div id="fmtGrid" style="display:none;margin-top:var(--space-2);">
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name">ISO 8601</span><div id="fmtIso" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name">RFC 2822</span><div id="fmtRfc" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name" data-i18n="fmt.utc">UTC 字符串：</span><div id="fmtUtc" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name" data-i18n="fmt.locale">语言区域：</span><div id="fmtLocale" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name" data-i18n="fmt.ymd">年月日（YYYY-MM-DD）：</span><div id="fmtYmd" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><span class="tz-name" data-i18n="fmt.dmy">日月年（DD/MM/YYYY）：</span><div id="fmtDmy" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+<div class="tz-card" style="display:inline-block;margin-bottom:8px;"><span class="tz-name" data-i18n="fmt.ms">Unix 毫秒：</span><div id="fmtMs" class="tz-time" style="font-size:var(--font-size-xs);">—</div></div>
+</div>
 </div>
 <div class="card conv-section">
 <h2 data-i18n="ui.8">日期 → 时间戳</h2>
@@ -50,7 +59,22 @@
   var tsInput=document.getElementById('tsInput'),tsResult=document.getElementById('tsResult'),dateResult=document.getElementById('dateResult');
   var currentEpoch=document.getElementById('currentEpoch'),currentMs=document.getElementById('currentMs'),tzGrid=document.getElementById('tzGrid');
   var weekEl=document.getElementById('weekOfYear'),quarterEl=document.getElementById('quarter'),doyEl=document.getElementById('dayOfYear'),extraInfo=document.getElementById('extraDateInfo');
+  var fmtGrid=document.getElementById('fmtGrid'),fIso=document.getElementById('fmtIso'),fRfc=document.getElementById('fmtRfc'),fUtc=document.getElementById('fmtUtc');
+  var fLoc=document.getElementById('fmtLocale'),fYmd=document.getElementById('fmtYmd'),fDmy=document.getElementById('fmtDmy'),fMs=document.getElementById('fmtMs');
   var tzList=[{name:'UTC',zone:'UTC'},{name:'Local',zone:null},{name:'New York (EST)',zone:'America/New_York'},{name:'London (GMT)',zone:'Europe/London'},{name:'Tokyo (JST)',zone:'Asia/Tokyo'},{name:'Shanghai (CST)',zone:'Asia/Shanghai'}];
+
+  function pad2n(n){return String(n).padStart(2,'0');}
+
+  function showFormats(d){
+    fmtGrid.style.display='block';
+    fIso.textContent=d.toISOString();
+    fRfc.textContent=d.toUTCString();
+    fUtc.textContent=d.toUTCString();
+    fLoc.textContent=d.toLocaleString((window.I18N&&I18N.lang)||'zh-CN');
+    fYmd.textContent=d.getFullYear()+'-'+pad2n(d.getMonth()+1)+'-'+pad2n(d.getDate());
+    fDmy.textContent=pad2n(d.getDate())+'/'+pad2n(d.getMonth()+1)+'/'+d.getFullYear();
+    fMs.textContent=d.getTime();
+  }
 
   function formatDate(d,tz){var opts={timeZone:tz||undefined,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false};return d.toLocaleString((window.I18N&&I18N.lang)||'zh-CN',opts);}
 
@@ -82,17 +106,25 @@
   }
 
   document.getElementById('tsToDateBtn').addEventListener('click',function(){
-    var raw=tsInput.value.trim();if(!raw){tsResult.textContent = t('ui.12','请输入时间戳');extraInfo.style.display='none';return;}
-    var d=parseAny(raw);if(!d||isNaN(d.getTime())){tsResult.textContent = t('ui.11','时间戳无效');extraInfo.style.display='none';return;}
+    var raw=tsInput.value.trim();if(!raw){tsResult.textContent = t('ui.12','请输入时间戳');extraInfo.style.display='none';fmtGrid.style.display='none';return;}
+    var d=parseAny(raw);if(!d||isNaN(d.getTime())){tsResult.textContent = t('ui.11','时间戳无效');extraInfo.style.display='none';fmtGrid.style.display='none';return;}
     tsResult.textContent=formatDate(d,'Asia/Shanghai')+' (CST) | '+d.toISOString()+' (UTC)';
     tsResult.innerHTML+='<br>ISO 8601: '+d.toISOString()+'<br>UTC / RFC 2822: '+d.toUTCString()+'<br>'+t('relativeTime','相对时间')+': '+relText(d);
     weekEl.textContent=getWeekOfYear(d);quarterEl.textContent='Q'+getQuarter(d);doyEl.textContent=getDayOfYear(d);extraInfo.style.display='block';
+    showFormats(d);
     setStatus(t('ui.converted','已转换'));});
 
   document.getElementById('dateToTsBtn').addEventListener('click',function(){
     var val=dateInput.value;if(!val){dateResult.textContent = t('ui.10','请选择日期/时间');return;}
     var d=new Date(val);if(isNaN(d.getTime())){dateResult.textContent = t('ui.9','日期无效');return;}
-    dateResult.textContent='Seconds: '+Math.floor(d.getTime()/1000)+' | Milliseconds: '+d.getTime()+' | Week: '+getWeekOfYear(d)+' | Q'+getQuarter(d)+' | DOY: '+getDayOfYear(d);});
+    dateResult.textContent='Seconds: '+Math.floor(d.getTime()/1000)+' | Milliseconds: '+d.getTime()+' | Week: '+getWeekOfYear(d)+' | Q'+getQuarter(d)+' | DOY: '+getDayOfYear(d);
+    showFormats(d);});
+
+  (function(){
+    var now=new Date();
+    var dIn=document.getElementById('dateInput');
+    dIn.value=now.getFullYear()+'-'+pad2n(now.getMonth()+1)+'-'+pad2n(now.getDate())+'T'+pad2n(now.getHours())+':'+pad2n(now.getMinutes());
+  })();
 
   tsInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('tsToDateBtn').click();});
   updateClock();setInterval(updateClock,1000);

@@ -22,6 +22,18 @@
 .enc-head label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
 .enc-head .char-count{font-size:var(--font-size-xs);color:var(--color-text-disabled);}
 .enc-err{font-size:var(--font-size-sm);color:var(--color-error);background:rgba(159,47,45,.08);border:1px solid var(--color-error);border-radius:var(--radius-md);padding:10px 14px;margin-top:var(--space-2);}
+.dc-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3);}
+.dc-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.dc-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
+.dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-2);}
+.dt-box{padding:var(--space-2);background:var(--color-bg-soft);border-radius:var(--radius-md);}
+.dt-box .lbl{font-size:var(--font-size-xs);color:var(--color-text-secondary);}
+.dt-box .val{font-size:var(--font-size-base);font-weight:600;}
+.dt-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-top:4px;background:var(--color-success);color:#fff;}
+.dt-tag.partial{background:#f9a825;}
+.dt-tag.no{background:var(--color-text-disabled);}
+.dt-bytes{font-family:var(--font-mono);font-size:11px;line-height:1.6;word-break:break-all;margin-top:var(--space-2);padding:var(--space-2);background:var(--color-bg-soft);border-radius:var(--radius-md);max-height:200px;overflow-y:auto;}
+.dt-bytes .hi{color:var(--color-error);}
 @media(max-width:760px){.enc-layout{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -29,7 +41,12 @@
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">文本编码转换器</h1>
-<p class="tool-desc" data-i18n="desc">在纯文本、十六进制、二进制、八进制、十进制、Base64、URL、HTML实体、Unicode、ASCII、ROT13和摩尔斯电码之间转换。</p>
+<p class="tool-desc" data-i18n="desc">在纯文本、十六进制、UTF-16LE、二进制、八进制、十进制、Base64、URL、HTML实体、Unicode、Unicode 转义、ASCII、ROT13和摩尔斯电码之间转换，并可检测文本或字节的编码类型。</p>
+<div class="dc-tabs">
+<button id="tabConvert" class="active" type="button" data-i18n="ui.tabConvert">转换</button>
+<button id="tabDetect" type="button" data-i18n="ui.tabDetect">检测</button>
+</div>
+<div id="panelConvert">
 <div class="card">
 <label style="display:flex;align-items:center;gap:8px;font-size:var(--font-size-sm);color:var(--color-text-secondary);cursor:pointer;margin-bottom:var(--space-2);">
 <input type="checkbox" id="autoDetect"> <span data-i18n="autoDetectEncoding">自动检测输入编码</span>
@@ -62,6 +79,17 @@
 <h2 style="font-size:var(--font-size-sm);color:var(--color-text-secondary);font-weight:600;" data-i18n="encodingReference">编码参考</h2>
 <div class="enc-grid" id="refGrid"></div>
 </div>
+</div>
+<div id="panelDetect" style="display:none;">
+<div class="card">
+<textarea id="dtInput" class="input textarea" data-i18n-placeholder="dt.ph" placeholder="粘贴文本或十六进制字节（如 48 65 6C 6C 6F）..." style="min-height:120px;" data-i18n="dt.sample">Hello 你好</textarea>
+<button id="detectBtn" class="btn btn-primary" style="margin-top:var(--space-2);" data-i18n="dt.btn">检测编码</button>
+</div>
+<div class="output-box">
+<span id="dtOutput"></span>
+<button class="copy-btn" id="dtCopyBtn" data-i18n="ui.copy">复制</button>
+</div>
+</div>
 </main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
@@ -72,6 +100,7 @@
 var ENCS=[
 {id:'text',label:'纯文本',labelKey:'enc.text',short:'TXT'},
 {id:'hex',label:'十六进制',labelKey:'enc.hex',short:'HEX'},
+{id:'utf16le',label:'UTF-16LE 十六进制',labelKey:'enc.utf16le',short:'U16'},
 {id:'binary',label:'二进制',labelKey:'enc.binary',short:'BIN'},
 {id:'octal',label:'八进制',labelKey:'enc.octal',short:'OCT'},
 {id:'decimal',label:'十进制（ASCII）',labelKey:'enc.decimal',short:'DEC'},
@@ -79,6 +108,7 @@ var ENCS=[
 {id:'url',label:'URL 编码',labelKey:'enc.url',short:'URL'},
 {id:'html-entity',label:'HTML 实体',labelKey:'enc.htmlEntity',short:'HTML'},
 {id:'unicode',label:'Unicode（U+XXXX）',labelKey:'enc.unicode',short:'UNI'},
+{id:'unicode-escape',label:'Unicode 转义（\\uXXXX）',labelKey:'enc.unicodeEscape',short:'UESC'},
 {id:'ascii',label:'ASCII 码',labelKey:'enc.ascii',short:'ASC'},
 {id:'rot13',label:'ROT13',short:'R13'},
 {id:'morse',label:'摩尔斯电码',labelKey:'enc.morse',short:'MOR'}
@@ -105,15 +135,49 @@ function textToHtmlEntity(t){return codePoints(t).map(function(cp){if(cp===0x26)
 function htmlEntityToText(h){return h.replace(/&[a-z]+;/gi,function(m){var e=NAMED_ENT[m.toLowerCase()];return e!==undefined?e:m;}).replace(/&#x([0-9a-f]+);/gi,function(_,x){return String.fromCodePoint(parseInt(x,16));}).replace(/&#(\d+);/g,function(_,d){return String.fromCodePoint(parseInt(d,10));});}
 function textToUnicode(t){return codePoints(t).map(function(cp){return 'U+'+pad(cp,4).toUpperCase();}).join(' ');}
 function unicodeToText(u){return u.trim().split(/[\s,]+/).filter(Boolean).map(function(tok){var c=tok.replace(/^U\+/i,'').replace(/^\\u/i,'');var cp=parseInt(c,16);if(isNaN(cp))throw new Error(t('err.unicodeInvalid','无效的 Unicode 记号：')+tok);return String.fromCodePoint(cp);}).join('');}
-function textToAscii(t){return codePoints(t).map(function(cp){if(cp>127)throw new Error('字符 "'+String.fromCodePoint(cp)+'" 不是 ASCII');return String(cp);}).join(' ');}
+function textToUtf16leHex(t){
+  var out=[];
+  for(var i=0;i<t.length;i++){
+    var cu=t.charCodeAt(i);
+    out.push(pad(cu&0xFF,2),pad(cu>>8,2));
+  }
+  return out.join(' ');
+}
+function utf16leHexToText(h){
+  var parts=h.trim().split(/[\s,]+/).filter(Boolean);
+  if(parts.length%2!==0)throw new Error(t('err.utf16Invalid','无效的 UTF-16LE 十六进制数据'));
+  var out='';
+  for(var i=0;i<parts.length;i+=2){
+    var lo=parseInt(parts[i],16);
+    var hi=parseInt(parts[i+1],16);
+    if(isNaN(lo)||isNaN(hi)||lo<0||lo>255||hi<0||hi>255)throw new Error(t('err.utf16Invalid','无效的 UTF-16LE 十六进制数据'));
+    out+=String.fromCharCode(lo|(hi<<8));
+  }
+  return out;
+}
+function textToUnicodeEscape(t){
+  var out=[];
+  for(var i=0;i<t.length;i++){
+    var code=t.charCodeAt(i);
+    var h=code.toString(16).toUpperCase();
+    while(h.length<4)h='0'+h;
+    out.push('\\u'+h);
+  }
+  return out.join('');
+}
+function unicodeEscapeToText(u){
+  return u.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});
+}
+function textToAscii(t){return codePoints(t).map(function(cp){if(cp>127)throw new Error(t('err.charNotAscii','字符 "')+String.fromCodePoint(cp)+t('err.notAsciiEnd','" 不是 ASCII'));return String(cp);}).join(' ');}
 function asciiToText(a){return a.trim().split(/[\s,]+/).filter(Boolean).map(function(x){var n=parseInt(x,10);if(isNaN(n)||n<0||n>127)throw new Error(t('err.asciiInvalid','无效的 ASCII 值：')+x);return String.fromCharCode(n);}).join('');}
 function rot13(t){return t.replace(/[a-zA-Z]/g,function(ch){var base=ch<='Z'?65:97;return String.fromCharCode(((ch.charCodeAt(0)-base+13)%26)+base);});}
-function textToMorse(t){return t.toUpperCase().split('').map(function(ch){var code=MORSE[ch];if(code===undefined)throw new Error('字符 "'+ch+'" 没有摩尔斯码');return code;}).join(' ');}
+function textToMorse(t){return t.toUpperCase().split('').map(function(ch){var code=MORSE[ch];if(code===undefined)throw new Error(t('err.charNoMorse','字符 "')+ch+t('err.noMorseEnd','" 没有摩尔斯码'));return code;}).join(' ');}
 function morseToText(m){return m.trim().split(/\s+\/\s+|\s{3,}/).map(function(word){return word.trim().split(/\s+/).map(function(sym){if(!sym)return '';var ch=MORSE_DECODE[sym];if(ch===undefined)throw new Error(t('err.morseUnknown','未知摩尔斯符号：')+sym);return ch;}).join('');}).join(' ');}
 function decodeToText(input,from){
   switch(from){
     case 'text':return input;
     case 'hex':return hexToText(input);
+    case 'utf16le':return utf16leHexToText(input);
     case 'binary':return binaryToText(input);
     case 'octal':return octalToText(input);
     case 'decimal':return decimalToText(input);
@@ -121,6 +185,7 @@ function decodeToText(input,from){
     case 'url':return urlToText(input);
     case 'html-entity':return htmlEntityToText(input);
     case 'unicode':return unicodeToText(input);
+    case 'unicode-escape':return unicodeEscapeToText(input);
     case 'ascii':return asciiToText(input);
     case 'rot13':return rot13(input);
     case 'morse':return morseToText(input);
@@ -131,6 +196,7 @@ function encodeFromText(text,to){
   switch(to){
     case 'text':return text;
     case 'hex':return textToHex(text);
+    case 'utf16le':return textToUtf16leHex(text);
     case 'binary':return textToBinary(text);
     case 'octal':return textToOctal(text);
     case 'decimal':return textToDecimal(text);
@@ -138,6 +204,7 @@ function encodeFromText(text,to){
     case 'url':return textToUrl(text);
     case 'html-entity':return textToHtmlEntity(text);
     case 'unicode':return textToUnicode(text);
+    case 'unicode-escape':return textToUnicodeEscape(text);
     case 'ascii':return textToAscii(text);
     case 'rot13':return rot13(text);
     case 'morse':return textToMorse(text);
@@ -210,9 +277,159 @@ ENCS.forEach(function(e){
     refGrid.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
     b.classList.add('active');
     if(inText.value)runConvert();
-    setStatus(e.label);
+    setStatus(e.labelKey?t(e.labelKey,e.label):e.label);
   });
   refGrid.appendChild(b);
+});
+/* ============ detect tab (merged from encoding-converter) ============ */
+var tabConvert=document.getElementById('tabConvert'),tabDetect=document.getElementById('tabDetect');
+var panelConvert=document.getElementById('panelConvert'),panelDetect=document.getElementById('panelDetect');
+function switchTab(which){
+  if(which==='convert'){
+    tabConvert.className='active';tabDetect.className='';
+    panelConvert.style.display='';panelDetect.style.display='none';
+  }else{
+    tabDetect.className='active';tabConvert.className='';
+    panelDetect.style.display='';panelConvert.style.display='none';
+  }
+}
+tabConvert.addEventListener('click',function(){switchTab('convert');});
+tabDetect.addEventListener('click',function(){switchTab('detect');});
+var dtInput=document.getElementById('dtInput');
+var dtOutput=document.getElementById('dtOutput');
+var dtCopyBtn=document.getElementById('dtCopyBtn');
+function getBytes(str){
+  var bytes=[];
+  for(var i=0;i<str.length;i++){
+    var cp=str.charCodeAt(i);
+    if(cp<=0x7F){bytes.push(cp);}
+    else if(cp<=0x7FF){bytes.push(0xC0|(cp>>6));bytes.push(0x80|(cp&0x3F));}
+    else{bytes.push(0xE0|(cp>>12));bytes.push(0x80|((cp>>6)&0x3F));bytes.push(0x80|(cp&0x3F));}
+  }
+  return bytes;
+}
+function parseHexInput(raw){
+  var cleaned=raw.replace(/[\s:,\-]/g,'');
+  if(cleaned.length===0||cleaned.length%2!==0)return null;
+  if(!/^[0-9a-fA-F]+$/.test(cleaned))return null;
+  var bytes=[];
+  for(var i=0;i<cleaned.length;i+=2)bytes.push(parseInt(cleaned.substr(i,2),16));
+  return bytes;
+}
+function isUTF8(bytes){
+  var i=0;
+  while(i<bytes.length){
+    var b=bytes[i];
+    if(b<0x80){i++;continue;}
+    else if(b>=0xC2&&b<=0xDF){
+      if(i+1>=bytes.length||(bytes[i+1]&0xC0)!==0x80)return false;
+      i+=2;
+    }else if(b>=0xE0&&b<=0xEF){
+      if(i+2>=bytes.length||(bytes[i+1]&0xC0)!==0x80||(bytes[i+2]&0xC0)!==0x80)return false;
+      i+=3;
+    }else if(b>=0xF0&&b<=0xF4){
+      if(i+3>=bytes.length||(bytes[i+1]&0xC0)!==0x80||(bytes[i+2]&0xC0)!==0x80||(bytes[i+3]&0xC0)!==0x80)return false;
+      i+=4;
+    }else{return false;}
+  }
+  return true;
+}
+function countHighBytes(bytes){
+  var count=0;
+  for(var i=0;i<bytes.length;i++)if(bytes[i]>=0x80)count++;
+  return count;
+}
+function hasNull(bytes){
+  for(var i=0;i<bytes.length;i++)if(bytes[i]===0)return true;
+  return false;
+}
+function isBase64(bytes){
+  if(bytes.length<8||bytes.length%4!==0)return false;
+  for(var i=0;i<bytes.length;i++){
+    var b=bytes[i];
+    var ok=(b>=65&&b<=90)||(b>=97&&b<=122)||(b>=48&&b<=57)||b===43||b===47||b===61;
+    if(!ok)return false;
+  }
+  var s='';
+  for(var j=0;j<bytes.length;j++)s+=String.fromCharCode(bytes[j]);
+  try{
+    var dec=atob(s);
+    var decBytes=getBytes(dec);
+    return isUTF8(decBytes)||isUTF8(decBytes);
+  }catch(e){return false;}
+}
+function hasUrlEncoding(bytes){
+  var count=0;
+  for(var i=0;i<bytes.length;i++)if(bytes[i]===37)count++;
+  return count>=2;
+}
+function detect(){
+  var raw=dtInput.value;
+  if(!raw){setStatus(t('dt.enter','请输入文本'),'error');return;}
+  var isHex=parseHexInput(raw);
+  var bytes=isHex?isHex:getBytes(raw);
+  var total=bytes.length;
+  var highBytes=countHighBytes(bytes);
+  var utf8Valid=isUTF8(bytes);
+  var hasZero=hasNull(bytes);
+  var asciiOnly=highBytes===0;
+  var results=[];
+  if(asciiOnly){
+    results.push({enc:'ASCII/UTF-8',conf:'100%',match:'match',note:t('dt.ascii','纯 ASCII 文本，兼容所有编码')});
+  }else{
+    if(utf8Valid){
+      var utf8Conf=Math.round((1-highBytes/total)*100);
+      results.push({enc:'UTF-8',conf:utf8Conf+'%',match:'match',note:t('dt.utf8ok','有效的 UTF-8 序列')});
+    }else{
+      results.push({enc:'UTF-8',conf:'0%',match:'no',note:t('dt.utf8bad','无效的 UTF-8 序列')});
+    }
+    var latinConf=Math.round((1-highBytes/total)*70+30);
+    results.push({enc:'Latin-1 (ISO 8859-1)',conf:latinConf+'%',match:'partial',note:t('dt.latin1ok','所有字节在 0-255 范围内')});
+    if(highBytes>0){
+      var shiftJisConf=Math.round((1-highBytes/total)*50);
+      if(shiftJisConf>20){
+        results.push({enc:t('dt.shiftjis','Shift-JIS (推测)'),conf:shiftJisConf+'%',match:'partial',note:t('dt.high','存在高位字节')});
+      }
+    }
+    if(hasZero){
+      results.push({enc:t('dt.utf16enc','UTF-16 (推测)'),conf:'30%',match:'partial',note:t('dt.utf16','包含空字节，可能为 UTF-16')});
+    }
+  }
+  if(isBase64(bytes)){
+    results.push({enc:'Base64',conf:'90%',match:'match',note:t('dt.b64ok','有效的 Base64 编码（可解码）')});
+  }
+  if(hasUrlEncoding(bytes)){
+    results.push({enc:t('dt.urlenc','URL 编码'),conf:'70%',match:'partial',note:t('dt.urlok','包含 URL 编码序列（%XX）')});
+  }
+  var html='';
+  if(isHex)html+='<div style="font-size:12px;color:var(--color-text-secondary);margin-top:var(--space-2);">'+t('dt.hexnote','已按十六进制字节解析')+'</div>';
+  html+='<div class="dt-grid">';
+  for(var i=0;i<results.length;i++){
+    var r=results[i];
+    html+='<div class="dt-box">';
+    html+='<div class="lbl">'+htmlEscape(r.enc)+'</div>';
+    html+='<div class="val">'+htmlEscape(r.conf)+'</div>';
+    var tagCls=r.match==='match'?'dt-tag':r.match==='partial'?'dt-tag partial':'dt-tag no';
+    var tagText=r.match==='match'?t('dt.match','✓ 匹配'):r.match==='partial'?t('dt.partial','~ 可能'):t('dt.no','✗ 不匹配');
+    html+='<span class="'+tagCls+'">'+tagText+'</span>';
+    html+='<div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">'+htmlEscape(r.note)+'</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  html+='<div class="dt-bytes"><strong>'+t('dt.byteAnalysis','字节分析:')+'</strong> '+t('dt.totalBytes','共 ')+total+t('dt.highBytes',' 字节，高位字节: ')+highBytes+' ('+Math.round(highBytes/total*100)+'%)<br>';
+  var hexParts=[];
+  for(var j=0;j<Math.min(bytes.length,128);j++){
+    var h=bytes[j].toString(16).toUpperCase().padStart(2,'0');
+    hexParts.push(bytes[j]>=0x80?'<span class="hi">'+h+'</span>':h);
+  }
+  html+=hexParts.join(' ')+(bytes.length>128?t('dt.truncated','... (截断)'):'')+'</div>';
+  dtOutput.innerHTML=html;
+  setStatus(t('dt.done','检测完成'));
+}
+document.getElementById('detectBtn').addEventListener('click',detect);
+dtInput.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')detect();});
+dtCopyBtn.addEventListener('click',function(){
+  if(dtOutput.textContent){copyToClipboard(dtOutput.textContent,this);setStatus(t('ui.copied','已复制'));}
 });
 })();
 </script>

@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON 转 TypeScript - S-Jiffy</title>
+  <title>JSON 转代码 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <style>
     .io-pair { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2); }
     @media(max-width:640px){ .io-pair { grid-template-columns:1fr; } }
     .output-box textarea { width:100%; min-height:300px; border:none; background:transparent; font-family:var(--font-mono); font-size:13px; resize:vertical; outline:none; }
+    .opts-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .opts-row label { font-size:var(--font-size-sm); color:var(--color-text-secondary); display:flex; align-items:center; gap:6px; }
+    .opts-row select, .opts-row input { height:36px; padding:0 10px; font-size:13px; border:1px solid #ddd; border-radius:var(--radius-md); font-family:var(--font-mono); }
+    .stat-line { font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:var(--space-1) 0; }
   </style>
 </head>
 <body>
@@ -17,17 +21,17 @@
     <a href="../../index.html" class="logo">S-Jiffy</a>
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
   <main class="tool-workspace">
-    <h1 data-i18n="h1">JSON 转 TypeScript</h1>
-    <p class="tool-desc" data-i18n="desc">从 JSON 生成 TypeScript 接口定义。</p>
+    <h1 data-i18n="h1">JSON 转代码</h1>
+    <p class="tool-desc" data-i18n="desc">将 JSON 转换为 TypeScript、C#、Go、Rust、Swift、Kotlin、Dart、Java、Python 类型定义，或将 JSON Schema、GraphQL SDL、JavaScript 转换为 TypeScript。</p>
 
     <div class="card">
       <div class="io-pair">
         <div>
-          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.1">JSON 输入</label>
-          <textarea id="jsonInput" class="input textarea" placeholder='{"name":"Alice","age":30,"items":[1,2,3]}' style="min-height:300px;"></textarea>
+          <label id="inputLabel" style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.1">JSON 输入</label>
+          <textarea id="jsonInput" class="input textarea js-focus-input" style="min-height:300px;"></textarea>
         </div>
         <div>
-          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.2">TypeScript 接口</label>
+          <label style="font-size:var(--font-size-xs);color:var(--color-text-disabled);" data-i18n="ui.2">代码输出</label>
           <div class="output-box" style="min-height:340px;">
             <textarea id="tsOutput" readonly data-i18n-placeholder="ui.101" placeholder="生成的 TypeScript 接口..."></textarea>
             <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
@@ -36,10 +40,31 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:12px;">
+    <div class="card opts-row">
+      <label data-i18n="ui.5">目标语言
+        <select id="targetLang">
+          <option value="ts" selected data-i18n="ui.ts">TypeScript</option>
+          <option value="csharp" data-i18n="ui.csharp">C#</option>
+          <option value="go" data-i18n="ui.go">Go</option>
+          <option value="rust" data-i18n="ui.rust">Rust</option>
+          <option value="swift" data-i18n="ui.swift">Swift</option>
+          <option value="kotlin" data-i18n="ui.kotlin">Kotlin</option>
+          <option value="dart" data-i18n="ui.dart">Dart</option>
+          <option value="java" data-i18n="ui.java">Java</option>
+          <option value="python" data-i18n="ui.python">Python</option>
+          <option value="schema" data-i18n="ui.schemaTs">JSON Schema → TypeScript</option>
+          <option value="graphql" data-i18n="ui.graphqlTs">GraphQL → TypeScript</option>
+          <option value="js" data-i18n="ui.jsTs">JavaScript → TypeScript</option>
+        </select>
+      </label>
+      <label data-i18n="ui.111">根名称
+        <input id="rootName" class="input" value="RootClass" style="width:160px;">
+      </label>
       <button id="convertBtn" class="btn btn-primary" data-i18n="ui.convert">转换</button>
       <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
     </div>
+
+    <div class="stat-line" id="statLine" style="display:none;"></div>
   </main>
   <footer class="global-footer">
     <div class="tool-status" id="statusBar"></div>
@@ -50,13 +75,58 @@
   <script>
     (function () {
       var jsonInput = document.getElementById('jsonInput');
-      var tsOutput = document.getElementById(t('ui.4','tsOutput'));
-      var convertBtn = document.getElementById('convertBtn'), clearBtn = document.getElementById('clearBtn'), copyBtn = document.getElementById('copyBtn');
+      var tsOutput = document.getElementById('tsOutput');
+      var convertBtn = document.getElementById('convertBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var copyBtn = document.getElementById('copyBtn');
+      var targetLang = document.getElementById('targetLang');
+      var rootNameEl = document.getElementById('rootName');
+      var inputLabel = document.getElementById('inputLabel');
+      var statLine = document.getElementById('statLine');
 
-      var interfaces = [];
+      var PLACEHOLDER_JSON = '{"name":"Alice","age":30,"items":[1,2,3]}';
+      var PLACEHOLDER_SCHEMA = '{\n  "type": "object",\n  "properties": {\n    "id": { "type": "integer" },\n    "name": { "type": "string" },\n    "tags": { "type": "array", "items": { "type": "string" } },\n    "address": {\n      "type": "object",\n      "properties": {\n        "city": { "type": "string" },\n        "zip": { "type": "string" }\n      },\n      "required": ["city"]\n    }\n  },\n  "required": ["id", "name"]\n}';
+      var PLACEHOLDER_GRAPHQL = 'type User {\n  id: ID!\n  name: String!\n  email: String\n  age: Int\n}\nenum Role {\n  ADMIN\n  USER\n}\ninput UserInput {\n  name: String!\n}\nunion SearchResult = User | Article';
+      var PLACEHOLDER_JS = 'function greet(name) {\n  return "Hello, " + name;\n}\n\nconst age = 25;\nlet active = true;\n';
 
-      function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
+      function placeholderFor(target) {
+        if (target === 'schema') return PLACEHOLDER_SCHEMA;
+        if (target === 'graphql') return PLACEHOLDER_GRAPHQL;
+        if (target === 'js') return PLACEHOLDER_JS;
+        return PLACEHOLDER_JSON;
+      }
+
+      function capitalize(s) {
+        if (!s) return 'EmptyField';
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      function safeName(s) {
+        return s.replace(/[^a-zA-Z0-9_]/g, '_').replace(/^(\d)/, '_$1');
+      }
+
+      function camelCase(s) {
+        return s.replace(/[^a-zA-Z0-9]+(.)/g, function (_, c) { return c.toUpperCase(); }).replace(/^[A-Z]/, function (c) { return c.toLowerCase(); });
+      }
+
+      function snakeCase(s) {
+        return s.replace(/([A-Z])/g, '_$1').replace(/[^a-zA-Z0-9_]/g, '_').replace(/^_/, '').toLowerCase().replace(/__+/g, '_');
+      }
+
+      var usedNames = {};
+
+      function uniqueName(base) {
+        var n = base; var i = 1;
+        while (usedNames[n]) { n = base + i; i++; }
+        usedNames[n] = true;
+        return n;
+      }
+
+      function uniqueGoName(base) {
+        var n = base; var i = 1;
+        while (usedNames[n]) { n = base + '_' + i; i++; }
+        usedNames[n] = true;
+        return n;
       }
 
       function toTypeName(key) {
@@ -67,7 +137,9 @@
         return name;
       }
 
-      function getType(val, key, seen) {
+      var tsInterfaces = [];
+
+      function tsGetType(val, key, seen) {
         if (val === null || val === undefined) return 'any';
         if (typeof val === 'string') return 'string';
         if (typeof val === 'number') return 'number';
@@ -76,8 +148,8 @@
           if (val.length === 0) return 'any[]';
           var types = {};
           for (var i = 0; i < Math.min(val.length, 5); i++) {
-            var t = getType(val[i], key, seen);
-            types[t] = true;
+            var tp = tsGetType(val[i], key, seen);
+            types[tp] = true;
           }
           var typeKeys = Object.keys(types);
           if (typeKeys.length === 1) return typeKeys[0] + '[]';
@@ -87,53 +159,1151 @@
           var name = toTypeName(key);
           if (seen[name]) return name;
           seen[name] = true;
-          return buildInterface(val, name, seen);
+          return tsBuildInterface(val, name, seen);
         }
         return 'any';
       }
 
-      function buildInterface(obj, name, seen) {
+      function tsBuildInterface(obj, name, seen) {
         var lines = ['export interface ' + name + ' {'];
         var keys = Object.keys(obj);
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i];
           var val = obj[k];
-          var tsType = getType(val, k, seen);
+          var tsType = tsGetType(val, k, seen);
           var opt = val === null ? '?' : '';
           lines.push('  ' + k + opt + ': ' + tsType + ';');
         }
         lines.push('}');
         var str = lines.join('\n');
-        interfaces.push(str);
+        tsInterfaces.push(str);
         return name;
       }
 
-      function convert() {
-        var raw = jsonInput.value.trim();
-        if (!raw) { setStatus(t('ui.100','请输入 JSON'), 'error'); return; }
-        try {
-          var obj = JSON.parse(raw);
-          interfaces = [];
-          var seen = {};
-          var rootName = obj.constructor === Array ? 'RootArray' : 'RootType';
-          var rootType = getType(obj, 'root', seen);
-          var finalStr = interfaces.reverse().join('\n\n');
-          if (rootName === 'RootArray') {
-            var arrayItemType = rootType.replace('[]', '');
-            finalStr += '\n\nexport type ' + rootName + ' = ' + arrayItemType + '[];';
+      function genTS(obj) {
+        tsInterfaces = [];
+        var seen = {};
+        var rootName = obj.constructor === Array ? 'RootArray' : 'RootType';
+        var rootType = tsGetType(obj, 'root', seen);
+        var finalStr = tsInterfaces.reverse().join('\n\n');
+        if (rootName === 'RootArray') {
+          var arrayItemType = rootType.replace('[]', '');
+          finalStr += '\n\nexport type ' + rootName + ' = ' + arrayItemType + '[];';
+        }
+        return finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
+      }
+
+      function csharpType(v) {
+        if (v === null) return 'object';
+        if (typeof v === 'string') return 'string';
+        if (typeof v === 'number') return v % 1 === 0 ? 'int' : 'double';
+        if (typeof v === 'boolean') return 'bool';
+        if (Array.isArray(v)) return 'List<object>';
+        return 'object';
+      }
+
+      function toPascal(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1).replace(/[^a-zA-Z0-9]/g, '_');
+      }
+
+      function genCSharp(obj, rootName) {
+        if (!obj || typeof obj !== 'object') return t('ui.104', '// 需要对象或数组');
+        if (Array.isArray(obj) && obj.length > 0) obj = obj[0];
+        if (typeof obj !== 'object' || obj === null) return t('ui.105', '// 无法推断结构');
+        var lines = ['public class ' + rootName + '\n{'];
+        for (var k in obj) {
+          var propName = toPascal(k);
+          var propType = csharpType(obj[k]);
+          lines.push('    public ' + propType + ' ' + propName + ' { get; set; }');
+        }
+        lines.push('}');
+        return lines.join('\n');
+      }
+
+      function goTypeName(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'interface{}';
+        if (val === null) return 'interface{}';
+        if (typeof val === 'boolean') return 'bool';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) return 'int64';
+          return 'float64';
+        }
+        if (typeof val === 'string') return 'string';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return '[]interface{}';
+          var elem = goTypeName(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            var tp = goTypeName(val[i], depth + 1);
+            if (tp !== elem) { elem = 'interface{}'; break; }
           }
-          tsOutput.value = finalStr || 'export type ' + rootName + ' = ' + rootType + ';';
-          setStatus(t('ui.convertOk','转换成功'));
+          return '[]' + elem;
+        }
+        if (typeof val === 'object') return 'map[string]interface{}';
+        return 'interface{}';
+      }
+
+      function generateGoStruct(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var result = 'type ' + name + ' struct {\n';
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var fieldName = uniqueGoName(capitalize(safeName(k)));
+          var tag = k;
+          var goType = goTypeName(v, depth);
+          var inlineStruct = false;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+            inlineStruct = true;
+            var structName = uniqueGoName(capitalize(safeName(k)) + 'Struct');
+            if (depth < 8) {
+              result += '  ' + fieldName + ' ' + structName + ' `json:"' + htmlEscape(tag) + '"`\n';
+            } else {
+              goType = goTypeName(v, depth);
+              result += '  ' + fieldName + ' ' + goType + ' `json:"' + htmlEscape(tag) + '"`\n';
+              inlineStruct = false;
+            }
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0])) {
+            var arrStructName = uniqueGoName(capitalize(safeName(k)) + 'Item');
+            inlineStruct = true;
+            result += '  ' + fieldName + ' []' + arrStructName + ' `json:"' + htmlEscape(tag) + '"`\n';
+          } else {
+            result += '  ' + fieldName + ' ' + goType + ' `json:"' + htmlEscape(tag) + '"`\n';
+          }
+        }
+        result += '}\n';
+        for (var i = 0; i < keys.length; i++) {
+          var v = val[keys[i]];
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueGoName(capitalize(safeName(keys[i])) + 'Struct');
+            result += '\n' + generateGoStruct(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0])) {
+            var arrSubName = uniqueGoName(capitalize(safeName(keys[i])) + 'Item');
+            result += '\n' + generateGoStruct(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genGo(parsed, name) {
+        usedNames = {};
+        name = uniqueGoName(capitalize(safeName(name)));
+        return 'package main\n\n' + generateGoStruct(parsed, name, 0);
+      }
+      function rustType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'serde_json::Value';
+        if (val === null) return 'Option<serde_json::Value>';
+        if (typeof val === 'boolean') return 'bool';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) {
+            if (val >= 0 && val <= 127) return 'i8';
+            if (val >= -128 && val <= 127) return 'i8';
+            if (val >= -32768 && val <= 32767) return 'i16';
+            if (val >= -2147483648 && val <= 2147483647) return 'i32';
+            return 'i64';
+          }
+          return 'f64';
+        }
+        if (typeof val === 'string') return 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'Vec<serde_json::Value>';
+          var elem = rustType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (rustType(val[i], depth + 1) !== elem) { elem = 'serde_json::Value'; break; }
+          }
+          return 'Vec<' + elem + '>';
+        }
+        if (typeof val === 'object') return 'struct';
+        return 'serde_json::Value';
+      }
+
+      function generateRustStruct(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var derives = '#[derive(Debug, Clone, Serialize, Deserialize)]\n';
+        var result = derives + 'pub struct ' + name + ' {\n';
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var fieldName = safeName(k);
+          var fieldRust = fieldName.replace(/_([a-z])/g, function (m, c) { return c.toUpperCase(); });
+          fieldRust = fieldName.split('_').map(function (s) { if (s.length === 0) return s; return s.charAt(0).toUpperCase() + s.slice(1); }).join('');
+          if (fieldRust.length === 0) fieldRust = 'Field' + i;
+          fieldRust = uniqueName(capitalize(fieldRust));
+          var rType = rustType(v, depth);
+          var serdeAttr = '#[serde(rename = ' + JSON.stringify(k) + ')]';
+          var typeStr;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            result += '  ' + serdeAttr + '\n  pub ' + fieldName + ': ' + subName + ',\n';
+            for (var j = 0; j < keys.length; j++) {
+              if (j === i) continue;
+            }
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            result += '  ' + serdeAttr + '\n  pub ' + fieldName + ': Vec<' + arrSubName + '>,\n';
+          } else {
+            typeStr = rType;
+            if (v === null) typeStr = 'Option<' + typeStr + '>';
+            result += '  ' + serdeAttr + '\n  pub ' + fieldName + ': ' + typeStr + ',\n';
+          }
+        }
+        result += '}\n';
+        for (var i = 0; i < keys.length; i++) {
+          var v = val[keys[i]];
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(keys[i])));
+            result += '\n' + generateRustStruct(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(keys[i])) + 'Item');
+            result += '\n' + generateRustStruct(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genRust(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return 'use serde::{Deserialize, Serialize};\n\n' + generateRustStruct(parsed, name, 0);
+      }
+
+      String.prototype.prefix = String.prototype.prefix || function (n) { return this.substring(0, n); };
+
+      function swiftType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'Any';
+        if (val === null) return 'Any?';
+        if (typeof val === 'boolean') return 'Bool';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) {
+            if (val >= Number.MIN_SAFE_INTEGER && val <= Number.MAX_SAFE_INTEGER) return 'Int';
+            return 'Int64';
+          }
+          return 'Double';
+        }
+        if (typeof val === 'string') return 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return '[Any]';
+          var elem = swiftType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (swiftType(val[i], depth + 1) !== elem) { elem = 'Any'; break; }
+          }
+          return '[' + elem + ']';
+        }
+        if (typeof val === 'object') return 'struct';
+        return 'Any';
+      }
+
+      function generateSwiftStruct(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var result = 'struct ' + name + ': Codable {\n';
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var propName = camelCase(safeName(k));
+          propName = uniqueName(propName || 'field' + i);
+          var sType = swiftType(v, depth);
+          var typeStr;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            typeStr = subName;
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            typeStr = '[' + arrSubName + ']';
+          } else {
+            typeStr = sType;
+          }
+          if (v === null) typeStr += '?';
+          result += '  let ' + propName + ': ' + typeStr + '\n';
+        }
+        var codingKeys = '  enum CodingKeys: String, CodingKey {\n';
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var propName = camelCase(safeName(k)) || 'field' + i;
+          if (propName === k) {
+            codingKeys += '    case ' + propName + '\n';
+          } else {
+            codingKeys += '    case ' + propName + ' = ' + JSON.stringify(k) + '\n';
+          }
+        }
+        codingKeys += '  }\n';
+        result += codingKeys + '}\n';
+        for (var i = 0; i < keys.length; i++) {
+          var v = val[keys[i]];
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(keys[i])));
+            result += '\n' + generateSwiftStruct(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(keys[i])) + 'Item');
+            result += '\n' + generateSwiftStruct(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genSwift(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return 'import Foundation\n\n' + generateSwiftStruct(parsed, name, 0);
+      }
+
+      function kotlinType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'Any';
+        if (val === null) return 'Any?';
+        if (typeof val === 'boolean') return 'Boolean';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) {
+            if (val >= -2147483648 && val <= 2147483647) return 'Int';
+            return 'Long';
+          }
+          return 'Double';
+        }
+        if (typeof val === 'string') return 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'List<Any>';
+          var elem = kotlinType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (kotlinType(val[i], depth + 1) !== elem) { elem = 'Any'; break; }
+          }
+          return 'List<' + elem + '>';
+        }
+        if (typeof val === 'object') return 'data class';
+        return 'Any';
+      }
+
+      function generateKotlinDataClass(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var result = 'data class ' + name + '(\n';
+        var fields = [];
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var propName = safeName(k);
+          propName = uniqueName(propName || 'field' + i);
+          var ktType = kotlinType(v, depth);
+          var typeStr;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            typeStr = subName;
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            typeStr = 'List<' + arrSubName + '>';
+          } else {
+            typeStr = ktType;
+          }
+          if (v === null) typeStr += '?';
+          var jsonName = k;
+          var annotation = '  @SerializedName(' + JSON.stringify(jsonName) + ')\n';
+          fields.push({ annotation: annotation, prop: propName, type: typeStr });
+        }
+        for (var i = 0; i < fields.length; i++) {
+          result += fields[i].annotation;
+          result += '  val ' + fields[i].prop + ': ' + fields[i].type;
+          if (i < fields.length - 1) result += ',';
+          result += '\n';
+        }
+        result += ')\n';
+        for (var i = 0; i < keys.length; i++) {
+          var v = val[keys[i]];
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(keys[i])));
+            result += '\n' + generateKotlinDataClass(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(keys[i])) + 'Item');
+            result += '\n' + generateKotlinDataClass(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genKotlin(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return 'import com.google.gson.annotations.SerializedName\n\n' + generateKotlinDataClass(parsed, name, 0);
+      }
+      function dartType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'dynamic';
+        if (val === null) return 'dynamic';
+        if (typeof val === 'boolean') return 'bool';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) return 'int';
+          return 'double';
+        }
+        if (typeof val === 'string') return 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'List<dynamic>';
+          var elem = dartType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (dartType(val[i], depth + 1) !== elem) { elem = 'dynamic'; break; }
+          }
+          return 'List<' + elem + '>';
+        }
+        if (typeof val === 'object') return 'class';
+        return 'dynamic';
+      }
+
+      function generateDartClass(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var result = 'class ' + name + ' {\n';
+        var fieldNames = [];
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var fName = camelCase(safeName(k)) || ('field' + i);
+          fName = uniqueName(fName);
+          fieldNames.push({ name: fName, jsonKey: k, value: v });
+          var dType = dartType(v);
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            result += '  ' + subName + '? ' + fName + ';\n';
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            result += '  List<' + arrSubName + '>? ' + fName + ';\n';
+          } else {
+            if (v === null) dType += '?';
+            result += '  ' + dType + ' ' + fName + ';\n';
+          }
+        }
+        result += '\n  ' + name + '({';
+        var constrFields = [];
+        for (var i = 0; i < fieldNames.length; i++) {
+          constrFields.push('this.' + fieldNames[i].name);
+        }
+        result += constrFields.join(', ');
+        result += '});\n\n';
+        result += '  factory ' + name + '.fromJson(Map<String, dynamic> json) {\n    return ' + name + '(\n';
+        for (var i = 0; i < fieldNames.length; i++) {
+          var fn = fieldNames[i];
+          var jk = fn.jsonKey;
+          var v = fn.value;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+            var subName = uniqueName(capitalize(safeName(jk)));
+            result += '      ' + fn.name + ': json[' + JSON.stringify(jk) + '] != null ? ' + subName + '.fromJson(json[' + JSON.stringify(jk) + ']) : null,\n';
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0])) {
+            var arrSubName = uniqueName(capitalize(safeName(jk)) + 'Item');
+            result += '      ' + fn.name + ': json[' + JSON.stringify(jk) + '] != null ? (json[' + JSON.stringify(jk) + '] as List).map((e) => ' + arrSubName + '.fromJson(e)).toList() : null,\n';
+          } else {
+            result += '      ' + fn.name + ': json[' + JSON.stringify(jk) + '],\n';
+          }
+        }
+        result += '    );\n  }\n\n';
+        result += '  Map<String, dynamic> toJson() {\n    return {\n';
+        for (var i = 0; i < fieldNames.length; i++) {
+          var fn = fieldNames[i];
+          var v = fn.value;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+            var subName = uniqueName(capitalize(safeName(fn.jsonKey)));
+            result += '      ' + JSON.stringify(fn.jsonKey) + ': this.' + fn.name + '?.toJson(),\n';
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0])) {
+            result += '      ' + JSON.stringify(fn.jsonKey) + ': this.' + fn.name + '?.map((e) => e.toJson())?.toList(),\n';
+          } else {
+            result += '      ' + JSON.stringify(fn.jsonKey) + ': this.' + fn.name + ',\n';
+          }
+        }
+        result += '    };\n  }\n}\n';
+        for (var i = 0; i < fieldNames.length; i++) {
+          var v = fieldNames[i].value;
+          var jk = fieldNames[i].jsonKey;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(jk)));
+            result += '\n' + generateDartClass(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(jk)) + 'Item');
+            result += '\n' + generateDartClass(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genDart(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return '// Generated Dart class\n\n' + generateDartClass(parsed, name, 0);
+      }
+
+      function javaType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'Object';
+        if (val === null) return 'Object';
+        if (typeof val === 'boolean') return 'boolean';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) return 'int';
+          return 'double';
+        }
+        if (typeof val === 'string') return 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'List<Object>';
+          var elem = javaType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (javaType(val[i], depth + 1) !== elem) { elem = 'Object'; break; }
+          }
+          return 'List<' + elem + '>';
+        }
+        if (typeof val === 'object') return 'class';
+        return 'Object';
+      }
+
+      function generateJavaClass(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var pkg = 'import java.util.List;\nimport com.google.gson.annotations.SerializedName;\n\n';
+        var result = pkg + 'public class ' + name + ' {\n';
+        var fields = [];
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var jt = javaType(v);
+          var fName = camelCase(safeName(k)) || 'field' + i;
+          fName = uniqueName(fName);
+          fields.push({ name: fName, jsonKey: k, value: v });
+          var typeStr;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            typeStr = subName;
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            typeStr = 'List<' + arrSubName + '>';
+          } else {
+            typeStr = jt;
+          }
+          result += '  @SerializedName(' + JSON.stringify(k) + ')\n';
+          result += '  private ' + typeStr + ' ' + fName + ';\n';
+        }
+        result += '\n  public ' + name + '() {}\n\n';
+        for (var i = 0; i < fields.length; i++) {
+          var fn = fields[i].name;
+          var jt = javaType(fields[i].value);
+          var typeStr;
+          var v = fields[i].value;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            typeStr = uniqueName(capitalize(safeName(fields[i].jsonKey)));
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            typeStr = 'List<' + uniqueName(capitalize(safeName(fields[i].jsonKey)) + 'Item') + '>';
+          } else {
+            typeStr = jt;
+          }
+          if (jt === 'boolean') typeStr = 'Boolean';
+          result += '  public ' + typeStr + ' get' + capitalize(fn) + '() { return ' + fn + '; }\n';
+          result += '  public void set' + capitalize(fn) + '(' + typeStr + ' ' + fn + ') { this.' + fn + ' = ' + fn + '; }\n\n';
+        }
+        result += '}\n';
+        for (var i = 0; i < fields.length; i++) {
+          var v = fields[i].value;
+          var jk = fields[i].jsonKey;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(jk)));
+            result += '\n' + generateJavaClass(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(jk)) + 'Item');
+            result += '\n' + generateJavaClass(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genJava(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return generateJavaClass(parsed, name, 0);
+      }
+
+      function pyType(val, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return 'Any';
+        if (val === null) return 'Optional[Any]';
+        if (typeof val === 'boolean') return 'bool';
+        if (typeof val === 'number') {
+          if (Number.isInteger(val)) return 'int';
+          return 'float';
+        }
+        if (typeof val === 'string') return 'str';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return 'list';
+          var elem = pyType(val[0], depth + 1);
+          for (var i = 1; i < val.length; i++) {
+            if (pyType(val[i], depth + 1) !== elem && elem !== 'Any') { elem = 'Any'; break; }
+          }
+          return 'list[' + elem + ']';
+        }
+        if (typeof val === 'object') return 'dataclass';
+        return 'Any';
+      }
+
+      function generatePythonDataclass(val, name, depth) {
+        if (depth === undefined) depth = 0;
+        if (depth > 10) return '';
+        if (val === null || typeof val !== 'object' || Array.isArray(val)) return '';
+        var keys = Object.keys(val);
+        var result = '@dataclass\nclass ' + name + ':\n';
+        var hasFields = false;
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var v = val[k];
+          var fName = snakeCase(safeName(k)) || 'field' + i;
+          fName = uniqueName(fName);
+          var pt = pyType(v);
+          var typeStr;
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(k)));
+            typeStr = 'Optional[' + subName + ']';
+          } else if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(k)) + 'Item');
+            typeStr = 'list[' + arrSubName + ']';
+          } else {
+            typeStr = pt;
+            if (v === null) typeStr = 'Optional[' + typeStr + ']';
+          }
+          if (v === null) {
+            result += '    ' + fName + ': ' + typeStr + ' = None\n';
+          } else {
+            result += '    ' + fName + ': ' + typeStr + '\n';
+          }
+          hasFields = true;
+        }
+        if (!hasFields) result += '    pass\n';
+        result += '\n';
+        for (var i = 0; i < keys.length; i++) {
+          var v = val[keys[i]];
+          if (v !== null && typeof v === 'object' && !Array.isArray(v) && depth < 8) {
+            var subName = uniqueName(capitalize(safeName(keys[i])));
+            result += '\n' + generatePythonDataclass(v, subName, depth + 1);
+          }
+          if (Array.isArray(v) && v.length > 0 && v[0] !== null && typeof v[0] === 'object' && !Array.isArray(v[0]) && depth < 8) {
+            var arrSubName = uniqueName(capitalize(safeName(keys[i])) + 'Item');
+            result += '\n' + generatePythonDataclass(v[0], arrSubName, depth + 1);
+          }
+        }
+        return result;
+      }
+
+      function genPython(parsed) {
+        usedNames = {};
+        var name = uniqueName('Root');
+        return 'from dataclasses import dataclass\nfrom typing import Optional, Any, List\n\n' + generatePythonDataclass(parsed, name, 0);
+      }
+      var schemaTypeMap = {
+        'string': 'string',
+        'integer': 'number',
+        'number': 'number',
+        'boolean': 'boolean',
+        'null': 'null',
+        'any': 'any'
+      };
+
+      function resolveRef(schema, defs) {
+        if (!schema || typeof schema !== 'object') return schema;
+        var ref = schema.$ref;
+        if (ref) {
+          var parts = ref.replace('#/', '').split('/');
+          var cur = defs || {};
+          for (var i = 0; i < parts.length; i++) {
+            if (cur[parts[i]]) cur = cur[parts[i]];
+            else return schema;
+          }
+          return cur;
+        }
+        return schema;
+      }
+
+      var defsCache = {};
+
+      function schemaToTS(schema, name, depth, defs) {
+        if (depth === undefined) depth = 0;
+        if (depth > 15) return 'any';
+        if (schema === null || schema === undefined) return 'any';
+
+        var resolved = resolveRef(schema, defs);
+        if (resolved.$ref) resolved = resolveRef(resolved, defs);
+
+        var type = resolved.type;
+        var enumVals = resolved.enum;
+        var oneOf = resolved.oneOf;
+        var anyOf = resolved.anyOf;
+        var allOf = resolved.allOf;
+
+        if (enumVals && enumVals.length > 0) {
+          return enumVals.map(function (v) { return JSON.stringify(v); }).join(' | ');
+        }
+
+        if (oneOf || anyOf) {
+          var variants = oneOf || anyOf;
+          var types = [];
+          for (var i = 0; i < variants.length; i++) {
+            types.push(schemaToTS(variants[i], name + 'V' + i, depth + 1, defs));
+          }
+          return types.join(' | ');
+        }
+
+        if (allOf) {
+          var intersections = [];
+          for (var i = 0; i < allOf.length; i++) {
+            intersections.push(schemaToTS(allOf[i], name + 'A' + i, depth + 1, defs));
+          }
+          return intersections.join(' & ');
+        }
+
+        if (type === 'object' || (type === undefined && resolved.properties)) {
+          var props = resolved.properties;
+          var required = resolved.required || [];
+          if (!props) return 'Record<string, any>';
+
+          var propNames = Object.keys(props);
+          if (propNames.length === 0) return 'Record<string, any>';
+
+          var result = '{\n';
+          for (var i = 0; i < propNames.length; i++) {
+            var pn = propNames[i];
+            var pSchema = props[pn];
+            var pType = schemaToTS(pSchema, name + ucFirst(pn), depth + 1, defs);
+            var isRequired = required.indexOf(pn) >= 0;
+            result += '  ' + pn + (isRequired ? '' : '?') + ': ' + pType.split('\n').join('\n  ') + ';\n';
+          }
+          result += '}';
+          return result;
+        }
+
+        if (type === 'array') {
+          var items = resolved.items;
+          if (!items) return 'any[]';
+          var itemType = schemaToTS(items, name + 'Item', depth + 1, defs);
+          if (itemType.indexOf('{') >= 0 || itemType.indexOf('|') >= 0) {
+            return '(' + itemType + ')[]';
+          }
+          return itemType + '[]';
+        }
+
+        if (type === 'string' && resolved.enum) {
+          return resolved.enum.map(function (v) { return JSON.stringify(v); }).join(' | ');
+        }
+
+        if (type && schemaTypeMap[type]) return schemaTypeMap[type];
+        if (type === undefined && resolved.$ref) return 'any';
+
+        return 'any';
+      }
+
+      function ucFirst(s) {
+        if (!s) return 'Prop';
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      function genSchema(schema) {
+        usedNames = {};
+        defsCache = schema.definitions || schema.$defs || {};
+
+        var title = schema.title || 'Root';
+        var interfaceName = title.replace(/\s+/g, '') || 'Root';
+        interfaceName = uniqueName(interfaceName);
+
+        var ts = schemaToTS(schema, interfaceName, 0, { definitions: defsCache });
+        if (ts.indexOf('{') === 0) {
+          return 'interface ' + interfaceName + ' ' + ts;
+        }
+        return 'type ' + interfaceName + ' = ' + ts + ';';
+      }
+
+      var SCALARS = { ID: 'string', String: 'string', Int: 'number', Float: 'number', Boolean: 'boolean' };
+
+      function mapType(tp) {
+        tp = String(tp).replace(/\s+/g, '');
+        var isArr = false;
+        tp = tp.replace(/!$/, '');
+        if (tp.charAt(0) === '[') {
+          isArr = true;
+          tp = tp.slice(1, tp.length - 1).replace(/!$/, '');
+        }
+        var base = SCALARS[tp] || tp;
+        return isArr ? base + '[]' : base;
+      }
+
+      function parseBlocks(text) {
+        var blocks = [];
+        var re = /(?:\bextend\s+)?(type|interface|enum|input)\s+(\w+)\s*\{([\s\S]*?)\}/g;
+        var m;
+        while ((m = re.exec(text)) !== null) {
+          blocks.push({ kind: m[1], name: m[2], body: m[3] });
+        }
+        var ure = /\b(union)\s+(\w+)\s*=\s*([^\n{#]+)/g;
+        while ((m = ure.exec(text)) !== null) {
+          blocks.push({ kind: 'union', name: m[2], body: m[3] });
+        }
+        return blocks;
+      }
+
+      function stripComment(line) {
+        var idx = line.indexOf('#');
+        return idx === -1 ? line : line.slice(0, idx);
+      }
+
+      function parseFields(body) {
+        var fields = [];
+        var lines = body.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+          var line = stripComment(lines[i]).split('@')[0].trim();
+          if (!line) continue;
+          line = line.replace(/\([^)]*\)/g, '');
+          var re = /(\w+)\s*:\s*([\w!\[\]]+)/g;
+          var m;
+          while ((m = re.exec(line)) !== null) fields.push({ name: m[1], type: m[2] });
+        }
+        return fields;
+      }
+
+      function parseEnumValues(body) {
+        var values = [];
+        var lines = body.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+          var line = stripComment(lines[i]).split('@')[0].trim();
+          var m = line.match(/^(\w+)$/);
+          if (m) values.push(m[1]);
+        }
+        return values;
+      }
+
+      function parseUnionMembers(body) {
+        var members = [];
+        var parts = body.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var tp = stripComment(parts[i]).trim();
+          if (/^\w+$/.test(tp)) members.push(tp);
+        }
+        return members;
+      }
+
+      function typeFor(block) {
+        if (block.kind === 'enum') {
+          var vals = parseEnumValues(block.body);
+          var quoted = [];
+          for (var v = 0; v < vals.length; v++) quoted.push("'" + vals[v] + "'");
+          return 'export type ' + block.name + ' = ' + quoted.join(' | ') + ';';
+        }
+        if (block.kind === 'union') {
+          var members = parseUnionMembers(block.body);
+          return 'export type ' + block.name + ' = ' + members.join(' | ') + ';';
+        }
+        var fields = parseFields(block.body);
+        var bodyLines = [];
+        for (var f = 0; f < fields.length; f++) {
+          bodyLines.push('  ' + fields[f].name + ': ' + mapType(fields[f].type) + ';');
+        }
+        if (!bodyLines.length) bodyLines.push('  [key: string]: unknown;');
+        return 'export type ' + block.name + ' = {\n' + bodyLines.join('\n') + '\n};';
+      }
+
+      function genGraphQL(text) {
+        var blocks = parseBlocks(text);
+        if (!blocks.length) return null;
+        var lines = [];
+        var counts = { type: 0, interface: 0, enum: 0, input: 0, union: 0 };
+        var totalFields = 0;
+        for (var i = 0; i < blocks.length; i++) {
+          counts[blocks[i].kind] = (counts[blocks[i].kind] || 0) + 1;
+          var bt = typeFor(blocks[i]);
+          if (blocks[i].kind !== 'enum' && blocks[i].kind !== 'union') {
+            totalFields += parseFields(blocks[i].body).length;
+          } else if (blocks[i].kind === 'enum') {
+            totalFields += parseEnumValues(blocks[i].body).length;
+          } else {
+            totalFields += parseUnionMembers(blocks[i].body).length;
+          }
+          lines.push(bt);
+          lines.push('');
+        }
+        var stat = t('ui.stat', '解析统计：type {type}、interface {interface}、enum {enum}、input {input}、union {union}，共 {total} 个定义、{fields} 个字段/值');
+        stat = stat.replace('{type}', counts.type).replace('{interface}', counts.interface).replace('{enum}', counts.enum).replace('{input}', counts.input).replace('{union}', counts.union).replace('{total}', blocks.length).replace('{fields}', totalFields);
+        return { code: lines.join('\n').replace(/\n+$/, ''), stat: stat };
+      }
+
+      function inferType(val) {
+        if (val === 'true' || val === 'false') return 'boolean';
+        if (/^-?\d+\.?\d*$/.test(val)) return 'number';
+        if (/^["'`]/.test(val)) return 'string';
+        if (val === 'null') return 'null';
+        if (val === 'undefined') return 'undefined';
+        if (/^\[/.test(val)) return 'any[]';
+        if (/^\{/.test(val)) return 'object';
+        if (/^\/(?!\*)/.test(val)) return 'RegExp';
+        return 'any';
+      }
+
+      function jsToTs(text) {
+        var lines = text.split('\n');
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var trimmed = line.trim();
+          var indent = line.substring(0, line.length - trimmed.length);
+          if (!trimmed) { result.push(''); continue; }
+          if (trimmed.indexOf('//') === 0 || trimmed.indexOf('/*') === 0 || trimmed.indexOf('*') === 0) { result.push(line); continue; }
+
+          var commentIdx = trimmed.indexOf('//');
+          var codePart = commentIdx >= 0 ? trimmed.substring(0, commentIdx).trim() : trimmed;
+          var comment = commentIdx >= 0 ? trimmed.substring(commentIdx) : '';
+
+          if (/^(let|const|var)\s+/.test(codePart)) {
+            var declMatch = codePart.match(/^(let|const|var)\s+(\w[\w$]*)\s*(=\s*.*)?$/);
+            if (declMatch) {
+              var keyword = declMatch[1];
+              var varName = declMatch[2];
+              var rhs = declMatch[3] ? declMatch[3].substring(1).trim() : null;
+              var tsType = 'any';
+              if (rhs) {
+                tsType = inferType(rhs);
+                if (rhs === '[]') tsType = 'any[]';
+                if (/^\d+\s*\+\s*\d+/.test(rhs)) tsType = 'number';
+                if (/^\d+\s*-\s*\d+/.test(rhs)) tsType = 'number';
+                if (/^\d+\s*\*\s*\d+/.test(rhs)) tsType = 'number';
+              }
+              if (keyword === 'const' && rhs && tsType !== 'any') {
+                result.push(indent + 'const ' + varName + ': ' + tsType + ' = ' + rhs + (comment ? ' ' + comment : ''));
+              } else if (keyword === 'const') {
+                result.push(indent + 'const ' + varName + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+              } else if (keyword === 'var') {
+                result.push(indent + 'let ' + varName + ': ' + tsType + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+              } else {
+                result.push(indent + 'let ' + varName + ': ' + tsType + (rhs ? ' = ' + rhs : '') + (comment ? ' ' + comment : ''));
+              }
+            } else {
+              result.push(line);
+            }
+            continue;
+          }
+
+          if (/^function\s+/.test(codePart)) {
+            var funcMatch = codePart.match(/^function\s+(\w[\w$]*)\s*\(([^)]*)\)\s*(:\s*\w[\w<>,[\]|\s]*)?\s*\{?$/);
+            if (funcMatch) {
+              var funcName = funcMatch[1];
+              var params = funcMatch[2].trim();
+              var hasReturnType = funcMatch[3];
+              var typedParams = [];
+              if (params) {
+                var paramList = params.split(',');
+                for (var j = 0; j < paramList.length; j++) {
+                  var p = paramList[j].trim();
+                  if (!p) continue;
+                  if (p.indexOf(':') === -1) {
+                    typedParams.push(p + ': any');
+                  } else {
+                    typedParams.push(p);
+                  }
+                }
+              }
+              if (hasReturnType) {
+                result.push(indent + 'function ' + funcName + '(' + typedParams.join(', ') + ')' + hasReturnType + ' {');
+              } else {
+                result.push(indent + 'function ' + funcName + '(' + typedParams.join(', ') + '): any {');
+              }
+            } else {
+              result.push(line);
+            }
+            continue;
+          }
+
+          if (/^const\s+\w+\s*=\s*\(/.test(codePart) || /^const\s+\w+\s*=\s*function/.test(codePart) || /^const\s+\w+\s*=\s*async\s*\(/.test(codePart)) {
+            var arrowMatch = codePart.match(/^const\s+(\w[\w$]*)\s*=\s*(async\s*)?(?:function\s*)?\(([^)]*)\)\s*(?::\s*\w[\w<>,[\]|\s]*)?\s*=>?\s*\{?$/);
+            if (arrowMatch) {
+              var arrowName = arrowMatch[1];
+              var asyncKw = arrowMatch[2] || '';
+              var arrowParams = arrowMatch[3].trim();
+              var typedArrowParams = [];
+              if (arrowParams) {
+                var apList = arrowParams.split(',');
+                for (var j = 0; j < apList.length; j++) {
+                  var ap = apList[j].trim();
+                  if (!ap) continue;
+                  if (ap.indexOf(':') === -1) typedArrowParams.push(ap + ': any');
+                  else typedArrowParams.push(ap);
+                }
+              }
+              result.push(indent + 'const ' + arrowName + ': (' + typedArrowParams.join(', ') + ') => any = ' + asyncKw + '(' + typedArrowParams.join(', ') + ') => {');
+            } else {
+              result.push(line);
+            }
+            continue;
+          }
+
+          if (/^for\s*\(/.test(codePart)) {
+            var forMatch = codePart.match(/^for\s*\(\s*(let|var|const)?\s*(\w[\w$]*)\s*(=.*)?;\s*(.*);\s*(.*)\)/);
+            if (forMatch) {
+              var forKeyword = forMatch[1] || 'let';
+              var forVar = forMatch[2];
+              result.push(indent + 'for (' + forKeyword + ' ' + forVar + ': number =' + (forMatch[3] || ' 0') + '; ' + forMatch[4] + '; ' + forMatch[5] + ')');
+            } else {
+              result.push(line);
+            }
+            continue;
+          }
+
+          if (/^(catch\s*\()(\w+)(\))/.test(codePart)) {
+            result.push(line.replace(/^(catch\s*\()(\w+)(\))/, '$1$2: any$3'));
+            continue;
+          }
+
+          result.push(line);
+        }
+        return result.join('\n');
+      }
+
+      function convert() {
+        var target = targetLang.value;
+        var text = jsonInput.value;
+        statLine.textContent = '';
+        statLine.style.display = 'none';
+
+        if (target === 'graphql') {
+          if (!text.trim()) { tsOutput.value = ''; setStatus(''); return; }
+          var g = genGraphQL(text);
+          if (!g) {
+            tsOutput.value = '';
+            setStatus(t('ui.106', '未解析到任何类型定义：请粘贴包含 type/interface/enum/input/union 块的有效 GraphQL SDL'), 'error');
+            return;
+          }
+          tsOutput.value = g.code;
+          statLine.textContent = g.stat;
+          statLine.style.display = '';
+          setStatus(t('ui.convertOk', '转换成功'));
+          return;
+        }
+
+        if (target === 'js') {
+          if (!text.trim()) { setStatus(t('ui.107', '请输入 JavaScript 代码'), 'error'); return; }
+          tsOutput.value = jsToTs(text);
+          setStatus(t('ui.convertOk', '转换成功'));
+          return;
+        }
+
+        if (!text.trim()) {
+          setStatus(t(target === 'schema' ? 'ui.102' : 'ui.100', target === 'schema' ? '请输入 JSON Schema' : '请输入 JSON'), 'error');
+          return;
+        }
+
+        var parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch (e) {
+          if (target === 'csharp') {
+            tsOutput.value = t('ui.103', '// 无效 JSON: ') + e.message;
+            setStatus(t('ui.convertOk', '转换成功'));
+          } else {
+            tsOutput.value = '';
+            setStatus(t('ui.3', 'JSON 解析失败: ') + e.message, 'error');
+          }
+          return;
+        }
+
+        var out;
+        try {
+          switch (target) {
+            case 'ts':
+              out = genTS(parsed);
+              break;
+            case 'csharp':
+              out = genCSharp(parsed, rootNameEl.value.trim() || 'RootClass');
+              break;
+            case 'go':
+              out = genGo(parsed, rootNameEl.value.trim() || 'AutoGenerated');
+              break;
+            case 'rust':
+              out = genRust(parsed);
+              break;
+            case 'swift':
+              out = genSwift(parsed);
+              break;
+            case 'kotlin':
+              out = genKotlin(parsed);
+              break;
+            case 'dart':
+              out = genDart(parsed);
+              break;
+            case 'java':
+              out = genJava(parsed);
+              break;
+            case 'python':
+              out = genPython(parsed);
+              break;
+            case 'schema':
+              out = genSchema(parsed);
+              break;
+            default:
+              out = genTS(parsed);
+              break;
+          }
         } catch (e) {
           tsOutput.value = '';
-          setStatus(t('ui.3','JSON 解析失败: ') + e.message, 'error');
+          setStatus(t('ui.3', 'JSON 解析失败: ') + e.message, 'error');
+          return;
         }
+        tsOutput.value = out;
+        setStatus(t('ui.convertOk', '转换成功'));
+      }
+
+      function onTargetChange() {
+        var target = targetLang.value;
+        if (target === 'schema') {
+          inputLabel.textContent = t('ui.108', 'JSON Schema 输入');
+        } else if (target === 'graphql') {
+          inputLabel.textContent = t('ui.109', 'GraphQL SDL 输入');
+        } else if (target === 'js') {
+          inputLabel.textContent = t('ui.110', 'JavaScript 代码输入');
+        } else {
+          inputLabel.textContent = t('ui.1', 'JSON 输入');
+        }
+        jsonInput.placeholder = placeholderFor(target);
+        if (target === 'csharp' && !rootNameEl.value) rootNameEl.value = 'RootClass';
+        if (target === 'go' && !rootNameEl.value) rootNameEl.value = 'AutoGenerated';
+        tsOutput.placeholder = target === 'ts' ? t('ui.101', '生成的 TypeScript 接口...') : t('ui.112', '生成的代码...');
+        statLine.textContent = '';
+        statLine.style.display = 'none';
+        setStatus('');
       }
 
       convertBtn.addEventListener('click', convert);
-      clearBtn.addEventListener('click', function () { jsonInput.value = ''; tsOutput.value = ''; setStatus(''); jsonInput.focus(); });
-      copyBtn.addEventListener('click', function () { if (tsOutput.value) { copyToClipboard(tsOutput.value, copyBtn); setStatus(t('ui.copied','已复制')); } });
-      jsonInput.addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') convert(); });
+      clearBtn.addEventListener('click', function () {
+        jsonInput.value = '';
+        tsOutput.value = '';
+        statLine.textContent = '';
+        statLine.style.display = 'none';
+        setStatus('');
+        jsonInput.focus();
+      });
+      copyBtn.addEventListener('click', function () {
+        if (tsOutput.value) {
+          copyToClipboard(tsOutput.value, copyBtn);
+          setStatus(t('ui.copied', '已复制'));
+        }
+      });
+      targetLang.addEventListener('change', onTargetChange);
+      jsonInput.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.key === 'Enter') convert();
+      });
+
+      onTargetChange();
     })();
   </script>
 </body>

@@ -3,6 +3,9 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>哈希生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css">
 <style>
+.dc-tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3);}
+.dc-tabs button{flex:1;height:44px;font-size:var(--font-size-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);cursor:pointer;transition:all .15s;}
+.dc-tabs button.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary);}
 .hash-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-3);}
 .hash-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--color-bg);}
 .hash-algo{font-size:var(--font-size-xs);font-weight:600;color:var(--color-accent-hover);width:70px;flex-shrink:0;}
@@ -10,12 +13,24 @@
 .hash-copy{background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:var(--font-size-xs);flex-shrink:0;padding:4px 8px;border-radius:var(--radius-sm);}
 .hash-copy:hover{color:var(--color-text-primary);background:rgba(0,0,0,0.03);}
 .sub-label{display:block;font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:8px;}
+.cp-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:var(--space-3);}
+.cp-row label{font-size:var(--font-size-sm);color:var(--color-text-secondary);}
+.cp-badge{padding:4px 16px;border-radius:9999px;font-size:var(--font-size-sm);font-weight:600;display:inline-block;}
+.cp-badge.match{background:#e8f5e9;color:#2e7d32;}
+.cp-badge.no-match{background:#ffebee;color:#c62828;}
+.cp-badge.pending{background:#f5f5f5;color:#666;}
+.cp-detail{font-size:var(--font-size-sm);color:var(--color-text-secondary);word-break:break-all;}
 </style></head>
 <body>
-<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
+<header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
 <main class="tool-workspace">
 <h1 data-i18n="h1">Hash 计算器</h1>
-<p class="tool-desc" data-i18n="desc">支持 MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256，支持文本与文件，可一次生成全部常见哈希。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.102">⚠ 需 HTTPS/localhost 环境</span></p>
+<p class="tool-desc" data-i18n="desc">支持 MD5 / SHA-1 / SHA-224 / SHA-256 / SHA-384 / SHA-512 / SHA-512/224 / SHA-512/256，支持文本与文件，可一次生成全部常见哈希，并可对比验证哈希值。<span id="httpsWarning" style="display:none;font-size:var(--font-size-xs);color:var(--color-error);margin-top:4px;" data-i18n="ui.102">⚠ 需 HTTPS/localhost 环境</span></p>
+<div class="dc-tabs">
+<button id="tabGen" class="active" type="button" data-i18n="ui.tabGen">生成</button>
+<button id="tabCompare" type="button" data-i18n="ui.tabCompare">对比</button>
+</div>
+<div id="panelGen">
 <div class="card"><label class="sub-label" data-i18n="ui.101">输入文本</label><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.100" placeholder="输入要哈希的文本..." style="min-height:120px;"></textarea></div>
 <div class="hash-opts">
 <select id="algoSelect" class="input" style="width:auto;min-width:150px;">
@@ -34,7 +49,25 @@
 <label class="sub-label" data-i18n="generateHashes">生成哈希</label>
 <div id="allHashList"></div>
 </div>
-</div></main>
+</div>
+</div>
+<div id="panelCompare" style="display:none;">
+<div class="card"><label class="sub-label" data-i18n="cp.textLabel">输入要验证的文本</label><textarea id="cpText" class="input textarea" data-i18n-placeholder="cp.textPh" placeholder="输入要验证的文本..." style="min-height:100px;"></textarea></div>
+<div class="card">
+<div class="cp-row"><label data-i18n="cp.hashLabel">待对比的哈希</label><input id="cpHash" class="input" data-i18n-placeholder="cp.hashPh" placeholder="粘贴已知的哈希值" style="flex:1;min-width:200px;"></div>
+<div class="cp-row">
+<label data-i18n="cp.algorithm">算法</label><select id="cpAlgo" class="input" style="width:auto;min-width:150px;"><option value="SHA-1">SHA-1</option><option value="SHA-224">SHA-224</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="MD5">MD5</option></select>
+<label data-i18n="cp.format">格式化</label><select id="cpFmt" class="input" style="width:auto;min-width:80px;"><option value="hex">Hex</option><option value="base64">Base64</option></select>
+<button id="compareBtn" class="btn btn-primary" data-i18n="cp.compare">对比</button>
+<button id="cpFileBtn" class="btn btn-secondary" data-i18n="cp.file">选择文件</button>
+<input type="file" id="cpFileInput" style="display:none;">
+<button id="cpClearBtn" class="btn btn-secondary" data-i18n="clearBtn">清空</button>
+</div>
+</div>
+<div class="card" style="text-align:center;"><span id="resultBadge" class="cp-badge pending" data-i18n="cp.waiting">等待</span><div id="resultDetail" class="cp-detail" style="margin-top:var(--space-2);"></div></div>
+<div class="output-box"><span id="cpOutput" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="cpCopyBtn" data-i18n="copyBtn">复制</button></div>
+</div>
+</main>
 <footer class="global-footer"><div class="tool-status" id="statusBar"></div><div data-i18n="common.footer">S-Jiffy · 即用即走</div></footer>
 <script src="../../assets/js/global.js"></script>
 <script src="../../assets/js/i18n.js"></script>
@@ -99,7 +132,7 @@
       c=ii(c,d,a,b,blks[i3+10],15,-1051523);   b=ii(b,c,d,a,blks[i3+ 1],21,-2054922799);
       a=ii(a,b,c,d,blks[i3+ 8], 6,1873313359); d=ii(d,a,b,c,blks[i3+15],10,-30611744);
       c=ii(c,d,a,b,blks[i3+ 6],15,-1560198380);b=ii(b,c,d,a,blks[i3+13],21,1309151649);
-      a=ii(a,b,c,d,blks[i3+ 4], 6,-145523070); d=ii(d,a,b,c,blks[i3+11],10,-1120210379);
+      a=ii(a,b,c,d,blks[i3+ 4], 6,-145523070); d=ii(d,a,b,c,blks[i3+11],12,-1120210379);
       c=ii(c,d,a,b,blks[i3+ 2],15, 718787259); b=ii(b,c,d,a,blks[i3+ 9],21,-343485551);
       a=safeAdd(a,olda);b=safeAdd(b,oldb);c=safeAdd(c,oldc);d=safeAdd(d,oldd);
     }
@@ -201,6 +234,71 @@
   });
   document.getElementById('clearBtn').addEventListener('click',function(){i.value='';o.textContent='';allHashes.style.display='none';allHashList.innerHTML='';setStatus('');i.focus();fi.value='';});
   document.getElementById('copyBtn').addEventListener('click',function(){if(o.textContent){copyToClipboard(o.textContent,this);setStatus(t('common.copied','已复制'));}});
+
+  /* ============ compare tab (merged from hash-comparison) ============ */
+  var tabGen=document.getElementById('tabGen'),tabCompare=document.getElementById('tabCompare');
+  var panelGen=document.getElementById('panelGen'),panelCompare=document.getElementById('panelCompare');
+  function switchTab(which){
+    if(which==='gen'){
+      tabGen.className='active';tabCompare.className='';
+      panelGen.style.display='';panelCompare.style.display='none';
+    }else{
+      tabCompare.className='active';tabGen.className='';
+      panelCompare.style.display='';panelGen.style.display='none';
+    }
+  }
+  tabGen.addEventListener('click',function(){switchTab('gen');});
+  tabCompare.addEventListener('click',function(){switchTab('compare');});
+
+  var cpText=document.getElementById('cpText'),cpHash=document.getElementById('cpHash');
+  var cpAlgo=document.getElementById('cpAlgo'),cpFmt=document.getElementById('cpFmt');
+  var rb=document.getElementById('resultBadge'),rd=document.getElementById('resultDetail');
+  var cpOutput=document.getElementById('cpOutput'),cpFi=document.getElementById('cpFileInput');
+
+  function cpDigest(data,isText){
+    if(cpAlgo.value==='MD5'){
+      if(isText)return Promise.resolve(md5(data));
+      var bin='';
+      var bytes=new Uint8Array(data);
+      for(var x=0;x<bytes.length;x++)bin+=String.fromCharCode(bytes[x]);
+      return Promise.resolve(md5(bin));
+    }
+    return crypto.subtle.digest(cpAlgo.value,data).then(function(buf){return cpFmt.value==='hex'?toHex(buf):toBase64(buf);});
+  }
+
+  function renderResult(computed){
+    var target=cpHash.value.trim().toLowerCase();
+    var match=computed.toLowerCase()===target;
+    rb.textContent=match?'MATCH ✓':'NO MATCH ✗';
+    rb.className='cp-badge '+(match?'match':'no-match');
+    rd.innerHTML='<span>'+t('cp.computed','计算值: ')+'</span><code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(computed)+'</code><br><span>'+t('cp.expected','期望值: ')+'</span><code style="font-family:var(--font-mono);font-size:12px;word-break:break-all;">'+htmlEscape(cpHash.value.trim())+'</code>';
+    cpOutput.textContent=computed;
+    setStatus(match?t('cp.match','匹配！'):t('cp.noMatch','不匹配'));
+  }
+
+  document.getElementById('compareBtn').addEventListener('click',function(){
+    var text=cpText.value.trim();
+    if(!text){setStatus(t('cp.enterText','请输入文本'),'error');return;}
+    if(!cpHash.value.trim()){setStatus(t('cp.enterHash','请输入待对比的哈希'),'error');return;}
+    if(!hasSubtle()&&cpAlgo.value!=='MD5'){setStatus(t('httpsRequired','当前环境不支持 Web Crypto（需 HTTPS/localhost）'),'error');return;}
+    cpDigest(new TextEncoder().encode(text),true).then(renderResult).catch(function(e){setStatus(t('cp.error','错误: ')+e.message,'error');});
+  });
+  document.getElementById('cpFileBtn').addEventListener('click',function(){cpFi.click();});
+  cpFi.addEventListener('change',function(){
+    if(!cpFi.files[0])return;
+    if(!cpHash.value.trim()){setStatus(t('cp.enterHash','请输入待对比的哈希'),'error');return;}
+    if(!hasSubtle()&&cpAlgo.value!=='MD5'){setStatus(t('httpsRequired','当前环境不支持 Web Crypto（需 HTTPS/localhost）'),'error');return;}
+    var reader=new FileReader();
+    reader.onload=function(e){cpDigest(e.target.result,false).then(renderResult).catch(function(err){setStatus(t('cp.error','错误: ')+err.message,'error');});};
+    reader.onerror=function(){setStatus(t('readFailed','文件读取失败'),'error');};
+    reader.readAsArrayBuffer(cpFi.files[0]);
+  });
+  document.getElementById('cpClearBtn').addEventListener('click',function(){
+    cpText.value='';cpHash.value='';cpOutput.textContent='';rd.innerHTML='';
+    rb.textContent=t('cp.waiting','等待');rb.className='cp-badge pending';
+    setStatus('');cpText.focus();cpFi.value='';
+  });
+  document.getElementById('cpCopyBtn').addEventListener('click',function(){if(cpOutput.textContent){copyToClipboard(cpOutput.textContent,this);setStatus(t('common.copied','已复制'));}});
 })();
 if(!isSecureContext()){var w=document.getElementById('httpsWarning');if(w)w.style.display='block';}
 </script></body></html>

@@ -6,6 +6,17 @@
   <title>MAC 地址生成器 - S-Jiffy</title>
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
   <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    .dc-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); }
+    .dc-tabs button { flex: 1; height: 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer; transition: all .15s; }
+    .dc-tabs button.active { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+    .mac-input-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .mac-input-row input { font-family: var(--font-mono); font-size: 16px; letter-spacing: 0.1em; }
+    .mac-result { display: flex; align-items: center; gap: 16px; padding: var(--space-2); }
+    .mac-vendor { font-size: 18px; font-weight: 600; }
+    .mac-oui { font-size: 12px; color: var(--color-text-disabled); }
+    .mac-empty { color: var(--color-text-disabled); text-align: center; padding: var(--space-4); }
+  </style>
 </head>
 <body>
   <header class="global-header">
@@ -13,29 +24,46 @@
   <select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn" data-i18n="common.back">← 返回</a></header>
   <main class="tool-workspace">
     <h1 data-i18n="h1">MAC 地址生成器</h1>
-    <p class="tool-desc" data-i18n="desc">生成随机 MAC 地址，支持自定义前缀、大小写和分隔符。</p>
-    <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">前缀</label>
-      <input id="prefixInput" class="input" type="text" value="" data-i18n-placeholder="ui.100" placeholder="留空随机" style="width:130px;">
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.separator">分隔符</label>
-      <select id="sepSelect" class="input" style="width:auto;min-width:70px;">
-        <option value=":">:</option>
-        <option value="-">-</option>
-        <option value="" data-i18n="ui.none">无</option>
-      </select>
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.2">大小写</label>
-      <select id="caseSelect" class="input" style="width:auto;min-width:70px;">
-        <option value="lower" data-i18n="ui.3">小写</option>
-        <option value="upper" data-i18n="ui.4">大写</option>
-      </select>
-      <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.quantity">数量</label>
-      <input id="countInput" class="input" type="number" value="1" min="1" max="100" style="width:110px;">
-      <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
-      <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+    <p class="tool-desc" data-i18n="desc">生成随机 MAC 地址（自定义前缀/大小写/分隔符），并可按 OUI 前缀查询厂商（152 条）。</p>
+    <div class="dc-tabs">
+      <button id="tabGen" class="active" type="button" data-i18n="ui.tabGen">生成</button>
+      <button id="tabLookup" type="button" data-i18n="ui.tabLookup">查询</button>
     </div>
-    <div class="output-box">
-      <span id="outputText" style="display:block;padding-right:60px;"></span>
-      <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
+    <div id="panelGen">
+      <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">前缀</label>
+        <input id="prefixInput" class="input" type="text" value="" data-i18n-placeholder="ui.100" placeholder="留空随机" style="width:130px;">
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.separator">分隔符</label>
+        <select id="sepSelect" class="input" style="width:auto;min-width:70px;">
+          <option value=":">:</option>
+          <option value="-">-</option>
+          <option value="" data-i18n="ui.none">无</option>
+        </select>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.2">大小写</label>
+        <select id="caseSelect" class="input" style="width:auto;min-width:70px;">
+          <option value="lower" data-i18n="ui.3">小写</option>
+          <option value="upper" data-i18n="ui.4">大写</option>
+        </select>
+        <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.quantity">数量</label>
+        <input id="countInput" class="input" type="number" value="1" min="1" max="100" style="width:110px;">
+        <button id="generateBtn" class="btn btn-primary" data-i18n="ui.generate">生成</button>
+        <button id="clearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+      </div>
+      <div class="output-box">
+        <span id="outputText" style="display:block;padding-right:60px;"></span>
+        <button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button>
+      </div>
+    </div>
+    <div id="panelLookup" style="display:none;">
+      <div class="card mac-input-row">
+        <input id="macInput" class="input js-focus-input" data-i18n-placeholder="lk.ph" placeholder="00:1B:44:11:22:33" style="width:260px; text-transform: uppercase;">
+        <button id="lookupBtn" class="btn btn-primary" data-i18n="lk.query">查询</button>
+        <button id="lkClearBtn" class="btn btn-secondary" data-i18n="ui.clear">清空</button>
+      </div>
+      <div class="output-box" id="outputArea" style="min-height:80px;">
+        <div id="resultArea" class="mac-empty" data-i18n="lk.hint">输入 MAC 地址即可查询</div>
+        <button class="copy-btn" id="lkCopyBtn" data-i18n="ui.copy">复制</button>
+      </div>
     </div>
   </main>
   <footer class="global-footer">
@@ -44,7 +72,11 @@
   </footer>
   <script src="../../assets/js/global.js"></script>
   <script src="../../assets/js/i18n.js"></script>
+  <script>
+    var OUI_DB = [["00:00:0C","Cisco Systems, Inc"],["00:01:42","Hewlett-Packard Company"],["00:01:5C","Canon Inc."],["00:02:6F","Dell Inc."],["00:03:47","Intel Corporate"],["00:04:AC","Fujitsu Limited"],["00:05:5D","Sony Corporation"],["00:07:E9","Cisco Systems, Inc"],["00:08:74","Motorola Mobility LLC"],["00:09:5B","Huawei Technologies Co., Ltd"],["00:0A:28","Samsung Electronics"],["00:0B:6B","Apple, Inc."],["00:0D:93","Apple, Inc."],["00:0E:35","TP-LINK Technologies Co., Ltd."],["00:0F:1F","Xerox Corporation"],["00:10:18","3Com Corporation"],["00:10:DB","Nortel Networks"],["00:11:24","ASUSTek COMPUTER INC."],["00:11:50","Microsoft Corporation"],["00:12:17","Linksys"],["00:12:3F","Broadcom Corporation"],["00:13:10","Netgear Inc."],["00:13:46","Lenovo Group Limited"],["00:14:22","Dell Inc."],["00:14:BF","Nintendo Co., Ltd."],["00:15:5D","Microsoft Corporation (Hyper-V)"],["00:16:3E","XenSource, Inc. (Xen)"],["00:17:31","Xiaomi Communications Co., Ltd."],["00:18:0A","ZTE Corporation"],["00:18:4D","Panasonic Corporation"],["00:19:5B","LG Electronics"],["00:1A:11","Google, Inc."],["00:1B:44","Cisco Systems, Inc"],["00:1C:10","Toshiba Corporation"],["00:1C:BF","Intel Corporate"],["00:1D:72","AMD"],["00:1E:58","Raspberry Pi Foundation"],["00:1E:68","Nokia Corporation"],["00:1F:16","Acer Incorporated"],["00:1F:29","Seiko Epson Corporation"],["00:20:ED","Mitsubishi Electric"],["00:21:5A","Roku, Inc."],["00:21:6C","HTC Corporation"],["00:22:15","Renesas Technology Corp."],["00:22:68","NVIDIA"],["00:22:75","Hon Hai Precision Ind. Co., Ltd. (Foxconn)"],["00:23:14","Wistron Corporation"],["00:23:8B","Aruba Networks"],["00:23:DF","Logitech, Inc."],["00:24:1C","Ralink Technology Corp."],["00:24:6C","Omron Corporation"],["00:24:81","D-Link International"],["00:25:36","Buffalo Inc."],["00:25:64","Giga-Byte Technology Co., Ltd."],["00:25:90","Zyxel Communications Corp."],["00:26:AB","Technicolor"],["00:26:BB","IBM Corporation"],["00:26:E1","MikroTik"],["00:27:10","Palo Alto Networks"],["00:50:56","VMware, Inc."],["00:50:79","VMware, Inc."],["00:0C:29","VMware, Inc."],["00:05:69","VMware, Inc."],["08:00:27","Oracle VirtualBox"],["08:00:46","Oracle/Sun"],["0A:00:27","Oracle VirtualBox"],["52:54:00","QEMU / Red Hat KVM"],["AC:DE:48","Privat"],["BC:AE:C5","Cisco Systems, Inc"],["C0:EA:E4","Intel Corporate"],["CC:46:D6","Cisco Systems, Inc"],["E0:55:3D","TP-LINK Technologies Co., Ltd."],["E0:5A:1B","TP-LINK Technologies Co., Ltd."],["F0:2F:74","Dell Inc."],["F4:5C:89","TP-LINK Technologies Co., Ltd."],["FC:AA:14","Xiaomi Communications Co., Ltd."],["00:0F:53","Texas Instruments"],["00:12:4B","Micro-Star International"],["00:1B:21","ASUS"],["00:23:54","Belkin International Inc."],["00:24:23","Samsung Electronics Co., Ltd."],["2C:54:91","Raspberry Pi Trading Ltd"],["B8:27:EB","Raspberry Pi Foundation"],["DC:A6:32","Raspberry Pi Foundation"],["E4:5F:01","Raspberry Pi Trading Ltd"],["00:0E:C6","Apache Mynewt / Orangepi"],["00:1F:C6","Cisco Systems, Inc"],["48:3F:DA","Huawei Technologies Co., Ltd"],["7C:DD:90","Hewlett-Packard Company"],["3C:5A:B4","Intel Corporate"],["10:A5:D0","Dell Inc."],["18:C0:4D","Microsoft Corporation (Xbox)"],["10:C5:95","Amazon Technologies Inc."],["A8:93:4A","Amazon Technologies Inc."],["AC:63:BE","Google, Inc."],["00:DB:DF","Ubiquiti Networks Inc."],["78:8C:B5","Ubiquiti Networks Inc."],["04:18:D6","Ubiquiti Inc."],["00:05:1C","Huawei Technologies Co., Ltd"],["00:25:9C","Huawei Technologies Co., Ltd"],["00:0A:E6","Nokia Danmark A/S"],["00:1A:7D","Nokia Corporation"],["00:19:97","ZTE Corporation"],["00:1D:D2","Lenovo Mobile Communication"],["00:23:76","OnePlus Tech (Shenzhen) Co., Ltd"],["00:26:5E","Apple, Inc."],["B0:65:BD","Google, Inc."],["18:FE:34","Google, Inc."],["60:92:17","Tecno Mobile Ltd"],["58:CB:52","Xiaomi Communications Co., Ltd."],["50:C7:BF","LG Electronics"],["34:A8:3E","Sony Mobile Communications"],["28:6C:07","Samsung Electronics Co., Ltd."],["38:59:F9","Samsung Electronics Co., Ltd."],["9C:FC:E8","Samsung Electronics Co., Ltd."],["00:0C:43","IBM Corp"],["28:D2:44","Cisco SPVTG"],["70:4C:A5","Cisco Systems, Inc"],["38:44:93","Realtek Semiconductor Corp."],["80:C5:F2","Toshiba Global Commerce Solutions"],["08:96:D7","Espressif Inc. (ESP32)"],["24:62:AB","Espressif Inc. (ESP8266)"],["10:06:1C","Espressif Inc."],["48:27:E2","Espressif Inc."],["5C:CF:7F","Espressif Inc."],["84:F3:EB","Espressif Inc."],["18:FE:34","Espressif Inc."],["C8:C9:A3","Hewlett-Packard Company"],["0C:9D:92","Apple, Inc."],["04:0E:3C","Intel Corporate"],["40:31:3C","Hon Hai Precision Ind."],["00:23:69","Mitsumi Electric Co., Ltd."],["70:5A:0F","Intel Corporate"],["D0:17:C2","Polk Audio"],["00:26:5D","Analog Devices Inc."],["00:1B:E4","Oki Electric Industry Co., Ltd."],["52:74:00","QEMU"],["52:74:01","QEMU"],["52:74:02","QEMU"],["52:74:03","QEMU"],["52:74:04","QEMU"],["52:74:05","QEMU"],["52:74:06","QEMU"],["52:74:07","QEMU"],["52:74:08","QEMU"],["52:74:09","QEMU"],["52:74:0A","QEMU"],["52:74:0B","QEMU"],["52:74:0C","QEMU"],["52:74:0D","QEMU"],["52:74:0E","QEMU"],["52:74:0F","QEMU"]];
+  </script>
   <script>(function(){
+    /* ============ generate tab (original) ============ */
     var prefixEl = document.getElementById('prefixInput');
     var sepEl = document.getElementById('sepSelect');
     var caseEl = document.getElementById('caseSelect');
@@ -75,6 +107,75 @@
     });
     document.getElementById('clearBtn').addEventListener('click', function() { outputEl.textContent = ''; setStatus(''); });
     document.getElementById('copyBtn').addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, this); setStatus(t('ui.copied','已复制')); } });
+
+    /* ============ lookup tab (merged from mac-address-lookup) ============ */
+    var tabGen = document.getElementById('tabGen'), tabLookup = document.getElementById('tabLookup');
+    var panelGen = document.getElementById('panelGen'), panelLookup = document.getElementById('panelLookup');
+    function switchTab(which) {
+      if (which === 'gen') {
+        tabGen.className = 'active'; tabLookup.className = '';
+        panelGen.style.display = ''; panelLookup.style.display = 'none';
+      } else {
+        tabLookup.className = 'active'; tabGen.className = '';
+        panelLookup.style.display = ''; panelGen.style.display = 'none';
+      }
+    }
+    tabGen.addEventListener('click', function () { switchTab('gen'); });
+    tabLookup.addEventListener('click', function () { switchTab('lookup'); });
+
+    var macInput = document.getElementById('macInput');
+    var resultEl = document.getElementById('resultArea');
+
+    function normalizeMac(s) {
+      s = s.toUpperCase().replace(/[^0-9A-F]/g, '');
+      if (s.length < 6) return null;
+      var parts = [];
+      for (var i = 0; i < s.length && i < 12; i += 2) {
+        parts.push(s.substring(i, i + 2));
+      }
+      return parts.join(':');
+    }
+
+    function lookupOui(normalized) {
+      var oui3 = normalized.substring(0, 8);
+      var oui6 = normalized.substring(0, 17);
+      for (var i = 0; i < OUI_DB.length; i++) {
+        if (OUI_DB[i][0] === oui6) return OUI_DB[i];
+      }
+      for (var j = 0; j < OUI_DB.length; j++) {
+        if (OUI_DB[j][0] === oui3) return OUI_DB[j];
+      }
+      return null;
+    }
+
+    document.getElementById('lookupBtn').addEventListener('click', function () {
+      var raw = macInput.value.trim();
+      if (!raw) { setStatus(t('lk.enterMac','请输入 MAC 地址'), 'error'); return; }
+      var normalized = normalizeMac(raw);
+      if (!normalized || normalized.length < 8) {
+        resultEl.innerHTML = '<div class="mac-empty">' + t('lk.invalid','无效的 MAC 地址格式') + '</div>';
+        setStatus(t('lk.formatError','格式错误'), 'error');
+        return;
+      }
+      var found = lookupOui(normalized);
+      if (found) {
+        resultEl.innerHTML = '<div class="mac-result"><div><div class="mac-vendor">' + htmlEscape(found[1]) + '</div><div class="mac-oui">OUI: ' + found[0] + t('lk.fullMac',' · 完整 MAC: ') + htmlEscape(normalized) + '</div></div></div>';
+        setStatus(t('lk.success','查询成功'));
+      } else {
+        resultEl.innerHTML = '<div class="mac-empty">' + t('lk.noFound','未找到厂商信息 (OUI: ') + htmlEscape(normalized.substring(0, 8)) + ')' + '</div>';
+        setStatus(t('lk.noVendor','未匹配到厂商'), 'error');
+      }
+    });
+
+    macInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('lookupBtn').click();
+    });
+
+    document.getElementById('lkClearBtn').addEventListener('click', function () { macInput.value = ''; resultEl.innerHTML = '<div class="mac-empty">' + t('lk.hint','输入 MAC 地址即可查询') + '</div>'; setStatus(''); macInput.focus(); });
+    document.getElementById('lkCopyBtn').addEventListener('click', function () {
+      var text = resultEl.textContent;
+      if (text && text.indexOf(t('lk.enterMac','输入 MAC')) === -1 && text.trim()) { copyToClipboard(text.trim(), this); setStatus(t('ui.copied','已复制')); }
+    });
   })();</script>
 </body>
 </html>

@@ -4,12 +4,14 @@
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="../../assets/css/global.css"><style>.jma-info{font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px}</style></head>
 <body>
 <header class="global-header"><a href="../../index.html" class="logo">S-Jiffy</a><select id="langSwitch" class="lang-switch" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁体中文（台灣）</option><option value="zh-HK">繁体中文（香港）</option><option value="es">Español</option><option value="ja">日本語</option></select><a href="../../index.html" class="back-btn">← 返回</a></header>
-<main class="tool-workspace"><h1 data-i18n="h1">JSON 高级压缩</h1><p class="tool-desc" data-i18n="desc">深度压缩 JSON：去除空格、缩短键名、替换值模式。</p>
+<main class="tool-workspace"><h1 data-i18n="h1">JSON 高级压缩</h1><p class="tool-desc" data-i18n="desc">深度压缩 JSON：去除空格、去除注释与尾随逗号、缩短键名并替换值模式，显示压缩前后大小对比。</p>
 <div class="card">
 <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
 <label style="font-size:var(--font-size-sm);color:var(--color-text-secondary);" data-i18n="ui.1">选项</label>
-<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenKeys"> 缩短键名</label>
-<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenVals"> 缩短值（true→!0, false→!1）</label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenKeys"> <span data-i18n="ui.7">缩短键名</span></label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="shortenVals"> <span data-i18n="ui.8">缩短值（true→!0, false→!1）</span></label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="stripComments"> <span data-i18n="ui.9">去除注释</span></label>
+<label style="font-size:var(--font-size-sm);cursor:pointer;"><input type="checkbox" id="stripTrailing"> <span data-i18n="ui.10">去除尾随逗号</span></label>
 </div>
 </div>
 <div class="card"><textarea id="inputText" class="input textarea js-focus-input" data-i18n-placeholder="ui.101" placeholder="输入 JSON..." style="min-height:150px;"></textarea></div>
@@ -30,10 +32,31 @@ var clearBtn=document.getElementById('clearBtn');
 var copyBtn=document.getElementById('copyBtn');
 var shortenKeys=document.getElementById('shortenKeys');
 var shortenVals=document.getElementById('shortenVals');
+var stripComments=document.getElementById('stripComments');
+var stripTrailing=document.getElementById('stripTrailing');
 var sizeInfo=document.getElementById('sizeInfo');
 var keyMap={};
 var keyIdx=0;
 function genShortKey(){var chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';var i=keyIdx++;if(i<52)return chars[i];return'k'+i;}
+function stripJsonComments(str){
+var out='',i=0,inStr=false,esc=false;
+while(i<str.length){
+var c=str[i];
+if(inStr){
+out+=c;
+if(esc){esc=false;}
+else if(c==='\\'){esc=true;}
+else if(c==='"'){inStr=false;}
+i++;
+}else{
+if(c==='"'){inStr=true;out+=c;i++;continue;}
+if(c==='/'&&str[i+1]==='/'){while(i<str.length&&str[i]!=='\n')i++;continue;}
+if(c==='/'&&str[i+1]==='*'){i+=2;while(i<str.length&&!(str[i]==='*'&&str[i+1]==='/'))i++;i+=2;continue;}
+out+=c;i++;
+}
+}
+return out;
+}
 function shorten(obj){
 if(Array.isArray(obj)){
 return obj.map(function(v){return shorten(v);});
@@ -54,19 +77,22 @@ else{result[nk]=shorten(v);}
 return result;
 }
 minifyBtn.addEventListener('click',function(){
-var t=inputEl.value.trim();
-if(!t){setStatus(t('ui.100','请输入 JSON'),'error');return;}
+var rawInput=inputEl.value.trim();
+if(!rawInput){setStatus(t('ui.100','请输入 JSON'),'error');return;}
 try{
-var parsed=JSON.parse(t);
+var raw=rawInput;
+if(stripComments.checked)raw=stripJsonComments(raw);
+if(stripTrailing.checked)raw=raw.replace(/,\s*([}\]])/g,'$1');
+var parsed=JSON.parse(raw);
 keyMap={};keyIdx=0;
 var data=shortenKeys.checked||shortenVals.checked?shorten(parsed):parsed;
 var minified=JSON.stringify(data);
 outputEl.textContent=minified;
-var origSize=t.length;
+var origSize=rawInput.length;
 var newSize=minified.length;
 var saved=origSize-newSize;
 var pct=origSize>0?((saved/origSize)*100).toFixed(1):0;
-sizeInfo.textContent = t('ui.6','原始 ')+origSize+ t('ui.5',' 字节 → 压缩后 ')+newSize+ t('ui.4',' 字节，节省 ')+saved+' 字节 ('+pct+'%)';
+sizeInfo.textContent = t('ui.6','原始 ')+origSize+ t('ui.5',' 字节 → 压缩后 ')+newSize+ t('ui.4',' 字节，节省 ')+saved+ t('ui.11',' 字节 (')+pct+'%)';
 setStatus('');
 }catch(e){
 setStatus(t('ui.3','JSON 格式错误: ') +e.message,'error');
@@ -74,5 +100,6 @@ setStatus(t('ui.3','JSON 格式错误: ') +e.message,'error');
 });
 clearBtn.addEventListener('click',function(){inputEl.value='';outputEl.textContent='';sizeInfo.textContent='';setStatus('');inputEl.focus();});
 copyBtn.addEventListener('click',function(){if(outputEl.textContent){copyToClipboard(outputEl.textContent,copyBtn);setStatus(t('ui.copied','已复制'));}});
+inputEl.addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter')minifyBtn.click();});
 })();
 </script></body></html>

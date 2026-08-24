@@ -17,6 +17,10 @@
     .dice-btn.dis { border-color:#e74c3c; }
     .dice-result { font-size:48px;font-weight:700;text-align:center;margin:var(--space-3) 0; }
     .dice-detail { font-size:14px;color:var(--color-text-secondary);text-align:center; }
+    .dice-area { display:flex; gap:var(--space-2); flex-wrap:wrap; justify-content:center; margin:var(--space-3) 0; min-height:64px; }
+    .die { width:56px;height:56px;border:2px solid var(--color-text-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;background:var(--color-bg);transition:transform 0.05s; }
+    .die.rolling { animation:diceRoll 0.3s ease-out; }
+    @keyframes diceRoll { 0%{transform:rotate(0deg) scale(1);} 25%{transform:rotate(90deg) scale(1.2);} 50%{transform:rotate(180deg) scale(1);} 75%{transform:rotate(270deg) scale(1.2);} 100%{transform:rotate(360deg) scale(1);} }
   </style>
 </head>
 <body>
@@ -26,7 +30,8 @@
     <p class="tool-desc" data-i18n="desc">龙与地下城全套骰子（D4-D100），支持优势/劣势投掷。</p>
     <div class="card">
       <div class="dd-row">
-        <div class="field"><label for="diceCount" data-i18n="ui.1">骰子数量</label><input id="diceCount" class="input" type="number" value="1" min="1" max="20"></div>
+        <div class="field"><label for="diceCount" data-i18n="ui.1">骰子数量</label><input id="diceCount" class="input" type="number" value="1" min="1" max="100"></div>
+        <div class="field"><label for="diceSides" data-i18n="ui.6">自定义面数</label><input id="diceSides" class="input" type="number" value="6" min="2" max="100"></div>
       </div>
       <div class="dice-btns">
         <button class="dice-btn" data-sides="4">D4</button>
@@ -38,9 +43,11 @@
         <button class="dice-btn" data-sides="100">D100</button>
         <button class="dice-btn adv" data-sides="20" data-adv="1" data-i18n="ui.2">D20 优势</button>
         <button class="dice-btn dis" data-sides="20" data-adv="-1" data-i18n="ui.3">D20 劣势</button>
+        <button id="rollCustomBtn" class="btn btn-primary" data-i18n="ui.7">掷骰</button>
       </div>
       <div class="dice-result" id="diceResult">-</div>
       <div class="dice-detail" id="diceDetail"></div>
+      <div class="dice-area" id="diceArea"></div>
     </div>
     <div class="output-box"><span id="outputText" style="display:block;padding-right:60px;"></span><button class="copy-btn" id="copyBtn" data-i18n="ui.copy">复制</button></div>
   </main>
@@ -49,8 +56,10 @@
   <script src="../../assets/js/i18n.js"></script>
   <script>(function(){
     var countEl = document.getElementById('diceCount');
+    var sidesEl = document.getElementById('diceSides');
     var diceResult = document.getElementById('diceResult');
     var diceDetail = document.getElementById('diceDetail');
+    var diceArea = document.getElementById('diceArea');
     var outputEl = document.getElementById('outputText');
     var copyBtn = document.getElementById('copyBtn');
 
@@ -60,13 +69,22 @@
       return (b[0] % sides) + 1;
     }
 
-    var btnHandler = function() {
-      var sides = parseInt(this.getAttribute('data-sides'), 10);
-      var adv = parseInt(this.getAttribute('data-adv'), 10) || 0;
-      var count = parseInt(countEl.value, 10) || 1;
-      if (count < 1) count = 1;
-      if (count > 20) count = 20;
+    function renderDice(results) {
+      diceArea.innerHTML = '';
+      for (var i = 0; i < results.length; i++) {
+        var die = document.createElement('div');
+        die.className = 'die rolling';
+        die.textContent = results[i];
+        diceArea.appendChild(die);
+        (function(el) { setTimeout(function() { el.classList.remove('rolling'); }, 300); })(die);
+      }
+    }
 
+    function roll(sides, count, adv) {
+      if (count < 1) count = 1;
+      if (count > 100) count = 100;
+      if (sides < 2) sides = 2;
+      if (sides > 100) sides = 100;
       if (adv !== 0) count = 1;
       var allRolls = [];
       for (var i = 0; i < count; i++) {
@@ -85,12 +103,23 @@
       diceResult.textContent = sum;
       var label = adv > 0 ? t('ui.adv','(优势) ') : adv < 0 ? t('ui.disadv','(劣势) ') : '';
       diceDetail.textContent = label + allRolls.join('\n');
-      outputEl.textContent = 'D' + sides + ': ' + allRolls.join(', ') + t('ui.5',' | 总和: ') + sum;
+      renderDice(allRolls);
+      outputEl.textContent = 'D' + sides + ': ' + allRolls.join(', ') + t('ui.5',' | 总和: ') + sum + t('ui.avg',' | 平均: ') + (sum / allRolls.length).toFixed(1);
       setStatus(t('ui.4','已掷骰'));
+    }
+
+    var btnHandler = function() {
+      var sides = parseInt(this.getAttribute('data-sides'), 10);
+      var adv = parseInt(this.getAttribute('data-adv'), 10) || 0;
+      roll(sides, parseInt(countEl.value, 10) || 1, adv);
     };
 
     var btns = document.querySelectorAll('.dice-btn');
     for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', btnHandler);
+
+    document.getElementById('rollCustomBtn').addEventListener('click', function() {
+      roll(parseInt(sidesEl.value, 10) || 6, parseInt(countEl.value, 10) || 1, 0);
+    });
 
     copyBtn.addEventListener('click', function() { if (outputEl.textContent) { copyToClipboard(outputEl.textContent, copyBtn); setStatus(t('ui.copied','已复制')); } });
   })();</script>

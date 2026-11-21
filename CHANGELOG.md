@@ -22,7 +22,7 @@
 - **跨域失败提示误导** — `cors-checker` / `security-headers` / `sri-generator` / `api-tester` / `clickjack-test` 在 CSP 白名单外的目标上失败时，明确说明是本站 CSP 或 CORS 限制，不再笼统归因
 - **`server.js` 免等价与安全隐患** — 不发 CSP（本地与线上不同）；`listen(0.0.0.0)` 暴露局域网；启动时按 `.server.pid` 盲杀 PID（PID 复用会误杀无关进程）；`gzipCache` 无上限；304 分支缺 `Cache-Control`。改为：发同一份 CSP、默认只听 127.0.0.1（`HOST`/`PORT` 可覆盖）、校验命令行后才终止进程、64 项 LRU、304 前设置缓存头
 - **主页 CLS 0.21（4x CPU + slow3g）** — 分区标签样式由行内脚本在末尾注入 `<style>`，首屏先按默认按钮排版再变小胶囊导致整页重排；改为静态 CSS，并给工具网格预留高度、卡片改用 `DocumentFragment` 一次插入。CLS → 0.061
-- **次要文字对比度不足** — `--color-text-secondary` `#787774`（白底 4.48:1、软底 4.14:1）改为 `#6B6A66`（5.41:1 / 5.01:1）
+- **次要文字对比度不足** — `--color-text-secondary` `#787774`（白底 4.48:1、软底 4.14:1）改为 `#6B6A66`（5.41:1 / 5.01:1）；footer 与历史徽标原用 `--color-text-disabled`（`#AAAAAA`，2.32:1）改为次要文字色，axe 的 color-contrast 违规从 6 个节点降为 0
 - **结果状态不可朗读** — 549 页共享的 `.tool-status` 无 `role`/`aria-live`；由 `global.js` 统一注入 `role="status" aria-live="polite" aria-atomic="true"`
 - **SEO 缺静态元数据** — 静态 `<meta name="description">` 仅 2/549、无 canonical、无 sitemap/robots/404；由 `scripts/gen-meta.js` 为 550 个页面写入 description/canonical/og，并生成 `sitemap.xml`、`robots.txt`、`404.html`
 - **部署配置只有 Netlify** — 新增 `_headers`、`_redirects`、`vercel.json`，四份配置与本地服务器统一由 `scripts/lib/deploy-config.js` 生成，135 组 301 与安全头在四个平台一致

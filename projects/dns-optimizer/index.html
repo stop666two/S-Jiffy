@@ -450,8 +450,9 @@ function runIpTest(){
       var bestIp = ok.length ? ok[0].ip : null;
       /* 渲染顺序按握手耗时升序，失败的排在最后，与表格「先快后慢」一致 */
       results.sort(function(a,b){
-        var av = (a.kind === 'ok' && a.median != null) ? a.median : 1e9;
-        var bv = (b.kind === 'ok' && b.median != null) ? b.median : 1e9;
+        /* 只要测到了耗时（可连接或握手后失败）就参与排序；纯超时的排最后 */
+        var av = a.median != null ? a.median : 1e9;
+        var bv = b.median != null ? b.median : 1e9;
         return av - bv;
       });
       ipBody.innerHTML = results.map(function(r){

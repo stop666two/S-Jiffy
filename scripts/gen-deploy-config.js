@@ -65,11 +65,6 @@ function genNetlify() {
   out.push('[[headers]]');
   out.push('  for = "/assets/*"');
   out.push('  [headers.values]');
-  out.push('    Cache-Control = "' + cfg.CACHE_RULES[1].value + '"');
-  out.push('');
-  out.push('[[headers]]');
-  out.push('  for = "/assets/i18n/*"');
-  out.push('  [headers.values]');
   out.push('    Cache-Control = "' + cfg.CACHE_RULES[0].value + '"');
   out.push('');
   return out.join('\n');
@@ -86,9 +81,6 @@ function genHeaders() {
   // 注意：这里刻意不写按路径放宽的 CSP。Cloudflare Pages 会把同名头拼接，两个 CSP 同时
   // 生效（取交集），放宽完全无效；若某页需要 'unsafe-eval'，Pages 上只能整站放宽。
   out.push('/assets/*');
-  out.push('  Cache-Control: ' + cfg.CACHE_RULES[1].value);
-  out.push('');
-  out.push('/assets/i18n/*');
   out.push('  Cache-Control: ' + cfg.CACHE_RULES[0].value);
   out.push('');
   return out.join('\n');
@@ -125,8 +117,7 @@ function genVercel() {
       return list;
     })().concat([
       { source: '/(.*)', headers: headerPairs('no-cache').map(function (kv) { return { key: kv[0], value: kv[1] }; }) },
-      { source: '/assets/i18n/(.*)', headers: [{ key: 'Cache-Control', value: cfg.CACHE_RULES[0].value }] },
-      { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: cfg.CACHE_RULES[1].value }] }
+      { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: cfg.CACHE_RULES[0].value }] }
     ])
   };
   return JSON.stringify(json, null, 2) + '\n';

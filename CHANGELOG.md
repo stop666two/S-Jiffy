@@ -4,6 +4,27 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-11-21] DNS 优选：融入 DNS Pick 的评测模型（多域名 / 成功率 / 综合评分）
+
+评审开源项目 [DNS Pick](https://github.com/palemoky/dnspick)（MIT）后，把浏览器里能落地的部分整体搬过来。
+
+### Added
+
+- **多域名 × 多次采样**：内置国内外站点集（取自 DNS Pick 的内置清单，去重后取子集控制请求量），可选「国内 3 + 国外 3 / 仅国内 5 / 仅国外 5 / 自定义域名」；每家解析器对每个域名查询 2 次
+- **合成评分**：`评分 =（1 / 平均延迟秒）× 成功率²`，与 DNS Pick 同一公式——成功率取平方，避免「延迟很低但时常失败」的解析器排到最前；评分只用于同一次测试内部排序
+- **预热与不可达短路**：每家先做 1 次预热（不计入结果），连续 5 次失败即判定不可达并跳过剩余请求，避免一条死链把整轮拖到超时
+- **Top 3 推荐**：只从成功率 ≥ 98% 的解析器里选，最多 3 个，与 DNS Pick 的推荐口径一致
+- **结论分级**：输入你当前使用的 DNS（可选）后给出 `best / good_enough / switch / all_failed` 四态结论，判据同样沿用 15 ms 延迟差与 5% 成功率差；不在清单内的 DNS 会明确说明「浏览器无法测量」
+- **JSON 输出**：新增「复制 JSON」按钮，字段对齐 DNS Pick 的 `--json` 结构（schema / domains / results[avg_latency_ms, success_rate, score] / recommendation.top / verdict）
+- 解析器扩到 9 家：新增 OneDNS（`doh.onedns.net`，实测可达）
+
+### 浏览器内无法实现，已在页面与文档说明
+
+- **UDP(53) / DoT(853) / DoH3(QUIC) 三种传输**：浏览器没有裸 socket，只能走 DoH over HTTP(S)
+- **读取系统当前 DNS**：浏览器无此 API，只能由用户手填或由本地程序读取
+- **连接复用与微秒级计时**：`fetch` 无法复用底层连接，计时精度受限于 Performance API，因此绝对数值不可与其他工具横向比较
+- **RFC 8484 二进制报文**：GET `?dns=` 形式需要读响应体，同样受 CORS 约束；实测各可达解析器都提供 JSON 接口，故未引入自写 DNS 报文编解码，减少出错面
+
 ## [2026-11-21] DNS 优选：扩展到 8 家全部可用，修复复制只给一部分
 
 ### Fixed

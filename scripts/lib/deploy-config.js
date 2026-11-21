@@ -9,9 +9,12 @@
 // 是拼接而非覆盖，无法只给这一页放宽（两个策略同时生效取交集），因此全站开放。
 // 代价：一旦出现字符串注入型 XSS，攻击者可直接执行代码；本仓库的 DOM 写入已统一走
 // htmlEscape / textContent，未引入用户可控的 eval 入口。
+// connect-src / img-src 含 https:（任意 https）：DNS 优选工具需要向任意 IP 发 HTTPS 探测来比较
+// 握手耗时，并访问不在白名单里的 DoH 服务商（doh.pub / doh.360.cn / quad9 / adguard）。
+// 代价：CSP 不再能阻止把数据外传到任意 https 主机；本仓库无用户凭据、无后端，风险面有限。
 // img-src / media-src 必须含 blob:：34 个工具页用 URL.createObjectURL 做本地预览
 // （图片缩放/裁剪/水印、音频合并、视频裁剪、PDF 工具等），没有 blob: 预览会全部被拦。
-var CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://api.ipify.org https://ip-api.com https://ipinfo.io https://ipapi.co https://dns.google https://huggingface.co https://modelscope.cn https://cdn.jsdelivr.net https://open.er-api.com https://frankfurter.app https://api.frankfurter.app https://ipleak.net https://*.browserleaks.net; frame-src https:; img-src 'self' data: blob: https://www.gravatar.com; media-src 'self' blob:; upgrade-insecure-requests";
+var CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https: https://api.ipify.org https://ip-api.com https://ipinfo.io https://ipapi.co https://dns.google https://huggingface.co https://modelscope.cn https://cdn.jsdelivr.net https://open.er-api.com https://frankfurter.app https://api.frankfurter.app https://ipleak.net https://*.browserleaks.net; frame-src https:; img-src 'self' data: blob: https:; media-src 'self' blob:; upgrade-insecure-requests";
 
 // 所有环境共用的安全响应头（不含 CSP，单独给出以便其他平台复用）。
 var SECURITY_HEADERS = {

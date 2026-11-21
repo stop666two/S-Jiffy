@@ -4,6 +4,23 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-11-21] 新增 DNS 优选工具（550 个工具 / 37 类）
+
+### Added
+
+- **新增工具 DNS 优选**（`projects/dns-optimizer/`）：
+  - **解析器测速**：内置 7 家公共 DNS（阿里 AliDNS、腾讯 DNSPod、360 安全DNS、Cloudflare、Google、Quad9、AdGuard），每家实测 5 次取中位数并排序，标出最快的一家，一键复制「DNS IP + DoH 地址」
+  - **IP 优选**：按域名解析出 IPv4 后，对每个 IP 实测 TCP+TLS 握手下界并排序（浏览器能力边界见页面说明，不代表下载速度）
+  - 失败分级：区分「跨域被拒 / 网络不可达 / 超时 / HTTP 错误 / NXDOMAIN / SERVFAIL」，不把「读不到」当成「正常」
+  - 三家接口返回 CORS 头（阿里、Cloudflare、Google）可读到解析结果；其余四家标注「仅延迟（跨域限制）」
+  - 六语言界面、键盘可达、`axe` 违规 0、离线时立即给出「当前处于离线状态」而不是伪造 2ms 的正常值
+- 新增分类 **网络测速**（第 37 类），首页卡片、搜索、sitemap、canonical、描述同步生成
+
+### Changed
+
+- **CSP 放开 `https:`**：`connect-src` 与 `img-src` 增加任意 `https`（工具需要访问不在白名单里的 DoH 服务商，并向任意 IP 发起握手探测）。代价：CSP 不再能阻止把数据外传到任意 https 主机；本仓库无用户凭据、无后端，风险面有限。已做负例验证：回退该放宽后工具 7 家全部「网络不可达」并产生 10 条 CSP 违规
+- 探针从 `<img>` 改为 `fetch(mode:'no-cors')`：`img` 的 `onerror` 无法区分「收到响应」与「网络断开」，离线时会produce 出 2ms 的假正常值
+
 ## [2026-11-21] 全量审查：修复 6 类系统性缺陷并补齐自动化门禁
 
 对 549 个工具页做了逐页真实浏览器加载 + 点击扫描、CSP 复测、i18n/注册表/跳转表机器对账，修复以下缺陷。

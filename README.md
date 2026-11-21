@@ -44,7 +44,8 @@ GitHub Pages 不支持自定义响应头与跳转规则，部署到该平台时 
 **当前生产环境是 Cloudflare Pages（`https://s-jiffy.pages.dev`），`_headers` 才是生效的配置**（`netlify.toml` 只在该平台部署时使用）。Pages 对同名响应头是「拼接」而不是「覆盖」，这带来两个必须遵守的约束：
 
 - **不要给 `/*` 设 `Cache-Control`** —— 会与 `/assets/*` 的值拼接，`no-cache` 会把缓存策略吃掉。缓存头只写在具体路径上。
-- **不支持按路径放宽 CSP** —— 两个 `Content-Security-Policy` 头会同时生效（取交集），所以 `_headers` 只下发全站那一份。`/projects/image-converter/` 的 HEIC 解码依赖 `'unsafe-eval'`，在 Pages 上会被拦下并给出明确提示；本地服务器、Netlify、Vercel 支持按路径覆盖，该功能可用。
+- **不支持按路径放宽 CSP** —— 两个 `Content-Security-Policy` 头会同时生效（取交集），所以 `_headers` 只下发全站那一份。全站 CSP 因此显式包含 `'unsafe-eval'`：`image-converter` 的 HEIC 解码器（heic2any / libheif 的 emscripten 产物）初始化时必须动态生成胶水代码。代价是字符串注入型 XSS 可直接执行代码，本仓库的 DOM 写入已统一走 `htmlEscape` / `textContent`，且没有用户可控的 eval 入口。
+- **`img-src` / `media-src` 必须含 `blob:`** —— 34 个工具页用 `URL.createObjectURL()` 做本地预览（图片缩放/裁剪/水印、音频合并、视频裁剪等），去掉 `blob:` 会让所有本地预览失效。
 
 
 ## 🚀 本地运行

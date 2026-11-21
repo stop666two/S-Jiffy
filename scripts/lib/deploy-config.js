@@ -4,28 +4,14 @@
 // 改配置只改这里，然后跑 `node scripts/gen-deploy-config.js` 重新生成四份产物。
 
 // 与生产一致的内容安全策略：本地服务器发送同一份 CSP，避免本地能跑、线上被拦。
-var CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://api.ipify.org https://ip-api.com https://ipinfo.io https://ipapi.co https://dns.google https://huggingface.co https://modelscope.cn https://cdn.jsdelivr.net https://open.er-api.com https://frankfurter.app https://api.frankfurter.app https://ipleak.net https://*.browserleaks.net; frame-src https:; img-src 'self' data: https://www.gravatar.com; upgrade-insecure-requests";
-
-/**
- * 按路径放宽的 CSP：只给确有必要的一页，不放松全站。
- * image-converter 懒加载 heic2any（emscripten 版 libheif），它在初始化时会用
- * new Function 创建胶水代码，被 script-src 拦下后 HEIC 转换完全不可用。
- * 单独给这一页加 'unsafe-eval'，其余页面仍保持收紧策略。
- */
-var PATH_CSP = [
-  {
-    match: '/projects/image-converter/',
-    csp: CSP.replace("script-src 'self' 'unsafe-inline'", "script-src 'self' 'unsafe-inline' 'unsafe-eval'")
-  }
-];
-
-/** 按 URL 路径取应下发的 CSP（无匹配则用全站默认值）。 */
-function cspForPath(urlPath) {
-  for (var i = 0; i < PATH_CSP.length; i++) {
-    if (urlPath.indexOf(PATH_CSP[i].match) === 0) return PATH_CSP[i].csp;
-  }
-  return CSP;
-}
+// script-src 含 'unsafe-eval'：image-converter 的 HEIC 解码器（heic2any，libheif 的
+// emscripten 产物）在初始化时用 new Function 生成胶水代码。Cloudflare Pages 对同名响应头
+// 是拼接而非覆盖，无法只给这一页放宽（两个策略同时生效取交集），因此全站开放。
+// 代价：一旦出现字符串注入型 XSS，攻击者可直接执行代码；本仓库的 DOM 写入已统一走
+// htmlEscape / textContent，未引入用户可控的 eval 入口。
+// img-src / media-src 必须含 blob:：34 个工具页用 URL.createObjectURL 做本地预览
+// （图片缩放/裁剪/水印、音频合并、视频裁剪、PDF 工具等），没有 blob: 预览会全部被拦。
+var CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://api.ipify.org https://ip-api.com https://ipinfo.io https://ipapi.co https://dns.google https://huggingface.co https://modelscope.cn https://cdn.jsdelivr.net https://open.er-api.com https://frankfurter.app https://api.frankfurter.app https://ipleak.net https://*.browserleaks.net; frame-src https:; img-src 'self' data: blob: https://www.gravatar.com; media-src 'self' blob:; upgrade-insecure-requests";
 
 // 所有环境共用的安全响应头（不含 CSP，单独给出以便其他平台复用）。
 var SECURITY_HEADERS = {
@@ -184,8 +170,6 @@ var REDIRECTS = [
 
 module.exports = {
   CSP: CSP,
-  PATH_CSP: PATH_CSP,
-  cspForPath: cspForPath,
   SECURITY_HEADERS: SECURITY_HEADERS,
   CACHE_RULES: CACHE_RULES,
   REDIRECTS: REDIRECTS

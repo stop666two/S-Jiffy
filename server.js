@@ -107,20 +107,17 @@ function cacheControlFor(posixPath) {
   return 'no-cache';
 }
 
-/**
- * 公共响应头：安全头 + CSP，所有状态码（含 301/304/404）都必须带上。
- * 输入：urlPath —— 请求路径（用于取该路径对应的 CSP，个别页面允许更宽的策略）。
- */
-function commonHeaders(urlPath) {
+/** 公共响应头：安全头 + CSP，所有状态码（含 301/304/404）都必须带上（与生产同一份 CSP）。 */
+function commonHeaders() {
   var h = { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'no-referrer' };
-  h['Content-Security-Policy'] = deploy.cspForPath(urlPath || '/');
+  h['Content-Security-Policy'] = deploy.CSP;
   return h;
 }
 
-function serveFile(res, urlPath, filePath, stats, data, clientETag, clientGzip) {
+function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
   var ext = path.extname(filePath);
   var posixPath = filePath.split(path.sep).join('/');
-  var headers = commonHeaders(urlPath);
+  var headers = commonHeaders();
   headers['Content-Type'] = mime[ext] || 'application/octet-stream';
   headers['Cache-Control'] = cacheControlFor(posixPath);
   var etag = '"' + crypto.createHash('md5').update(data).digest('hex') + '"';
@@ -166,14 +163,14 @@ http.createServer(function (req, res) {
   try {
     url = decodeURIComponent(rawUrl);
   } catch (e) {
-    res.writeHead(400, commonHeaders(url));
+    res.writeHead(400, commonHeaders());
     res.end('400 Bad Request');
     return;
   }
   if (url === '/') url = '/index.html';
 
   if (redirects[url]) {
-    var rh = commonHeaders(url);
+    var rh = commonHeaders();
     rh['Location'] = redirects[url];
     res.writeHead(301, rh);
     res.end();
@@ -183,7 +180,7 @@ http.createServer(function (req, res) {
   var filePath = path.resolve(__dirname, '.' + url);
 
   if (filePath !== __dirname && filePath.indexOf(__dirname + path.sep) !== 0) {
-    res.writeHead(403, commonHeaders(url));
+    res.writeHead(403, commonHeaders());
     res.end('403 Forbidden');
     return;
   }
@@ -192,11 +189,11 @@ http.createServer(function (req, res) {
     if (!err && stats.isDirectory()) filePath = path.join(filePath, 'index.html');
     fs.readFile(filePath, function (err2, data) {
       if (err2) {
-        res.writeHead(404, commonHeaders(url));
+        res.writeHead(404, commonHeaders());
         res.end('<!DOCTYPE html><meta charset="utf-8"><title>404 - S-Jiffy</title><body style="font-family:monospace;padding:2em"><h1>404</h1><a href="/" style="color:#111">返回首页</a></body>');
         return;
       }
-      serveFile(res, url, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
+      serveFile(res, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
     });
   });
 }).listen(port, host, function () {

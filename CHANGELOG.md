@@ -31,6 +31,7 @@
 ### Changed
 
 - **数据单一来源** — `index.html` 的 `tools` 数组成为工具名称/描述唯一来源；`gen-home-i18n.js` 由注册表生成六语言 `home.json`（中文值直接写入，消除 1 个名称 + 11 个描述漂移），非中文保留译文
+- **CSP 全站开放 `'unsafe-eval'` 并补 `blob:`** —— Pages 无法按路径覆盖响应头，`image-converter` 的 HEIC 解码（heic2any/libheif，初始化用 `new Function`）只能靠全站放宽；同时实测发现 `img-src` 缺 `blob:` 会让 34 个工具页的本地预览（`URL.createObjectURL`）全部被拦，已补 `img-src 'self' data: blob:` 与 `media-src 'self' blob:`。实测：718 KB 的 HEIC 样本在本地与线上均成功转成 2.2 MB PNG，0 CSP 违规
 - **修正 Cloudflare Pages 的同名头拼接问题** — 实测 Pages 对同名响应头是拼接而非覆盖：`/*` 的 `Cache-Control: no-cache` 与 `/assets/*` 的值被拼成 `no-cache, public, max-age=3600, …`，缓存策略实际失效；按路径放宽的 CSP 会变成两个同时生效的策略（取交集），放宽完全无效。`_headers` 因此不再给 `/*` 设 `Cache-Control`，也不再下发按路径放宽的 CSP；本地服务器 / Netlify / Vercel 仍保留按路径覆盖（HEIC 转换可用），Pages 上该功能被拦并给出明确提示
 - **缓存规则收敛为单条** — `/assets/*` 与 `/assets/i18n/*` 两条重叠规则在 Pages 上会被拼成两个 `Cache-Control` 值，含义不确定；统一为 `/assets/*` = `max-age=300, stale-while-revalidate=86400`（assets 无内容哈希，5 分钟 + 后台刷新兼顾新鲜度）
 - **缓存策略按实际平台修正** — 生产是 Cloudflare Pages（实测响应里没有任何 CSP / X-Frame-Options，`netlify.toml` 从未生效）。`_headers` 因此成为主配置；`/assets/*` 无内容哈希，TTL 由 24 小时压到 1 小时并允许后台刷新（`stale-while-revalidate=86400`），避免发版后新旧资源不匹配；i18n 词典 5 分钟

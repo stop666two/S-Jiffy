@@ -37,7 +37,8 @@ var SECURITY_HEADERS = {
 // 缓存策略：页面不缓存（发版即生效），assets 缓存一天，i18n 词典短期缓存并允许后台刷新。
 var CACHE_RULES = [
   { match: '/assets/i18n/', value: 'public, max-age=300, stale-while-revalidate=86400' },
-  { match: '/assets/', value: 'public, max-age=86400' },
+  // assets 没有内容哈希，改文件后旧缓存会与新页面不匹配：TTL 压到 1 小时并允许后台刷新
+  { match: '/assets/', value: 'public, max-age=3600, stale-while-revalidate=86400' },
   { match: '/', value: 'no-cache' }
 ];
 

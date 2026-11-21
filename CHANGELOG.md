@@ -31,6 +31,7 @@
 ### Changed
 
 - **数据单一来源** — `index.html` 的 `tools` 数组成为工具名称/描述唯一来源；`gen-home-i18n.js` 由注册表生成六语言 `home.json`（中文值直接写入，消除 1 个名称 + 11 个描述漂移），非中文保留译文
+- **缓存策略按实际平台修正** — 生产是 Cloudflare Pages（实测响应里没有任何 CSP / X-Frame-Options，`netlify.toml` 从未生效）。`_headers` 因此成为主配置；`/assets/*` 无内容哈希，TTL 由 24 小时压到 1 小时并允许后台刷新（`stale-while-revalidate=86400`），避免发版后新旧资源不匹配；i18n 词典 5 分钟
 - **站点源集中到一处** — `SITE_ORIGIN` 定为 `https://s-jiffy.pages.dev`（实际生产为 Cloudflare Pages），canonical/og:url/sitemap/robots 全部由 `scripts/gen-meta.js` 按此生成
 - **删除 816 个孤儿词典** — 136 个已合并工具的词典 × 6 语言；同时清理 1731 个页面词典里与 `common.json` 重复的 `common.footer`
 - **QR 库去重** — `qr-code-generator` 从 `qrcodejs.min.js` 迁到 `qrcode.js`（含 UTF-8 编码修正，中文二维码可被正确识别），删除 `qrcodejs.min.js`

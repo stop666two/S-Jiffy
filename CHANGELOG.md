@@ -4,6 +4,19 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-11-21] DNS 优选：扩展到 8 家全部可用，修复复制只给一部分
+
+### Fixed
+
+- **复制只得到一行推荐**：`复制` 只输出「推荐 DNS / IPv4 / DoH」三行，看起来像被截断。改为输出完整报告——域名、最快项、推荐 IP、DoH 地址，外加全部解析器的制表符分隔表格（名称/地区/延迟/状态/解析结果）；IP 页签同理输出全部 IP 行
+- **非 HTTPS 源上复制按钮完全失效**（影响全站 550 个工具）：`global.js` 的 `copyToClipboard` 直接调用 `navigator.clipboard`，在 http 源上该对象为 `undefined`，会抛 `TypeError` 且连 `catch` 都进不去。改为三级策略：Clipboard API → 隐藏 textarea + `execCommand('copy')` 兜底 → 明确失败提示
+
+### Changed
+
+- **解析器从 7 家扩到 8 家且全部可用**：按「IP 形式的 DoH 接口」逐个实测后替换接口地址——Quad9 用 `9.9.9.9`（原 `dns.quad9.net` 被网络层拦）、AdGuard 用 `94.140.14.14/resolve`（原域名被拦），新增 OpenDNS `208.67.222.222`。每家再配 1–2 个备用接口，主接口不可达时自动切换，避免出现「整片网络不可达」
+- 实测（本地/线上一致）：阿里 30 ms、360 38 ms、DNSPod 49 ms、Cloudflare 128 ms、AdGuard 133 ms、Google 135 ms、Quad9 187 ms、OpenDNS 282 ms，8/8 可用、0 CSP 违规
+- 未能接入的公共 DoH（ControlD、NextDNS、Neustar、CleanBrowsing、114DNS）在本网络实测不可达，故不列入
+
 ## [2026-11-21] 新增 DNS 优选工具（550 个工具 / 37 类）
 
 ### Added

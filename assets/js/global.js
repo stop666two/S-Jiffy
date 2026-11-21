@@ -64,8 +64,14 @@ function isSecureContext() {
   return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 }
 
+/*
+ * 复制文本到剪贴板。
+ * 三级策略：Clipboard API → execCommand 兜底 → 明确失败提示。
+ * 为什么要兜底：非 HTTPS 且非 localhost 的页面上 navigator.clipboard 为 undefined，
+ * 直接调用会抛 TypeError（连 catch 都进不去），复制按钮等于完全不可用。
+ */
 function copyToClipboard(text, buttonEl) {
-  navigator.clipboard.writeText(text).then(() => {
+  function flash() {
     var originalText = buttonEl.textContent;
     buttonEl.textContent = t('common.copied', '已复制');
     buttonEl.disabled = true;
@@ -73,9 +79,35 @@ function copyToClipboard(text, buttonEl) {
       buttonEl.textContent = originalText;
       buttonEl.disabled = false;
     }, 2000);
-  }).catch(() => {
+  }
+  function legacyCopy() {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.top = '-1000px';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    var ok = false;
+    try {
+      area.select();
+      ok = document.execCommand('copy');
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(area);
+    return ok;
+  }
+  function fail() {
     setStatus(t('common.copyFailed', '复制失败'), 'error');
-  });
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(function () {
+      if (legacyCopy()) flash(); else fail();
+    });
+    return;
+  }
+  if (legacyCopy()) flash(); else fail();
 }
 
 /* 状态栏是唯一会被脚本反复写入的「结果反馈」区域，必须能被读屏软件播报：

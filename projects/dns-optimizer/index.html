@@ -80,15 +80,36 @@ var PROBE_TIMEOUT = 5000;
 var CONCURRENCY = 3;
 var MAX_IPS = 8;
 
-/* 解析器清单：mode=fetch 表示接口返回 CORS 头、能读到解析结果；mode=probe 表示只能测延迟。 */
+/*
+ * 解析器清单。json 是该解析器的 DoH JSON 接口候选（按可达性优先，IP 形式在前：
+ * 主机名常被网络层拦掉，IP 形式的证书同样覆盖该地址，成功率更高）。
+ * mode=checks 表示接口带 CORS 头、能读到解析结果；mode=probe 表示只能测延迟。
+ */
 var RESOLVERS = [
-  { id:'alidns', name:'阿里 AliDNS', ip:'223.5.5.5', doh:'https://dns.alidns.com/dns-query', json:'https://dns.alidns.com/resolve', mode:'fetch', region:'cn' },
-  { id:'dnspod', name:'腾讯 DNSPod', ip:'119.29.29.29', doh:'https://doh.pub/dns-query', json:'https://doh.pub/dns-query', mode:'probe', region:'cn' },
-  { id:'dns360', name:'360 安全DNS', ip:'101.226.4.6', doh:'https://doh.360.cn/dns-query', json:'https://doh.360.cn/resolve', mode:'probe', region:'cn' },
-  { id:'cloudflare', name:'Cloudflare', ip:'1.1.1.1', doh:'https://1.1.1.1/dns-query', json:'https://1.1.1.1/dns-query', mode:'fetch', region:'intl' },
-  { id:'google', name:'Google', ip:'8.8.8.8', doh:'https://8.8.8.8/dns-query', json:'https://8.8.8.8/resolve', mode:'fetch', region:'intl' },
-  { id:'quad9', name:'Quad9', ip:'9.9.9.9', doh:'https://dns.quad9.net/dns-query', json:'https://dns.quad9.net/dns-query', mode:'probe', region:'intl' },
-  { id:'adguard', name:'AdGuard', ip:'94.140.14.14', doh:'https://dns.adguard-dns.com/dns-query', json:'https://dns.adguard-dns.com/dns-query', mode:'probe', region:'intl' }
+  { id:'alidns', name:'阿里 AliDNS', region:'cn', mode:'fetch',
+    ips:['223.5.5.5','223.6.6.6'], doh:'https://dns.alidns.com/dns-query',
+    json:['https://223.5.5.5/resolve','https://223.6.6.6/resolve','https://dns.alidns.com/resolve'] },
+  { id:'dnspod', name:'腾讯 DNSPod', region:'cn', mode:'probe',
+    ips:['119.29.29.29','1.12.12.12'], doh:'https://doh.pub/dns-query',
+    json:['https://1.12.12.12/dns-query','https://doh.pub/dns-query'] },
+  { id:'dns360', name:'360 安全DNS', region:'cn', mode:'probe',
+    ips:['101.226.4.6','123.125.81.6'], doh:'https://doh.360.cn/dns-query',
+    json:['https://doh.360.cn/resolve'] },
+  { id:'cloudflare', name:'Cloudflare', region:'intl', mode:'fetch',
+    ips:['1.1.1.1','1.0.0.1'], doh:'https://cloudflare-dns.com/dns-query',
+    json:['https://1.1.1.1/dns-query','https://1.0.0.1/dns-query'] },
+  { id:'google', name:'Google', region:'intl', mode:'fetch',
+    ips:['8.8.8.8','8.8.4.4'], doh:'https://dns.google/dns-query',
+    json:['https://8.8.8.8/resolve','https://8.8.4.4/resolve'] },
+  { id:'quad9', name:'Quad9', region:'intl', mode:'probe',
+    ips:['9.9.9.9','149.112.112.112'], doh:'https://dns.quad9.net/dns-query',
+    json:['https://9.9.9.9/dns-query','https://149.112.112.112/dns-query'] },
+  { id:'adguard', name:'AdGuard', region:'intl', mode:'probe',
+    ips:['94.140.14.14','94.140.15.15'], doh:'https://dns.adguard-dns.com/dns-query',
+    json:['https://94.140.14.14/resolve','https://94.140.15.15/resolve'] },
+  { id:'opendns', name:'OpenDNS', region:'intl', mode:'probe',
+    ips:['208.67.222.222','208.67.220.220'], doh:'https://doh.opendns.com/dns-query',
+    json:['https://208.67.222.222/dns-query'] }
 ];
 
 var domainInput = document.getElementById('domainInput');
@@ -103,7 +124,6 @@ var outputEl = document.getElementById('outputText');
 var copyBtn = document.getElementById('copyBtn');
 
 var runId = 0;
-var lastRecommendation = '';
 
 function median(list){
   if(!list.length) return null;
@@ -117,7 +137,6 @@ function normalizeDomain(raw){
   d = d.replace(/^https?:\/\//i,'').replace(/^\/\//,'');
   d = d.split('/')[0].split('?')[0].split('#')[0];
   d = d.replace(/:\d+$/,'');
-  /* DoH 只接受 ASCII 域名：中文等国际化域名先转 punycode（RFC 3492） */
   if(/[^\x00-\x7F]/.test(d)){
     try{ d = new URL('http://' + d).hostname; }catch(e){}
   }
@@ -127,16 +146,10 @@ function normalizeDomain(raw){
 function validDomain(d){
   if(!d || d.length > 253) return false;
   if(/[\s"'<>]/.test(d)) return false;
-  return /^[A-Za-z0-9._\-\u00a1-\uffff]+$/.test(d);
+  return /^[A-Za-z0-9._\-]+$/.test(d);
 }
 
-/*
- * 不带 CORS 的探测：请求照发、响应内容不可读，只用来计时与判可达。
- * 必须用 fetch(mode:'no-cors') 而不是 <img>：img 的 onerror 既可能是「拿到了响应」
- * 也可能是「网络断了」，离线时会得出 2ms 的假正常；no-cors fetch 只有真的拿到
- * 响应才会 resolve，断网/证书失败一律 reject。
- */
-function noCorsOnce(url, run){
+function withNoCors(url, run){
   var controller = typeof AbortController === 'function' ? new AbortController() : null;
   var timer = null;
   if(controller) timer = setTimeout(function(){ try{ controller.abort(); }catch(e){} }, PROBE_TIMEOUT);
@@ -155,8 +168,7 @@ function noCorsOnce(url, run){
     });
 }
 
-/* fetch 测一次并解析 JSON：区分超时、HTTP 错误、跨域被拒、网络不可达。 */
-function fetchOnce(url, run){
+function withCors(url, run){
   var controller = typeof AbortController === 'function' ? new AbortController() : null;
   var timer = null;
   if(controller) timer = setTimeout(function(){ try{ controller.abort(); }catch(e){} }, PROBE_TIMEOUT);
@@ -165,22 +177,15 @@ function fetchOnce(url, run){
     .then(function(resp){
       var ms = Math.round(performance.now() - start);
       if(!resp.ok) return { ok:false, kind:'http', code:resp.status, ms:ms };
-      return resp.json().then(function(json){
-        return { ok:true, ms:ms, json:json };
-      }, function(){
-        return { ok:false, kind:'badjson', ms:ms };
-      });
+      return resp.json().then(function(json){ return { ok:true, ms:ms, json:json }; },
+                              function(){ return { ok:false, kind:'badjson', ms:ms }; });
     })
     .catch(function(err){
       var ms = Math.round(performance.now() - start);
       if(err && err.name === 'AbortError') return { ok:false, kind:'timeout', ms:ms };
-      return { ok:false, kind:'blocked', ms:ms, message:String(err && err.message || err) };
+      return { ok:false, kind:'blocked', ms:ms };
     })
-    .then(function(result){
-      if(timer) clearTimeout(timer);
-      result.run = run;
-      return result;
-    });
+    .then(function(result){ if(timer) clearTimeout(timer); result.run = run; return result; });
 }
 
 function answersFromJson(json){
@@ -190,8 +195,7 @@ function answersFromJson(json){
   var out = [];
   for(var i=0;i<list.length;i++){
     var a = list[i];
-    var v = a && (a.data || a.data === 0 ? a.data : null);
-    if(v == null && typeof a === 'string') v = a;
+    var v = a && a.data != null ? a.data : (typeof a === 'string' ? a : null);
     if(v != null) out.push(String(v));
   }
   return out;
@@ -213,46 +217,33 @@ function statusHtml(entry){
   if(entry.kind === 'cors') return '<span class="state-warn">' + t('ui.statusCorsBlocked','跨域被拒') + '</span>';
   if(entry.kind === 'timeout') return '<span class="state-err">' + t('ui.statusTimeout','超时') + '</span>';
   if(entry.kind === 'http') return '<span class="state-err">' + t('ui.statusHttpError','HTTP 错误') + ' ' + htmlEscape(String(entry.code||'')) + '</span>';
-  if(entry.kind === 'offline') return '<span class="state-err">' + t('ui.statusUnreachable','网络不可达') + '</span>';
   return '<span class="state-err">' + t('ui.statusUnreachable','网络不可达') + '</span>';
 }
 
-/* 一次解析器测速：先做 1 次预热，再取样 SAMPLE_COUNT 次，取中位数。 */
-function measureResolver(resolver, domain, run){
-  var q = '?name=' + encodeURIComponent(domain) + '&type=A';
-  var url = resolver.json + q;
+function statusText(entry){
+  if(entry.kind === 'ok') return t('ui.statusOk','正常') + (entry.latencyOnly ? ' / ' + t('ui.latencyOnly','仅延迟（跨域限制）') : '') +
+    (entry.dnsStatus === 3 ? ' / ' + t('ui.nxdomain','域名不存在（NXDOMAIN）') : (entry.dnsStatus === 2 ? ' / ' + t('ui.servfail','解析失败（SERVFAIL）') : ''));
+  if(entry.kind === 'cors') return t('ui.statusCorsBlocked','跨域被拒');
+  if(entry.kind === 'timeout') return t('ui.statusTimeout','超时');
+  if(entry.kind === 'http') return t('ui.statusHttpError','HTTP 错误') + ' ' + (entry.code||'');
+  return t('ui.statusUnreachable','网络不可达');
+}
 
-  if(resolver.mode === 'probe'){
-    return noCorsOnce(url, run).then(function(warm){
-      if(!warm.ok) return { id:resolver.id, kind:warm.kind === 'timeout' ? 'timeout' : 'offline', latencyOnly:true };
-      var tasks = [];
-      for(var i=0;i<SAMPLE_COUNT;i++) tasks.push(noCorsOnce(url, run));
-      return Promise.all(tasks).then(function(all){
-        var good = all.filter(function(x){ return x.ok; });
-        if(!good.length) return { id:resolver.id, kind:'timeout', latencyOnly:true };
-        return { id:resolver.id, kind:'ok', latencyOnly:true, median:median(good.map(function(x){return x.ms;})), samples:good.length, answers:[] };
-      });
-    });
-  }
-
-  return fetchOnce(url, run).then(function(warm){
-    if(!warm.ok && warm.kind === 'blocked'){
-      /* 跨域被拒与网络不可达在带 CORS 的 fetch 里都是 TypeError：再用 no-cors 探一次区分 */
-      return noCorsOnce(url, run).then(function(probe){
-        if(!probe.ok) return { id:resolver.id, kind: probe.kind === 'timeout' ? 'timeout' : 'offline' };
-        return { id:resolver.id, kind:'cors', latencyOnly:true, median:probe.ms, samples:1, answers:[] };
-      });
-    }
-    if(!warm.ok) return { id:resolver.id, kind:warm.kind, code:warm.code, latencyOnly:false, answers:[] };
+/* 依次尝试 CORS 取样；全部被跨域拦住时退回「仅延迟」探测，保证能测到延迟就给出排名。 */
+function sampleCors(urls, idx, resolver, domain, run){
+  if(idx >= urls.length) return sampleProbe(resolver.json.map(function(u){ return u + queryOf(domain); }), 0, resolver, run);
+  return withCors(urls[idx], run).then(function(warm){
+    if(!warm.ok && warm.kind === 'blocked') return sampleCors(urls, idx+1, resolver, domain, run);
+    if(!warm.ok) return { id:resolver.id, kind: warm.kind === 'http' ? 'http' : (warm.kind === 'timeout' ? 'timeout' : 'offline'), code:warm.code };
     var tasks = [];
-    for(var i=0;i<SAMPLE_COUNT;i++) tasks.push(fetchOnce(url, run));
+    for(var i=0;i<SAMPLE_COUNT;i++) tasks.push(withCors(urls[idx], run));
     return Promise.all(tasks).then(function(all){
       var good = all.filter(function(x){ return x.ok; });
-      if(!good.length) return { id:resolver.id, kind:'timeout', latencyOnly:false, answers:[] };
+      if(!good.length) return { id:resolver.id, kind:'timeout' };
       var firstJson = good[0].json || null;
       return {
         id:resolver.id, kind:'ok', latencyOnly:false,
-        median:median(good.map(function(x){return x.ms;})),
+        median:median(good.map(function(x){ return x.ms; })),
         samples:good.length,
         answers:answersFromJson(firstJson),
         dnsStatus:(firstJson && typeof firstJson.Status === 'number') ? firstJson.Status : 0
@@ -261,18 +252,38 @@ function measureResolver(resolver, domain, run){
   });
 }
 
-function renderRows(rows){
+function sampleProbe(urls, idx, resolver, run){
+  if(idx >= urls.length) return Promise.resolve({ id:resolver.id, kind:'offline', latencyOnly:true });
+  return withNoCors(urls[idx], run).then(function(warm){
+    if(!warm.ok) return sampleProbe(urls, idx+1, resolver, run);
+    var tasks = [];
+    for(var i=0;i<SAMPLE_COUNT;i++) tasks.push(withNoCors(urls[idx], run));
+    return Promise.all(tasks).then(function(all){
+      var good = all.filter(function(x){ return x.ok; });
+      if(!good.length) return { id:resolver.id, kind:'timeout', latencyOnly:true };
+      return { id:resolver.id, kind:'ok', latencyOnly:true, median:median(good.map(function(x){ return x.ms; })), samples:good.length, answers:[] };
+    });
+  });
+}
+
+function queryOf(domain){ return '?name=' + encodeURIComponent(domain) + '&type=A'; }
+
+function measureResolver(resolver, domain, run){
+  var urls = resolver.json.map(function(u){ return u + queryOf(domain); });
+  if(resolver.mode === 'fetch') return sampleCors(urls, 0, resolver, domain, run);
+  return sampleProbe(urls, 0, resolver, run);
+}
+
+function renderRows(ordered, bestId){
   var html = '';
-  for(var i=0;i<rows.length;i++){
-    var r = rows[i];
-    var resolver = r.resolver;
-    var isBest = r.best;
+  for(var i=0;i<ordered.length;i++){
+    var r = ordered[i];
     html += '<tr>' +
-      '<td>' + htmlEscape(resolver.name) + (isBest ? '<span class="badge-best">' + t('ui.fastest','最快') + '</span>' : '') + '</td>' +
-      '<td>' + (resolver.region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) + '</td>' +
+      '<td>' + htmlEscape(r.resolver.name) + (r.resolver.id === bestId ? '<span class="badge-best">' + t('ui.fastest','最快') + '</span>' : '') + '</td>' +
+      '<td>' + (r.resolver.region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) + '</td>' +
       '<td>' + latencyCell(r.median, r.samples) + '</td>' +
       '<td>' + statusHtml(r) + '</td>' +
-      '<td class="ans">' + (r.answers && r.answers.length ? htmlEscape(r.answers.slice(0,3).join(', ')) : (r.latencyOnly ? '—' : '—')) + '</td>' +
+      '<td class="ans">' + (r.answers && r.answers.length ? htmlEscape(r.answers.slice(0,3).join(', ')) : '—') + '</td>' +
       '</tr>';
   }
   resBody.innerHTML = html;
@@ -283,7 +294,6 @@ function runLimited(items, limit, worker){
   var active = 0;
   return new Promise(function(resolve){
     var results = new Array(items.length);
-    var settled = 0;
     function next(){
       if(index >= items.length && active === 0) return resolve(results);
       while(active < limit && index < items.length){
@@ -294,7 +304,7 @@ function runLimited(items, limit, worker){
           }).catch(function(){
             results[i] = { id:items[i].id, kind:'offline' };
           }).then(function(){
-            active--; settled++;
+            active--;
             next();
           });
         })(index);
@@ -303,6 +313,12 @@ function runLimited(items, limit, worker){
     }
     next();
   });
+}
+
+function offlineRows(){
+  return RESOLVERS.map(function(r){
+    return '<tr><td>' + htmlEscape(r.name) + '</td><td>' + (r.region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) + '</td><td class="num">—</td><td>' + statusHtml({ kind:'offline' }) + '</td><td class="ans">—</td></tr>';
+  }).join('');
 }
 
 function runResolverTest(){
@@ -316,9 +332,7 @@ function runResolverTest(){
   testBtn.disabled = true;
   setStatus('');
   if(navigator.onLine === false){
-    resBody.innerHTML = RESOLVERS.map(function(r){
-      return '<tr><td>' + htmlEscape(r.name) + '</td><td>' + (r.region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) + '</td><td class="num">—</td><td>' + statusHtml({ kind:'offline' }) + '</td><td class="ans">—</td></tr>';
-    }).join('');
+    resBody.innerHTML = offlineRows();
     summaryEl.textContent = t('ui.offline','当前处于离线状态，无法测速');
     setStatus(t('ui.runFailed','测速失败'),'error');
     testBtn.disabled = false;
@@ -326,7 +340,6 @@ function runResolverTest(){
   }
   summaryEl.textContent = t('ui.testing','测速中…');
   outputEl.textContent = '';
-  lastRecommendation = '';
   var placeholder = '';
   for(var p=0;p<RESOLVERS.length;p++){
     placeholder += '<tr><td>' + htmlEscape(RESOLVERS[p].name) + '</td><td>' + (RESOLVERS[p].region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) + '</td><td class="num">…</td><td>' + t('ui.testing','测速中…') + '</td><td class="ans">—</td></tr>';
@@ -338,39 +351,46 @@ function runResolverTest(){
   }).then(function(results){
     if(run !== runId) return;
     testBtn.disabled = false;
-    var usable = [];
-    for(var i=0;i<results.length;i++){
-      var r = results[i] || { id:RESOLVERS[i].id, kind:'offline' };
-      r.resolver = RESOLVERS[i];
-      if(r.kind === 'ok' && r.median != null) usable.push(r);
-    }
-    usable.sort(function(a,b){ return a.median - b.median; });
-    if(usable.length) usable[0].best = true;
-
-    var ordered = results.map(function(r,i){ var x = r || { id:RESOLVERS[i].id, kind:'offline' }; x.resolver = RESOLVERS[i]; return x; });
+    var ordered = results.map(function(r,i){
+      var x = r || { id:RESOLVERS[i].id, kind:'offline' };
+      x.resolver = RESOLVERS[i];
+      return x;
+    });
     ordered.sort(function(a,b){
-      var av = (a.kind === 'ok' && a.median != null) ? a.median : 1e9;
-      var bv = (b.kind === 'ok' && b.median != null) ? b.median : 1e9;
+      var av = a.median != null ? a.median : 1e9;
+      var bv = b.median != null ? b.median : 1e9;
       return av - bv;
     });
-    renderRows(ordered);
+    var best = null;
+    for(var i=0;i<ordered.length;i++){
+      if(ordered[i].kind === 'ok' && ordered[i].median != null){ best = ordered[i]; break; }
+    }
+    renderRows(ordered, best ? best.resolver.id : null);
 
-    if(!usable.length){
+    if(!best){
       summaryEl.textContent = t('ui.noResolver','没有可用的解析器：当前网络可能拦截了全部 DoH 服务');
       setStatus(t('ui.runFailed','测速失败'),'error');
       return;
     }
-    var best = usable[0];
     var note = best.latencyOnly ? ' ' + t('ui.latencyOnly','仅延迟（跨域限制）') : '';
     summaryEl.innerHTML = t('ui.fastestIs','最快：') + '<strong>' + htmlEscape(best.resolver.name) + '</strong> · ' + best.median + ' ms' + htmlEscape(note);
-    lastRecommendation = t('ui.copyLine','推荐 DNS') + ': ' + best.resolver.name + '\nIPv4: ' + best.resolver.ip + '\nDoH: ' + best.resolver.doh;
-    outputEl.textContent = lastRecommendation;
+
+    var lines = [];
+    lines.push('DNS 优选 · ' + domain);
+    lines.push(t('ui.fastestIs','最快：') + best.resolver.name + ' · ' + best.median + ' ms' + note);
+    lines.push(t('ui.copyLine','推荐 DNS IP') + '：' + best.resolver.ips.join('、'));
+    lines.push('DoH：' + best.resolver.doh);
+    lines.push('');
+    for(var j=0;j<ordered.length;j++){
+      var r = ordered[j];
+      lines.push(r.resolver.name + '\t' + (r.resolver.region === 'cn' ? t('ui.regionCn','国内') : t('ui.regionIntl','国际')) +
+        '\t' + (r.median != null ? r.median + ' ms' : '—') +
+        '\t' + statusText(r) +
+        '\t' + ((r.answers && r.answers.length) ? r.answers.join(' ') : '—'));
+    }
+    outputEl.textContent = lines.join('\n');
     setStatus(t('ui.done','测速完成'));
   });
-}
-
-function probeIpOnce(ip, run){
-  return noCorsOnce('https://' + ip + '/', run);
 }
 
 function runIpTest(){
@@ -386,7 +406,6 @@ function runIpTest(){
   ipSummaryEl.textContent = t('ui.ipTesting','解析中…');
   ipBody.innerHTML = '';
   outputEl.textContent = '';
-  lastRecommendation = '';
 
   var fetchers = RESOLVERS.filter(function(r){ return r.mode === 'fetch'; });
   var answers = [];
@@ -394,14 +413,12 @@ function runIpTest(){
   var idx = 0;
 
   function nextResolver(){
-    if(idx >= fetchers.length) return Promise.resolve(answers);
+    if(idx >= fetchers.length || answers.length >= MAX_IPS) return Promise.resolve(answers);
     var resolver = fetchers[idx++];
-    var url = resolver.json + '?name=' + encodeURIComponent(domain) + '&type=A';
-    return fetchOnce(url, run).then(function(res){
-      if(res && res.ok){
-        var list = answersFromJson(res.json);
-        for(var i=0;i<list.length;i++){
-          var v = list[i];
+    return sampleCors(resolver.json.map(function(u){ return u + queryOf(domain); }), 0, resolver, domain, run).then(function(res){
+      if(res && res.kind === 'ok' && res.answers && res.answers.length){
+        for(var i=0;i<res.answers.length;i++){
+          var v = res.answers[i];
           if(/^\d{1,3}(\.\d{1,3}){3}$/.test(v) && !seen[v]){
             seen[v] = true;
             answers.push({ ip:v, resolver:resolver.name });
@@ -426,18 +443,18 @@ function runIpTest(){
     }).join('');
 
     runLimited(targets, CONCURRENCY, function(item){
-      return probeIpOnce(item.ip, run).then(function(first){
-        if(first.kind === 'timeout' && !first.ms) return { ip:item.ip, kind:'timeout' };
+      var first = withNoCors('https://' + item.ip + '/', run);
+      return first.then(function(res){
+        if(res.kind === 'timeout' && res.ms >= PROBE_TIMEOUT - 100) return { ip:item.ip, kind:'timeout' };
         var hold = [];
-        for(var i=0;i<SAMPLE_COUNT-1;i++) hold.push(probeIpOnce(item.ip, run));
-        return Promise.all(hold.concat([first])).then(function(all){
-          /* 超时不计入；「拿到响应」与「证书不匹配导致握手失败」都能给出可比耗时的下界 */
+        for(var i=0;i<SAMPLE_COUNT-1;i++) hold.push(withNoCors('https://' + item.ip + '/', run));
+        return Promise.all(hold.concat([res])).then(function(all){
           var timed = all.filter(function(x){ return x.kind !== 'timeout'; });
           if(!timed.length) return { ip:item.ip, kind:'timeout' };
           var anyOk = all.some(function(x){ return x.ok; });
           return {
             ip:item.ip, kind: anyOk ? 'ok' : 'tlsfail',
-            median:median(timed.map(function(x){return x.ms;})),
+            median:median(timed.map(function(x){ return x.ms; })),
             samples:timed.length
           };
         });
@@ -445,16 +462,15 @@ function runIpTest(){
     }).then(function(results){
       if(run !== runId) return;
       ipBtn.disabled = false;
-      var ok = results.filter(function(r){ return r.kind !== 'timeout' && r.median != null; });
-      ok.sort(function(a,b){ return a.median - b.median; });
-      var bestIp = ok.length ? ok[0].ip : null;
-      /* 渲染顺序按握手耗时升序，失败的排在最后，与表格「先快后慢」一致 */
       results.sort(function(a,b){
-        /* 只要测到了耗时（可连接或握手后失败）就参与排序；纯超时的排最后 */
         var av = a.median != null ? a.median : 1e9;
         var bv = b.median != null ? b.median : 1e9;
         return av - bv;
       });
+      var bestIp = null;
+      for(var i=0;i<results.length;i++){
+        if(results[i].median != null){ bestIp = results[i].ip; break; }
+      }
       ipBody.innerHTML = results.map(function(r){
         var state = r.kind === 'ok'
           ? '<span class="state-ok">' + t('ui.ipStatusOk','可连接') + '</span>'
@@ -462,15 +478,24 @@ function runIpTest(){
         return '<tr><td class="num">' + htmlEscape(r.ip) + (r.ip === bestIp ? '<span class="badge-best">' + t('ui.fastest','最快') + '</span>' : '') + '</td>' +
           '<td>' + latencyCell(r.median, r.samples) + '</td><td>' + state + '</td></tr>';
       }).join('');
-      if(bestIp){
-        ipSummaryEl.innerHTML = t('ui.fastestIpIs','握手最快：') + '<strong>' + htmlEscape(bestIp) + '</strong>';
-        lastRecommendation = domain + '\nIPv4: ' + bestIp;
-        outputEl.textContent = lastRecommendation;
-        setStatus(t('ui.ipDone','测速完成'));
-      }else{
+      if(!bestIp){
         ipSummaryEl.textContent = t('ui.ipAllTimeout','全部 IP 握手超时');
         setStatus(t('ui.runFailed','测速失败'),'error');
+        return;
       }
+      ipSummaryEl.innerHTML = t('ui.fastestIpIs','握手最快：') + '<strong>' + htmlEscape(bestIp) + '</strong>';
+      var lines = [];
+      lines.push('IP 优选 · ' + domain);
+      lines.push(t('ui.fastestIpIs','握手最快：') + bestIp + ' · ' + (results[0].median != null ? results[0].median + ' ms' : '—'));
+      lines.push('');
+      for(var j=0;j<results.length;j++){
+        var r = results[j];
+        var st = r.kind === 'ok' ? t('ui.ipStatusOk','可连接')
+          : (r.kind === 'timeout' ? t('ui.statusTimeout','超时') : t('ui.ipStatusTlsFail','握手后失败（证书不匹配）'));
+        lines.push(r.ip + '\t' + (r.median != null ? r.median + ' ms' : '—') + '\t' + st);
+      }
+      outputEl.textContent = lines.join('\n');
+      setStatus(t('ui.ipDone','测速完成'));
     });
   });
 }
@@ -495,7 +520,6 @@ document.getElementById('clearBtn').addEventListener('click', function(){
   summaryEl.textContent = '';
   resBody.innerHTML = '';
   outputEl.textContent = '';
-  lastRecommendation = '';
   testBtn.disabled = false;
   setStatus('');
   domainInput.focus();

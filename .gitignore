@@ -1,49 +1,84 @@
-# Temp analysis scripts
-_check_*.js
-_fix_*.js
-*.tmp
-.tmp_*
-.server.pid
-*.log
-*~
-*.bak
-
-# 调研临时目录（不推送）
-.research-tmp/
-
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Node
+# Dependencies
 node_modules/
-npm-debug.log*
-yarn-error.log*
 
-# IDE / Editor
+# Build output
+dist/
+
+# Runtime data (created by the app at startup)
+*.db
+*.db-wal
+*.db-shm
+
+# IDE
 .vscode/
 .idea/
 *.swp
+*.swo
 
-# AI plan/script directory (local reference, not pushed)
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temp
+*.tmp
+*.bak
+.tmp-scripts/
+test-out.txt
+
+# Environment (keep .env.example as the only committed template)
+.env*
+!.env.example
+
+# Archives and backups (large binaries must not be committed)
+*.bundle
+*.zip
+*.7z
+
+# AI / Agent config files (sensitive development rules)
 AGENTS.md
 AGENTS.txt
 AGENT.md
 AGENT.txt
 agent-readme.md
 RULES.md
+.agents/
+.reasonix/
 
-# AI scratch scripts (local reference, not pushed)
-.scratch/
+# Audit / Diagnosis / Review reports
+*审计报告*.md
+*审计报告*.txt
+DIAGNOSIS*.md
+DIAGNOSIS*.txt
+*audit*.md
+*audit*.txt
+*review-report*.md
 
-# Playwright test artifacts
+# 浏览器测试产物
 .playwright-mcp/
 
-# SQLite legacy database files
+# Nested cloned third-party repository
+system_prompts_leaks/
+
+# 项目特有（同步时保留）
+_check_*.js
+_fix_*.js
+.tmp_*
+.server.pid
+*~
+.research-tmp/
+desktop.ini
+npm-debug.log*
+yarn-error.log*
+.scratch/
 database.db
 database.db-shm
 database.db-wal
-
-# AI 计划/脚本目录（本地参考，不推送）
 docs/superpowers/
+.opencode/skills/agents-rules/
+
+# AI rules
+AGENTS-detail/

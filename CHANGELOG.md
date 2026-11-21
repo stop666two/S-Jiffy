@@ -4,6 +4,49 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [2026-11-21] 全量审查：修复 6 类系统性缺陷并补齐自动化门禁
+
+对 549 个工具页做了逐页真实浏览器加载 + 点击扫描、CSP 复测、i18n/注册表/跳转表机器对账，修复以下缺陷。
+
+### Fixed
+
+- **运行时崩溃（14 页）** — 34 个工具页用局部变量 `t` 遮蔽了全局翻译函数 `t()`，点击即抛 `TypeError: t is not a function`（`autokey-cipher` 的加密主路径直接不可用）；全部改为 `txt`/`ti`，共 50 处
+- **控件被 i18n 删掉（10 处 / 9 页）** — `i18n.js` 的 `apply()` 对 `[data-i18n]` 元素整体赋值 `textContent`，把同标签内的子控件一起删掉：`json-to-typescript` 的语言下拉与输入框消失并导致脚本中断、`password-generator` 的长度数字不显示、7 个页面的非 HTTPS 警告永远无法出现。改为只替换文本节点，保留子元素
+- **`rot13` 算法错误** — 原来把大写与小写两趟结果拼接，输出翻倍乱码；改为单趟映射（`Hello, World!` → `Uryyb, Jbeyq!`），`ROT18` 连带修正
+- **译文被当作元素 id** — `less-compiler`、`json-sort` 用 `getElementById(t('ui.x', …))`，非中文界面下取到 null 后崩溃；改为固定 id（`json-sort` 的元素 id 由 `diff输出` 改为 `diffOutput`）
+- **HTML 实体表 98 条假名** — `html-entities` 的 2231 行表中有 `&AEli;` `&Aacut;` 等 98 条截断名与 9 条重名；按 WHATWG 规范表重建为 2125 条唯一实体名（`scripts/entity-names.json` 为唯一来源，`scripts/gen-entities.js` 生成）
+- **生产 CSP 阻断可用工具** — `md5-generator`、`json-schema-validator` 依赖 cdnjs（`script-src 'self'` 拦死）→ 改为自托管 `ajv7.min.js`、`blueimp-md5.min.js`；`dns-leak-test` 的 `*.browserleaks.net`、`currency-converter` 的 `api.frankfurter.app`、`clickjack-test` 的任意 https iframe 探测补进 CSP
+- **`clickjack-test` 的假安全结论** — iframe 被拦截时也输出「✅ 受保护」；改为「读到 X-Frame-Options / frame-ancestors 才算受保护，否则无法判定」，并识别本站 CSP 拦截
+- **4 个工具描述张冠李戴** — `checksum-calculator`、`pdf-signature`、`rsa-key-pair-generator` 的 desc 复制自 `camera-recorder`（"使用摄像头拍照并下载…"）；按实际功能重写六语言文案
+- **`ssl-checker` 名不副实** — 标题称检测 SSL 证书，实际只能读响应头；改为「连接与安全响应头检查」，并说明浏览器无法读取证书
+- **跨域失败提示误导** — `cors-checker` / `security-headers` / `sri-generator` / `api-tester` / `clickjack-test` 在 CSP 白名单外的目标上失败时，明确说明是本站 CSP 或 CORS 限制，不再笼统归因
+- **`server.js` 免等价与安全隐患** — 不发 CSP（本地与线上不同）；`listen(0.0.0.0)` 暴露局域网；启动时按 `.server.pid` 盲杀 PID（PID 复用会误杀无关进程）；`gzipCache` 无上限；304 分支缺 `Cache-Control`。改为：发同一份 CSP、默认只听 127.0.0.1（`HOST`/`PORT` 可覆盖）、校验命令行后才终止进程、64 项 LRU、304 前设置缓存头
+- **主页 CLS 0.21（4x CPU + slow3g）** — 分区标签样式由行内脚本在末尾注入 `<style>`，首屏先按默认按钮排版再变小胶囊导致整页重排；改为静态 CSS，并给工具网格预留高度、卡片改用 `DocumentFragment` 一次插入。CLS → 0.061
+- **次要文字对比度不足** — `--color-text-secondary` `#787774`（白底 4.48:1、软底 4.14:1）改为 `#6B6A66`（5.41:1 / 5.01:1）
+- **结果状态不可朗读** — 549 页共享的 `.tool-status` 无 `role`/`aria-live`；由 `global.js` 统一注入 `role="status" aria-live="polite" aria-atomic="true"`
+- **SEO 缺静态元数据** — 静态 `<meta name="description">` 仅 2/549、无 canonical、无 sitemap/robots/404；由 `scripts/gen-meta.js` 为 550 个页面写入 description/canonical/og，并生成 `sitemap.xml`、`robots.txt`、`404.html`
+- **部署配置只有 Netlify** — 新增 `_headers`、`_redirects`、`vercel.json`，四份配置与本地服务器统一由 `scripts/lib/deploy-config.js` 生成，135 组 301 与安全头在四个平台一致
+- **未开启 JS 时语言下拉是死控件** — 549 页的 `<select id="langSwitch">` 补 `onchange` 兜底
+
+### Changed
+
+- **数据单一来源** — `index.html` 的 `tools` 数组成为工具名称/描述唯一来源；`gen-home-i18n.js` 由注册表生成六语言 `home.json`（中文值直接写入，消除 1 个名称 + 11 个描述漂移），非中文保留译文
+- **删除 816 个孤儿词典** — 136 个已合并工具的词典 × 6 语言；同时清理 1731 个页面词典里与 `common.json` 重复的 `common.footer`
+- **QR 库去重** — `qr-code-generator` 从 `qrcodejs.min.js` 迁到 `qrcode.js`（含 UTF-8 编码修正，中文二维码可被正确识别），删除 `qrcodejs.min.js`
+- **实体条数口径** — `html-entities` 描述由 2231 条改为 2125 条（规范表 2231 个原始条目对应 2125 个唯一实体名）
+- **统一 LF 行尾** — 458 个文件由 CRLF 转为 LF；`*.bat`/`*.cmd` 显式声明 `eol=crlf` 并转 CRLF
+
+### Added
+
+- **`scripts/check.js` 零依赖门禁** — 6 项静态检查（`t` 遮蔽、i18n 写入路径与 key 覆盖、伪 id、注册表/词典/跳转表一致性、CSP 白名单、实体表）加生成物新鲜度校验，退出码 0 为通过；已做负例自测（注入遮蔽与 CDN 脚本时退出码 1）
+- **生成器** — `gen-deploy-config.js`、`gen-home-i18n.js`、`gen-meta.js`、`gen-entities.js`，均支持 `--check`
+- **`package.json`** — `npm run check` / `npm start` / `npm run gen`
+
+### Removed
+
+- `assets/vendor/qrcodejs.min.js`（与 `qrcode.js` 重复）
+- 工具运行期产生的 `database.db` / `-shm` / `-wal`、陈旧 `.server.pid`
+
 ## [2026-08-24] 移除随机邮箱生成工具
 
 ### Removed

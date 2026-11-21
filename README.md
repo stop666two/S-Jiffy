@@ -30,6 +30,18 @@ S-Jiffy 是一个纯静态、零依赖的 Web 工具集，包含 **549 个** 即
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/stop666two/S-Jiffy)
 [![Deploy to GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Deploy-blue?logo=github)](https://pages.github.com/)
 
+四个平台的配置都已入库，且全部由 `scripts/lib/deploy-config.js` 生成（改配置只改这一处，再跑 `node scripts/gen-deploy-config.js`）：
+
+| 平台 | 配置文件 | 301 跳转 | 安全头 / CSP |
+|---|---|---|---|
+| Netlify | `netlify.toml` | ✅ | ✅ |
+| Cloudflare Pages | `_headers` + `_redirects` | ✅ | ✅ |
+| Vercel | `vercel.json` | ✅ | ✅ |
+| GitHub Pages | 仅 `404.html` | ❌（不支持） | ❌（不支持） |
+
+GitHub Pages 不支持自定义响应头与跳转规则，部署到该平台时 135 组旧地址跳转与 CSP 都不会生效，仅作为纯静态预览。
+
+
 ## 🚀 本地运行
 
 ```bash
@@ -38,21 +50,27 @@ start.bat
 
 # 方式二：直接使用 Node.js
 node server.js
-# 访问 http://localhost:8080
+# 访问 http://127.0.0.1:8080
+
+# 端口与监听地址（默认只监听回环地址，不暴露到局域网）
+PORT=9000 HOST=0.0.0.0 node server.js
 
 # 方式三：使用任意静态服务器
 npx serve .
 ```
 
+`server.js` 发出的响应头与 `netlify.toml` 完全一致（同一份 CSP 常量），因此 CSP 相关问题在本地就能复现，不会等到上线才出现。
+
 ## 🛡 技术架构与安全
 
-- **纯静态零依赖** — 全部工具为单文件 HTML，无第三方框架、无运行时依赖；所需的重量级库（pdf-lib / docx / tesseract / heic2any 等 14 个）已自托管于 `assets/vendor/`，全站不依赖外部 CDN
+- **纯静态零依赖** — 全部工具为单文件 HTML，无第三方框架、无运行时依赖；所需的重量级库（pdf-lib / docx / tesseract / heic2any / ajv / blueimp-md5 等 15 个）已自托管于 `assets/vendor/`，全站不依赖外部 CDN（CSP 的 `script-src` 因此不需要放宽到任何第三方域）
 - **XSS 防护** — 全局 `htmlEscape()` 对所有用户输入渲染转义；动态 DOM 优先使用 `textContent` / `createElement`，不用 `innerHTML` 拼接
-- **内容安全策略** — `netlify.toml` 配置 CSP（`default-src 'self'` + 白名单），生产环境启用 `upgrade-insecure-requests`，全站无混合内容
+- **内容安全策略** — CSP 定义在 `scripts/lib/deploy-config.js`（单一数据源），同时下发给 `netlify.toml` / `_headers` / `vercel.json` 与本地 `server.js`；白名单逐条对应工具实际访问的服务，生产环境启用 `upgrade-insecure-requests`，全站无混合内容
+- **诚实的能力边界** — 纯前端工具无法绕过同源策略：跨域读不到响应头的工具（`ssl-checker` / `security-headers` / `cors-checker` / `sri-generator`）会明确说明是 CORS 或本站 CSP 限制，不会把「读不到」当成「不安全」或「已保护」
 - **安全响应头** — `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy: no-referrer`
 - **本地服务器防护** — `server.js` 含路径穿越校验与畸形 URL 容错（非法编码返回 400，不崩溃）
 - **数据隐私** — 所有计算均在浏览器本地完成，无任何数据上传；外部 API 调用仅限用户主动触发的少数工具（如「我的 IP」）
-- **无障碍基础** — 语义化 HTML5 标签、键盘可聚焦控件、可见的 :focus 样式
+- **无障碍基础** — 语义化 HTML5 标签、键盘可聚焦控件、可见的 :focus 样式；结果状态栏统一带 `role="status" aria-live="polite"`（由 `global.js` 注入），次要文字对比度 ≥ 4.5:1
 
 ## 📋 工具总览（549 个 / 36 类）
 
@@ -204,9 +222,32 @@ ULID 生成器 · UUID生成器 · NanoID 生成器 · 斐波那契数列 · 素
 
 ### 购物 (1)
 折扣计算器
+## ✅ 质量门禁与生成器
+
+仓库零构建，但关键数据由生成器维护、由门禁校验（纯 Node，无第三方依赖）：
+
+```bash
+node scripts/check.js        # 一键门禁：6 项静态检查 + 生成物新鲜度，退出码 0 为通过
+node scripts/gen-deploy-config.js   # 生成 netlify.toml / _headers / _redirects / vercel.json
+node scripts/gen-home-i18n.js      # 由 index.html 注册表生成六语言 home.json 的 tool 键
+node scripts/gen-meta.js           # 写静态 description / canonical / og，生成 sitemap.xml、robots.txt、404.html
+node scripts/gen-entities.js       # 重建 html-entities 的实体表
+```
+
+各生成器都支持 `--check`（只比对不写盘，用于 CI）。`scripts/check.js` 覆盖的缺陷类别：
+
+| 检查 | 拦截的问题 |
+|---|---|
+| shadowing | 工具页里用局部变量 `t` 遮蔽全局翻译函数 `t()`（曾导致 14 个页面点击即崩） |
+| i18n | `apply()` 是否仍走「保留子元素」的写入路径；`data-i18n` 的 key 在六语言词典里是否都存在 |
+| element-id | `getElementById(t(…))` 用译文当 id；`getElementById('x')` 指向不存在的 id |
+| registry | `index.html` 注册表 ↔ `projects/` 目录 ↔ 六语言词典 ↔ 301 跳转表，四者必须一致 |
+| csp | 页面里写死的外部主机是否都在 CSP 白名单内 |
+| entity | HTML 实体表是否与规范表（`scripts/entity-names.json`）完全一致 |
+
 ## 🛠 添加新工具
 
-> 本清单由 `docs/gen-readme-tools.js` 从首页注册数据自动生成（`node docs/gen-readme-tools.js`）。
+> 工具总览由 `docs/gen-readme-tools.js` 从首页注册数据自动生成（`node docs/gen-readme-tools.js`）。
 
 每个工具是一个独立目录下的 `index.html`：
 
@@ -234,13 +275,13 @@ ULID 生成器 · UUID生成器 · NanoID 生成器 · 斐波那契数列 · 素
 新工具开发规范：
 
 - **零依赖** — 不引入框架；如需库，优先自托管至 `assets/vendor/` 并内置降级提示
-- **六语言界面** — 全站页面均已本地化：页面元素加 `data-i18n` / `data-i18n-placeholder` / `data-i18n-html` 属性，JS 文案经 `t(key, fallback)` 取词，对应词典 `assets/i18n/<lang>/<slug>.json`（lang = zh-CN / zh-TW / zh-HK / en / es / ja）；新增或修改文案后需同步六个语言词典，`docs/superpowers/plans/verify-all-old.js` 可校验 key 一致性
+- **六语言界面** — 全站页面均已本地化：页面元素加 `data-i18n` / `data-i18n-placeholder` / `data-i18n-html` 属性，JS 文案经 `t(key, fallback)` 取词，对应词典 `assets/i18n/<lang>/<slug>.json`（lang = zh-CN / zh-TW / zh-HK / en / es / ja）；新增或修改文案后需同步六个语言词典，`node scripts/check.js` 会报告缺失的 key。**禁止**用 `t` 作局部变量名（它遮蔽全局翻译函数）
 - **XSS 防护** — 用户输入渲染一律经 `htmlEscape()` 或 `textContent`
 - **ES5 兼容** — 不使用箭头函数/模板字符串等 ES6+ 语法，保持零构建直接运行
 - **数学符号** — 公式中的特殊符号（√∑π×÷≤≥）依赖全局字体栈，无需额外处理；长根号需使用覆盖线结构（参照 distance-calculator）
 - **注册** — 在 `index.html` 的 `tools` 数组（含 name/desc/link/cats）与 `categories` 数组（如需新分类）中添加条目，name 须与页面 `<title>` 一致
-- **描述五处同步** — 工具的描述文案（name/desc）须在五处保持一致：`index.html` 的 `<title>`/描述、词典 `assets/i18n/<lang>/<slug>.json` 的 `h1`/`desc`/`meta.description`、首页卡片（`tools` 数组条目）、主页词典 `home.json`；功能扩展（如合并其他工具）后必须同步更新全部描述
-- **相似工具先合并** — 新增工具前先确认与现有工具是否重复/相似：相近功能应融合进现有工具（tab/模式 select），而非另建新工具；被合并目录需在 `server.js` redirects 与 `netlify.toml` 中配置 301 跳转
+- **单一数据源** — `index.html` 的 `tools` 数组是工具名称与描述的唯一来源：改完后跑 `node scripts/gen-home-i18n.js`（同步六语言 `home.json`，中文值直接由注册表写入）与 `node scripts/gen-meta.js`（同步每页静态 description / canonical / og）。工具页词典的 `h1`/`desc`/`meta.description` 仍需人工与注册表保持一致，`scripts/check.js` 会报告缺失 key
+- **相似工具先合并** — 新增工具前先确认与现有工具是否重复/相似：相近功能应融合进现有工具（tab/模式 select），而非另建新工具；被合并目录的 301 跳转写在 `scripts/lib/deploy-config.js` 的 `REDIRECTS`（唯一数据源），再跑 `node scripts/gen-deploy-config.js` 同步到四个平台配置
 
 ## 📜 更新日志
 

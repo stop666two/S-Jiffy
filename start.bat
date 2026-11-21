@@ -16,11 +16,8 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 
-:: Kill stale server
-if exist .server.pid (
-  for /f %%p in (.server.pid) do taskkill /f /pid %%p >NUL 2>NUL
-  del .server.pid
-)
+:: Kill stale server (only when the recorded PID really is our node server.js)
+node scripts\stop-server.js >NUL 2>NUL
 
 echo Starting server...
 start /B "" node server.js
@@ -38,9 +35,6 @@ echo.
 echo Press any key to stop server...
 pause >NUL
 
-if exist .server.pid (
-  for /f %%p in (.server.pid) do taskkill /f /pid %%p >NUL 2>NUL
-  del .server.pid
-)
+node scripts\stop-server.js >NUL 2>NUL
 echo Server stopped.
 timeout /t 1 /nobreak >NUL

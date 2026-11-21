@@ -1,19 +1,63 @@
+'use strict';
+// S-Jiffy 本地静态服务器。
+//
+// 设计要点（与生产对齐，避免"本地能跑、线上被拦"）：
+//  1. 响应头与 netlify.toml 完全一致：CSP 与安全头来自 scripts/lib/deploy-config.js 单一数据源，
+//     本地也发送同一份 CSP，CSP 相关的功能缺陷在本地就能复现。
+//  2. 默认只监听回环地址（127.0.0.1），不把工作区暴露到局域网；需要局域网调试时显式设 HOST=0.0.0.0。
+//  3. 启动时清理陈旧 .server.pid：先确认该 PID 确实是 node 跑 server.js 才终止，避免 PID 复用误杀无关进程。
+//  4. gzip 结果走有上限的 LRU，长期运行不会无限增长。
+
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 var crypto = require('crypto');
-var pidFile = path.join(__dirname, '.server.pid');
+var child_process = require('child_process');
+var deploy = require('./scripts/lib/deploy-config.js');
 
-// Kill previous instance
-try {
-  var oldPid = fs.readFileSync(pidFile, 'utf8').trim();
-  if (oldPid) {
-    try { process.kill(parseInt(oldPid, 10)); } catch (e) {}
+var pidFile = path.join(__dirname, '.server.pid');
+var port = parseInt(process.env.PORT, 10) || 8080;
+var host = process.env.HOST || '127.0.0.1';
+var GZIP_CACHE_MAX = 64;
+
+/**
+ * 判断某个 PID 是否确实是本项目的 server.js 进程。
+ * 输入：pid（number）。
+ * 输出：boolean —— 仅在能取得命令行且其中包含 server.js 时返回 true；取不到命令行一律返回 false（宁可不杀）。
+ */
+function isOurServer(pid) {
+  if (!pid || pid === process.pid) return false;
+  var cmdline = '';
+  try {
+    cmdline = fs.readFileSync('/proc/' + pid + '/cmdline', 'utf8').replace(/\0/g, ' ');
+  } catch (e) {
+    if (process.platform === 'win32') {
+      try {
+        cmdline = child_process.execFileSync(
+          'wmic',
+          ['process', 'where', 'processid=' + pid, 'get', 'commandline', '/format:list'],
+          { encoding: 'utf8', timeout: 5000, windowsHide: true }
+        );
+      } catch (e2) {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
+  return cmdline.indexOf('server.js') !== -1;
+}
+
+// 清理上一次遗留的 PID 文件（只在确认是本项目进程时才终止）。
+try {
+  var oldPid = parseInt(fs.readFileSync(pidFile, 'utf8').trim(), 10);
+  if (oldPid && isOurServer(oldPid)) {
+    try { process.kill(oldPid); } catch (e) {}
+  }
+  fs.unlinkSync(pidFile);
 } catch (e) {}
 
-var port = 8080;
 var mime = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -50,17 +94,35 @@ var mime = {
   '.pdf': 'application/pdf'
 };
 
-var gzipCache = {};
+var COMPRESSIBLE = ['.html', '.css', '.js', '.mjs', '.json', '.svg', '.xml', '.txt', '.md', '.webmanifest'];
 
-function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
+// 有上限的 LRU：Map 保持插入顺序，超限时删最早插入的键。
+var gzipCache = new Map();
+
+function cacheControlFor(posixPath) {
+  for (var i = 0; i < deploy.CACHE_RULES.length; i++) {
+    var rule = deploy.CACHE_RULES[i];
+    if (rule.match === '/' || posixPath.indexOf(rule.match) !== -1) return rule.value;
+  }
+  return 'no-cache';
+}
+
+/**
+ * 公共响应头：安全头 + CSP，所有状态码（含 301/304/404）都必须带上。
+ * 输入：urlPath —— 请求路径（用于取该路径对应的 CSP，个别页面允许更宽的策略）。
+ */
+function commonHeaders(urlPath) {
+  var h = { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'no-referrer' };
+  h['Content-Security-Policy'] = deploy.cspForPath(urlPath || '/');
+  return h;
+}
+
+function serveFile(res, urlPath, filePath, stats, data, clientETag, clientGzip) {
   var ext = path.extname(filePath);
-  var type = mime[ext] || 'application/octet-stream';
-  var headers = {
-    'Content-Type': type,
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'Referrer-Policy': 'no-referrer'
-  };
+  var posixPath = filePath.split(path.sep).join('/');
+  var headers = commonHeaders(urlPath);
+  headers['Content-Type'] = mime[ext] || 'application/octet-stream';
+  headers['Cache-Control'] = cacheControlFor(posixPath);
   var etag = '"' + crypto.createHash('md5').update(data).digest('hex') + '"';
   headers['ETag'] = etag;
   if (clientETag === etag) {
@@ -68,20 +130,19 @@ function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
     res.end();
     return;
   }
-  var isAsset = filePath.indexOf(path.sep + 'assets' + path.sep) !== -1;
-  var isI18n = filePath.indexOf(path.sep + 'assets' + path.sep + 'i18n' + path.sep) !== -1;
-  var isCompressible = ['.html', '.css', '.js', '.mjs', '.json', '.svg', '.xml', '.txt', '.md', '.webmanifest'].indexOf(ext) !== -1;
-  if (isAsset && !isI18n) {
-    headers['Cache-Control'] = 'public, max-age=86400';
-  } else {
-    headers['Cache-Control'] = 'no-cache';
-  }
-  if (isCompressible && clientGzip) {
+  if (COMPRESSIBLE.indexOf(ext) !== -1 && clientGzip) {
     var key = filePath + ':' + etag;
-    var gz = gzipCache[key];
-    if (!gz) {
+    var gz = gzipCache.get(key);
+    if (gz) {
+      gzipCache.delete(key);
+      gzipCache.set(key, gz);
+    } else {
       gz = zlib.gzipSync(data);
-      gzipCache[key] = gz;
+      gzipCache.set(key, gz);
+      if (gzipCache.size > GZIP_CACHE_MAX) {
+        var oldest = gzipCache.keys().next();
+        if (!oldest.done) gzipCache.delete(oldest.value);
+      }
     }
     headers['Content-Encoding'] = 'gzip';
     headers['Vary'] = 'Accept-Encoding';
@@ -91,293 +152,30 @@ function serveFile(res, filePath, stats, data, clientETag, clientGzip) {
   res.end(data);
 }
 
-http.createServer(function (req, res) {
+// 旧地址 -> 新地址；不带与带结尾斜杠都要 301。
+var redirects = Object.create(null);
+for (var i = 0; i < deploy.REDIRECTS.length; i++) {
+  var pair = deploy.REDIRECTS[i];
+  redirects[pair[0]] = pair[1];
+  redirects[pair[0] + '/'] = pair[1];
+}
 
+http.createServer(function (req, res) {
   var rawUrl = req.url.split('?')[0];
   var url;
   try {
     url = decodeURIComponent(rawUrl);
   } catch (e) {
-    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.writeHead(400, commonHeaders(url));
     res.end('400 Bad Request');
     return;
   }
   if (url === '/') url = '/index.html';
 
-  var redirects = {
-    '/projects/lorem-ipsum': '/projects/lorem-ipsum-generator/',
-    '/projects/lorem-ipsum/': '/projects/lorem-ipsum-generator/',
-    '/projects/lorem-ipsum-word': '/projects/lorem-ipsum-generator/',
-    '/projects/lorem-ipsum-word/': '/projects/lorem-ipsum-generator/',
-    '/projects/html-entity-lookup': '/projects/html-entities/',
-    '/projects/html-entity-lookup/': '/projects/html-entities/',
-    '/projects/html-table-extractor': '/projects/html-table-generator/',
-    '/projects/html-table-extractor/': '/projects/html-table-generator/',
-    '/projects/hash-comparison': '/projects/hash-generator/',
-    '/projects/hash-comparison/': '/projects/hash-generator/',
-    '/projects/mime-types': '/projects/mime-lookup/',
-    '/projects/mime-types/': '/projects/mime-lookup/',
-    '/projects/mac-address-lookup': '/projects/mac-address-generator/',
-    '/projects/mac-address-lookup/': '/projects/mac-address-generator/',
-    '/projects/encoding-detector': '/projects/text-encoder/',
-    '/projects/encoding-detector/': '/projects/text-encoder/',
-    '/projects/date-add': '/projects/date-calculator/',
-    '/projects/date-add/': '/projects/date-calculator/',
-    '/projects/date-difference': '/projects/date-calculator/',
-    '/projects/date-difference/': '/projects/date-calculator/',
-    '/projects/time-diff': '/projects/date-calculator/',
-    '/projects/time-diff/': '/projects/date-calculator/',
-    '/projects/text-comparison': '/projects/text-diff/',
-    '/projects/text-comparison/': '/projects/text-diff/',
-    '/projects/diff-checker': '/projects/text-diff/',
-    '/projects/diff-checker/': '/projects/text-diff/',
-    '/projects/text-diff-char': '/projects/text-diff/',
-    '/projects/text-diff-char/': '/projects/text-diff/',
-    '/projects/text-statistics': '/projects/text-statistics-adv/',
-    '/projects/text-statistics/': '/projects/text-statistics-adv/',
-    '/projects/text-frequency': '/projects/text-statistics-adv/',
-    '/projects/text-frequency/': '/projects/text-statistics-adv/',
-    '/projects/json-prettify': '/projects/json-formatter/',
-    '/projects/json-prettify/': '/projects/json-formatter/',
-    '/projects/json-minify': '/projects/json-minify-advanced/',
-    '/projects/json-minify/': '/projects/json-minify-advanced/',
-    '/projects/dockerfile-lint': '/projects/dockerfile-generator/',
-    '/projects/dockerfile-lint/': '/projects/dockerfile-generator/',
-    '/projects/compose-snippets': '/projects/docker-compose-converter/',
-    '/projects/compose-snippets/': '/projects/docker-compose-converter/',
-    '/projects/sql-prettify': '/projects/sql-format/',
-    '/projects/sql-prettify/': '/projects/sql-format/',
-    '/projects/text-table': '/projects/ascii-table/',
-    '/projects/text-table/': '/projects/ascii-table/',
-    '/projects/whats-my-ip': '/projects/ip-lookup/',
-    '/projects/whats-my-ip/': '/projects/ip-lookup/',
-    '/projects/line-wrapper': '/projects/text-wrapper/',
-    '/projects/line-wrapper/': '/projects/text-wrapper/',
-    '/projects/timestamp': '/projects/epoch-converter/',
-    '/projects/timestamp/': '/projects/epoch-converter/',
-    '/projects/cron-expression': '/projects/crontab-generator/',
-    '/projects/cron-expression/': '/projects/crontab-generator/',
-    '/projects/crontab-validator': '/projects/crontab-generator/',
-    '/projects/crontab-validator/': '/projects/crontab-generator/',
-    '/projects/uuid-v1': '/projects/uuid-generator/',
-    '/projects/uuid-v1/': '/projects/uuid-generator/',
-    '/projects/uuid-v6': '/projects/uuid-generator/',
-    '/projects/uuid-v6/': '/projects/uuid-generator/',
-    '/projects/diff-percentage': '/projects/percentage-calculator/',
-    '/projects/diff-percentage/': '/projects/percentage-calculator/',
-    '/projects/text-slug': '/projects/slugify-string/',
-    '/projects/text-slug/': '/projects/slugify-string/',
-    '/projects/emoji-picker': '/projects/emoji-search/',
-    '/projects/emoji-picker/': '/projects/emoji-search/',
-    '/projects/random-emoji': '/projects/emoji-search/',
-    '/projects/random-emoji/': '/projects/emoji-search/',
-    '/projects/user-agent': '/projects/user-agent-parser/',
-    '/projects/user-agent/': '/projects/user-agent-parser/',
-    '/projects/dice-roller': '/projects/dice-dnd/',
-    '/projects/dice-roller/': '/projects/dice-dnd/',
-    '/projects/hex-to-rgb': '/projects/hex-converter/',
-    '/projects/hex-to-rgb/': '/projects/hex-converter/',
-    '/projects/rgb-to-hex': '/projects/hex-converter/',
-    '/projects/rgb-to-hex/': '/projects/hex-converter/',
-    '/projects/hex-to-hsl': '/projects/hex-converter/',
-    '/projects/hex-to-hsl/': '/projects/hex-converter/',
-    '/projects/hsl-to-hex': '/projects/hex-converter/',
-    '/projects/hsl-to-hex/': '/projects/hex-converter/',
-    '/projects/hmac-verify': '/projects/hmac-generator/',
-    '/projects/hmac-verify/': '/projects/hmac-generator/',
-    '/projects/base32-converter': '/projects/base64/',
-    '/projects/base32-converter/': '/projects/base64/',
-    '/projects/base36-encoder': '/projects/base64/',
-    '/projects/base36-encoder/': '/projects/base64/',
-    '/projects/base45': '/projects/base64/',
-    '/projects/base45/': '/projects/base64/',
-    '/projects/base58-converter': '/projects/base64/',
-    '/projects/base58-converter/': '/projects/base64/',
-    '/projects/base62-encoder': '/projects/base64/',
-    '/projects/base62-encoder/': '/projects/base64/',
-    '/projects/base85-converter': '/projects/base64/',
-    '/projects/base85-converter/': '/projects/base64/',
-    '/projects/base91': '/projects/base64/',
-    '/projects/base91/': '/projects/base64/',
-    '/projects/base92': '/projects/base64/',
-    '/projects/base92/': '/projects/base64/',
-    '/projects/ascii85': '/projects/base64/',
-    '/projects/ascii85/': '/projects/base64/',
-    '/projects/image-to-base64': '/projects/base64-to-image/',
-    '/projects/image-to-base64/': '/projects/base64-to-image/',
-    '/projects/base-converter': '/projects/number-base-converter/',
-    '/projects/base-converter/': '/projects/number-base-converter/',
-    '/projects/base-convert': '/projects/number-base-converter/',
-    '/projects/base-convert/': '/projects/number-base-converter/',
-    '/projects/binary-calculator': '/projects/number-base-converter/',
-    '/projects/binary-calculator/': '/projects/number-base-converter/',
-    '/projects/chegong-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/chegong-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/tudigong-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/tudigong-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/wanggong-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/wanggong-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/lvzu-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/lvzu-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/fozu-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/fozu-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/guandi-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/guandi-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/yudi-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/yudi-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/yuelao-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/yuelao-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/huangdaxian-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/huangdaxian-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/guanyin-lingsign': '/projects/zhougong-lingsign/',
-    '/projects/guanyin-lingsign/': '/projects/zhougong-lingsign/',
-    '/projects/chronometer': '/projects/timer-stopwatch/',
-    '/projects/chronometer/': '/projects/timer-stopwatch/',
-    '/projects/countdown-timer': '/projects/timer-stopwatch/',
-    '/projects/countdown-timer/': '/projects/timer-stopwatch/',
-    '/projects/interval-timer': '/projects/timer-stopwatch/',
-    '/projects/interval-timer/': '/projects/timer-stopwatch/',
-    '/projects/markdown-cheatsheet': '/projects/git-cheatsheet/',
-    '/projects/markdown-cheatsheet/': '/projects/git-cheatsheet/',
-    '/projects/python-cheatsheet': '/projects/git-cheatsheet/',
-    '/projects/python-cheatsheet/': '/projects/git-cheatsheet/',
-    '/projects/typescript-cheatsheet': '/projects/git-cheatsheet/',
-    '/projects/typescript-cheatsheet/': '/projects/git-cheatsheet/',
-    '/projects/hashcat-cheatsheet': '/projects/git-cheatsheet/',
-    '/projects/hashcat-cheatsheet/': '/projects/git-cheatsheet/',
-    '/projects/qr-reader': '/projects/qr-code-generator/',
-    '/projects/qr-reader/': '/projects/qr-code-generator/',
-    '/projects/wifi-qr-code': '/projects/qr-code-generator/',
-    '/projects/wifi-qr-code/': '/projects/qr-code-generator/',
-    '/projects/csp-validator': '/projects/csp-builder/',
-    '/projects/csp-validator/': '/projects/csp-builder/',
-    '/projects/api-key-detector': '/projects/api-key-generator/',
-    '/projects/api-key-detector/': '/projects/api-key-generator/',
-    '/projects/systemd-timer-generator': '/projects/systemd-unit-generator/',
-    '/projects/systemd-timer-generator/': '/projects/systemd-unit-generator/',
-    '/projects/variable-name-gen': '/projects/env-converter/',
-    '/projects/variable-name-gen/': '/projects/env-converter/',
-    '/projects/area-converter': '/projects/length-converter/',
-    '/projects/area-converter/': '/projects/length-converter/',
-    '/projects/volume-converter': '/projects/length-converter/',
-    '/projects/volume-converter/': '/projects/length-converter/',
-    '/projects/speed-converter': '/projects/length-converter/',
-    '/projects/speed-converter/': '/projects/length-converter/',
-    '/projects/chinese-zodiac': '/projects/age-calculator/',
-    '/projects/chinese-zodiac/': '/projects/age-calculator/',
-    '/projects/day-of-year': '/projects/date-formatter/',
-    '/projects/day-of-year/': '/projects/date-formatter/',
-    '/projects/date-range-generator': '/projects/date-formatter/',
-    '/projects/date-range-generator/': '/projects/date-formatter/',
-    '/projects/png-to-jpg': '/projects/image-converter/',
-    '/projects/png-to-jpg/': '/projects/image-converter/',
-    '/projects/jpg-to-png': '/projects/image-converter/',
-    '/projects/jpg-to-png/': '/projects/image-converter/',
-    '/projects/webp-to-jpg': '/projects/image-converter/',
-    '/projects/webp-to-jpg/': '/projects/image-converter/',
-    '/projects/jpg-to-webp': '/projects/image-converter/',
-    '/projects/jpg-to-webp/': '/projects/image-converter/',
-    '/projects/webp-to-png': '/projects/image-converter/',
-    '/projects/webp-to-png/': '/projects/image-converter/',
-    '/projects/png-to-webp': '/projects/image-converter/',
-    '/projects/png-to-webp/': '/projects/image-converter/',
-    '/projects/heic-to-jpg': '/projects/image-converter/',
-    '/projects/heic-to-jpg/': '/projects/image-converter/',
-    '/projects/heic-to-png': '/projects/image-converter/',
-    '/projects/heic-to-png/': '/projects/image-converter/',
-    '/projects/avif-to-jpg': '/projects/image-converter/',
-    '/projects/avif-to-jpg/': '/projects/image-converter/',
-    '/projects/avif-to-png': '/projects/image-converter/',
-    '/projects/avif-to-png/': '/projects/image-converter/',
-    '/projects/svg-to-png': '/projects/image-converter/',
-    '/projects/svg-to-png/': '/projects/image-converter/',
-    '/projects/svg-to-jpg': '/projects/image-converter/',
-    '/projects/svg-to-jpg/': '/projects/image-converter/',
-    '/projects/json-to-csharp': '/projects/json-to-typescript/',
-    '/projects/json-to-csharp/': '/projects/json-to-typescript/',
-    '/projects/json-to-go': '/projects/json-to-typescript/',
-    '/projects/json-to-go/': '/projects/json-to-typescript/',
-    '/projects/json-to-rust': '/projects/json-to-typescript/',
-    '/projects/json-to-rust/': '/projects/json-to-typescript/',
-    '/projects/json-to-swift': '/projects/json-to-typescript/',
-    '/projects/json-to-swift/': '/projects/json-to-typescript/',
-    '/projects/json-to-kotlin': '/projects/json-to-typescript/',
-    '/projects/json-to-kotlin/': '/projects/json-to-typescript/',
-    '/projects/json-to-dart': '/projects/json-to-typescript/',
-    '/projects/json-to-dart/': '/projects/json-to-typescript/',
-    '/projects/json-to-java': '/projects/json-to-typescript/',
-    '/projects/json-to-java/': '/projects/json-to-typescript/',
-    '/projects/json-to-python': '/projects/json-to-typescript/',
-    '/projects/json-to-python/': '/projects/json-to-typescript/',
-    '/projects/json-schema-to-ts': '/projects/json-to-typescript/',
-    '/projects/json-schema-to-ts/': '/projects/json-to-typescript/',
-    '/projects/graphql-to-ts': '/projects/json-to-typescript/',
-    '/projects/graphql-to-ts/': '/projects/json-to-typescript/',
-    '/projects/js-to-ts': '/projects/json-to-typescript/',
-    '/projects/js-to-ts/': '/projects/json-to-typescript/',
-    '/projects/apex-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/apex-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/bf2042-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/bf2042-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/cod-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/cod-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/cs2-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/cs2-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/fortnite-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/fortnite-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/halo-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/halo-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/pubg-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/pubg-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/r6siege-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/r6siege-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/tarkov-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/tarkov-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/thefinals-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/thefinals-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/valorant-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/valorant-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/warframe-sensitivity-converter': '/projects/sensitivity-converter/',
-    '/projects/warframe-sensitivity-converter/': '/projects/sensitivity-converter/',
-    '/projects/apex-to-cs2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/apex-to-cs2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/apex-to-valorant-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/apex-to-valorant-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cod-to-cs2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cod-to-cs2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-apex-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-apex-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-cod-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-cod-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-overwatch2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-overwatch2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-pubg-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-pubg-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-valorant-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/cs2-to-valorant-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/fortnite-to-valorant-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/fortnite-to-valorant-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-to-cs2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-to-cs2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-to-valorant-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/overwatch2-to-valorant-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/pubg-to-cs2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/pubg-to-cs2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-apex-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-apex-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-cs2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-cs2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-fortnite-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-fortnite-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-overwatch2-sensitivity': '/projects/sensitivity-converter/',
-    '/projects/valorant-to-overwatch2-sensitivity/': '/projects/sensitivity-converter/',
-    '/projects/encoding-converter': '/projects/text-encoder/',
-    '/projects/encoding-converter/': '/projects/text-encoder/'
-  }
   if (redirects[url]) {
-    res.writeHead(301, { 'Location': redirects[url] });
+    var rh = commonHeaders(url);
+    rh['Location'] = redirects[url];
+    res.writeHead(301, rh);
     res.end();
     return;
   }
@@ -385,7 +183,8 @@ http.createServer(function (req, res) {
   var filePath = path.resolve(__dirname, '.' + url);
 
   if (filePath !== __dirname && filePath.indexOf(__dirname + path.sep) !== 0) {
-    res.writeHead(403); res.end('403');
+    res.writeHead(403, commonHeaders(url));
+    res.end('403 Forbidden');
     return;
   }
 
@@ -393,16 +192,14 @@ http.createServer(function (req, res) {
     if (!err && stats.isDirectory()) filePath = path.join(filePath, 'index.html');
     fs.readFile(filePath, function (err2, data) {
       if (err2) {
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.writeHead(404, commonHeaders(url));
         res.end('<!DOCTYPE html><meta charset="utf-8"><title>404 - S-Jiffy</title><body style="font-family:monospace;padding:2em"><h1>404</h1><a href="/" style="color:#111">返回首页</a></body>');
         return;
       }
-      serveFile(res, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
-      return;
+      serveFile(res, url, filePath, stats, data, req.headers['if-none-match'] || '', /gzip/.test(req.headers['accept-encoding'] || ''));
     });
   });
-}).listen(port, '0.0.0.0', function () {
-  // Save PID for cleanup
+}).listen(port, host, function () {
   fs.writeFileSync(pidFile, String(process.pid));
-  console.log('S-Jiffy running at http://localhost:' + port);
+  console.log('S-Jiffy running at http://' + host + ':' + port);
 });

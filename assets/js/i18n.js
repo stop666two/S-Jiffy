@@ -330,8 +330,41 @@
   }
 
   /**
+   * 把一段译文写入带 [data-i18n] 的元素，且不破坏其子元素。
+   * 背景：部分元素的文案与控件写在同一个标签里（如 "语言：<select id=targetLang>"、
+   *       "长度：<span id=lenValue>16</span>"）。早期实现直接赋值 textContent 会把这些
+   *       子元素整体删掉，导致脚本里 getElementById 拿到 null 或控件消失。
+   * 规则：
+   *  - 元素没有元素子节点 → 直接写 textContent（最常见路径）
+   *  - 元素含元素子节点 → 只替换「第一个非空白文本节点」，其余文本节点清空，元素子节点全部保留
+   *  - 元素含元素子节点但没有非空白文本节点 → 追加一个 <span> 承载译文
+   * 输入：el —— 目标元素；value —— 译文（string）。
+   */
+  function setI18nText(el, value) {
+    var hasElementChild = false;
+    var i;
+    for (i = 0; i < el.childNodes.length; i++) {
+      if (el.childNodes[i].nodeType === 1) { hasElementChild = true; break; }
+    }
+    if (!hasElementChild) { el.textContent = value; return; }
+    var replaced = false;
+    for (i = 0; i < el.childNodes.length; i++) {
+      var n = el.childNodes[i];
+      if (n.nodeType === 3 && n.nodeValue.replace(/\s/g, '')) {
+        n.nodeValue = replaced ? '' : value;
+        replaced = true;
+      }
+    }
+    if (!replaced) {
+      var span = document.createElement('span');
+      span.textContent = value;
+      el.appendChild(span);
+    }
+  }
+
+  /**
    * 应用词典文案到页面元素：
-   *  - [data-i18n="key"]：替换 textContent（key 为完整词典 key）
+   *  - [data-i18n="key"]：替换文本，保留元素子节点（见 setI18nText）
    *  - [data-i18n-html="key"]：替换 innerHTML（用于含链接/行内标签的段落，词典值须为受信 HTML——仅项目自写词典，无用户输入）
    *  - [data-i18n-placeholder="key"]：替换 placeholder 属性
    *  - [data-i18n-attr-title="key"]：替换 title 属性
@@ -342,7 +375,7 @@
     var els = document.querySelectorAll('[data-i18n]');
     for (var i = 0; i < els.length; i++) {
       var key = els[i].getAttribute('data-i18n');
-      if (dict[key] != null) els[i].textContent = dict[key];
+      if (dict[key] != null) setI18nText(els[i], dict[key]);
     }
     var htmlEls = document.querySelectorAll('[data-i18n-html]');
     for (var h = 0; h < htmlEls.length; h++) {

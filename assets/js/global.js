@@ -78,9 +78,19 @@ function copyToClipboard(text, buttonEl) {
   });
 }
 
+/* 状态栏是唯一会被脚本反复写入的「结果反馈」区域，必须能被读屏软件播报：
+   给它 role=status + aria-live=polite，任何页面都不用手写这两个属性。 */
+function ensureLiveRegion(el) {
+  if (!el) return el;
+  if (!el.hasAttribute('role')) el.setAttribute('role', 'status');
+  if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  if (!el.hasAttribute('aria-atomic')) el.setAttribute('aria-atomic', 'true');
+  return el;
+}
+
 function setStatus(message, type) {
   if (type === undefined) type = 'info';
-  var statusEl = document.querySelector('.tool-status');
+  var statusEl = ensureLiveRegion(document.querySelector('.tool-status'));
   if (!statusEl) return;
   statusEl.textContent = message;
   statusEl.style.color = type === 'error' ? 'var(--color-error)' : 'var(--color-text-secondary)';
@@ -101,6 +111,13 @@ function loadPreference(key, defaultValue) {
     var v = localStorage.getItem('s-jiffy:' + key);
     return v ? JSON.parse(v) : defaultValue;
   } catch (e) { return defaultValue; }
+}
+
+/* 页面加载即声明 live region（不必等到第一次 setStatus） */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () { ensureLiveRegion(document.querySelector('.tool-status')); });
+} else {
+  ensureLiveRegion(document.querySelector('.tool-status'));
 }
 
 /* ---- Usage history (localStorage, survives updates) ---- */

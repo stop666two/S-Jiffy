@@ -31,10 +31,14 @@
 ### Changed
 
 - **数据单一来源** — `index.html` 的 `tools` 数组成为工具名称/描述唯一来源；`gen-home-i18n.js` 由注册表生成六语言 `home.json`（中文值直接写入，消除 1 个名称 + 11 个描述漂移），非中文保留译文
+- **站点源集中到一处** — `SITE_ORIGIN` 定为 `https://s-jiffy.pages.dev`（实际生产为 Cloudflare Pages），canonical/og:url/sitemap/robots 全部由 `scripts/gen-meta.js` 按此生成
 - **删除 816 个孤儿词典** — 136 个已合并工具的词典 × 6 语言；同时清理 1731 个页面词典里与 `common.json` 重复的 `common.footer`
 - **QR 库去重** — `qr-code-generator` 从 `qrcodejs.min.js` 迁到 `qrcode.js`（含 UTF-8 编码修正，中文二维码可被正确识别），删除 `qrcodejs.min.js`
 - **实体条数口径** — `html-entities` 描述由 2231 条改为 2125 条（规范表 2231 个原始条目对应 2125 个唯一实体名）
 - **统一 LF 行尾** — 458 个文件由 CRLF 转为 LF；`*.bat`/`*.cmd` 显式声明 `eol=crlf` 并转 CRLF
+
+- **180 个 `<select>` 无可访问名** — 工具页内的选择器全部是功能性控件，却没有任何可访问名（axe `select-name`，WCAG 4.1.2）。逐个按语义补 `aria-label` + `data-i18n-attr-aria-label`，并在六语言词典新增 `ui.aria.*` 共 109 个键；`scripts/check.js` 增加门禁项 `a11y` 防止回退
+- **首页卡片描述键盘不可达** — 描述区原是 `max-height:66px + overflow-y:auto` 的小滚动框（axe `scrollable-region-focusable`，28 个节点），改为 `-webkit-line-clamp:3` 截断，完整描述留在工具页
 
 ### Added
 

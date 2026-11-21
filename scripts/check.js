@@ -227,6 +227,25 @@ var tools = registry.readRegistry(ROOT);
   });
 })();
 
+// ------------------------------------------------------- 6. form control names
+// <select> 没有可访问名是 WCAG 4.1.2 / axe `select-name`（critical）。工具页里的
+// 选择器都是功能性控件，必须有 aria-label / title / <label for> / 包裹 <label> 之一。
+(function checkSelectNames() {
+  slugs.forEach(function (slug) {
+    var html = fs.readFileSync(path.join(ROOT, 'projects', slug, 'index.html'), 'utf8');
+    var re = /<select\b([^>]*)>/g, m;
+    while ((m = re.exec(html))) {
+      var attrs = m[1];
+      if (/aria-label|aria-labelledby|\btitle=|\bid="langSwitch"/.test(attrs)) continue;
+      var idm = attrs.match(/\bid="([^"]+)"/);
+      if (idm && html.indexOf('for="' + idm[1] + '"') >= 0) continue;
+      var before = html.slice(Math.max(0, m.index - 200), m.index);
+      if (/<label[^>]*>[^<]*$/.test(before)) continue;
+      fail('a11y', 'projects/' + slug + '/index.html:' + lineOf(html, m.index) + ' <select> has no accessible name (add aria-label + data-i18n-attr-aria-label)');
+    }
+  });
+})();
+
 // ------------------------------------------------------------------ 6. entity
 (function checkEntities() {
   var table = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts', 'entity-names.json'), 'utf8')).entries;

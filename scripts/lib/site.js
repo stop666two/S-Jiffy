@@ -5,6 +5,6 @@
 // MUST be the real deployment origin — change it here and rerun
 // `node scripts/gen-meta.js`, nothing else hardcodes the host.
 
-var SITE_ORIGIN = 'https://s-jiffy.app';
+var SITE_ORIGIN = 'https://s-jiffy.pages.dev';
 
 module.exports = { SITE_ORIGIN: SITE_ORIGIN };
